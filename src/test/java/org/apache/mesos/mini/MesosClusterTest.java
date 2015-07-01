@@ -1,30 +1,28 @@
 package org.apache.mesos.mini;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import com.github.dockerjava.api.command.InspectExecCmd;
+import com.github.dockerjava.api.command.InspectExecResponse;
+import org.junit.*;
 
 public class MesosClusterTest {
 
-    private MesosCluster cluster;
+    @Rule
+    public MesosCluster cluster = new MesosCluster(3);
 
-    @Before
-    public void startMesosCluster() {
-        this.cluster = new MesosCluster(3);
-        cluster.start();
-    }
+
 
 
     @Test
     public void mesosClusterCanBeStarted() {
+
+//        InspectExecResponse inspectResponse = cluster.dockerClient.inspectExecCmd(cluster.startContainerCmd.getContainerId()).exec();
+//        InspectExecResponse inspectResponse = cluster.dockerClient.inspectExecCmd(cluster.createContainerResponse.getId()).exec();
+
+
+
+
+
         Assert.assertNotNull(cluster.startContainerCmd.getContainerId());
-    }
-
-
-    @After
-    public void stopMesosCluster() {
-        cluster.stop();
     }
 
 }
