@@ -15,7 +15,8 @@ public class MesosCluster extends ExternalResource {
 
     Logger log = Logger.getLogger(MesosCluster.class);
 
-    public String mesosLocalImage = "mesos-local"; // TODO pull that docker image from Dockerhub
+    // TODO pull that docker image from Dockerhub -> take version which matches the docker host file storage e.g. aufs (still to create mesos-local-aufs and all other images)
+    public String mesosLocalImage = "mesos-local";
 
     private ArrayList<String> containerNames = new ArrayList<String>();
 
