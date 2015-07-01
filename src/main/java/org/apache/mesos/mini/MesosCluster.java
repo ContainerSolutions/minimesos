@@ -47,27 +47,27 @@ public class MesosCluster extends ExternalResource {
                 .withPortBindings(PortBinding.parse("0.0.0.0:5050:5050"))
                 .withPrivileged(true)
                 .withEnv("NUMBER_OF_SLAVES=" + config.numberOfSlaves)
-//                .withVolumes(new Volume("/var/lib/docker/aufs:/var/lib/docker/aufs"))
-//                .withVolumes(new Volume("/var/lib/docker/btrfs:/var/lib/docker/btrfs"))
-//                .withVolumes(new Volume("/var/lib/docker/execdriver:/var/lib/docker/execdriver"))
-//                .withVolumes(new Volume("/var/lib/docker/graph:/var/lib/docker/graph"))
-//                .withVolumes(new Volume("/var/lib/docker/init:/var/lib/docker/init"))
-//                .withVolumes(new Volume("/var/lib/docker/repositories-aufs:/var/lib/docker/repositories-aufs"))
-//                .withVolumes(new Volume("/var/lib/docker/tmp:/var/lib/docker/tmp"))
-//                .withVolumes(new Volume("/var/lib/docker/trust:/var/lib/docker/trust"))
-//                .withVolumes(new Volume("/var/lib/docker/vfs:/var/lib/docker/vfs"))
-//                .withVolumes(new Volume("/var/lib/docker/volumes:/var/lib/docker/volumes"))
+                .withVolumes(new Volume("/var/lib/docker/aufs"),
+                        new Volume("/var/lib/docker/btrfs")
+                        , new Volume("/var/lib/docker/execdriver"),
+                        new Volume("/var/lib/docker/graph"),
+                        new Volume("/var/lib/docker/init"),
+                        new Volume("/var/lib/docker/repositories-aufs"),
+                        new Volume("/var/lib/docker/tmp"),
+                        new Volume("/var/lib/docker/trust"),
+                        new Volume("/var/lib/docker/vfs"),
+                        new Volume("/var/lib/docker/volumes"))
 
-                .withBinds(Bind.parse("/var/lib/docker/aufs:/var/lib/docker/aufs"))
-                .withBinds(Bind.parse("/var/lib/docker/btrfs:/var/lib/docker/btrfs"))
-                .withBinds(Bind.parse("/var/lib/docker/execdriver:/var/lib/docker/execdriver"))
-                .withBinds(Bind.parse("/var/lib/docker/graph:/var/lib/docker/graph"))
-                .withBinds(Bind.parse("/var/lib/docker/init:/var/lib/docker/init"))
-                .withBinds(Bind.parse("/var/lib/docker/repositories-aufs:/var/lib/docker/repositories-aufs"))
-                .withBinds(Bind.parse("/var/lib/docker/tmp:/var/lib/docker/tmp"))
-                .withBinds(Bind.parse("/var/lib/docker/trust:/var/lib/docker/trust"))
-                .withBinds(Bind.parse("/var/lib/docker/vfs:/var/lib/docker/vfs"))
-                .withBinds(Bind.parse("/var/lib/docker/volumes:/var/lib/docker/volumes"))
+                .withBinds(Bind.parse("/var/lib/docker/aufs:/var/lib/docker/aufs:rw"),
+                        Bind.parse("/var/lib/docker/btrfs:/var/lib/docker/btrfs:rw"),
+                        Bind.parse("/var/lib/docker/execdriver:/var/lib/docker/execdriver:rw"),
+                        Bind.parse("/var/lib/docker/graph:/var/lib/docker/graph:rw"),
+                        Bind.parse("/var/lib/docker/init:/var/lib/docker/init:rw"),
+                        Bind.parse("/var/lib/docker/repositories-aufs:/var/lib/docker/repositories-aufs:rw"),
+                        Bind.parse("/var/lib/docker/tmp:/var/lib/docker/tmp:rw"),
+                        Bind.parse("/var/lib/docker/trust:/var/lib/docker/trust:rw"),
+                        Bind.parse("/var/lib/docker/vfs:/var/lib/docker/vfs:rw"),
+                        Bind.parse("/var/lib/docker/volumes:/var/lib/docker/volumes:rw"))
                 .exec();
 
 
@@ -88,7 +88,6 @@ public class MesosCluster extends ExternalResource {
             }
         }
     }
-
 
 
     // For usage as JUnit rule...
