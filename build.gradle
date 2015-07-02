@@ -18,10 +18,5 @@ dependencies {
 }
 
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '2.2'
-}
-
-
 //    compile 'com.github.docker-java:docker-java:1.3.0'
 
