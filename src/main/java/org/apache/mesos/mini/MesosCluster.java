@@ -45,9 +45,18 @@ public class MesosCluster extends ExternalResource {
         createContainerResponse = dockerClient.createContainerCmd(mesosLocalImage)
                 .withName(containerName)
                 .withExposedPorts(ExposedPort.parse("5050"))
+                .withExposedPorts(ExposedPort.parse("2181"))
                 .withPortBindings(PortBinding.parse("0.0.0.0:5050:5050"))
+                .withPortBindings(PortBinding.parse("0.0.0.0:2181:2181"))
                 .withPrivileged(true)
-                .withEnv("NUMBER_OF_SLAVES=" + config.numberOfSlaves)
+                .withEnv("NUMBER_OF_SLAVES=" + config.numberOfSlaves,
+                        "MESOS_QUORUM=1",
+                        "MESOS_ZK=zk://localhost:2181/mesos",
+                        "MESOS_EXECUTOR_REGISTRATION_TIMEOUT=5mins",
+                        "MESOS_CONTAINERIZERS=\"docker,mesos\"",
+                        "MESOS_ISOLATOR=\"cgroups/cpu,cgroups/mem\"",
+                        "MESOS_LOG_DIR=\"/var/log\"",
+                        "MESOS_RESOURCES=\"ports(*):[9200-9200,9300-9300]\"")
                 .withVolumes(new Volume("/var/lib/docker/aufs"),
                         new Volume("/var/lib/docker/btrfs")
                         , new Volume("/var/lib/docker/execdriver"),
