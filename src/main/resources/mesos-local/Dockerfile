@@ -47,6 +47,11 @@ RUN curl -sSL https://get.docker.com/ubuntu/ | sh
 ADD ./wrapdocker /usr/local/bin/wrapdocker
 RUN chmod +x /usr/local/bin/wrapdocker
 
+# add script to run cluster
+RUN mkdir /opt/mesos_test_cluster
+ADD ./run.sh /opt/mesos_test_cluster/
+RUN chmod +x /opt/mesos_test_cluster/run.sh
+
 VOLUME /var/lib/docker
 
 #/aufs /var/lib/docker/btrfs /var/lib/docker/execdriver /var/lib/docker/graph /var/lib/docker/init /var/lib/docker/repositories-aufs /var/lib/docker/tmp /var/lib/docker/trust /var/lib/docker/vfs/var/lib/docker/volumes
@@ -66,4 +71,4 @@ RUN mkdir -p /var/log/supervisor /etc/supervisor/conf.d
 # Add the base configuration file for Supervisord
 ADD supervisor.conf /etc/supervisor.conf
 
-CMD supervisord -c /etc/supervisor.conf
+CMD /opt/mesos_test_cluster/run.sh

@@ -51,10 +51,10 @@ public class MesosCluster extends ExternalResource {
                         "MESOS_QUORUM=1",
                         "MESOS_ZK=zk://localhost:2181/mesos",
                         "MESOS_EXECUTOR_REGISTRATION_TIMEOUT=5mins",
-                        "MESOS_CONTAINERIZERS=\"docker,mesos\"",
-                        "MESOS_ISOLATOR=\"cgroups/cpu,cgroups/mem\"",
-                        "MESOS_LOG_DIR=\"/var/log\"",
-                        "MESOS_RESOURCES=\"ports(*):[9200-9200,9300-9300]\"") // could be made configurable...
+                        "MESOS_CONTAINERIZERS=docker,mesos",
+                        "MESOS_ISOLATOR=cgroups/cpu,cgroups/mem",
+                        "MESOS_LOG_DIR=/var/log",
+                        "MESOS_RESOURCES=ports(*):[9200-9200,9300-9300]") // could be made configurable...
                 .withVolumes(new Volume("/var/lib/docker/aufs"),
                         new Volume("/var/lib/docker/btrfs")
                         , new Volume("/var/lib/docker/execdriver"),
