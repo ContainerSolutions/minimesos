@@ -2,7 +2,7 @@ FROM ubuntu
 MAINTAINER RedJack, LLC
 
 ENV DEBIAN_FRONTEND noninteractive
-ENV VERSION 0.22.0
+ENV VERSION 0.22.1
 ENV PKG_RELEASE 1.0
 
 RUN apt-get update
