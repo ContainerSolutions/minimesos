@@ -54,8 +54,6 @@ RUN chmod +x /opt/mesos_test_cluster/run.sh
 
 VOLUME /var/lib/docker
 
-#/aufs /var/lib/docker/btrfs /var/lib/docker/execdriver /var/lib/docker/graph /var/lib/docker/init /var/lib/docker/repositories-aufs /var/lib/docker/tmp /var/lib/docker/trust /var/lib/docker/vfs/var/lib/docker/volumes
-
 # Add Supervisor
 
 # Update the base image

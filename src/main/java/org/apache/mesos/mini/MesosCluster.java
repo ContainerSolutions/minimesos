@@ -8,10 +8,16 @@ import com.github.dockerjava.api.model.*;
 import com.jayway.awaitility.core.ConditionTimeoutException;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.LineIterator;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
@@ -20,6 +26,9 @@ import java.util.concurrent.TimeUnit;
 import static com.jayway.awaitility.Awaitility.await;
 import static junit.framework.Assert.fail;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.containsString;
 
 public class MesosCluster extends ExternalResource {
 
@@ -27,6 +36,7 @@ public class MesosCluster extends ExternalResource {
 
     // TODO pull that docker image from Dockerhub -> take version which matches the docker host file storage e.g. aufs (still to create mesos-local-aufs and all other images)
     public String mesosLocalImage = "mesos-local";
+    public String registryImage = "registry";
 
     private ArrayList<String> containerNames = new ArrayList<String>();
 
@@ -34,14 +44,16 @@ public class MesosCluster extends ExternalResource {
 
     public DockerClient dockerClient;
 
-    public CreateContainerResponse createContainerResponse;
+    public CreateContainerResponse createMesosClusterContainerResponse;
+    private CreateContainerResponse createRegistryContainerResponse;
 
-    public StartContainerCmd startContainerCmd;
+    public StartContainerCmd startMesosClusterContainerCmd;
+    private StartContainerCmd startRegistryContainerCmd;
 
     public String dockerHost;
 
-    public MesosCluster(int numberOfSlaves, String slaveConfig) {
-        this(MesosClusterConfig.builder().defaultDockerClient().numberOfSlaves(numberOfSlaves).slaveResources(slaveConfig).build());
+    public MesosCluster(int numberOfSlaves, String slaveConfig, String[] dindImages) {
+        this(MesosClusterConfig.builder().defaultDockerClient().numberOfSlaves(numberOfSlaves).slaveResources(slaveConfig).dockerInDockerImages(dindImages).build());
     }
 
     public MesosCluster(MesosClusterConfig config) {
@@ -51,14 +63,50 @@ public class MesosCluster extends ExternalResource {
 
 
     public void start() {
-        String containerName = "mini_mesos_cluster_" + new SecureRandom().nextInt();
-        LOGGER.debug("*****************************         Creating container \"" + containerName + "\"         *****************************");
+        try {
 
-        createContainerResponse = dockerClient.createContainerCmd(mesosLocalImage)
-                .withName(containerName)
+            // Pulls registry images and start container
+            String registryContainerName = startPrivateRegistryContainer();
+
+            // push all docker in docker images with tag system tests to private registry
+            pushDindImagesToPrivateRegistry();
+
+            // builds the mesos-local image
+            buildMesosLocalImage();
+
+            // start the container
+            startMesosLocalContainer(registryContainerName);
+
+            // wait until the given number of slaves are registered
+            assertMesosMasterStateCanBePulled(new MesosClusterStateResponse(config));
+        } catch (Exception e) {
+            LOGGER.error("Error during startup", e);
+            stop(); // cleanup and remove started containers
+        }
+    }
+
+    private void pushDindImagesToPrivateRegistry() {
+        for (String image : config.dindImages) {
+            String imageWithPrivateRepoName = "localhost:" + config.privateRegistryPort + "/" + image;
+            LOGGER.debug("*****************************         Tagging image \"" + imageWithPrivateRepoName + "\"         *****************************");
+            dockerClient.tagImageCmd(mesosLocalImage, imageWithPrivateRepoName, "systemtest").withForce(true).exec();
+            LOGGER.debug("*****************************         Pushing image \"" + imageWithPrivateRepoName + ":systemtest\" to private registry        *****************************");
+            InputStream responsePushImage = dockerClient.pushImageCmd(imageWithPrivateRepoName).withTag("systemtest").exec();
+
+            assertThat(asString(responsePushImage), containsString("Image successfully pushed"));
+        }
+    }
+
+    private void startMesosLocalContainer(String registryContainerName) {
+        String mesosClusterContainerName = "mini_mesos_cluster_" + new SecureRandom().nextInt();
+        LOGGER.debug("*****************************         Creating container \"" + mesosClusterContainerName + "\"         *****************************");
+
+        createMesosClusterContainerResponse = dockerClient.createContainerCmd(mesosLocalImage)
+                .withName(mesosClusterContainerName)
                 .withExposedPorts(ExposedPort.parse(config.mesosMasterPort.toString()), ExposedPort.parse("2181"))
                 .withPortBindings(PortBinding.parse("0.0.0.0:" + config.mesosMasterPort + ":" + config.mesosMasterPort), PortBinding.parse("0.0.0.0:2181:2181"))
                 .withPrivileged(true)
+                .withLinks(Link.parse(registryContainerName + ":private-registry"))
                 .withEnv("NUMBER_OF_SLAVES=" + config.numberOfSlaves,
                         "MESOS_QUORUM=1",
                         "MESOS_ZK=zk://localhost:2181/mesos",
@@ -91,12 +139,41 @@ public class MesosCluster extends ExternalResource {
                 .exec();
 
 
-        containerNames.add(containerName);
+        containerNames.add(0, mesosClusterContainerName);
 
-        startContainerCmd = dockerClient.startContainerCmd(createContainerResponse.getId());
-        startContainerCmd.exec();
 
-        assertMesosMasterStateCanBePulled(new MesosClusterStateResponse(config));
+        startMesosClusterContainerCmd = dockerClient.startContainerCmd(createMesosClusterContainerResponse.getId());
+        startMesosClusterContainerCmd.exec();
+    }
+
+    private void buildMesosLocalImage() {
+        String fullLog;
+        InputStream responseBuildImage = dockerClient.buildImageCmd(new File(Thread.currentThread().getContextClassLoader().getResource(mesosLocalImage).getFile())).withTag(mesosLocalImage).exec();
+
+        fullLog = asString(responseBuildImage);
+        assertThat(fullLog, containsString("Successfully built"));
+    }
+
+    private String startPrivateRegistryContainer() {
+        String registryContainerName = "registry_" + new SecureRandom().nextInt();
+        LOGGER.debug("*****************************         Pulling image \"" + registryImage + "\"         *****************************");
+        InputStream responsePullImages = dockerClient.pullImageCmd(registryImage).exec();
+        String fullLog = asString(responsePullImages);
+        assertThat(fullLog, anyOf(containsString("Download complete"), containsString("Already exists")));
+
+
+        LOGGER.debug("*****************************         Creating container \"" + registryContainerName + "\"         *****************************");
+        createRegistryContainerResponse = dockerClient.createContainerCmd(registryImage)
+                .withName(registryContainerName)
+                .withExposedPorts(ExposedPort.parse("5000"))
+                .withPortBindings(PortBinding.parse(config.privateRegistryPort + ":" + config.privateRegistryPort))
+                .exec();
+
+        containerNames.add(0, registryContainerName);
+
+        startRegistryContainerCmd = dockerClient.startContainerCmd(createRegistryContainerResponse.getId());
+        startRegistryContainerCmd.exec();
+        return registryContainerName;
     }
 
     public void stop() {
@@ -127,6 +204,34 @@ public class MesosCluster extends ExternalResource {
     @Override
     protected void after() {
         stop();
+    }
+
+
+    protected String asString(InputStream response) {
+        return consumeAsString(response);
+    }
+
+
+    public static String consumeAsString(InputStream response) {
+
+        StringWriter logwriter = new StringWriter();
+
+        try {
+            LineIterator itr = IOUtils.lineIterator(response, "UTF-8");
+
+            while (itr.hasNext()) {
+                String line = itr.next();
+                logwriter.write(line + (itr.hasNext() ? "\n" : ""));
+                LOGGER.info(line);
+            }
+            response.close();
+
+            return logwriter.toString();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            IOUtils.closeQuietly(response);
+        }
     }
 
 

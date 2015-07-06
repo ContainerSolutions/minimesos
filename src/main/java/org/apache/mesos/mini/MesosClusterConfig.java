@@ -4,6 +4,7 @@ package org.apache.mesos.mini;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
+import com.sun.xml.internal.ws.encoding.ContentTypeImpl;
 
 import java.net.URI;
 
@@ -14,13 +15,16 @@ public class MesosClusterConfig {
     public final String slaveResources;
     public final URI dockerHost;
     public final Integer mesosMasterPort;
+    public final Integer privateRegistryPort = 5000;
+    public final String[] dindImages;
 
-    private MesosClusterConfig(DockerClient dockerClient, int numberOfSlaves, String slaveResources, URI dockerHost, Integer mesosMasterPort) {
+    private MesosClusterConfig(DockerClient dockerClient, int numberOfSlaves, String slaveResources, URI dockerHost, Integer mesosMasterPort, String[] dindImages) {
         this.dockerClient = dockerClient;
         this.numberOfSlaves = numberOfSlaves;
         this.slaveResources = slaveResources;
         this.dockerHost = dockerHost;
         this.mesosMasterPort = mesosMasterPort;
+        this.dindImages = dindImages;
     }
 
 
@@ -35,6 +39,7 @@ public class MesosClusterConfig {
         String slaveResources;
         private URI dockerHost;
         Integer mesosMasterPort = Integer.valueOf(5050);
+        private String[] dindImages = new String[]{};
 
 
         private Builder() {
@@ -57,7 +62,7 @@ public class MesosClusterConfig {
         }
 
 
-        public Builder masterPort(int port){
+        public Builder masterPort(int port) {
             this.mesosMasterPort = Integer.valueOf(port);
             return this;
         }
@@ -85,10 +90,14 @@ public class MesosClusterConfig {
                 throw new IllegalStateException("Specify a docker ");
             }
 
-            return new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, dockerHost, mesosMasterPort);
+            return new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, dockerHost, mesosMasterPort, dindImages);
         }
 
 
+        public Builder dockerInDockerImages(String[] dindImages) {
+            this.dindImages = dindImages;
+            return this;
+        }
     }
 
 
