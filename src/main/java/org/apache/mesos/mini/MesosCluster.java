@@ -3,6 +3,7 @@ package org.apache.mesos.mini;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.command.CreateContainerResponse;
+import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.StartContainerCmd;
 import com.github.dockerjava.api.model.*;
 import com.jayway.awaitility.core.ConditionTimeoutException;
@@ -77,11 +78,36 @@ public class MesosCluster extends ExternalResource {
             // start the container
             startMesosLocalContainer(registryContainerName);
 
+            // we have to pull the dind images and re-tag the images so they get their original name
+            pullDindImagesAndRetagWithoutRepoAndLatestTag();
+
             // wait until the given number of slaves are registered
             assertMesosMasterStateCanBePulled(new MesosClusterStateResponse(config));
-        } catch (Exception e) {
+
+        } catch (Error e) {
             LOGGER.error("Error during startup", e);
             stop(); // cleanup and remove started containers
+        }
+    }
+
+    private void pullDindImagesAndRetagWithoutRepoAndLatestTag() {
+
+        for (String image : config.dindImages) {
+
+            try {
+                Thread.sleep(2000); // we have to wait
+            } catch (InterruptedException e) {
+            }
+
+            ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(createMesosClusterContainerResponse.getId())
+                    .withAttachStdout(true).withCmd("docker", "pull", "private-registry:" + config.privateRegistryPort + "/" + image + ":systemtest").exec();
+            InputStream execCmdStream = dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec();
+            assertThat(asString(execCmdStream), containsString("Download complete"));
+
+            execCreateCmdResponse = dockerClient.execCreateCmd(createMesosClusterContainerResponse.getId())
+                    .withAttachStdout(true).withCmd("docker", "tag", "private-registry:" + config.privateRegistryPort + "/" + image + ":systemtest", image + ":latest").exec();
+            execCmdStream = dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec();
+            asString(execCmdStream);
         }
     }
 
@@ -93,7 +119,7 @@ public class MesosCluster extends ExternalResource {
             LOGGER.debug("*****************************         Pushing image \"" + imageWithPrivateRepoName + ":systemtest\" to private registry        *****************************");
             InputStream responsePushImage = dockerClient.pushImageCmd(imageWithPrivateRepoName).withTag("systemtest").exec();
 
-            assertThat(asString(responsePushImage), containsString("Image successfully pushed"));
+            assertThat(asString(responsePushImage), containsString("The push refers to a repository"));
         }
     }
 
@@ -113,29 +139,8 @@ public class MesosCluster extends ExternalResource {
                         "MESOS_EXECUTOR_REGISTRATION_TIMEOUT=5mins",
                         "MESOS_CONTAINERIZERS=docker,mesos",
                         "MESOS_ISOLATOR=cgroups/cpu,cgroups/mem",
-                        "MESOS_LOG_DIR=/var/LOGGER",
+                        "MESOS_LOG_DIR=/var/log",
                         "MESOS_RESOURCES=" + config.slaveResources) // could be made configurable...
-                .withVolumes(new Volume("/var/lib/docker/aufs"),
-                        new Volume("/var/lib/docker/btrfs")
-                        , new Volume("/var/lib/docker/execdriver"),
-                        new Volume("/var/lib/docker/graph"),
-                        new Volume("/var/lib/docker/init"),
-                        new Volume("/var/lib/docker/repositories-aufs"),
-                        new Volume("/var/lib/docker/tmp"),
-                        new Volume("/var/lib/docker/trust"),
-                        new Volume("/var/lib/docker/vfs"),
-                        new Volume("/var/lib/docker/volumes"))
-
-                .withBinds(Bind.parse("/var/lib/docker/aufs:/var/lib/docker/aufs:rw"),
-                        Bind.parse("/var/lib/docker/btrfs:/var/lib/docker/btrfs:rw"),
-                        Bind.parse("/var/lib/docker/execdriver:/var/lib/docker/execdriver:rw"),
-                        Bind.parse("/var/lib/docker/graph:/var/lib/docker/graph:rw"),
-                        Bind.parse("/var/lib/docker/init:/var/lib/docker/init:rw"),
-                        Bind.parse("/var/lib/docker/repositories-aufs:/var/lib/docker/repositories-aufs:rw"),
-                        Bind.parse("/var/lib/docker/tmp:/var/lib/docker/tmp:rw"),
-                        Bind.parse("/var/lib/docker/trust:/var/lib/docker/trust:rw"),
-                        Bind.parse("/var/lib/docker/vfs:/var/lib/docker/vfs:rw"),
-                        Bind.parse("/var/lib/docker/volumes:/var/lib/docker/volumes:rw"))
                 .exec();
 
 
@@ -144,6 +149,15 @@ public class MesosCluster extends ExternalResource {
 
         startMesosClusterContainerCmd = dockerClient.startContainerCmd(createMesosClusterContainerResponse.getId());
         startMesosClusterContainerCmd.exec();
+
+
+        try {
+            await().atMost(100, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS).until(new ContainerEchoRespone(dockerClient, createMesosClusterContainerResponse.getId()), is(true));
+        } catch (ConditionTimeoutException e) {
+            stop();
+            fail("Mesos-cluster did not start up within the given time");
+        }
+
     }
 
     private void buildMesosLocalImage() {
@@ -157,15 +171,24 @@ public class MesosCluster extends ExternalResource {
     private String startPrivateRegistryContainer() {
         String registryContainerName = "registry_" + new SecureRandom().nextInt();
         LOGGER.debug("*****************************         Pulling image \"" + registryImage + "\"         *****************************");
-        InputStream responsePullImages = dockerClient.pullImageCmd(registryImage).exec();
+        InputStream responsePullImages = dockerClient.pullImageCmd(registryImage).withTag("0.9.1").exec();
         String fullLog = asString(responsePullImages);
         assertThat(fullLog, anyOf(containsString("Download complete"), containsString("Already exists")));
 
 
+        File registryStorageRootDir = new File(".registry");
+
+        if (!registryStorageRootDir.exists()) {
+            LOGGER.info("The private registry storage root directory doesn't exist, creating one...");
+            registryStorageRootDir.mkdir();
+        }
         LOGGER.debug("*****************************         Creating container \"" + registryContainerName + "\"         *****************************");
         createRegistryContainerResponse = dockerClient.createContainerCmd(registryImage)
                 .withName(registryContainerName)
                 .withExposedPorts(ExposedPort.parse("5000"))
+                .withEnv("STORAGE_PATH=/var/lib/registry")
+                .withVolumes(new Volume("/var/lib/registry"))
+                .withBinds(Bind.parse(registryStorageRootDir.getAbsolutePath() + ":/var/lib/registry:rw"))
                 .withPortBindings(PortBinding.parse(config.privateRegistryPort + ":" + config.privateRegistryPort))
                 .exec();
 
@@ -173,6 +196,15 @@ public class MesosCluster extends ExternalResource {
 
         startRegistryContainerCmd = dockerClient.startContainerCmd(createRegistryContainerResponse.getId());
         startRegistryContainerCmd.exec();
+
+
+        try {
+            await().atMost(10, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS).until(new ContainerEchoRespone(dockerClient, createRegistryContainerResponse.getId()), is(true));
+        } catch (ConditionTimeoutException e) {
+            stop();
+            fail("Registry did not start up within the given time");
+        }
+
         return registryContainerName;
     }
 
@@ -240,7 +272,7 @@ public class MesosCluster extends ExternalResource {
             await().atMost(10, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS).until(mesosMasterStateResponse, is(true));
         } catch (ConditionTimeoutException e) {
             stop();
-            fail("MesosMaster did not expose its state withing 5 minutes");
+            fail("MesosMaster did not expose its state withing 10 sec");
         }
         LOGGER.info("MesosMaster state discovered successfully");
     }
@@ -267,6 +299,31 @@ public class MesosCluster extends ExternalResource {
                 return false;
             } catch (Exception e) {
                 LOGGER.error("An error occured while polling mesos master", e);
+                return false;
+            }
+            return true;
+        }
+    }
+    private static class ContainerEchoRespone implements Callable<Boolean> {
+
+
+        private final String containerId;
+        private final DockerClient dockerClient;
+
+        public ContainerEchoRespone(DockerClient dockerClient, String containerId) {
+            this.dockerClient = dockerClient;
+            this.containerId = containerId;
+        }
+
+        @Override
+        public Boolean call() throws Exception {
+            try {
+                ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(containerId)
+                        .withAttachStdout(true).withCmd("echo", "hello-container").exec();
+                InputStream execCmdStream = dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec();
+                assertThat(MesosCluster.consumeAsString(execCmdStream), containsString("hello-container"));
+            } catch (Exception e) {
+                LOGGER.error("An error occured while waiting for container to echo test message", e);
                 return false;
             }
             return true;
