@@ -54,7 +54,7 @@ public class MesosCluster extends ExternalResource {
                         "MESOS_CONTAINERIZERS=docker,mesos",
                         "MESOS_ISOLATOR=cgroups/cpu,cgroups/mem",
                         "MESOS_LOG_DIR=/var/log",
-                        "MESOS_RESOURCES=ports(*):[9200-9200,9300-9300]") // could be made configurable...
+                        "MESOS_RESOURCES=ports(*):[9200-9299,9300-9399]") // could be made configurable...
                 .withVolumes(new Volume("/var/lib/docker/aufs"),
                         new Volume("/var/lib/docker/btrfs")
                         , new Volume("/var/lib/docker/execdriver"),
