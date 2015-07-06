@@ -5,15 +5,25 @@ import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.StartContainerCmd;
 import com.github.dockerjava.api.model.*;
+import com.jayway.awaitility.core.ConditionTimeoutException;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
+import static com.jayway.awaitility.Awaitility.await;
+import static junit.framework.Assert.fail;
+import static org.hamcrest.CoreMatchers.is;
 
 public class MesosCluster extends ExternalResource {
 
-    Logger log = Logger.getLogger(MesosCluster.class);
+    static Logger LOGGER = Logger.getLogger(MesosCluster.class);
 
     // TODO pull that docker image from Dockerhub -> take version which matches the docker host file storage e.g. aufs (still to create mesos-local-aufs and all other images)
     public String mesosLocalImage = "mesos-local";
@@ -28,8 +38,10 @@ public class MesosCluster extends ExternalResource {
 
     public StartContainerCmd startContainerCmd;
 
-    public MesosCluster(int numberOfSlaves) {
-        this(MesosClusterConfig.builder().defaultDockerClient().numberOfSlaves(numberOfSlaves).build());
+    public String dockerHost;
+
+    public MesosCluster(int numberOfSlaves, String slaveConfig) {
+        this(MesosClusterConfig.builder().defaultDockerClient().numberOfSlaves(numberOfSlaves).slaveResources(slaveConfig).build());
     }
 
     public MesosCluster(MesosClusterConfig config) {
@@ -40,12 +52,12 @@ public class MesosCluster extends ExternalResource {
 
     public void start() {
         String containerName = "mini_mesos_cluster_" + new SecureRandom().nextInt();
-        log.debug("*****************************         Creating container \"" + containerName + "\"         *****************************");
+        LOGGER.debug("*****************************         Creating container \"" + containerName + "\"         *****************************");
 
         createContainerResponse = dockerClient.createContainerCmd(mesosLocalImage)
                 .withName(containerName)
-                .withExposedPorts(ExposedPort.parse("5050"), ExposedPort.parse("2181"))
-                .withPortBindings(PortBinding.parse("0.0.0.0:5050:5050"), PortBinding.parse("0.0.0.0:2181:2181"))
+                .withExposedPorts(ExposedPort.parse(config.mesosMasterPort.toString()), ExposedPort.parse("2181"))
+                .withPortBindings(PortBinding.parse("0.0.0.0:" + config.mesosMasterPort + ":" + config.mesosMasterPort), PortBinding.parse("0.0.0.0:2181:2181"))
                 .withPrivileged(true)
                 .withEnv("NUMBER_OF_SLAVES=" + config.numberOfSlaves,
                         "MESOS_QUORUM=1",
@@ -53,8 +65,8 @@ public class MesosCluster extends ExternalResource {
                         "MESOS_EXECUTOR_REGISTRATION_TIMEOUT=5mins",
                         "MESOS_CONTAINERIZERS=docker,mesos",
                         "MESOS_ISOLATOR=cgroups/cpu,cgroups/mem",
-                        "MESOS_LOG_DIR=/var/log",
-                        "MESOS_RESOURCES=ports(*):[9200-9299,9300-9399]") // could be made configurable...
+                        "MESOS_LOG_DIR=/var/LOGGER",
+                        "MESOS_RESOURCES=" + config.slaveResources) // could be made configurable...
                 .withVolumes(new Volume("/var/lib/docker/aufs"),
                         new Volume("/var/lib/docker/btrfs")
                         , new Volume("/var/lib/docker/execdriver"),
@@ -83,18 +95,26 @@ public class MesosCluster extends ExternalResource {
 
         startContainerCmd = dockerClient.startContainerCmd(createContainerResponse.getId());
         startContainerCmd.exec();
+
+        assertMesosMasterStateCanBePulled(new MesosClusterStateResponse(config));
     }
 
     public void stop() {
         for (String containerName : containerNames) {
             try {
-                log.debug("*****************************         Removing container \"" + containerName + "\"         *****************************");
+                LOGGER.debug("*****************************         Removing container \"" + containerName + "\"         *****************************");
 
                 dockerClient.removeContainerCmd(containerName).withForce().exec();
             } catch (DockerException ignore) {
                 ignore.printStackTrace();
             }
         }
+    }
+
+
+    public JSONObject getStateInfo() throws UnirestException {
+
+        return Unirest.get("http://" + config.dockerHost.getHost() + ":" + config.mesosMasterPort + "/state.json").asJson().getBody().getObject();
     }
 
 
@@ -109,5 +129,43 @@ public class MesosCluster extends ExternalResource {
         stop();
     }
 
+
+    private void assertMesosMasterStateCanBePulled(MesosClusterStateResponse mesosMasterStateResponse) {
+        try {
+            await().atMost(10, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS).until(mesosMasterStateResponse, is(true));
+        } catch (ConditionTimeoutException e) {
+            stop();
+            fail("MesosMaster did not expose its state withing 5 minutes");
+        }
+        LOGGER.info("MesosMaster state discovered successfully");
+    }
+
+    private static class MesosClusterStateResponse implements Callable<Boolean> {
+
+
+        private final MesosClusterConfig config;
+
+        public MesosClusterStateResponse(MesosClusterConfig config) {
+            this.config = config;
+        }
+
+        @Override
+        public Boolean call() throws Exception {
+            try {
+                int activated_slaves = Unirest.get("http://" + config.dockerHost.getHost() + ":" + config.mesosMasterPort + "/state.json").asJson().getBody().getObject().getInt("activated_slaves");
+                if (!(activated_slaves == config.numberOfSlaves)) {
+                    LOGGER.info("Waiting for " + config.numberOfSlaves + " activated slaves - current number of activated slaves: " + activated_slaves);
+                    return false;
+                }
+            } catch (UnirestException e) {
+                LOGGER.info("Polling MesosMaster state on host: \"" + config.dockerHost.getHost() + ":" + config.mesosMasterPort + "\"...");
+                return false;
+            } catch (Exception e) {
+                LOGGER.error("An error occured while polling mesos master", e);
+                return false;
+            }
+            return true;
+        }
+    }
 
 }

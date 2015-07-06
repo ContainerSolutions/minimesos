@@ -1,28 +1,22 @@
 package org.apache.mesos.mini;
 
-import com.github.dockerjava.api.command.InspectExecCmd;
-import com.github.dockerjava.api.command.InspectExecResponse;
+import org.json.JSONObject;
 import org.junit.*;
 
 public class MesosClusterTest {
 
     @Rule
-    public MesosCluster cluster = new MesosCluster(3);
+    public MesosCluster cluster = new MesosCluster(3, "ports(*):[9200-9299,9300-9399]");
 
 
 
 
     @Test
-    public void mesosClusterCanBeStarted() {
+    public void mesosClusterCanBeStarted () throws Exception{
 
-//        InspectExecResponse inspectResponse = cluster.dockerClient.inspectExecCmd(cluster.startContainerCmd.getContainerId()).exec();
-//        InspectExecResponse inspectResponse = cluster.dockerClient.inspectExecCmd(cluster.createContainerResponse.getId()).exec();
+        JSONObject stateInfo = cluster.getStateInfo();
 
-
-
-
-
-        Assert.assertNotNull(cluster.startContainerCmd.getContainerId());
+        Assert.assertEquals(3, stateInfo.getInt("activated_slaves"));
     }
 
 }
