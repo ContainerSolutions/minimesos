@@ -166,9 +166,10 @@ public class MesosCluster extends ExternalResource {
     }
 
     private String startPrivateRegistryContainer() {
+        String registryTag = "0.9.1";
         String registryContainerName = "registry_" + new SecureRandom().nextInt();
         LOGGER.debug("*****************************         Pulling image \"" + registryImage + "\"         *****************************");
-        InputStream responsePullImages = dockerClient.pullImageCmd(registryImage).withTag("0.9.1").exec();
+        InputStream responsePullImages = dockerClient.pullImageCmd(registryImage).withTag(registryTag).exec();
         String fullLog = asString(responsePullImages);
         assertThat(fullLog, anyOf(containsString("Download complete"), containsString("Already exists")));
 
@@ -180,9 +181,9 @@ public class MesosCluster extends ExternalResource {
             registryStorageRootDir.mkdir();
         }
         LOGGER.debug("*****************************         Creating container \"" + registryContainerName + "\"         *****************************");
-        createRegistryContainerResponse = dockerClient.createContainerCmd(registryImage)
+        createRegistryContainerResponse = dockerClient.createContainerCmd(registryImage + ":" + registryTag)
                 .withName(registryContainerName)
-                .withExposedPorts(ExposedPort.parse("5000"))
+                .withExposedPorts(ExposedPort.parse(config.privateRegistryPort.toString()))
                 .withEnv("STORAGE_PATH=/var/lib/registry")
                 .withVolumes(new Volume("/var/lib/registry"))
                 .withBinds(Bind.parse(registryStorageRootDir.getAbsolutePath() + ":/var/lib/registry:rw"))
@@ -301,6 +302,7 @@ public class MesosCluster extends ExternalResource {
             return true;
         }
     }
+
     private static class ContainerEchoRespone implements Callable<Boolean> {
 
 
