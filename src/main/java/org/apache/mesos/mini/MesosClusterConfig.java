@@ -85,12 +85,15 @@ public class MesosClusterConfig {
                 throw new IllegalStateException("At least one slave is required to run a mesos cluster");
             }
 
-            if (slaveResources.length != numberOfSlaves){
+            if (slaveResources.length != numberOfSlaves) {
                 throw new IllegalStateException("Please provide one resource config for each slave");
             }
 
             if (dockerClient == null) {
-                throw new IllegalStateException("Specify a docker ");
+                defaultDockerClient();
+                if (dockerClient == null) {
+                    throw new IllegalStateException("Specify a docker client");
+                }
             }
 
             return new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, dockerHost, mesosMasterPort, dindImages);
