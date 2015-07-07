@@ -115,7 +115,7 @@ public class MesosCluster extends ExternalResource {
         for (String image : config.dindImages) {
             String imageWithPrivateRepoName = "localhost:" + config.privateRegistryPort + "/" + image;
             LOGGER.debug("*****************************         Tagging image \"" + imageWithPrivateRepoName + "\"         *****************************");
-            dockerClient.tagImageCmd(mesosLocalImage, imageWithPrivateRepoName, "systemtest").withForce(true).exec();
+            dockerClient.tagImageCmd(image, imageWithPrivateRepoName, "systemtest").withForce(true).exec();
             LOGGER.debug("*****************************         Pushing image \"" + imageWithPrivateRepoName + ":systemtest\" to private registry        *****************************");
             InputStream responsePushImage = dockerClient.pushImageCmd(imageWithPrivateRepoName).withTag("systemtest").exec();
 
@@ -141,6 +141,8 @@ public class MesosCluster extends ExternalResource {
                         "MESOS_ISOLATOR=cgroups/cpu,cgroups/mem",
                         "MESOS_LOG_DIR=/var/log",
                         "MESOS_RESOURCES=" + config.slaveResources) // could be made configurable...
+                .withVolumes(new Volume("/sys/fs/cgroup"))
+                .withBinds(Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup:rw"))
                 .exec();
 
 
