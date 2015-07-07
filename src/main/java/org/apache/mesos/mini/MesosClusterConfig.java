@@ -4,7 +4,6 @@ package org.apache.mesos.mini;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
-import com.sun.xml.internal.ws.encoding.ContentTypeImpl;
 
 import java.net.URI;
 
