@@ -11,13 +11,13 @@ public class MesosClusterConfig {
 
     public final DockerClient dockerClient;
     public final int numberOfSlaves;
-    public final String slaveResources;
+    public final String[] slaveResources;
     public final URI dockerHost;
     public final Integer mesosMasterPort;
     public final Integer privateRegistryPort = 5000;
     public final String[] dindImages;
 
-    private MesosClusterConfig(DockerClient dockerClient, int numberOfSlaves, String slaveResources, URI dockerHost, Integer mesosMasterPort, String[] dindImages) {
+    private MesosClusterConfig(DockerClient dockerClient, int numberOfSlaves, String[] slaveResources, URI dockerHost, Integer mesosMasterPort, String[] dindImages) {
         this.dockerClient = dockerClient;
         this.numberOfSlaves = numberOfSlaves;
         this.slaveResources = slaveResources;
@@ -35,7 +35,7 @@ public class MesosClusterConfig {
 
         DockerClient dockerClient;
         int numberOfSlaves = 3;
-        String slaveResources;
+        String[] slaveResources = new String[]{};
         private URI dockerHost;
         Integer mesosMasterPort = Integer.valueOf(5050);
         private String[] dindImages = new String[]{};
@@ -55,7 +55,7 @@ public class MesosClusterConfig {
             return this;
         }
 
-        public Builder slaveResources(String slaveResources) {
+        public Builder slaveResources(String[] slaveResources) {
             this.slaveResources = slaveResources;
             return this;
         }
@@ -83,6 +83,10 @@ public class MesosClusterConfig {
 
             if (numberOfSlaves <= 0) {
                 throw new IllegalStateException("At least one slave is required to run a mesos cluster");
+            }
+
+            if (slaveResources.length != numberOfSlaves){
+                throw new IllegalStateException("Please provide one resource config for each slave");
             }
 
             if (dockerClient == null) {

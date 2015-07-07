@@ -51,11 +51,6 @@ public class MesosCluster extends ExternalResource {
     public StartContainerCmd startMesosClusterContainerCmd;
     private StartContainerCmd startRegistryContainerCmd;
 
-    public String dockerHost;
-
-    public MesosCluster(int numberOfSlaves, String slaveConfig, String[] dindImages) {
-        this(MesosClusterConfig.builder().defaultDockerClient().numberOfSlaves(numberOfSlaves).slaveResources(slaveConfig).dockerInDockerImages(dindImages).build());
-    }
 
     public MesosCluster(MesosClusterConfig config) {
         this.config = config;
@@ -140,7 +135,7 @@ public class MesosCluster extends ExternalResource {
                         "MESOS_CONTAINERIZERS=docker,mesos",
                         "MESOS_ISOLATOR=cgroups/cpu,cgroups/mem",
                         "MESOS_LOG_DIR=/var/log",
-                        "MESOS_RESOURCES=" + config.slaveResources) // could be made configurable...
+                        "MESOS_RESOURCES=" + config.slaveResources[0]) // TODO make list and parse that list
                 .withVolumes(new Volume("/sys/fs/cgroup"))
                 .withBinds(Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup:rw"))
                 .exec();

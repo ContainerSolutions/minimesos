@@ -6,7 +6,10 @@ import org.junit.*;
 public class MesosClusterTest {
 
     @ClassRule
-    public static MesosCluster cluster = new MesosCluster(3, "ports(*):[9200-9299,9300-9399]", new String[]{"mesos/elasticsearch-executor"});
+    public static MesosCluster cluster = new MesosCluster(MesosClusterConfig.builder()
+            .numberOfSlaves(3)
+            .slaveResources(new String[]{"ports(*):[9200-9200,9300-9300]","ports(*):[9201-9201,9301-9301]","ports(*):[9202-9202,9302-9302]"})
+            .dockerInDockerImages(new String[]{"mesos/elasticsearch-executor"}).build());
 
 
     @Test
