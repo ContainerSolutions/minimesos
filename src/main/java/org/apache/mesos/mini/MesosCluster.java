@@ -2,9 +2,7 @@ package org.apache.mesos.mini;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerException;
-import com.github.dockerjava.api.command.CreateContainerResponse;
-import com.github.dockerjava.api.command.ExecCreateCmdResponse;
-import com.github.dockerjava.api.command.StartContainerCmd;
+import com.github.dockerjava.api.command.*;
 import com.github.dockerjava.api.model.*;
 import com.jayway.awaitility.core.ConditionTimeoutException;
 import com.mashape.unirest.http.Unirest;
@@ -30,6 +28,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.notNullValue;
 
 public class MesosCluster extends ExternalResource {
 
@@ -42,6 +41,8 @@ public class MesosCluster extends ExternalResource {
     private ArrayList<String> containerNames = new ArrayList<String>();
 
     final private MesosClusterConfig config;
+
+    public String mesosMasterIP;
 
     public DockerClient dockerClient;
 
@@ -73,6 +74,9 @@ public class MesosCluster extends ExternalResource {
             // start the container
             startMesosLocalContainer(registryContainerName);
 
+            // determine mesos-master ip
+            mesosMasterIP = determineMesosMasterIp();
+
             // we have to pull the dind images and re-tag the images so they get their original name
             pullDindImagesAndRetagWithoutRepoAndLatestTag();
 
@@ -83,6 +87,14 @@ public class MesosCluster extends ExternalResource {
             LOGGER.error("Error during startup", e);
             stop(); // cleanup and remove started containers
         }
+    }
+
+    private String determineMesosMasterIp() {
+        InspectContainerResponse inspectContainerResponse = dockerClient.inspectContainerCmd(createMesosClusterContainerResponse.getId()).exec();
+
+        assertThat(inspectContainerResponse.getNetworkSettings().getIpAddress(), notNullValue());
+
+        return inspectContainerResponse.getNetworkSettings().getIpAddress();
     }
 
     private void pullDindImagesAndRetagWithoutRepoAndLatestTag() {
@@ -224,6 +236,10 @@ public class MesosCluster extends ExternalResource {
         return Unirest.get("http://" + config.dockerHost.getHost() + ":" + config.mesosMasterPort + "/state.json").asJson().getBody().getObject();
     }
 
+
+    public String getMesosMasterURL(){
+        return mesosMasterIP + ":" + config.mesosMasterPort;
+    }
 
     // For usage as JUnit rule...
     @Override

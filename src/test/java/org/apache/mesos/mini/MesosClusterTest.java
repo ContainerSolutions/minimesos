@@ -24,8 +24,11 @@ public class MesosClusterTest {
     public void mesosClusterCanBeStarted2() throws Exception {
 
          JSONObject stateInfo = cluster.getStateInfo();
-
         Assert.assertEquals(3, stateInfo.getInt("activated_slaves"));
+
+
+        String mesosMasterUrl = cluster.getMesosMasterURL();
+        Assert.assertTrue(mesosMasterUrl.contains(":5050"));
     }
 
 }
