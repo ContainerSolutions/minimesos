@@ -17,12 +17,12 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsString;
 
 public class MesosCluster extends ExternalResource {
 
     public static Logger LOGGER = Logger.getLogger(MesosCluster.class);
+
     public final DockerUtil dockerUtil;
 
     private ArrayList<String> containerIds = new ArrayList<String>();
@@ -77,7 +77,7 @@ public class MesosCluster extends ExternalResource {
     }
 
     private void startProxy() {
-        pullImage("paintedfox/tinyproxy", "latest");
+        dockerUtil.pullImage("paintedfox/tinyproxy", "latest");
 
         CreateContainerCmd command = dockerClient.createContainerCmd("paintedfox/tinyproxy").withPortBindings(PortBinding.parse("0.0.0.0:8888:8888"));
 
@@ -176,19 +176,11 @@ public class MesosCluster extends ExternalResource {
         return registryStorageRootDir;
     }
 
-    private void pullImage(String imageName, String registryTag) {
-        LOGGER.debug("*****************************         Pulling image \"" + imageName + "\"         *****************************");
-
-        InputStream responsePullImages = dockerClient.pullImageCmd(imageName).withTag(registryTag).exec();
-        String fullLog = DockerUtil.consumeInputStream(responsePullImages);
-        assertThat(fullLog, anyOf(containsString("Download complete"), containsString("Already exists")));
-    }
-
     private String startPrivateRegistryContainer() {
         final String REGISTRY_IMAGE_NAME = "registry";
         final String REGISTRY_TAG = "0.9.1";
 
-        pullImage(REGISTRY_IMAGE_NAME, REGISTRY_TAG);
+        dockerUtil.pullImage(REGISTRY_IMAGE_NAME, REGISTRY_TAG);
 
         CreateContainerCmd command = dockerClient.createContainerCmd(REGISTRY_IMAGE_NAME + ":" + REGISTRY_TAG)
                 .withName(generateRegistryContainerName())

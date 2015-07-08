@@ -8,6 +8,7 @@ import com.github.dockerjava.api.command.StartContainerCmd;
 import com.jayway.awaitility.core.ConditionTimeoutException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
+import org.apache.log4j.Logger;
 import org.apache.mesos.mini.MesosCluster;
 import org.apache.mesos.mini.MesosClusterConfig;
 
@@ -21,13 +22,17 @@ import java.util.concurrent.TimeUnit;
 import static com.jayway.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
 
 /**
- * Created by flg on 07/07/15.
+ * Utility for Docker related tasks such as pulling images and reading output.
  */
 public class DockerUtil {
+
+    public static Logger LOGGER = Logger.getLogger(MesosCluster.class);
+
     private final DockerClient dockerClient;
 
     public DockerUtil(DockerClient dockerClient) {
@@ -100,5 +105,13 @@ public class DockerUtil {
                 .pollInterval(1, TimeUnit.SECONDS)
                 .until(new ContainerEchoResponse(dockerClient, containerId), is(true));
 
+    }
+
+    public void pullImage(String imageName, String registryTag) {
+        LOGGER.debug("*****************************         Pulling image \"" + imageName + "\"         *****************************");
+
+        InputStream responsePullImages = dockerClient.pullImageCmd(imageName).withTag(registryTag).exec();
+        String fullLog = DockerUtil.consumeInputStream(responsePullImages);
+        assertThat(fullLog, anyOf(containsString("Download complete"), containsString("Already exists")));
     }
 }
