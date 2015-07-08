@@ -67,7 +67,7 @@ public class MesosCluster extends ExternalResource {
             pushDindImagesToPrivateRegistry();
 
             // builds the mesos-local image
-            dockerUtil.buildImageFromFolder(mesosLocalImage);
+            dockerUtil.buildImageFromFolder(mesosLocalImage, mesosLocalImage);
 
             // start the container
             startMesosLocalContainer(registryContainerName);
@@ -82,7 +82,7 @@ public class MesosCluster extends ExternalResource {
             assertMesosMasterStateCanBePulled(new MesosClusterStateResponse(getMesosMasterURL(), config.numberOfSlaves));
 
 
-        } catch (Error e) {
+        } catch (Throwable e) {
             LOGGER.error("Error during startup", e);
             stop(); // cleanup and remove started containers
         }
@@ -99,12 +99,12 @@ public class MesosCluster extends ExternalResource {
             }
 
             ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(createMesosClusterContainerResponse.getId())
-                    .withAttachStdout(true).withCmd("docker", "pull", "private-registry:" + config.privateRegistryPort + "/" + image + ":systemtest").exec();
+                    .withAttachStdout(true).withCmd("docker", "pull", "private-registry:5000/" + image + ":systemtest").exec();
             InputStream execCmdStream = dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec();
             assertThat(DockerUtil.consumeInputStream(execCmdStream), containsString("Download complete"));
 
             execCreateCmdResponse = dockerClient.execCreateCmd(createMesosClusterContainerResponse.getId())
-                    .withAttachStdout(true).withCmd("docker", "tag", "private-registry:" + config.privateRegistryPort + "/" + image + ":systemtest", image + ":latest").exec();
+                    .withAttachStdout(true).withCmd("docker", "tag", "private-registry:5000/" + image + ":systemtest", image + ":latest").exec();
             execCmdStream = dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec();
             DockerUtil.consumeInputStream(execCmdStream);
         }
@@ -112,7 +112,7 @@ public class MesosCluster extends ExternalResource {
 
     private void pushDindImagesToPrivateRegistry() {
         for (String image : config.dindImages) {
-            String imageWithPrivateRepoName = "localhost:" + config.privateRegistryPort + "/" + image;
+            String imageWithPrivateRepoName =  "localhost:" + config.privateRegistryPort + "/" + image;
             LOGGER.debug("*****************************         Tagging image \"" + imageWithPrivateRepoName + "\"         *****************************");
             dockerClient.tagImageCmd(image, imageWithPrivateRepoName, "systemtest").withForce(true).exec();
             LOGGER.debug("*****************************         Pushing image \"" + imageWithPrivateRepoName + ":systemtest\" to private registry        *****************************");
@@ -142,8 +142,6 @@ public class MesosCluster extends ExternalResource {
 
         createMesosClusterContainerResponse = dockerClient.createContainerCmd(mesosLocalImage)
                 .withName(mesosClusterContainerName)
-                .withExposedPorts(ExposedPort.parse(config.mesosMasterPort.toString()), ExposedPort.parse("2181"))
-                .withPortBindings(PortBinding.parse("0.0.0.0:" + config.mesosMasterPort + ":" + config.mesosMasterPort), PortBinding.parse("0.0.0.0:2181:2181"))
                 .withPrivileged(true)
                 .withLinks(Link.parse(registryContainerName + ":private-registry"))
                 .withEnv(envs.toArray(new String[]{})) // TODO make list and parse that list
@@ -181,7 +179,7 @@ public class MesosCluster extends ExternalResource {
         // Step 2: Create, configure and run the container
         // We need to configure it by setting a private repository
         // so that subsequent docker pushes of DinD-images will be faster
-        String registryContainerName = "registry_" + new SecureRandom().nextInt(); // TODO refactor into "generateUniqueContainerName"
+        String registryContainerName = "registry_mini_mesos_" + new SecureRandom().nextInt(); // TODO refactor into "generateUniqueContainerName"
         File registryStorageRootDir = new File(".registry"); // TODO factor out into "createRegistryStorageDir"
 
         if (!registryStorageRootDir.exists()) {
@@ -191,11 +189,11 @@ public class MesosCluster extends ExternalResource {
         LOGGER.debug("*****************************         Creating container \"" + registryContainerName + "\"         *****************************");
         createRegistryContainerResponse = dockerClient.createContainerCmd(registryImage + ":" + registryTag)
                 .withName(registryContainerName)
-                .withExposedPorts(ExposedPort.parse(config.privateRegistryPort.toString()))
+                .withExposedPorts(ExposedPort.parse("5000"))
                 .withEnv("STORAGE_PATH=/var/lib/registry")
                 .withVolumes(new Volume("/var/lib/registry"))
                 .withBinds(Bind.parse(registryStorageRootDir.getAbsolutePath() + ":/var/lib/registry:rw"))
-                .withPortBindings(PortBinding.parse(config.privateRegistryPort + ":" + config.privateRegistryPort))
+                .withPortBindings(PortBinding.parse("0.0.0.0:" + config.privateRegistryPort + ":5000"))
                 .exec();
 
         containerNames.add(0, registryContainerName);
@@ -230,7 +228,7 @@ public class MesosCluster extends ExternalResource {
 
     public JSONObject getStateInfo() throws UnirestException {
 
-        return Unirest.get("http://" + config.dockerHost.getHost() + ":" + config.mesosMasterPort + "/state.json").asJson().getBody().getObject();
+        return Unirest.get("http://" + mesosMasterIP + ":" + config.mesosMasterPort + "/state.json").asJson().getBody().getObject();
     }
 
 

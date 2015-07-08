@@ -14,16 +14,17 @@ public class MesosClusterConfig {
     public final String[] slaveResources;
     public final URI dockerHost;
     public final Integer mesosMasterPort;
-    public final Integer privateRegistryPort = 5000;
+    public final Integer privateRegistryPort;
     public final String[] dindImages;
 
-    private MesosClusterConfig(DockerClient dockerClient, int numberOfSlaves, String[] slaveResources, URI dockerHost, Integer mesosMasterPort, String[] dindImages) {
+    private MesosClusterConfig(DockerClient dockerClient, int numberOfSlaves, String[] slaveResources, URI dockerHost, Integer mesosMasterPort, String[] dindImages, Integer privateRegistryPort) {
         this.dockerClient = dockerClient;
         this.numberOfSlaves = numberOfSlaves;
         this.slaveResources = slaveResources;
         this.dockerHost = dockerHost;
         this.mesosMasterPort = mesosMasterPort;
         this.dindImages = dindImages;
+        this.privateRegistryPort = privateRegistryPort;
     }
 
 
@@ -36,10 +37,10 @@ public class MesosClusterConfig {
         DockerClient dockerClient;
         int numberOfSlaves = 3;
         String[] slaveResources = new String[]{};
-        private URI dockerHost;
+        URI dockerHost;
         Integer mesosMasterPort = Integer.valueOf(5050);
-        private String[] dindImages = new String[]{};
-
+        Integer privateRegistryPort = Integer.valueOf(5000);
+        String[] dindImages = new String[]{};
 
         private Builder() {
 
@@ -60,6 +61,10 @@ public class MesosClusterConfig {
             return this;
         }
 
+        public Builder privateRegistryPort(int port){
+            this.privateRegistryPort = port;
+            return this;
+        }
 
         public Builder masterPort(int port) {
             this.mesosMasterPort = Integer.valueOf(port);
@@ -89,6 +94,7 @@ public class MesosClusterConfig {
                 throw new IllegalStateException("Please provide one resource config for each slave");
             }
 
+
             if (dockerClient == null) {
                 defaultDockerClient();
                 if (dockerClient == null) {
@@ -96,7 +102,7 @@ public class MesosClusterConfig {
                 }
             }
 
-            return new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, dockerHost, mesosMasterPort, dindImages);
+            return new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, dockerHost, mesosMasterPort, dindImages, privateRegistryPort);
         }
 
 

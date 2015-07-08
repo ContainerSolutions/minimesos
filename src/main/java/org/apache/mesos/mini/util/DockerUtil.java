@@ -59,9 +59,9 @@ public class DockerUtil {
     }
 
     // TODO can we generalize so it takes a directory name and builds from there (so we can reuse for other docker files)
-    public void buildImageFromFolder(String name) {
+    public void buildImageFromFolder(String name, String tag) {
         String fullLog;
-        InputStream responseBuildImage = dockerClient.buildImageCmd(new File(Thread.currentThread().getContextClassLoader().getResource(name).getFile())).withTag(name).exec();
+        InputStream responseBuildImage = dockerClient.buildImageCmd(new File(Thread.currentThread().getContextClassLoader().getResource(name).getFile())).withTag(tag).exec();
 
         fullLog = consumeInputStream(responseBuildImage);
         assertThat(fullLog, containsString("Successfully built"));
