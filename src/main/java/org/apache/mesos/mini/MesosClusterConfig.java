@@ -5,6 +5,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 
+import java.io.File;
 import java.net.URI;
 
 public class MesosClusterConfig {
@@ -72,12 +73,13 @@ public class MesosClusterConfig {
         }
 
         public Builder defaultDockerClient() {
+            DockerClientConfig.DockerClientConfigBuilder builder = DockerClientConfig.createDefaultConfigBuilder();
 
-            DockerClientConfig config = DockerClientConfig.createDefaultConfigBuilder()
-//                    .withVersion("1.18")
-//                    .withUri(hostAddress)
-                    .build();
+            if (new File("/var/run/docker.sock").exists()) {
+                builder.withUri("unix:///var/run/docker.sock");
+            }
 
+            DockerClientConfig config = builder.build();
             this.dockerClient = DockerClientBuilder.getInstance(config).build();
             this.dockerHost = config.getUri();
             return this;
