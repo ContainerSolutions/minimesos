@@ -4,6 +4,9 @@ package org.apache.mesos.mini;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
+import com.mashape.unirest.http.Unirest;
+import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpHost;
 
 import java.io.File;
 import java.net.URI;
@@ -75,11 +78,17 @@ public class MesosClusterConfig {
         public Builder defaultDockerClient() {
             DockerClientConfig.DockerClientConfigBuilder builder = DockerClientConfig.createDefaultConfigBuilder();
 
-            if (new File("/var/run/docker.sock").exists()) {
+            String dockerHostEnv = System.getenv("DOCKER_HOST");
+            if (StringUtils.isBlank(dockerHostEnv)) {
                 builder.withUri("unix:///var/run/docker.sock");
             }
 
             DockerClientConfig config = builder.build();
+
+            if (config.getUri().getScheme().equalsIgnoreCase("tcp")) {
+                HttpHost proxy = new HttpHost(config.getUri().getHost(), 8888);
+                Unirest.setProxy(proxy);
+            }
             this.dockerClient = DockerClientBuilder.getInstance(config).build();
             this.dockerHost = config.getUri();
             return this;

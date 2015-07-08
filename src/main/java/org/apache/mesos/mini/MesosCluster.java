@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
@@ -31,7 +32,11 @@ public class MesosCluster extends ExternalResource {
 
     private String mesosMasterIP;
 
-    private String registryContainerId, mesosLocalContainerId;
+    private String registryContainerId;
+
+    private String mesosLocalContainerId;
+
+    private String proxyContainerId;
 
     public DockerClient dockerClient;
 
@@ -44,6 +49,7 @@ public class MesosCluster extends ExternalResource {
 
     public void start() {
         try {
+            proxyContainerId = startProxy();
 
             // Pulls registry images and start container
             // TODO start the registry only if we have at least one DinD-image to push
@@ -71,6 +77,13 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
+    private String startProxy() {
+        pullImage("paintedfox/tinyproxy", "latest");
+
+        CreateContainerCmd command = dockerClient.createContainerCmd("paintedfox/tinyproxy").withPortBindings(PortBinding.parse("0.0.0.0:8888:8888"));
+
+        return dockerUtil.createAndStart(command);
+    }
 
     private void pullDindImagesAndRetagWithoutRepoAndLatestTag(String mesosClusterContainerId) {
 
@@ -193,8 +206,12 @@ public class MesosCluster extends ExternalResource {
             dockerClient.removeContainerCmd(mesosLocalContainerId).withForce().exec();
             LOGGER.debug("*****************************         Removing container \"" + mesosLocalContainerId + "\"         *****************************");
         }
-    }
 
+        if (proxyContainerId != null) {
+            dockerClient.removeContainerCmd(proxyContainerId).withForce().exec();
+            LOGGER.debug("*****************************         Removing container \"" + proxyContainerId + "\"         *****************************");
+        }
+    }
 
     public JSONObject getStateInfo() throws UnirestException {
 
