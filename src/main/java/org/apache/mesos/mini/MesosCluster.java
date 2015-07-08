@@ -16,8 +16,6 @@ import java.io.InputStream;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 
-import static com.jayway.awaitility.Awaitility.await;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsString;

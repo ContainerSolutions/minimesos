@@ -64,13 +64,18 @@ public class DockerUtil {
         return inspectContainerResponse.getNetworkSettings().getIpAddress();
     }
 
-    // TODO can we generalize so it takes a directory name and builds from there (so we can reuse for other docker files)
-    public void buildImageFromFolder(String name, String tag) {
+    public void buildImageFromFolder(File dir, String tag) {
         String fullLog;
-        InputStream responseBuildImage = dockerClient.buildImageCmd(new File(Thread.currentThread().getContextClassLoader().getResource(name).getFile())).withTag(tag).exec();
+        assert dir.isDirectory();
+        InputStream responseBuildImage = dockerClient.buildImageCmd(dir).withTag(tag).exec();
 
         fullLog = consumeInputStream(responseBuildImage);
         assertThat(fullLog, containsString("Successfully built"));
+    }
+
+    public void buildImageFromFolder(String name, String tag) {
+        File folder = new File(Thread.currentThread().getContextClassLoader().getResource(name).getFile());
+        buildImageFromFolder(folder, tag);
     }
 
     public String createAndStart(CreateContainerCmd createCommand) {
