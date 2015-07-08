@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
@@ -26,17 +25,11 @@ public class MesosCluster extends ExternalResource {
     public static Logger LOGGER = Logger.getLogger(MesosCluster.class);
     public final DockerUtil dockerUtil;
 
-    private ArrayList<String> containerNames = new ArrayList<String>();
+    private ArrayList<String> containerIds = new ArrayList<String>();
 
     final private MesosClusterConfig config;
 
     private String mesosMasterIP;
-
-    private String registryContainerId;
-
-    private String mesosLocalContainerId;
-
-    private String proxyContainerId;
 
     public DockerClient dockerClient;
 
@@ -44,22 +37,29 @@ public class MesosCluster extends ExternalResource {
         this.dockerUtil = new DockerUtil(config.dockerClient);
         this.config = config;
         this.dockerClient = config.dockerClient;
-    }
 
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                LOGGER.info("Running shutdown hook");
+                MesosCluster.this.stop();
+            }
+        });
+    }
 
     public void start() {
         try {
-            proxyContainerId = startProxy();
+            startProxy();
 
             // Pulls registry images and start container
             // TODO start the registry only if we have at least one DinD-image to push
-            registryContainerId = startPrivateRegistryContainer();
+            String registryContainerId = startPrivateRegistryContainer();
 
             // push all docker in docker images with tag system tests to private registry
             pushDindImagesToPrivateRegistry();
 
             // start the container
-            mesosLocalContainerId = startMesosLocalContainer(registryContainerId);
+            String mesosLocalContainerId = startMesosLocalContainer(registryContainerId);
 
             // determine mesos-master ip
             mesosMasterIP =  dockerUtil.getContainerIp(mesosLocalContainerId);
@@ -73,16 +73,17 @@ public class MesosCluster extends ExternalResource {
 
         } catch (Throwable e) {
             LOGGER.error("Error during startup", e);
-            stop(); // cleanup and remove started containers
         }
     }
 
-    private String startProxy() {
+    private void startProxy() {
         pullImage("paintedfox/tinyproxy", "latest");
 
         CreateContainerCmd command = dockerClient.createContainerCmd("paintedfox/tinyproxy").withPortBindings(PortBinding.parse("0.0.0.0:8888:8888"));
 
-        return dockerUtil.createAndStart(command);
+        String containerId = dockerUtil.createAndStart(command);
+
+        containerIds.add(containerId);
     }
 
     private void pullDindImagesAndRetagWithoutRepoAndLatestTag(String mesosClusterContainerId) {
@@ -135,7 +136,11 @@ public class MesosCluster extends ExternalResource {
                 .withVolumes(new Volume("/sys/fs/cgroup"))
                 .withBinds(Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup:rw"));
 
-        return dockerUtil.createAndStart(command);
+        String containerId = dockerUtil.createAndStart(command);
+
+        containerIds.add(containerId);
+
+        return containerId;
     }
 
     private String[] createMesosLocalEnvironment() {
@@ -193,23 +198,17 @@ public class MesosCluster extends ExternalResource {
                 .withBinds(Bind.parse(createRegistryStorageDirectory().getAbsolutePath() + ":/var/lib/registry:rw"))
                 .withPortBindings(PortBinding.parse("0.0.0.0:" + config.privateRegistryPort + ":5000"));
 
-        return dockerUtil.createAndStart(command);
+        String containerId = dockerUtil.createAndStart(command);
+
+        containerIds.add(containerId);
+
+        return containerId;
     }
 
     public void stop() {
-        if(registryContainerId != null) {
-            dockerClient.removeContainerCmd(registryContainerId).withForce().exec();
-            LOGGER.debug("*****************************         Removing container \"" + registryContainerId + "\"         *****************************");
-        }
-
-        if (mesosLocalContainerId != null) {
-            dockerClient.removeContainerCmd(mesosLocalContainerId).withForce().exec();
-            LOGGER.debug("*****************************         Removing container \"" + mesosLocalContainerId + "\"         *****************************");
-        }
-
-        if (proxyContainerId != null) {
-            dockerClient.removeContainerCmd(proxyContainerId).withForce().exec();
-            LOGGER.debug("*****************************         Removing container \"" + proxyContainerId + "\"         *****************************");
+        for (String containerId : containerIds) {
+            dockerClient.removeContainerCmd(containerId).withForce().exec();
+            LOGGER.info("Removing container " + containerId);
         }
     }
 
@@ -229,8 +228,4 @@ public class MesosCluster extends ExternalResource {
         start();
     }
 
-    @Override
-    protected void after() {
-        stop();
-    }
 }

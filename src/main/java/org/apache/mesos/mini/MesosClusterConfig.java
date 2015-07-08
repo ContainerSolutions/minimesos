@@ -85,7 +85,7 @@ public class MesosClusterConfig {
 
             DockerClientConfig config = builder.build();
 
-            if (config.getUri().getScheme().equalsIgnoreCase("tcp")) {
+            if (config.getUri().getScheme().startsWith("http")) {
                 HttpHost proxy = new HttpHost(config.getUri().getHost(), 8888);
                 Unirest.setProxy(proxy);
             }
