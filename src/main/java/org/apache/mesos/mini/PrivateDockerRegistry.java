@@ -2,18 +2,14 @@ package org.apache.mesos.mini;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Volume;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.util.DockerUtil;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
 
 import java.io.File;
-import java.io.InputStream;
 import java.security.SecureRandom;
 
 public class PrivateDockerRegistry {
@@ -27,38 +23,6 @@ public class PrivateDockerRegistry {
         this.dockerClient = dockerClient;
         this.config = config;
         dockerUtil = new DockerUtil(dockerClient);
-    }
-
-    void pullDindImagesAndRetagWithoutRepoAndLatestTag(String mesosClusterContainerId) {
-        for (String image : config.dindImages) {
-            try {
-                Thread.sleep(2000); // we have to wait
-            } catch (InterruptedException e) {
-            }
-
-            ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(mesosClusterContainerId)
-                    .withAttachStdout(true).withCmd("docker", "pull", "private-registry:5000/" + image + ":systemtest").exec();
-            InputStream execCmdStream = dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec();
-            MatcherAssert.assertThat(DockerUtil.consumeInputStream(execCmdStream), Matchers.containsString("Download complete"));
-
-            execCreateCmdResponse = dockerClient.execCreateCmd(mesosClusterContainerId)
-                    .withAttachStdout(true).withCmd("docker", "tag", "private-registry:5000/" + image + ":systemtest", image + ":latest").exec();
-
-            execCmdStream = dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec();
-            DockerUtil.consumeInputStream(execCmdStream);
-        }
-    }
-
-    void pushDindImagesToPrivateRegistry() {
-        for (String image : config.dindImages) {
-            String imageWithPrivateRepoName = "localhost:" + config.privateRegistryPort + "/" + image;
-            LOGGER.debug("*****************************         Tagging image \"" + imageWithPrivateRepoName + "\"         *****************************");
-            dockerClient.tagImageCmd(image, imageWithPrivateRepoName, "systemtest").withForce(true).exec();
-            LOGGER.debug("*****************************         Pushing image \"" + imageWithPrivateRepoName + ":systemtest\" to private registry        *****************************");
-            InputStream responsePushImage = dockerClient.pushImageCmd(imageWithPrivateRepoName).withTag("systemtest").exec();
-
-            MatcherAssert.assertThat(DockerUtil.consumeInputStream(responsePushImage), Matchers.containsString("The push refers to a repository"));
-        }
     }
 
     String generateRegistryContainerName() {
