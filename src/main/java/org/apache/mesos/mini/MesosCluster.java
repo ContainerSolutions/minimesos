@@ -87,10 +87,11 @@ public class MesosCluster extends ExternalResource {
             }
         }
     }
-
+    
     private String startProxy() {
-        // TODO allow disabling pull using system properties to save some development time
-        dockerUtil.pullImage("paintedfox/tinyproxy", "latest");
+        if(System.getProperty("mesos.mini.pull_proxy_image", "true").equals("true")) {
+            dockerUtil.pullImage("paintedfox/tinyproxy", "latest");
+        }
 
         String containerName = "mini-mesos-proxy";
         CreateContainerCmd command = dockerClient.createContainerCmd("paintedfox/tinyproxy")
