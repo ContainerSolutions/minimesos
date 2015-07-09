@@ -93,14 +93,17 @@ public class DockerUtil {
         startMesosClusterContainerCmd.exec();
 
 
-        awaitEchoResponse(containerId);
+        awaitEchoResponse(containerId, createCommand.getName());
 
         return containerId;
     }
 
     public void awaitEchoResponse(String containerId) throws ConditionTimeoutException {
+      awaitEchoResponse(containerId, containerId);
+    }
 
-        await()
+    public void awaitEchoResponse(String containerId, String containerName) throws ConditionTimeoutException {
+        await("Waiting for container: " + containerName)
                 .atMost(10, TimeUnit.SECONDS)
                 .pollInterval(1, TimeUnit.SECONDS)
                 .until(new ContainerEchoResponse(dockerClient, containerId), is(true));
