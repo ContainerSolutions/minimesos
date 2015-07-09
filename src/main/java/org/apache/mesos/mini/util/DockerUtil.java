@@ -10,7 +10,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.MesosCluster;
-import org.apache.mesos.mini.MesosClusterConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,9 +21,7 @@ import java.util.concurrent.TimeUnit;
 import static com.jayway.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 
 /**
  * Utility for Docker related tasks such as pulling images and reading output.
@@ -34,9 +31,17 @@ public class DockerUtil {
     public static Logger LOGGER = Logger.getLogger(MesosCluster.class);
 
     private final DockerClient dockerClient;
+    private ArrayList<String> containerIds = new ArrayList<String>();
 
     public DockerUtil(DockerClient dockerClient) {
         this.dockerClient = dockerClient;
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                LOGGER.info("Running shutdown hook");
+                DockerUtil.this.stop();
+            }
+        });
     }
 
     public static String consumeInputStream(InputStream response) {
@@ -95,6 +100,8 @@ public class DockerUtil {
 
         awaitEchoResponse(containerId);
 
+        containerIds.add(containerId);
+
         return containerId;
     }
 
@@ -113,5 +120,12 @@ public class DockerUtil {
         InputStream responsePullImages = dockerClient.pullImageCmd(imageName).withTag(registryTag).exec();
         String fullLog = DockerUtil.consumeInputStream(responsePullImages);
         assertThat(fullLog, anyOf(containsString("Download complete"), containsString("Already exists")));
+    }
+
+    public void stop() {
+        for (String containerId : containerIds) {
+            dockerClient.removeContainerCmd(containerId).withForce().exec();
+            LOGGER.info("Removing container " + containerId);
+        }
     }
 }

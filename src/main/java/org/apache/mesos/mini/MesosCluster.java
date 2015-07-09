@@ -9,8 +9,6 @@ import org.apache.mesos.mini.util.MesosClusterStateResponse;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
-import java.util.ArrayList;
-
 public class MesosCluster extends ExternalResource {
 
     public static Logger LOGGER = Logger.getLogger(MesosCluster.class);
@@ -21,7 +19,6 @@ public class MesosCluster extends ExternalResource {
     private final PrivateDockerRegistry privateDockerRegistry;
     private final DockerProxy dockerProxy;
     public DockerClient dockerClient;
-    private ArrayList<String> containerIds = new ArrayList<String>();
 
     public MesosCluster(MesosClusterConfig config) {
         this.dockerUtil = new DockerUtil(config.dockerClient);
@@ -30,41 +27,23 @@ public class MesosCluster extends ExternalResource {
         mesosContainer = new MesosContainer(this.dockerClient, this.config);
         privateDockerRegistry = new PrivateDockerRegistry(this.dockerClient, this.config);
         dockerProxy = new DockerProxy(this.dockerClient);
-
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                LOGGER.info("Running shutdown hook");
-                MesosCluster.this.stop();
-            }
-        });
     }
 
     public void start() {
         try {
             String proxyContainerId = dockerProxy.startProxy();
-            containerIds.add(proxyContainerId);
 
             // Pulls registry images and start container
             String registryContainerId = privateDockerRegistry.startPrivateRegistryContainer();
-            containerIds.add(registryContainerId);
 
             // start the container
             String mesosLocalContainerId = mesosContainer.startMesosLocalContainer(registryContainerId);
-            containerIds.add(mesosLocalContainerId);
 
             // wait until the given number of slaves are registered
             new MesosClusterStateResponse(mesosContainer.getMesosMasterURL(), config.numberOfSlaves).waitFor();
 
         } catch (Throwable e) {
             LOGGER.error("Error during startup", e);
-        }
-    }
-
-    public void stop() {
-        for (String containerId : containerIds) {
-            dockerClient.removeContainerCmd(containerId).withForce().exec();
-            LOGGER.info("Removing container " + containerId);
         }
     }
 
