@@ -90,13 +90,13 @@ public class MesosCluster extends ExternalResource {
     }
 
     private void startProxy() {
-        //dockerUtil.pullImage("paintedfox/tinyproxy", "latest");
+        dockerUtil.pullImage("paintedfox/tinyproxy", "latest");
 
         CreateContainerCmd command = dockerClient.createContainerCmd("paintedfox/tinyproxy").withPortBindings(PortBinding.parse("0.0.0.0:8888:8888"));
 
         String containerId = dockerUtil.createAndStart(command);
-
         containerIds.add(containerId);
+
     }
 
     private void pullDindImagesAndRetagWithoutRepoAndLatestTag(String mesosClusterContainerId) {
@@ -212,8 +212,10 @@ public class MesosCluster extends ExternalResource {
 
     public void stop() {
         for (String containerId : containerIds) {
-            dockerClient.removeContainerCmd(containerId).withForce().exec();
-            LOGGER.info("Removing container " + containerId);
+            try {
+                dockerClient.removeContainerCmd(containerId).withForce().exec();
+                LOGGER.info("Removing container " + containerId);
+            } catch (Exception ignore){}
         }
     }
 
