@@ -1,4 +1,4 @@
-package org.apache.mesos.mini;
+package org.apache.mesos.mini.mesos;
 
 
 import com.github.dockerjava.api.DockerClient;

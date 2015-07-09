@@ -1,9 +1,8 @@
-package org.apache.mesos.mini;
+package org.apache.mesos.mini.docker;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.PortBinding;
-import org.apache.mesos.mini.util.DockerUtil;
 
 public class DockerProxy {
     private final DockerClient dockerClient;

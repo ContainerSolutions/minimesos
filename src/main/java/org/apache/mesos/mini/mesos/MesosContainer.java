@@ -1,11 +1,11 @@
-package org.apache.mesos.mini;
+package org.apache.mesos.mini.mesos;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.Volume;
-import org.apache.mesos.mini.util.DockerUtil;
+import org.apache.mesos.mini.docker.DockerUtil;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ public class MesosContainer {
     private final DockerUtil dockerUtil;
     private final DockerClient dockerClient;
     private final MesosClusterConfig clusterConfig;
-    String mesosMasterIP;
+    private String mesosMasterIP;
 
     public MesosContainer(DockerClient dockerClient, MesosClusterConfig clusterConfig) {
         this.dockerClient = dockerClient;

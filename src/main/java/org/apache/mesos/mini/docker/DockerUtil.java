@@ -1,4 +1,4 @@
-package org.apache.mesos.mini.util;
+package org.apache.mesos.mini.docker;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -10,6 +10,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.MesosCluster;
+import org.apache.mesos.mini.util.ContainerEchoResponse;
 
 import java.io.File;
 import java.io.IOException;

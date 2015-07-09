@@ -1,5 +1,6 @@
 package org.apache.mesos.mini;
 
+import org.apache.mesos.mini.mesos.MesosClusterConfig;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.ClassRule;

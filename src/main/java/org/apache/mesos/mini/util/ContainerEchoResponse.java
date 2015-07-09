@@ -3,6 +3,7 @@ package org.apache.mesos.mini.util;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import org.apache.log4j.Logger;
+import org.apache.mesos.mini.docker.DockerUtil;
 
 import java.io.InputStream;
 import java.util.concurrent.Callable;

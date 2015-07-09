@@ -3,6 +3,10 @@ package org.apache.mesos.mini;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.log4j.Logger;
+import org.apache.mesos.mini.docker.DockerProxy;
+import org.apache.mesos.mini.docker.PrivateDockerRegistry;
+import org.apache.mesos.mini.mesos.MesosClusterConfig;
+import org.apache.mesos.mini.mesos.MesosContainer;
 import org.apache.mesos.mini.util.MesosClusterStateResponse;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
@@ -42,7 +46,7 @@ public class MesosCluster extends ExternalResource {
     }
 
     public JSONObject getStateInfo() throws UnirestException {
-        return Unirest.get("http://" + mesosContainer.mesosMasterIP + ":" + config.mesosMasterPort + "/state.json").asJson().getBody().getObject();
+        return Unirest.get("http://" + mesosContainer.getMesosMasterURL() + "/state.json").asJson().getBody().getObject();
     }
 
     public String getMesosMasterURL(){

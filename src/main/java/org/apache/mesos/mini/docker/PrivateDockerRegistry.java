@@ -1,4 +1,4 @@
-package org.apache.mesos.mini;
+package org.apache.mesos.mini.docker;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -7,7 +7,7 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Volume;
 import org.apache.log4j.Logger;
-import org.apache.mesos.mini.util.DockerUtil;
+import org.apache.mesos.mini.mesos.MesosClusterConfig;
 
 import java.io.File;
 import java.security.SecureRandom;
