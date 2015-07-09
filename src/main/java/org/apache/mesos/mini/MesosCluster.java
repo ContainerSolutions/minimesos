@@ -132,21 +132,8 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
-    private String startMesosLocalContainer(String registryContainerName) {
-
-        return mesosContainer.startMesosLocalContainer(registryContainerName);
-    }
-
-    private String[] createMesosLocalEnvironment() {
-        return mesosContainer.createMesosLocalEnvironment();
-    }
-
     private String generateRegistryContainerName() {
         return "registry_" + new SecureRandom().nextInt();
-    }
-
-    private String generateMesosMasterContainerName() {
-        return mesosContainer.generateMesosMasterContainerName();
     }
 
     private File createRegistryStorageDirectory() {
