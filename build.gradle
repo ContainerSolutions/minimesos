@@ -29,8 +29,16 @@ artifacts {
 }
 
 test {
-    def docker_io_url =  System.getProperty("docker.io.url","")
+    def build_images = System.getProperty("mesos.mini.build_images", "true")
+    systemProperty "mesos.mini.build_images", build_images
+    if (build_images) {
+        println "Building docker images"
+    }
+    else {
+        println "Not rebuilding docker images"
+    }
 
+    def docker_io_url =  System.getProperty("docker.io.url","")
     if (docker_io_url != ""){
 
         println "Using docker.io.url $docker_io_url"
