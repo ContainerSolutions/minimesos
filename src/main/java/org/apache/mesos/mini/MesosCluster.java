@@ -243,4 +243,24 @@ public class MesosCluster extends ExternalResource {
         start();
     }
 
+
+    public void waitForState(Predicate<State> predicate, int seconds) {
+        await().atMost(seconds, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                try {
+                    return predicate.test(MesosCluster.this.getStateInfo());
+                }
+                catch(InternalServerErrorException e) {
+                    LOGGER.error(e);
+                    // This probably means that the mesos cluster isn't ready yet..
+                    return false;
+                }
+            }
+        });
+    }
+
+    public void waitForState(Predicate<State> predicate) {
+        waitForState(predicate, 20);
+    }
 }
