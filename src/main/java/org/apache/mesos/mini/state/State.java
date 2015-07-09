@@ -1,19 +1,27 @@
 package org.apache.mesos.mini.state;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
 
+import java.awt.*;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
  * Created by peldan on 09/07/15.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class State {
 
 
-    public static State fromJSON(JSONObject obj) {
+    public static State fromJSON(String jsonString) {
         ObjectMapper mapper = new ObjectMapper();
-        //mapper.p
+        try {
+            return mapper.readValue(jsonString, State.class);
+        } catch (IOException e) {
+            throw new RuntimeException(e); // TODO throw something useful..
+        }
     }
 
     public ArrayList<Framework> getFrameworks() {
@@ -25,4 +33,11 @@ public class State {
     }
 
     private ArrayList<Framework> frameworks = new ArrayList<>();
+
+    public Framework getFramework(String name) {
+        for(Framework fw : getFrameworks()) {
+            if (fw.getName().equals(name)) return fw;
+        }
+        return null;
+    }
 }

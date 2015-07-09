@@ -7,6 +7,7 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.MesosClusterConfig.ImageToBuild;
+import org.apache.mesos.mini.state.State;
 import org.apache.mesos.mini.util.DockerUtil;
 import org.apache.mesos.mini.util.MesosClusterStateResponse;
 import org.json.JSONObject;
@@ -81,13 +82,15 @@ public class MesosCluster extends ExternalResource {
     }
 
     private void buildTestFixureImages() {
-        for (ImageToBuild image : config.imagesToBuild) {
-            dockerUtil.buildImageFromFolder(image.srcFolder,image.tag);
+        if (!System.getProperty("mesos.mini.build_images", "").equals("false")) {
+            for (ImageToBuild image : config.imagesToBuild) {
+                dockerUtil.buildImageFromFolder(image.srcFolder, image.tag);
+            }
         }
     }
 
     private void startProxy() {
-        dockerUtil.pullImage("paintedfox/tinyproxy", "latest");
+        //dockerUtil.pullImage("paintedfox/tinyproxy", "latest");
 
         CreateContainerCmd command = dockerClient.createContainerCmd("paintedfox/tinyproxy").withPortBindings(PortBinding.parse("0.0.0.0:8888:8888"));
 
@@ -214,11 +217,13 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
-    public String getRawStateInfo() throws UnirestException {
-        return Unirest.get("http://" + mesosMasterIP + ":" + config.mesosMasterPort + "/state.json").asString().getBody();
+    public State getStateInfo() throws UnirestException {
+        String json = Unirest.get("http://" + mesosMasterIP + ":" + config.mesosMasterPort + "/state.json").asString().getBody();
+
+        return State.fromJSON(json);
     }
 
-    public JSONObject getStateInfo() throws UnirestException {
+    public JSONObject getStateInfoJSON() throws UnirestException {
 
         return Unirest.get("http://" + mesosMasterIP + ":" + config.mesosMasterPort + "/state.json").asJson().getBody().getObject();
     }

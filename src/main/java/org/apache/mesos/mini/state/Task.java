@@ -1,8 +1,11 @@
 package org.apache.mesos.mini.state;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * Created by peldan on 09/07/15.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Task {
 
     private String name;

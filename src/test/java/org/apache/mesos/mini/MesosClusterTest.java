@@ -20,7 +20,7 @@ public class MesosClusterTest {
     @Test
     public void mesosClusterCanBeStarted() throws Exception {
 
-        JSONObject stateInfo = cluster.getStateInfo();
+        JSONObject stateInfo = cluster.getStateInfoJSON();
 
         Assert.assertEquals(3, stateInfo.getInt("activated_slaves"));
     }
@@ -28,7 +28,7 @@ public class MesosClusterTest {
     @Test
     public void mesosClusterCanBeStarted2() throws Exception {
 
-         JSONObject stateInfo = cluster.getStateInfo();
+         JSONObject stateInfo = cluster.getStateInfoJSON();
         Assert.assertEquals(3, stateInfo.getInt("activated_slaves"));
 
 
