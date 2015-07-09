@@ -90,7 +90,7 @@ public class MesosCluster extends ExternalResource {
     }
 
     private void startProxy() {
-        //dockerUtil.pullImage("paintedfox/tinyproxy", "latest");
+        dockerUtil.pullImage("paintedfox/tinyproxy", "latest");
 
         CreateContainerCmd command = dockerClient.createContainerCmd("paintedfox/tinyproxy").withPortBindings(PortBinding.parse("0.0.0.0:8888:8888"));
 
