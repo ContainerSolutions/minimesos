@@ -1,6 +1,7 @@
 package org.apache.mesos.mini;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.InternalServerErrorException;
 import com.github.dockerjava.api.command.*;
 import com.github.dockerjava.api.model.*;
 import com.mashape.unirest.http.Unirest;
@@ -17,7 +18,11 @@ import java.io.File;
 import java.io.InputStream;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
+import static com.jayway.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 
@@ -50,35 +55,29 @@ public class MesosCluster extends ExternalResource {
     }
 
     public void start() {
-        try {
-            startProxy();
+        startProxy();
 
-            // build required the images the test might have configured
-            buildTestFixureImages();
+        // build required the images the test might have configured
+        buildTestFixureImages();
 
-            // Pulls registry images and start container
-            // TODO start the registry only if we have at least one DinD-image to push
-            String registryContainerId = startPrivateRegistryContainer();
+        // Pulls registry images and start container
+        // TODO start the registry only if we have at least one DinD-image to push
+        String registryContainerId = startPrivateRegistryContainer();
 
-            // push all docker in docker images with tag system tests to private registry
-            pushDindImagesToPrivateRegistry();
+        // push all docker in docker images with tag system tests to private registry
+        pushDindImagesToPrivateRegistry();
 
-            // start the container
-            String mesosLocalContainerId = startMesosLocalContainer(registryContainerId);
+        // start the container
+        String mesosLocalContainerId = startMesosLocalContainer(registryContainerId);
 
-            // determine mesos-master ip
-            mesosMasterIP =  dockerUtil.getContainerIp(mesosLocalContainerId);
+        // determine mesos-master ip
+        mesosMasterIP =  dockerUtil.getContainerIp(mesosLocalContainerId);
 
-            // we have to pull the dind images and re-tag the images so they get their original name
-            pullDindImagesAndRetagWithoutRepoAndLatestTag(mesosLocalContainerId);
+        // we have to pull the dind images and re-tag the images so they get their original name
+        pullDindImagesAndRetagWithoutRepoAndLatestTag(mesosLocalContainerId);
 
-            // wait until the given number of slaves are registered
-            new MesosClusterStateResponse(getMesosMasterURL(), config.numberOfSlaves).waitFor();
-
-
-        } catch (Throwable e) {
-            LOGGER.error("Error during startup", e);
-        }
+        // wait until the given number of slaves are registered
+        new MesosClusterStateResponse(getMesosMasterURL(), config.numberOfSlaves).waitFor();
     }
 
     private void buildTestFixureImages() {
