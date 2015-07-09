@@ -1,10 +1,10 @@
 version '1.0-SNAPSHOT'
+group = 'com.github.ContainerSolutions'
 
 apply plugin: 'java'
+apply plugin: 'maven'
 
 sourceCompatibility = 1.7
-
-
 
 repositories {
     mavenCentral()
@@ -19,6 +19,14 @@ dependencies {
 
 }
 
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+}
 
 test {
     def docker_io_url =  System.getProperty("docker.io.url","")
