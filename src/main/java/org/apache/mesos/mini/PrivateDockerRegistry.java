@@ -19,6 +19,7 @@ public class PrivateDockerRegistry {
     private final DockerClient dockerClient;
     private final MesosClusterConfig config;
     private final DockerUtil dockerUtil;
+    private String dockerRegistryId;
 
     public PrivateDockerRegistry(DockerClient dockerClient, MesosClusterConfig config) {
         this.dockerClient = dockerClient;
@@ -72,7 +73,7 @@ public class PrivateDockerRegistry {
         return registryStorageRootDir;
     }
 
-    String startPrivateRegistryContainer() {
+    public void startPrivateRegistryContainer() {
         final String REGISTRY_IMAGE_NAME = "registry";
         final String REGISTRY_TAG = "0.9.1";
 
@@ -85,7 +86,10 @@ public class PrivateDockerRegistry {
                 .withVolumes(new Volume("/var/lib/registry"))
                 .withBinds(Bind.parse(createRegistryStorageDirectory().getAbsolutePath() + ":/var/lib/registry:rw"))
                 .withPortBindings(PortBinding.parse("0.0.0.0:" + config.privateRegistryPort + ":5000"));
+        this.dockerRegistryId = dockerUtil.createAndStart(command);
+    }
 
-        return dockerUtil.createAndStart(command);
+    public String getContainerId() {
+        return dockerRegistryId;
     }
 }

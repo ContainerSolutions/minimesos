@@ -31,13 +31,13 @@ public class MesosCluster extends ExternalResource {
 
     public void start() {
         try {
-            String proxyContainerId = dockerProxy.startProxy();
+            dockerProxy.startProxy();
 
             // Pulls registry images and start container
-            String registryContainerId = privateDockerRegistry.startPrivateRegistryContainer();
+            privateDockerRegistry.startPrivateRegistryContainer();
 
             // start the container
-            String mesosLocalContainerId = mesosContainer.startMesosLocalContainer(registryContainerId);
+            mesosContainer.startMesosLocalContainer(privateDockerRegistry.getContainerId());
 
             // wait until the given number of slaves are registered
             new MesosClusterStateResponse(mesosContainer.getMesosMasterURL(), config.numberOfSlaves).waitFor();
