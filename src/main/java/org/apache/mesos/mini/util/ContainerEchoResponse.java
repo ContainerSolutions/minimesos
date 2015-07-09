@@ -2,7 +2,7 @@ package org.apache.mesos.mini.util;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
-import org.apache.mesos.mini.MesosCluster;
+import org.apache.log4j.Logger;
 
 import java.io.InputStream;
 import java.util.concurrent.Callable;
@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.containsString;
 * Created by peldan on 08/07/15.
 */
 public class ContainerEchoResponse implements Callable<Boolean> {
+    private final Logger LOGGER = Logger.getLogger(ContainerEchoResponse.class);
 
 
     private final String containerId;
@@ -32,7 +33,7 @@ public class ContainerEchoResponse implements Callable<Boolean> {
             InputStream execCmdStream = dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec();
             assertThat(DockerUtil.consumeInputStream(execCmdStream), containsString("hello-container"));
         } catch (Exception e) {
-            MesosCluster.LOGGER.error("An error occured while waiting for container to echo test message", e);
+            LOGGER.error("An error occured while waiting for container to echo test message", e);
             return false;
         }
         return true;

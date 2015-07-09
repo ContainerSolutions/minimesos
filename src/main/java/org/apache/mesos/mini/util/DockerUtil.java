@@ -54,7 +54,7 @@ public class DockerUtil {
             while (itr.hasNext()) {
                 String line = itr.next();
                 logwriter.write(line + (itr.hasNext() ? "\n" : ""));
-                MesosCluster.LOGGER.info(line);
+                LOGGER.info(line);
             }
             response.close();
 
@@ -89,7 +89,7 @@ public class DockerUtil {
     }
 
     public String createAndStart(CreateContainerCmd createCommand) {
-        MesosCluster.LOGGER.debug("*****************************         Creating container \"" + createCommand.getName() + "\"         *****************************");
+        LOGGER.debug("*****************************         Creating container \"" + createCommand.getName() + "\"         *****************************");
 
         CreateContainerResponse r = createCommand.exec();
         String containerId = r.getId();

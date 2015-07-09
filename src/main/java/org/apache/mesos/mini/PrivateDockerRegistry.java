@@ -7,6 +7,7 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Volume;
+import org.apache.log4j.Logger;
 import org.apache.mesos.mini.util.DockerUtil;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -16,6 +17,7 @@ import java.io.InputStream;
 import java.security.SecureRandom;
 
 public class PrivateDockerRegistry {
+    private final Logger LOGGER = Logger.getLogger(PrivateDockerRegistry.class);
     private final DockerClient dockerClient;
     private final MesosClusterConfig config;
     private final DockerUtil dockerUtil;
@@ -50,9 +52,9 @@ public class PrivateDockerRegistry {
     void pushDindImagesToPrivateRegistry() {
         for (String image : config.dindImages) {
             String imageWithPrivateRepoName = "localhost:" + config.privateRegistryPort + "/" + image;
-            MesosCluster.LOGGER.debug("*****************************         Tagging image \"" + imageWithPrivateRepoName + "\"         *****************************");
+            LOGGER.debug("*****************************         Tagging image \"" + imageWithPrivateRepoName + "\"         *****************************");
             dockerClient.tagImageCmd(image, imageWithPrivateRepoName, "systemtest").withForce(true).exec();
-            MesosCluster.LOGGER.debug("*****************************         Pushing image \"" + imageWithPrivateRepoName + ":systemtest\" to private registry        *****************************");
+            LOGGER.debug("*****************************         Pushing image \"" + imageWithPrivateRepoName + ":systemtest\" to private registry        *****************************");
             InputStream responsePushImage = dockerClient.pushImageCmd(imageWithPrivateRepoName).withTag("systemtest").exec();
 
             MatcherAssert.assertThat(DockerUtil.consumeInputStream(responsePushImage), Matchers.containsString("The push refers to a repository"));
@@ -67,7 +69,7 @@ public class PrivateDockerRegistry {
         File registryStorageRootDir = new File(".registry");
 
         if (!registryStorageRootDir.exists()) {
-            MesosCluster.LOGGER.info("The private registry storage root directory doesn't exist, creating one...");
+            LOGGER.info("The private registry storage root directory doesn't exist, creating one...");
             registryStorageRootDir.mkdir();
         }
         return registryStorageRootDir;
