@@ -214,6 +214,10 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
+    public String getRawStateInfo() throws UnirestException {
+        return Unirest.get("http://" + mesosMasterIP + ":" + config.mesosMasterPort + "/state.json").asString().getBody();
+    }
+
     public JSONObject getStateInfo() throws UnirestException {
 
         return Unirest.get("http://" + mesosMasterIP + ":" + config.mesosMasterPort + "/state.json").asJson().getBody().getObject();
