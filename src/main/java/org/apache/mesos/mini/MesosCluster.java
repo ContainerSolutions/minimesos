@@ -32,7 +32,7 @@ public class MesosCluster extends ExternalResource {
 
     public final DockerUtil dockerUtil;
 
-    private ArrayList<String> containerIds = new ArrayList<String>();
+    private ArrayList<String> containerNames = new ArrayList<String>();
 
     final private MesosClusterConfig config;
 
@@ -88,17 +88,17 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
-    private void startProxy() {
+    private String startProxy() {
         // TODO allow disabling pull using system properties to save some development time
         dockerUtil.pullImage("paintedfox/tinyproxy", "latest");
 
+        String containerName = "mini-mesos-proxy";
         CreateContainerCmd command = dockerClient.createContainerCmd("paintedfox/tinyproxy")
-                .withName("mini-mesos-proxy") // give the container a new so we can find it in the logs
+                .withName(containerName) // give the container a new so we can find it in the logs
                 .withPortBindings(PortBinding.parse("0.0.0.0:8888:8888"));
 
-        String containerId = dockerUtil.createAndStart(command);
-        containerIds.add(containerId);
-
+        containerNames.add(containerName);
+        return dockerUtil.createAndStart(command);
     }
 
     private void pullDindImagesAndRetagWithoutRepoAndLatestTag(String mesosClusterContainerId) {
@@ -151,11 +151,9 @@ public class MesosCluster extends ExternalResource {
                 .withVolumes(new Volume("/sys/fs/cgroup"))
                 .withBinds(Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup:rw"));
 
-        String containerId = dockerUtil.createAndStart(command);
+        containerNames.add(mesosClusterContainerName);
 
-        containerIds.add(containerId);
-
-        return containerId;
+        return dockerUtil.createAndStart(command);
     }
 
     private String[] createMesosLocalEnvironment() {
@@ -197,26 +195,25 @@ public class MesosCluster extends ExternalResource {
 
         dockerUtil.pullImage(REGISTRY_IMAGE_NAME, REGISTRY_TAG);
 
+        String containerName = generateRegistryContainerName();
         CreateContainerCmd command = dockerClient.createContainerCmd(REGISTRY_IMAGE_NAME + ":" + REGISTRY_TAG)
-                .withName(generateRegistryContainerName())
+                .withName(containerName)
                 .withExposedPorts(ExposedPort.parse("5000"))
                 .withEnv("STORAGE_PATH=/var/lib/registry")
                 .withVolumes(new Volume("/var/lib/registry"))
                 .withBinds(Bind.parse(createRegistryStorageDirectory().getAbsolutePath() + ":/var/lib/registry:rw"))
                 .withPortBindings(PortBinding.parse("0.0.0.0:" + config.privateRegistryPort + ":5000"));
 
-        String containerId = dockerUtil.createAndStart(command);
+        containerNames.add(containerName);
 
-        containerIds.add(containerId);
-
-        return containerId;
+        return dockerUtil.createAndStart(command);
     }
 
     public void stop() {
-        for (String containerId : containerIds) {
+        for (String container : containerNames) {
             try {
-                dockerClient.removeContainerCmd(containerId).withForce().exec();
-                LOGGER.info("Removing container " + containerId);
+                LOGGER.info("Removing container " + container);
+                dockerClient.removeContainerCmd(container).withForce().exec();
             } catch (Exception ignore){}
         }
     }
