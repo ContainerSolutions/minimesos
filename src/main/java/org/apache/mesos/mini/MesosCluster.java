@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.apache.mesos.mini.MesosClusterConfig.ImageToBuild;
 import org.apache.mesos.mini.state.State;
 import org.apache.mesos.mini.util.DockerUtil;
+import org.apache.mesos.mini.util.Predicate;
 import org.apache.mesos.mini.util.MesosClusterStateResponse;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
@@ -20,7 +21,6 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -244,7 +244,7 @@ public class MesosCluster extends ExternalResource {
     }
 
 
-    public void waitForState(Predicate<State> predicate, int seconds) {
+    public void waitForState(final Predicate<State> predicate, int seconds) {
         await().atMost(seconds, TimeUnit.SECONDS).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
