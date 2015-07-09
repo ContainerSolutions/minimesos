@@ -89,9 +89,12 @@ public class MesosCluster extends ExternalResource {
     }
 
     private void startProxy() {
+        // TODO allow disabling pull using system properties to save some development time
         dockerUtil.pullImage("paintedfox/tinyproxy", "latest");
 
-        CreateContainerCmd command = dockerClient.createContainerCmd("paintedfox/tinyproxy").withPortBindings(PortBinding.parse("0.0.0.0:8888:8888"));
+        CreateContainerCmd command = dockerClient.createContainerCmd("paintedfox/tinyproxy")
+                .withName("mini-mesos-proxy") // give the container a new so we can find it in the logs
+                .withPortBindings(PortBinding.parse("0.0.0.0:8888:8888"));
 
         String containerId = dockerUtil.createAndStart(command);
         containerIds.add(containerId);
