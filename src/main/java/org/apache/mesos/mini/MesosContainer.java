@@ -38,7 +38,9 @@ public class MesosContainer {
                 .withVolumes(new Volume("/sys/fs/cgroup"))
                 .withBinds(Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup:rw"));
 
-        return dockerUtil.createAndStart(command);
+        String mesosLocalContainerId = dockerUtil.createAndStart(command);
+        mesosMasterIP = dockerUtil.getContainerIp(mesosLocalContainerId);
+        return mesosLocalContainerId;
     }
 
     String[] createMesosLocalEnvironment() {

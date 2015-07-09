@@ -44,26 +44,13 @@ public class MesosCluster extends ExternalResource {
         try {
             startProxy();
 
-            // build required the images the test might have configured
-            privateDockerRegistry.buildTestFixureImages();
-
             // Pulls registry images and start container
-            // TODO start the registry only if we have at least one DinD-image to push
             String registryContainerId = privateDockerRegistry.startPrivateRegistryContainer();
             containerIds.add(registryContainerId);
-
-            // push all docker in docker images with tag system tests to private registry
-            privateDockerRegistry.pushDindImagesToPrivateRegistry();
 
             // start the container
             String mesosLocalContainerId = mesosContainer.startMesosLocalContainer(registryContainerId);
             containerIds.add(mesosLocalContainerId);
-
-            // determine mesos-master ip
-            mesosContainer.mesosMasterIP = dockerUtil.getContainerIp(mesosLocalContainerId);
-
-            // we have to pull the dind images and re-tag the images so they get their original name
-            privateDockerRegistry.pullDindImagesAndRetagWithoutRepoAndLatestTag(mesosLocalContainerId);
 
             // wait until the given number of slaves are registered
             new MesosClusterStateResponse(mesosContainer.getMesosMasterURL(), config.numberOfSlaves).waitFor();

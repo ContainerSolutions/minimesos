@@ -26,12 +26,6 @@ public class PrivateDockerRegistry {
         dockerUtil = new DockerUtil(dockerClient);
     }
 
-    void buildTestFixureImages() {
-        for (MesosClusterConfig.ImageToBuild image : config.imagesToBuild) {
-            dockerUtil.buildImageFromFolder(image.srcFolder, image.tag);
-        }
-    }
-
     void pullDindImagesAndRetagWithoutRepoAndLatestTag(String mesosClusterContainerId) {
         for (String image : config.dindImages) {
             try {
