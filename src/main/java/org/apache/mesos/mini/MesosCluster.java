@@ -1,8 +1,12 @@
 package org.apache.mesos.mini;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.*;
-import com.github.dockerjava.api.model.*;
+import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.command.ExecCreateCmdResponse;
+import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Volume;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.log4j.Logger;
@@ -25,19 +29,16 @@ public class MesosCluster extends ExternalResource {
     public static Logger LOGGER = Logger.getLogger(MesosCluster.class);
 
     public final DockerUtil dockerUtil;
-
-    private ArrayList<String> containerIds = new ArrayList<String>();
-
+    private final MesosContainer mesosContainer;
     final private MesosClusterConfig config;
-
-    private String mesosMasterIP;
-
     public DockerClient dockerClient;
+    private ArrayList<String> containerIds = new ArrayList<String>();
 
     public MesosCluster(MesosClusterConfig config) {
         this.dockerUtil = new DockerUtil(config.dockerClient);
         this.config = config;
         this.dockerClient = config.dockerClient;
+        mesosContainer = new MesosContainer(this.dockerClient, this.config);
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -63,16 +64,17 @@ public class MesosCluster extends ExternalResource {
             pushDindImagesToPrivateRegistry();
 
             // start the container
-            String mesosLocalContainerId = startMesosLocalContainer(registryContainerId);
+            String mesosLocalContainerId = mesosContainer.startMesosLocalContainer(registryContainerId);
+            containerIds.add(mesosLocalContainerId);
 
             // determine mesos-master ip
-            mesosMasterIP =  dockerUtil.getContainerIp(mesosLocalContainerId);
+            mesosContainer.mesosMasterIP = dockerUtil.getContainerIp(mesosLocalContainerId);
 
             // we have to pull the dind images and re-tag the images so they get their original name
             pullDindImagesAndRetagWithoutRepoAndLatestTag(mesosLocalContainerId);
 
             // wait until the given number of slaves are registered
-            new MesosClusterStateResponse(getMesosMasterURL(), config.numberOfSlaves).waitFor();
+            new MesosClusterStateResponse(mesosContainer.getMesosMasterURL(), config.numberOfSlaves).waitFor();
 
 
         } catch (Throwable e) {
@@ -131,41 +133,12 @@ public class MesosCluster extends ExternalResource {
     }
 
     private String startMesosLocalContainer(String registryContainerName) {
-        final String MESOS_LOCAL_IMAGE = "mesos-local";
 
-        String mesosClusterContainerName = generateMesosMasterContainerName();
-
-        dockerUtil.buildImageFromFolder(MESOS_LOCAL_IMAGE, MESOS_LOCAL_IMAGE);
-
-        CreateContainerCmd command = dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE)
-                .withName(mesosClusterContainerName)
-                .withPrivileged(true)
-                // the registry container will be known as 'private-registry' to mesos-local
-                .withLinks(Link.parse(registryContainerName + ":private-registry"))
-                .withEnv(createMesosLocalEnvironment())
-                .withVolumes(new Volume("/sys/fs/cgroup"))
-                .withBinds(Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup:rw"));
-
-        String containerId = dockerUtil.createAndStart(command);
-
-        containerIds.add(containerId);
-
-        return containerId;
+        return mesosContainer.startMesosLocalContainer(registryContainerName);
     }
 
     private String[] createMesosLocalEnvironment() {
-        ArrayList<String> envs = new ArrayList<String>();
-        envs.add("NUMBER_OF_SLAVES=" + config.numberOfSlaves);
-        envs.add("MESOS_QUORUM=1");
-        envs.add("MESOS_ZK=zk://localhost:2181/mesos");
-        envs.add("MESOS_EXECUTOR_REGISTRATION_TIMEOUT=5mins");
-        envs.add("MESOS_CONTAINERIZERS=docker,mesos");
-        envs.add("MESOS_ISOLATOR=cgroups/cpu,cgroups/mem");
-        envs.add("MESOS_LOG_DIR=/var/log");
-        for (int i = 1; i <= config.numberOfSlaves; i++){
-            envs.add("SLAVE"+i+"_RESOURCES=" + config.slaveResources[i-1]);
-        }
-        return envs.toArray(new String[]{});
+        return mesosContainer.createMesosLocalEnvironment();
     }
 
     private String generateRegistryContainerName() {
@@ -173,7 +146,7 @@ public class MesosCluster extends ExternalResource {
     }
 
     private String generateMesosMasterContainerName() {
-        return "mini_mesos_cluster_" + new SecureRandom().nextInt();
+        return mesosContainer.generateMesosMasterContainerName();
     }
 
     private File createRegistryStorageDirectory() {
@@ -216,12 +189,12 @@ public class MesosCluster extends ExternalResource {
 
     public JSONObject getStateInfo() throws UnirestException {
 
-        return Unirest.get("http://" + mesosMasterIP + ":" + config.mesosMasterPort + "/state.json").asJson().getBody().getObject();
+        return Unirest.get("http://" + mesosContainer.mesosMasterIP + ":" + config.mesosMasterPort + "/state.json").asJson().getBody().getObject();
     }
 
 
     public String getMesosMasterURL(){
-        return mesosMasterIP + ":" + config.mesosMasterPort;
+        return mesosContainer.getMesosMasterURL();
     }
 
     // For usage as JUnit rule...
