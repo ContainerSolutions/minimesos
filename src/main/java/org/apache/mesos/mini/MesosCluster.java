@@ -1,8 +1,6 @@
 package org.apache.mesos.mini;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.model.PortBinding;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.log4j.Logger;
@@ -21,6 +19,7 @@ public class MesosCluster extends ExternalResource {
     private final MesosContainer mesosContainer;
     final private MesosClusterConfig config;
     private final PrivateDockerRegistry privateDockerRegistry;
+    private final DockerProxy dockerProxy;
     public DockerClient dockerClient;
     private ArrayList<String> containerIds = new ArrayList<String>();
 
@@ -30,6 +29,7 @@ public class MesosCluster extends ExternalResource {
         this.dockerClient = config.dockerClient;
         mesosContainer = new MesosContainer(this.dockerClient, this.config);
         privateDockerRegistry = new PrivateDockerRegistry(this.dockerClient, this.config);
+        dockerProxy = new DockerProxy(this.dockerClient);
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -42,7 +42,8 @@ public class MesosCluster extends ExternalResource {
 
     public void start() {
         try {
-            startProxy();
+            String proxyContainerId = dockerProxy.startProxy();
+            containerIds.add(proxyContainerId);
 
             // Pulls registry images and start container
             String registryContainerId = privateDockerRegistry.startPrivateRegistryContainer();
@@ -55,20 +56,9 @@ public class MesosCluster extends ExternalResource {
             // wait until the given number of slaves are registered
             new MesosClusterStateResponse(mesosContainer.getMesosMasterURL(), config.numberOfSlaves).waitFor();
 
-
         } catch (Throwable e) {
             LOGGER.error("Error during startup", e);
         }
-    }
-
-    private void startProxy() {
-        dockerUtil.pullImage("paintedfox/tinyproxy", "latest");
-
-        CreateContainerCmd command = dockerClient.createContainerCmd("paintedfox/tinyproxy").withPortBindings(PortBinding.parse("0.0.0.0:8888:8888"));
-
-        String containerId = dockerUtil.createAndStart(command);
-
-        containerIds.add(containerId);
     }
 
     public void stop() {
