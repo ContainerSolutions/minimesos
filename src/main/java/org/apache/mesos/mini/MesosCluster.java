@@ -6,6 +6,7 @@ import com.github.dockerjava.api.model.*;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.log4j.Logger;
+import org.apache.mesos.mini.MesosClusterConfig.ImageToBuild;
 import org.apache.mesos.mini.util.DockerUtil;
 import org.apache.mesos.mini.util.MesosClusterStateResponse;
 import org.json.JSONObject;
@@ -51,6 +52,9 @@ public class MesosCluster extends ExternalResource {
         try {
             startProxy();
 
+            // build required the images the test might have configured
+            buildTestFixureImages();
+
             // Pulls registry images and start container
             // TODO start the registry only if we have at least one DinD-image to push
             String registryContainerId = startPrivateRegistryContainer();
@@ -73,6 +77,12 @@ public class MesosCluster extends ExternalResource {
 
         } catch (Throwable e) {
             LOGGER.error("Error during startup", e);
+        }
+    }
+
+    private void buildTestFixureImages() {
+        for (ImageToBuild image : config.imagesToBuild) {
+            dockerUtil.buildImageFromFolder(image.srcFolder,image.tag);
         }
     }
 

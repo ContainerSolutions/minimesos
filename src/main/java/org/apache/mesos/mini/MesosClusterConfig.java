@@ -20,8 +20,9 @@ public class MesosClusterConfig {
     public final Integer mesosMasterPort;
     public final Integer privateRegistryPort;
     public final String[] dindImages;
+    public final ImageToBuild[] imagesToBuild;
 
-    private MesosClusterConfig(DockerClient dockerClient, int numberOfSlaves, String[] slaveResources, URI dockerHost, Integer mesosMasterPort, String[] dindImages, Integer privateRegistryPort) {
+    private MesosClusterConfig(DockerClient dockerClient, int numberOfSlaves, String[] slaveResources, URI dockerHost, Integer mesosMasterPort, String[] dindImages, Integer privateRegistryPort, ImageToBuild[] imagesToBuild) {
         this.dockerClient = dockerClient;
         this.numberOfSlaves = numberOfSlaves;
         this.slaveResources = slaveResources;
@@ -29,6 +30,7 @@ public class MesosClusterConfig {
         this.mesosMasterPort = mesosMasterPort;
         this.dindImages = dindImages;
         this.privateRegistryPort = privateRegistryPort;
+        this.imagesToBuild = imagesToBuild;
     }
 
 
@@ -45,6 +47,9 @@ public class MesosClusterConfig {
         Integer mesosMasterPort = Integer.valueOf(5050);
         Integer privateRegistryPort = Integer.valueOf(5000);
         String[] dindImages = new String[]{};
+        ImageToBuild[] imagesToBuild = new ImageToBuild[]{};
+
+
 
         private Builder() {
 
@@ -74,6 +79,11 @@ public class MesosClusterConfig {
             this.mesosMasterPort = Integer.valueOf(port);
             return this;
         }
+        public Builder imagesToBuild(ImageToBuild ... imagesToBuild){
+            this.imagesToBuild = imagesToBuild;
+            return this;
+        }
+
 
         public Builder defaultDockerClient() {
             DockerClientConfig.DockerClientConfigBuilder builder = DockerClientConfig.createDefaultConfigBuilder();
@@ -113,7 +123,7 @@ public class MesosClusterConfig {
                 }
             }
 
-            return new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, dockerHost, mesosMasterPort, dindImages, privateRegistryPort);
+            return new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, dockerHost, mesosMasterPort, dindImages, privateRegistryPort, imagesToBuild);
         }
 
 
@@ -123,5 +133,14 @@ public class MesosClusterConfig {
         }
     }
 
+    public static class ImageToBuild {
+        final File srcFolder;
+        final String tag;
+
+        public ImageToBuild(File srcFolder, String tag) {
+            this.srcFolder = srcFolder;
+            this.tag = tag;
+        }
+    }
 
 }

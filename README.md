@@ -32,6 +32,7 @@ public class MesosClusterTest {
     public static MesosCluster cluster = new MesosCluster(MesosClusterConfig.builder()
             .numberOfSlaves(3)
             .slaveResources(new String[]{"ports(*):[9200-9200,9300-9300]","ports(*):[9201-9201,9301-9301]","ports(*):[9202-9202,9302-9302]"})
+            .imagesToBuild(new ImageToBuild(new File("executor"), "mesos/elasticsearch-executor")) // in our project the executor directory contains the Dockerfile to build the executor 
             .dockerInDockerImages(new String[]{"mesos/elasticsearch-executor"})
             .privateRegistryPort(15000) // Currently you have to choose an unused port by yourself (e.g. unique per Jenkins-Job)
             .build());
@@ -50,7 +51,7 @@ public class MesosClusterTest {
 ```
 
 In this snippet we're configuring the Mesos cluster to start 3 slaves with different resources. We want to make the 
-docker image "mesos/elasticsearch-executor" which is build in a previous build step (could be done in the test setup too)
+docker image "mesos/elasticsearch-executor" which is build automically because we configured it with "imagesToBuild" to
 be available inside the Mesos cluster container. 
 
 Other test cases could call the scheduler directly...

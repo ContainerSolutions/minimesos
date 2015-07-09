@@ -1,8 +1,9 @@
 package org.apache.mesos.mini;
 
-import com.mashape.unirest.http.Unirest;
 import org.json.JSONObject;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.ClassRule;
+import org.junit.Test;
 
 public class MesosClusterTest {
 
@@ -11,6 +12,7 @@ public class MesosClusterTest {
             .numberOfSlaves(3)
             .privateRegistryPort(15000) // Currently you have to choose an available port by yourself
             .slaveResources(new String[]{"ports(*):[9200-9200,9300-9300]", "ports(*):[9201-9201,9301-9301]", "ports(*):[9202-9202,9302-9302]"})
+//            .imagesToBuild(new ImageToBuild(new File("executor"), "mesos/elasticsearch-executor"))
 //            .dockerInDockerImages(new String[]{"mesos/elasticsearch-executor"})
             .build());
 
