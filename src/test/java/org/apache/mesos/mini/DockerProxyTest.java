@@ -70,7 +70,7 @@ public class DockerProxyTest {
 
         @Override
         protected CreateContainerCmd dockerCommand() {
-            return dockerClient.createContainerCmd(HELLO_WORLD_IMAGE).withPortBindings(PortBinding.parse("0.0.0.0:" + PORT + ":" + PORT));
+            return dockerClient.createContainerCmd(HELLO_WORLD_IMAGE).withName("hello-world").withPortBindings(PortBinding.parse("0.0.0.0:" + PORT + ":" + PORT));
         }
     }
 }
