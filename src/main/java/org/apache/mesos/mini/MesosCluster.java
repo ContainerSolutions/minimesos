@@ -1,5 +1,6 @@
 package org.apache.mesos.mini;
 
+import com.github.dockerjava.api.InternalServerErrorException;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.PortBinding;
 import com.mashape.unirest.http.Unirest;
@@ -10,9 +11,16 @@ import org.apache.mesos.mini.docker.DockerUtil;
 import org.apache.mesos.mini.docker.PrivateDockerRegistry;
 import org.apache.mesos.mini.mesos.MesosClusterConfig;
 import org.apache.mesos.mini.mesos.MesosContainer;
+import org.apache.mesos.mini.state.State;
 import org.apache.mesos.mini.util.MesosClusterStateResponse;
+import org.apache.mesos.mini.util.Predicate;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
+import static com.jayway.awaitility.Awaitility.await;
 
 /**
  * Starts the mesos cluster. Responsible for setting up proxy and private docker registry. Once started, users can add
@@ -61,11 +69,37 @@ public class MesosCluster extends ExternalResource {
         return dockerUtil.createAndStart(command);
     }
 
-    public JSONObject getStateInfo() throws UnirestException {
+    public State getStateInfo() throws UnirestException {
+        String json = Unirest.get("http://" + mesosContainer.getMesosMasterURL() + "/state.json").asString().getBody();
+
+        return State.fromJSON(json);
+    }
+
+    public JSONObject getStateInfoJSON() throws UnirestException {
         return Unirest.get("http://" + mesosContainer.getMesosMasterURL() + "/state.json").asJson().getBody().getObject();
     }
 
     public String getMesosMasterURL(){
         return mesosContainer.getMesosMasterURL();
+    }
+
+    public void waitForState(final Predicate<State> predicate, int seconds) {
+        await().atMost(seconds, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                try {
+                    return predicate.test(MesosCluster.this.getStateInfo());
+                }
+                catch(InternalServerErrorException e) {
+                    LOGGER.error(e);
+                    // This probably means that the mesos cluster isn't ready yet..
+                    return false;
+                }
+            }
+        });
+    }
+
+    public void waitForState(Predicate<State> predicate) {
+        waitForState(predicate, 20);
     }
 }

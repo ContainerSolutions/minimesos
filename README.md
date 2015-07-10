@@ -56,14 +56,4 @@ be available inside the Mesos cluster container.
 
 Other test cases could call the scheduler directly...
 
-
-## Known Issues 
-
-When running the tests on a Mac/Windows with boot2docker you have to make sure that your hosts can route packages into that boot2docker vm.
-
-Therefor adding a route might be one way to solve that:
-```bash
- sudo route -n add 172.17.0.0/16 `boot2docker ip`
-
-```
-In this case the network  172.17.0.0/16 is the default internal boot2docke network... You might need to adapt that to your environment...  
+  
