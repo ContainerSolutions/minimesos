@@ -69,7 +69,7 @@ public class MesosCluster extends ExternalResource {
     public String addAndStartContainer(String containerName) {
         DockerUtil dockerUtil = new DockerUtil(config.dockerClient);
         dockerUtil.pullImage(containerName, "latest");
-        CreateContainerCmd command = config.dockerClient.createContainerCmd(containerName).withPortBindings(PortBinding.parse("0.0.0.0:80:80"));
+        CreateContainerCmd command = config.dockerClient.createContainerCmd(containerName);
         return dockerUtil.createAndStart(command);
     }
 
