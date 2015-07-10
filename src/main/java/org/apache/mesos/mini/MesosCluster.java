@@ -30,9 +30,11 @@ public class MesosCluster extends ExternalResource {
     private static Logger LOGGER = Logger.getLogger(MesosCluster.class);
     private final MesosClusterConfig config;
     private MesosContainer mesosContainer;
+    private DockerUtil dockerUtil;
 
     public MesosCluster(MesosClusterConfig config) {
         this.config = config;
+        this.dockerUtil = new DockerUtil(config.dockerClient);
     }
 
     public void start() {
@@ -53,6 +55,8 @@ public class MesosCluster extends ExternalResource {
 
         } catch (Throwable e) {
             LOGGER.error("Error during startup", e);
+            dockerUtil.stop(); // remove all created docker containers (not handled by after then re-throwing e)
+            throw e;
         }
     }
 
@@ -101,5 +105,15 @@ public class MesosCluster extends ExternalResource {
 
     public void waitForState(Predicate<State> predicate) {
         waitForState(predicate, 20);
+    }
+
+    @Override
+    protected void before() throws Throwable {
+            start();
+    }
+
+    @Override
+    protected void after() {
+        dockerUtil.stop();
     }
 }

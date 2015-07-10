@@ -45,7 +45,6 @@ public class MesosClusterTest {
             
     @Test
     public void mesosClusterCanBeStarted() throws Exception {
-        cluster.start();
         JSONObject stateInfo = cluster.getStateInfoJSON();
     
         Assert.assertEquals(3, stateInfo.getInt("activated_slaves"));
@@ -55,9 +54,7 @@ public class MesosClusterTest {
 }
 ```
 
-In this snippet we're configuring the Mesos cluster to start 3 slaves with different resources. We want to make the 
-docker image "mesos/elasticsearch-executor" which is build automically because we configured it with "imagesToBuild" to
-be available inside the Mesos cluster container. 
+In this snippet we're configuring the Mesos cluster to start 3 slaves with different resources. 
 
 Other test cases could call the scheduler directly...
 

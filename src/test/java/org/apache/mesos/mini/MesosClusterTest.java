@@ -2,10 +2,8 @@ package org.apache.mesos.mini;
 
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import org.apache.mesos.mini.docker.DockerUtil;
 import org.apache.mesos.mini.mesos.MesosClusterConfig;
 import org.json.JSONObject;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -21,15 +19,9 @@ public class MesosClusterTest {
     @ClassRule
     public static MesosCluster cluster = new MesosCluster(config);
 
-    @AfterClass
-    public static void callShutdownHook() {
-        new DockerUtil(config.dockerClient).stop();
-    }
 
     @Test
     public void mesosClusterCanBeStarted() throws Exception {
-        cluster.start();
-
         JSONObject stateInfo = cluster.getStateInfoJSON();
 
         Assert.assertEquals(3, stateInfo.getInt("activated_slaves"));
@@ -37,7 +29,6 @@ public class MesosClusterTest {
 
     @Test
     public void mesosClusterCanBeStarted2() throws Exception {
-        cluster.start();
         JSONObject stateInfo = cluster.getStateInfoJSON();
         Assert.assertEquals(3, stateInfo.getInt("activated_slaves"));
 
@@ -48,7 +39,6 @@ public class MesosClusterTest {
 
     @Test
     public void testPullAndStartContainer() throws UnirestException {
-        cluster.start();
         String containerId = cluster.addAndStartContainer("tutum/hello-world");
         String ipAddress = config.dockerClient.inspectContainerCmd(containerId).exec().getNetworkSettings().getIpAddress();
         String url = "http://" + ipAddress + ":80";

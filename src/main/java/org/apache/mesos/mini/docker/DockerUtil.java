@@ -91,16 +91,20 @@ public class DockerUtil {
     public String createAndStart(CreateContainerCmd createCommand) {
         LOGGER.debug("*****************************         Creating container \"" + createCommand.getName() + "\"         *****************************");
 
-        CreateContainerResponse r = createCommand.exec();
+        CreateContainerResponse r = createCommand.exec(); // we assume that if exec fails no container with that name is created so we don't need to clean up
         String containerId = r.getId();
+
+        if (createCommand.getName() != null){
+            containerIds.add(createCommand.getName()); // for better readability when logging the cleanup/removal of the containers
+        } else {
+            containerIds.add(containerId);
+        }
 
         StartContainerCmd startMesosClusterContainerCmd = dockerClient.startContainerCmd(containerId);
         startMesosClusterContainerCmd.exec();
 
 
         awaitEchoResponse(containerId, createCommand.getName());
-
-        containerIds.add(containerId);
 
         return containerId;
     }
@@ -118,7 +122,7 @@ public class DockerUtil {
     }
 
     public void pullImage(String imageName, String registryTag) {
-        LOGGER.debug("*****************************         Pulling image \"" + imageName + "\"         *****************************");
+        LOGGER.debug("*****************************         Pulling image \"" + imageName + ":"+registryTag+"\"         *****************************");
 
         InputStream responsePullImages = dockerClient.pullImageCmd(imageName).withTag(registryTag).exec();
         String fullLog = DockerUtil.consumeInputStream(responsePullImages);
@@ -127,8 +131,10 @@ public class DockerUtil {
 
     public void stop() {
         for (String containerId : containerIds) {
-            dockerClient.removeContainerCmd(containerId).withForce().exec();
-            LOGGER.info("Removing container " + containerId);
+            try {
+                dockerClient.removeContainerCmd(containerId).withForce().exec();
+                LOGGER.info("*****************************         Removing container \"" + containerId + "\"         *****************************");
+            } catch (Exception ignore){}
         }
         containerIds.clear();
     }
