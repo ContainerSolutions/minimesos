@@ -57,7 +57,7 @@ public class DockerProxyTest {
     class HelloWorldContainer extends AbstractContainer {
 
         public static final String HELLO_WORLD_IMAGE = "tutum/hello-world";
-        public static final int PORT = 80;
+        public static final int PORT = 9599;
 
         protected HelloWorldContainer(DockerClient dockerClient) {
             super(dockerClient);
