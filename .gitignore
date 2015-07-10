@@ -5,9 +5,8 @@
 out/
 .idea/
 
-# Gradle
-.gradle
-/build
+# Maven
+/target
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
