@@ -16,21 +16,15 @@ public class MesosClusterConfig {
     public final DockerClient dockerClient;
     public final int numberOfSlaves;
     public final String[] slaveResources;
-    public final URI dockerHost;
     public final Integer mesosMasterPort;
     public final Integer privateRegistryPort;
-    public final String[] dindImages;
-    public final ImageToBuild[] imagesToBuild;
 
-    private MesosClusterConfig(DockerClient dockerClient, int numberOfSlaves, String[] slaveResources, URI dockerHost, Integer mesosMasterPort, String[] dindImages, Integer privateRegistryPort, ImageToBuild[] imagesToBuild) {
+    private MesosClusterConfig(DockerClient dockerClient, int numberOfSlaves, String[] slaveResources, Integer mesosMasterPort, Integer privateRegistryPort) {
         this.dockerClient = dockerClient;
         this.numberOfSlaves = numberOfSlaves;
         this.slaveResources = slaveResources;
-        this.dockerHost = dockerHost;
         this.mesosMasterPort = mesosMasterPort;
-        this.dindImages = dindImages;
         this.privateRegistryPort = privateRegistryPort;
-        this.imagesToBuild = imagesToBuild;
     }
 
 
@@ -43,12 +37,8 @@ public class MesosClusterConfig {
         DockerClient dockerClient;
         int numberOfSlaves = 3;
         String[] slaveResources = new String[]{};
-        URI dockerHost;
         Integer mesosMasterPort = Integer.valueOf(5050);
         Integer privateRegistryPort = Integer.valueOf(5000);
-        String[] dindImages = new String[]{};
-        ImageToBuild[] imagesToBuild = new ImageToBuild[]{};
-
 
 
         private Builder() {
@@ -79,10 +69,6 @@ public class MesosClusterConfig {
             this.mesosMasterPort = Integer.valueOf(port);
             return this;
         }
-        public Builder imagesToBuild(ImageToBuild ... imagesToBuild){
-            this.imagesToBuild = imagesToBuild;
-            return this;
-        }
 
 
         public Builder defaultDockerClient() {
@@ -100,7 +86,6 @@ public class MesosClusterConfig {
                 Unirest.setProxy(proxy);
             }
             this.dockerClient = DockerClientBuilder.getInstance(config).build();
-            this.dockerHost = config.getUri();
             return this;
         }
 
@@ -123,24 +108,9 @@ public class MesosClusterConfig {
                 }
             }
 
-            return new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, dockerHost, mesosMasterPort, dindImages, privateRegistryPort, imagesToBuild);
+            return new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, mesosMasterPort, privateRegistryPort);
         }
 
-
-        public Builder dockerInDockerImages(String[] dindImages) {
-            this.dindImages = dindImages;
-            return this;
-        }
-    }
-
-    public static class ImageToBuild {
-        final File srcFolder;
-        final String tag;
-
-        public ImageToBuild(File srcFolder, String tag) {
-            this.srcFolder = srcFolder;
-            this.tag = tag;
-        }
     }
 
 }
