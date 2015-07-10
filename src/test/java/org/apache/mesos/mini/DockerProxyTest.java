@@ -57,7 +57,7 @@ public class DockerProxyTest {
     class HelloWorldContainer extends AbstractContainer {
 
         public static final String HELLO_WORLD_IMAGE = "tutum/hello-world";
-        public static final int PORT = 9599;
+        public static final int PORT = 80;
 
         protected HelloWorldContainer(DockerClient dockerClient) {
             super(dockerClient);
@@ -70,7 +70,7 @@ public class DockerProxyTest {
 
         @Override
         protected CreateContainerCmd dockerCommand() {
-            return dockerClient.createContainerCmd(HELLO_WORLD_IMAGE).withName("hello-world").withPortBindings(PortBinding.parse("0.0.0.0:" + PORT + ":" + PORT));
+            return dockerClient.createContainerCmd(HELLO_WORLD_IMAGE).withName("hello-world");
         }
     }
 }

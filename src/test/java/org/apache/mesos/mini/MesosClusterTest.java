@@ -1,5 +1,6 @@
 package org.apache.mesos.mini;
 
+import com.github.dockerjava.api.model.PortBinding;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.mesos.mini.mesos.MesosClusterConfig;

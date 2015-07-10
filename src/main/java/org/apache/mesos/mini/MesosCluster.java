@@ -66,11 +66,25 @@ public class MesosCluster extends ExternalResource {
      * @param containerName The name of the image
      * @return The id of the container
      */
-    public String addAndStartContainer(String containerName) {
+    public String addAndStartContainer(String containerName, PortBinding ... portBindings) {
         DockerUtil dockerUtil = new DockerUtil(config.dockerClient);
         dockerUtil.pullImage(containerName, "latest");
-        CreateContainerCmd command = config.dockerClient.createContainerCmd(containerName);
+
+        String name = containerName.replace("/","_");
+        CreateContainerCmd command = config.dockerClient.createContainerCmd(containerName).withName(name);
+        if (portBindings != null) {
+            command.withPortBindings(portBindings);
+        }
         return dockerUtil.createAndStart(command);
+    }
+    /**
+     * Pull and start a docker image. This container will be destroyed when the Mesos cluster is shut down.
+     *
+     * @param containerName The name of the image
+     * @return The id of the container
+     */
+    public String addAndStartContainer(String containerName) {
+        return addAndStartContainer(containerName, null);
     }
 
     public State getStateInfo() throws UnirestException {
