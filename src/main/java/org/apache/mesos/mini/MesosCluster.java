@@ -30,7 +30,7 @@ public class MesosCluster extends ExternalResource {
     public void start() {
         try {
             DockerProxy dockerProxy = new DockerProxy(config.dockerClient);
-            dockerProxy.startProxy();
+            dockerProxy.start();
 
             // Pulls registry images and start container
             PrivateDockerRegistry privateDockerRegistry = new PrivateDockerRegistry(config.dockerClient, this.config);

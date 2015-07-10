@@ -9,28 +9,21 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
+import org.apache.mesos.mini.container.AbstractContainer;
 import org.apache.mesos.mini.docker.DockerProxy;
 import org.apache.mesos.mini.docker.DockerUtil;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class DockerProxyTest {
 
-    @Test
-    public void testInstantiate() throws InterruptedException, UnirestException {
-        DockerClient dockerClient = getDockerClient();
-        DockerProxy proxy = new DockerProxy(dockerClient);
-        proxy.startProxy();
-        DockerUtil dockerUtil = new DockerUtil(dockerClient);
-        dockerUtil.pullImage("tutum/hello-world", "latest");
-        CreateContainerCmd command = dockerClient.createContainerCmd("tutum/hello-world").withPortBindings(PortBinding.parse("0.0.0.0:80:80"));
-        String containerId = dockerUtil.createAndStart(command);
-        String ipAddress = dockerClient.inspectContainerCmd(containerId).exec().getNetworkSettings().getIpAddress();
-        String url = "http://" + ipAddress + ":80";
-        Assert.assertEquals(200, Unirest.get(url).asString().getStatus());
+    @AfterClass
+    public static void callShutdownHook() {
+        new DockerUtil(getDockerClient()).stop();
     }
 
-    private DockerClient getDockerClient() {
+    private static DockerClient getDockerClient() {
         DockerClientConfig.DockerClientConfigBuilder builder = DockerClientConfig.createDefaultConfigBuilder();
 
         String dockerHostEnv = System.getenv("DOCKER_HOST");
@@ -45,5 +38,39 @@ public class DockerProxyTest {
             Unirest.setProxy(proxy);
         }
         return DockerClientBuilder.getInstance(config).build();
+    }
+
+    @Test
+    public void testInstantiate() throws InterruptedException, UnirestException {
+        DockerClient dockerClient = getDockerClient();
+        DockerProxy proxy = new DockerProxy(dockerClient);
+        proxy.start();
+
+        HelloWorldContainer helloWorldContainer = new HelloWorldContainer(dockerClient);
+        helloWorldContainer.start();
+
+        String ipAddress = helloWorldContainer.getIpAddress();
+        String url = "http://" + ipAddress + ":" + HelloWorldContainer.PORT;
+        Assert.assertEquals(200, Unirest.get(url).asString().getStatus());
+    }
+
+    class HelloWorldContainer extends AbstractContainer {
+
+        public static final String HELLO_WORLD_IMAGE = "tutum/hello-world";
+        public static final int PORT = 80;
+
+        protected HelloWorldContainer(DockerClient dockerClient) {
+            super(dockerClient);
+        }
+
+        @Override
+        protected void pullImage() {
+            dockerUtil.pullImage(HELLO_WORLD_IMAGE, "latest");
+        }
+
+        @Override
+        protected CreateContainerCmd dockerCommand() {
+            return dockerClient.createContainerCmd(HELLO_WORLD_IMAGE).withPortBindings(PortBinding.parse("0.0.0.0:" + PORT + ":" + PORT));
+        }
     }
 }

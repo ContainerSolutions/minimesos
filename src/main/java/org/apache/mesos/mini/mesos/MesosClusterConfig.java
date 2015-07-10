@@ -119,7 +119,7 @@ public class MesosClusterConfig {
             if (dockerClient == null) {
                 defaultDockerClient();
                 if (dockerClient == null) {
-                    throw new IllegalStateException("Specify a docker client");
+                    throw new IllegalStateException("Specify a docker dockerClient");
                 }
             }
 

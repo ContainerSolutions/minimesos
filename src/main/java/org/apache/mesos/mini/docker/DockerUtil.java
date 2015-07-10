@@ -29,10 +29,9 @@ import static org.hamcrest.Matchers.*;
  */
 public class DockerUtil {
 
+    private static final ArrayList<String> containerIds = new ArrayList<String>(); // Massive hack. Todo. Static so it shuts down all containers.
     public static Logger LOGGER = Logger.getLogger(MesosCluster.class);
-
     private final DockerClient dockerClient;
-    private ArrayList<String> containerIds = new ArrayList<String>();
 
     public DockerUtil(DockerClient dockerClient) {
         this.dockerClient = dockerClient;
@@ -128,5 +127,6 @@ public class DockerUtil {
             dockerClient.removeContainerCmd(containerId).withForce().exec();
             LOGGER.info("Removing container " + containerId);
         }
+        containerIds.clear();
     }
 }
