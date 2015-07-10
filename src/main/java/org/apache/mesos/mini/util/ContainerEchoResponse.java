@@ -32,7 +32,6 @@ public class ContainerEchoResponse implements Callable<Boolean> {
             InputStream execCmdStream = dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec();
             assertThat(DockerUtil.consumeInputStream(execCmdStream), containsString("hello-container"));
         } catch (Exception e) {
-            MesosCluster.LOGGER.error("An error occured while waiting for container to echo test message", e);
             return false;
         }
         return true;
