@@ -33,7 +33,7 @@ public class MesosClusterTest {
         Assert.assertEquals(3, stateInfo.getInt("activated_slaves"));
 
 
-        String mesosMasterUrl = cluster.getMesosMasterURL();
+        String mesosMasterUrl = cluster.getMesosContainer().getMesosMasterURL();
         Assert.assertTrue(mesosMasterUrl.contains(":5050"));
     }
 

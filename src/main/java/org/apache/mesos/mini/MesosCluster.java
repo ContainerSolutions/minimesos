@@ -97,9 +97,11 @@ public class MesosCluster extends ExternalResource {
         return Unirest.get("http://" + mesosContainer.getMesosMasterURL() + "/state.json").asJson().getBody().getObject();
     }
 
-    public String getMesosMasterURL(){
-        return mesosContainer.getMesosMasterURL();
+
+    public MesosContainer getMesosContainer(){
+        return mesosContainer;
     }
+
 
     public void waitForState(final Predicate<State> predicate, int seconds) {
         await().atMost(seconds, TimeUnit.SECONDS).until(new Callable<Boolean>() {

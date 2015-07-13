@@ -15,6 +15,7 @@ public class MesosContainer {
     private final DockerClient dockerClient;
     private final MesosClusterConfig clusterConfig;
     private String mesosMasterIP;
+    private String mesosContainerID;
 
     public MesosContainer(DockerClient dockerClient, MesosClusterConfig clusterConfig) {
         this.dockerClient = dockerClient;
@@ -38,8 +39,8 @@ public class MesosContainer {
                 .withVolumes(new Volume("/sys/fs/cgroup"))
                 .withBinds(Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup:rw"));
 
-        String mesosLocalContainerId = dockerUtil.createAndStart(command);
-        mesosMasterIP = dockerUtil.getContainerIp(mesosLocalContainerId);
+        mesosContainerID = dockerUtil.createAndStart(command);
+        mesosMasterIP = dockerUtil.getContainerIp(mesosContainerID);
     }
 
     String[] createMesosLocalEnvironment() {
@@ -59,6 +60,10 @@ public class MesosContainer {
 
     String generateMesosMasterContainerName() {
         return "mini_mesos_cluster_" + new SecureRandom().nextInt();
+    }
+
+    public String getMesosContainerID() {
+        return mesosContainerID;
     }
 
     public String getMesosMasterURL() {
