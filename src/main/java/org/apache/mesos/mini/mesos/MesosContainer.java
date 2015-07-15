@@ -24,11 +24,11 @@ public class MesosContainer {
     }
 
     public void startMesosLocalContainer(String registryContainerName) {
-        final String MESOS_LOCAL_IMAGE = "mesos-local";
+        final String MESOS_LOCAL_IMAGE = "containersolutions/mesos-local";
 
         String mesosClusterContainerName = generateMesosMasterContainerName();
 
-        dockerUtil.buildImageFromFolder(MESOS_LOCAL_IMAGE, MESOS_LOCAL_IMAGE);
+//        dockerUtil.buildImageFromFolder(MESOS_LOCAL_IMAGE, MESOS_LOCAL_IMAGE);
 
         CreateContainerCmd command = dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE)
                 .withName(mesosClusterContainerName)
@@ -68,5 +68,9 @@ public class MesosContainer {
 
     public String getMesosMasterURL() {
         return mesosMasterIP + ":" + clusterConfig.mesosMasterPort;
+    }
+
+    public String getMesosMasterIP() {
+        return mesosMasterIP;
     }
 }

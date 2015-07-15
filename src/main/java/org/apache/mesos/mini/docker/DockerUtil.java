@@ -104,7 +104,7 @@ public class DockerUtil {
         startMesosClusterContainerCmd.exec();
 
 
-        awaitEchoResponse(containerId, createCommand.getName());
+//        awaitEchoResponse(containerId, createCommand.getName());
 
         return containerId;
     }
