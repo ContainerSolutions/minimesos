@@ -11,6 +11,8 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 
 public class MesosContainer {
+    private static final String MESOS_LOCAL_IMAGE = "containersol/mesos-local";
+    public static final String REGISTRY_TAG = "latest";
     private final DockerUtil dockerUtil;
     private final DockerClient dockerClient;
     private final MesosClusterConfig clusterConfig;
@@ -24,11 +26,9 @@ public class MesosContainer {
     }
 
     public void startMesosLocalContainer(String registryContainerName) {
-        final String MESOS_LOCAL_IMAGE = "mesos-local";
-
         String mesosClusterContainerName = generateMesosMasterContainerName();
 
-        dockerUtil.buildImageFromFolder(MESOS_LOCAL_IMAGE, MESOS_LOCAL_IMAGE);
+        dockerUtil.pullImage(MESOS_LOCAL_IMAGE, REGISTRY_TAG);
 
         CreateContainerCmd command = dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE)
                 .withName(mesosClusterContainerName)
