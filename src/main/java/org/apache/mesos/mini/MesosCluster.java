@@ -63,19 +63,29 @@ public class MesosCluster extends ExternalResource {
     /**
      * Pull and start a docker image. This container will be destroyed when the Mesos cluster is shut down.
      *
+     * @param createContainerCmd the create command with all your docker settings...
+     * @return The id of the container
+     */
+    public String addAndStartContainer(CreateContainerCmd createContainerCmd) {
+        DockerUtil dockerUtil = new DockerUtil(config.dockerClient);
+        dockerUtil.pullImage(createContainerCmd.getName(), "latest");
+        return dockerUtil.createAndStart(createContainerCmd);
+    }
+
+    /**
+     * Pull and start a docker image. This container will be destroyed when the Mesos cluster is shut down.
+     *
      * @param containerName The name of the image
      * @return The id of the container
      */
     public String addAndStartContainer(String containerName, PortBinding ... portBindings) {
-        DockerUtil dockerUtil = new DockerUtil(config.dockerClient);
-        dockerUtil.pullImage(containerName, "latest");
 
         String name = containerName.replace("/","_");
         CreateContainerCmd command = config.dockerClient.createContainerCmd(containerName).withName(name);
         if (portBindings != null) {
             command.withPortBindings(portBindings);
         }
-        return dockerUtil.createAndStart(command);
+        return addAndStartContainer(command);
     }
     /**
      * Pull and start a docker image. This container will be destroyed when the Mesos cluster is shut down.

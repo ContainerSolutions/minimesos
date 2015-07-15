@@ -1,11 +1,9 @@
 package org.apache.mesos.mini.docker;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.command.CreateContainerResponse;
-import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.command.StartContainerCmd;
+import com.github.dockerjava.api.command.*;
 import com.jayway.awaitility.core.ConditionTimeoutException;
+import com.sun.tools.doclets.internal.toolkit.util.DocFinder;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.log4j.Logger;
@@ -94,7 +92,7 @@ public class DockerUtil {
         CreateContainerResponse r = createCommand.exec(); // we assume that if exec fails no container with that name is created so we don't need to clean up
         String containerId = r.getId();
 
-        if (createCommand.getName() != null){
+        if (createCommand.getName() != null) {
             containerIds.add(createCommand.getName()); // for better readability when logging the cleanup/removal of the containers
         } else {
             containerIds.add(containerId);
@@ -110,7 +108,7 @@ public class DockerUtil {
     }
 
     public void awaitEchoResponse(String containerId) throws ConditionTimeoutException {
-      awaitEchoResponse(containerId, containerId);
+        awaitEchoResponse(containerId, containerId);
     }
 
     public void awaitEchoResponse(String containerId, String containerName) throws ConditionTimeoutException {
@@ -122,7 +120,7 @@ public class DockerUtil {
     }
 
     public void pullImage(String imageName, String registryTag) {
-        LOGGER.debug("*****************************         Pulling image \"" + imageName + ":"+registryTag+"\"         *****************************");
+        LOGGER.debug("*****************************         Pulling image \"" + imageName + ":" + registryTag + "\"         *****************************");
 
         InputStream responsePullImages = dockerClient.pullImageCmd(imageName).withTag(registryTag).exec();
         String fullLog = DockerUtil.consumeInputStream(responsePullImages);
@@ -134,8 +132,10 @@ public class DockerUtil {
             try {
                 dockerClient.removeContainerCmd(containerId).withForce().exec();
                 LOGGER.info("*****************************         Removing container \"" + containerId + "\"         *****************************");
-            } catch (Exception ignore){}
+            } catch (Exception ignore) {
+            }
         }
         containerIds.clear();
     }
+
 }
