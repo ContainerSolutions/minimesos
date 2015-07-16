@@ -19,7 +19,6 @@ public class ImageInjectionTest {
     public void testInjectImage() {
         DockerUtil dockerUtil = new DockerUtil(config.dockerClient);
         dockerUtil.pullImage("tutum/hello-world", "latest"); // Pull hello world image for test
-        String url = "localhost" + ":" + config.privateRegistryPort;
-        dockerUtil.injectImage(url, "tutum/hello-world", cluster.getMesosContainer().getMesosContainerID());
+        cluster.injectImage("tutum/hello-world");
     }
 }

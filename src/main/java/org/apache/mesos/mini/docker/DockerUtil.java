@@ -1,7 +1,10 @@
 package org.apache.mesos.mini.docker;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.*;
+import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.command.CreateContainerResponse;
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.command.StartContainerCmd;
 import com.jayway.awaitility.core.ConditionTimeoutException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
@@ -134,28 +137,5 @@ public class DockerUtil {
             } catch (Exception ignore){}
         }
         containerIds.clear();
-    }
-
-    public void injectImage(String privateRepoURL, String imageName, String mesosClusterContainerId){
-        LOGGER.info("*****************************         Injecting container \"" + privateRepoURL + "/" + imageName + "\"         *****************************");
-
-        // Retag image in local docker daemon
-        dockerClient.tagImageCmd(imageName, privateRepoURL + "/" + imageName, "latest").exec();
-
-        // Push from local docker daemon to private registry
-        InputStream responsePushImage = dockerClient.pushImageCmd(privateRepoURL + "/" + imageName).exec();
-        String fullLog = DockerUtil.consumeInputStream(responsePushImage);
-        assertThat(fullLog, anyOf(containsString("successfully pushed"), containsString("already pushed")));
-
-        // As mesos-local daemon, pull from private registry
-        ExecCreateCmdResponse exec = dockerClient.execCreateCmd(mesosClusterContainerId).withAttachStdout(true).withCmd("docker", "pull", "private-registry:5000/" + imageName).exec();
-        InputStream execCmdStream = dockerClient.execStartCmd(exec.getId()).exec();
-        fullLog = DockerUtil.consumeInputStream(execCmdStream);
-        assertThat(fullLog, anyOf(containsString("up to date"), containsString("Downloaded newer image")));
-
-        // As mesos-local daemon, retag in local registry
-        exec = dockerClient.execCreateCmd(mesosClusterContainerId).withAttachStdout(true).withCmd("docker", "tag", "private-registry:5000/" + imageName, imageName).exec();
-        dockerClient.execStartCmd(exec.getId()).exec(); // This doesn't produce any log messages
-        LOGGER.info("**** Injected successfully ****");
     }
 }
