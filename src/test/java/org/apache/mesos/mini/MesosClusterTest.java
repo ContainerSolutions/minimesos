@@ -19,7 +19,6 @@ public class MesosClusterTest {
     @ClassRule
     public static MesosCluster cluster = new MesosCluster(config);
 
-
     @Test
     public void mesosClusterCanBeStarted() throws Exception {
         JSONObject stateInfo = cluster.getStateInfoJSON();

@@ -1,5 +1,6 @@
 package org.apache.mesos.mini;
 
+import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.InternalServerErrorException;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.PortBinding;
@@ -8,6 +9,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.docker.DockerProxy;
 import org.apache.mesos.mini.docker.DockerUtil;
+import org.apache.mesos.mini.docker.ImagePusher;
 import org.apache.mesos.mini.docker.PrivateDockerRegistry;
 import org.apache.mesos.mini.mesos.MesosClusterConfig;
 import org.apache.mesos.mini.mesos.MesosContainer;
@@ -97,6 +99,16 @@ public class MesosCluster extends ExternalResource {
         return addAndStartContainer(containerName, null);
     }
 
+    /**
+     * Inject an image from your local docker daemon into the mesos cluster.
+     * @param imageName The name of the image you want to push (in the format domain/image)
+     * @throws DockerException when an error pulling or pushing occurs.
+     */
+    public void injectImage(String imageName) throws DockerException {
+        ImagePusher imagePusher = new ImagePusher(config.dockerClient, "localhost" + ":" + config.privateRegistryPort, getMesosContainer().getMesosContainerID());
+        imagePusher.injectImage(imageName);
+    }
+
     public State getStateInfo() throws UnirestException {
         String json = Unirest.get("http://" + mesosContainer.getMesosMasterURL() + "/state.json").asString().getBody();
 
@@ -111,7 +123,6 @@ public class MesosCluster extends ExternalResource {
     public MesosContainer getMesosContainer(){
         return mesosContainer;
     }
-
 
     public void waitForState(final Predicate<State> predicate, int seconds) {
         await().atMost(seconds, TimeUnit.SECONDS).until(new Callable<Boolean>() {
