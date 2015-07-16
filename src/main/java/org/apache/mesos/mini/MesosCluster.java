@@ -31,7 +31,6 @@ public class MesosCluster extends ExternalResource {
     private final MesosClusterConfig config;
     private MesosContainer mesosContainer;
     private DockerUtil dockerUtil;
-    private PrivateDockerRegistry privateDockerRegistry;
 
     public MesosCluster(MesosClusterConfig config) {
         this.config = config;
@@ -44,7 +43,7 @@ public class MesosCluster extends ExternalResource {
             dockerProxy.start();
 
             // Pulls registry images and start container
-            privateDockerRegistry = new PrivateDockerRegistry(config.dockerClient, this.config);
+            PrivateDockerRegistry privateDockerRegistry = new PrivateDockerRegistry(config.dockerClient, this.config);
             privateDockerRegistry.startPrivateRegistryContainer();
 
             // start the container
@@ -102,11 +101,6 @@ public class MesosCluster extends ExternalResource {
     public MesosContainer getMesosContainer(){
         return mesosContainer;
     }
-
-    public PrivateDockerRegistry getPrivateRepoContainer(){
-        return privateDockerRegistry;
-    }
-
 
     public void waitForState(final Predicate<State> predicate, int seconds) {
         await().atMost(seconds, TimeUnit.SECONDS).until(new Callable<Boolean>() {
