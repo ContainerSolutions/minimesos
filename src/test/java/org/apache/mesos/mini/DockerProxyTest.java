@@ -17,6 +17,8 @@ import org.junit.Test;
 
 public class DockerProxyTest {
 
+    public static final int PROXY_PORT = 8777;
+
     @AfterClass
     public static void callShutdownHook() {
         new DockerUtil(getDockerClient()).stop();
@@ -33,7 +35,7 @@ public class DockerProxyTest {
         DockerClientConfig config = builder.build();
 
         if (config.getUri().getScheme().startsWith("http")) {
-            HttpHost proxy = new HttpHost(config.getUri().getHost(), 8888);
+            HttpHost proxy = new HttpHost(config.getUri().getHost(), PROXY_PORT);
             Unirest.setProxy(proxy);
         }
         return DockerClientBuilder.getInstance(config).build();
@@ -42,7 +44,7 @@ public class DockerProxyTest {
     @Test
     public void testInstantiate() throws InterruptedException, UnirestException {
         DockerClient dockerClient = getDockerClient();
-        DockerProxy proxy = new DockerProxy(dockerClient);
+        DockerProxy proxy = new DockerProxy(dockerClient, PROXY_PORT);
         proxy.start();
 
         HelloWorldContainer helloWorldContainer = new HelloWorldContainer(dockerClient);

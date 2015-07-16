@@ -41,7 +41,7 @@ public class MesosCluster extends ExternalResource {
 
     public void start() {
         try {
-            DockerProxy dockerProxy = new DockerProxy(config.dockerClient);
+            DockerProxy dockerProxy = new DockerProxy(config.dockerClient, config.proxyPort);
             dockerProxy.start();
 
             // Pulls registry images and start container
@@ -70,7 +70,7 @@ public class MesosCluster extends ExternalResource {
      */
     public String addAndStartContainer(CreateContainerCmd createContainerCmd) {
         DockerUtil dockerUtil = new DockerUtil(config.dockerClient);
-        dockerUtil.pullImage(createContainerCmd.getName(), "latest");
+        dockerUtil.pullImage(createContainerCmd.getImage(), "latest");
         return dockerUtil.createAndStart(createContainerCmd);
     }
 

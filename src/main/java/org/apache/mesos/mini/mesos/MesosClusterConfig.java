@@ -8,9 +8,6 @@ import com.mashape.unirest.http.Unirest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
 
-import java.io.File;
-import java.net.URI;
-
 public class MesosClusterConfig {
 
     public final DockerClient dockerClient;
@@ -18,13 +15,15 @@ public class MesosClusterConfig {
     public final String[] slaveResources;
     public final Integer mesosMasterPort;
     public final Integer privateRegistryPort;
+    public final Integer proxyPort;
 
-    private MesosClusterConfig(DockerClient dockerClient, int numberOfSlaves, String[] slaveResources, Integer mesosMasterPort, Integer privateRegistryPort) {
+    private MesosClusterConfig(DockerClient dockerClient, int numberOfSlaves, String[] slaveResources, Integer mesosMasterPort, Integer privateRegistryPort, Integer proxyPort) {
         this.dockerClient = dockerClient;
         this.numberOfSlaves = numberOfSlaves;
         this.slaveResources = slaveResources;
         this.mesosMasterPort = mesosMasterPort;
         this.privateRegistryPort = privateRegistryPort;
+        this.proxyPort = proxyPort;
     }
 
 
@@ -39,6 +38,7 @@ public class MesosClusterConfig {
         String[] slaveResources = new String[]{};
         Integer mesosMasterPort = Integer.valueOf(5050);
         Integer privateRegistryPort = Integer.valueOf(5000);
+        Integer proxyPort = Integer.valueOf(8888);
 
 
         private Builder() {
@@ -65,6 +65,11 @@ public class MesosClusterConfig {
             return this;
         }
 
+        public Builder proxyPort(int port){
+            this.proxyPort = port;
+            return this;
+        }
+
         public Builder masterPort(int port) {
             this.mesosMasterPort = Integer.valueOf(port);
             return this;
@@ -82,7 +87,7 @@ public class MesosClusterConfig {
             DockerClientConfig config = builder.build();
 
             if (config.getUri().getScheme().startsWith("http")) {
-                HttpHost proxy = new HttpHost(config.getUri().getHost(), 8888);
+                HttpHost proxy = new HttpHost(config.getUri().getHost(), this.proxyPort);
                 Unirest.setProxy(proxy);
             }
             this.dockerClient = DockerClientBuilder.getInstance(config).build();
@@ -108,7 +113,7 @@ public class MesosClusterConfig {
                 }
             }
 
-            return new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, mesosMasterPort, privateRegistryPort);
+            return new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, mesosMasterPort, privateRegistryPort, proxyPort);
         }
 
     }
