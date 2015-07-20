@@ -36,6 +36,9 @@ public abstract class AbstractContainer {
         containerId = dockerUtil.createAndStart(dockerCommand());
     }
 
+    /**
+     * @return the ID of the container.
+     */
     public String getContainerId() {
         return containerId;
     }
