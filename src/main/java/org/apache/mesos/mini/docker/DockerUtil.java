@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.await;
@@ -29,7 +31,7 @@ import static org.hamcrest.Matchers.*;
  */
 public class DockerUtil {
 
-    private static final ArrayList<String> containerIds = new ArrayList<String>(); // Massive hack. Todo. Static so it shuts down all containers.
+    private static final List<String> containerIds = Collections.synchronizedList(new ArrayList<String>()); // Massive hack. Todo. Static so it shuts down all containers.
     public static Logger LOGGER = Logger.getLogger(MesosCluster.class);
     private final DockerClient dockerClient;
 
