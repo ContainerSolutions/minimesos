@@ -41,6 +41,11 @@ public class MesosContainer extends AbstractContainer {
         return "mini_mesos_cluster_" + new SecureRandom().nextInt();
     }
 
+    /**
+     * @deprecated Please use the method getContainerId(), which is generic to all {@link AbstractContainer}'s
+     * @return Container ID.
+     */
+    @Deprecated
     public String getMesosContainerID() {
         return getContainerId();
     }
