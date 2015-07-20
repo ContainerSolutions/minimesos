@@ -105,7 +105,7 @@ public class MesosCluster extends ExternalResource {
      * @throws DockerException when an error pulling or pushing occurs.
      */
     public void injectImage(String imageName) throws DockerException {
-        ImagePusher imagePusher = new ImagePusher(config.dockerClient, "localhost" + ":" + config.privateRegistryPort, getMesosContainer().getMesosContainerID());
+        ImagePusher imagePusher = new ImagePusher(config.dockerClient, "localhost" + ":" + config.privateRegistryPort, getMesosContainer().getContainerId());
         imagePusher.injectImage(imageName);
     }
 
