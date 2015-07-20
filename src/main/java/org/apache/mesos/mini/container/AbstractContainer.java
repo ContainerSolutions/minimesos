@@ -17,8 +17,18 @@ public abstract class AbstractContainer {
         dockerUtil = new DockerUtil(this.dockerClient);
     }
 
+    /**
+     * Implement this method to pull your image. This will be called before the container is run.
+     * For example, see {@link org.apache.mesos.mini.docker.DockerProxy}
+     */
     protected abstract void pullImage();
 
+    /**
+     * Implement this method to create your container. If you use {@link DockerUtil} then your container will be
+     * automatically deleted.
+     * For example, see {@link org.apache.mesos.mini.docker.DockerProxy}
+     * @return Your {@link CreateContainerCmd} for docker.
+     */
     protected abstract CreateContainerCmd dockerCommand();
 
     public void start() {
