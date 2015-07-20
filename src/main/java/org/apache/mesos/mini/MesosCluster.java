@@ -49,8 +49,8 @@ public class MesosCluster extends ExternalResource {
             privateDockerRegistry.startPrivateRegistryContainer();
 
             // start the container
-            mesosContainer = new MesosContainer(config.dockerClient, this.config);
-            mesosContainer.startMesosLocalContainer(privateDockerRegistry.getContainerId());
+            mesosContainer = new MesosContainer(config.dockerClient, this.config, privateDockerRegistry.getContainerId());
+            mesosContainer.start();
 
             // wait until the given number of slaves are registered
             new MesosClusterStateResponse(mesosContainer.getMesosMasterURL(), config.numberOfSlaves).waitFor();
@@ -105,7 +105,7 @@ public class MesosCluster extends ExternalResource {
      * @throws DockerException when an error pulling or pushing occurs.
      */
     public void injectImage(String imageName) throws DockerException {
-        ImagePusher imagePusher = new ImagePusher(config.dockerClient, "localhost" + ":" + config.privateRegistryPort, getMesosContainer().getMesosContainerID());
+        ImagePusher imagePusher = new ImagePusher(config.dockerClient, "localhost" + ":" + config.privateRegistryPort, getMesosContainer().getContainerId());
         imagePusher.injectImage(imageName);
     }
 
