@@ -46,7 +46,7 @@ public class MesosCluster extends ExternalResource {
 
             // Pulls registry images and start container
             PrivateDockerRegistry privateDockerRegistry = new PrivateDockerRegistry(config.dockerClient, this.config);
-            privateDockerRegistry.startPrivateRegistryContainer();
+            privateDockerRegistry.start();
 
             // start the container
             mesosContainer = new MesosContainer(config.dockerClient, this.config, privateDockerRegistry.getContainerId());
