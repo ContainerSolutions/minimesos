@@ -43,6 +43,9 @@ public abstract class AbstractContainer {
         return containerId;
     }
 
+    /**
+     * @return the IP address of the container
+     */
     public String getIpAddress() {
         String res = "";
         if (!getContainerId().isEmpty()) {
