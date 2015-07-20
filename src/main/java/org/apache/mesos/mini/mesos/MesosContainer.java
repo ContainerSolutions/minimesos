@@ -5,42 +5,21 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.Volume;
-import org.apache.mesos.mini.docker.DockerUtil;
+import org.apache.mesos.mini.container.AbstractContainer;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
 
-public class MesosContainer {
+public class MesosContainer extends AbstractContainer {
     private static final String MESOS_LOCAL_IMAGE = "containersol/mesos-local";
     public static final String REGISTRY_TAG = "latest";
-    private final DockerUtil dockerUtil;
-    private final DockerClient dockerClient;
     private final MesosClusterConfig clusterConfig;
-    private String mesosMasterIP;
-    private String mesosContainerID;
+    private final String registryContainerId;
 
-    public MesosContainer(DockerClient dockerClient, MesosClusterConfig clusterConfig) {
-        this.dockerClient = dockerClient;
+    public MesosContainer(DockerClient dockerClient, MesosClusterConfig clusterConfig, String registryContainerId) {
+        super(dockerClient);
         this.clusterConfig = clusterConfig;
-        dockerUtil = new DockerUtil(dockerClient);
-    }
-
-    public void startMesosLocalContainer(String registryContainerName) {
-        String mesosClusterContainerName = generateMesosMasterContainerName();
-
-        dockerUtil.pullImage(MESOS_LOCAL_IMAGE, REGISTRY_TAG);
-
-        CreateContainerCmd command = dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE)
-                .withName(mesosClusterContainerName)
-                .withPrivileged(true)
-                        // the registry container will be known as 'private-registry' to mesos-local
-                .withLinks(Link.parse(registryContainerName + ":private-registry"))
-                .withEnv(createMesosLocalEnvironment())
-                .withVolumes(new Volume("/sys/fs/cgroup"))
-                .withBinds(Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup:rw"));
-
-        mesosContainerID = dockerUtil.createAndStart(command);
-        mesosMasterIP = dockerUtil.getContainerIp(mesosContainerID);
+        this.registryContainerId = registryContainerId;
     }
 
     String[] createMesosLocalEnvironment() {
@@ -63,10 +42,29 @@ public class MesosContainer {
     }
 
     public String getMesosContainerID() {
-        return mesosContainerID;
+        return getContainerId();
     }
 
     public String getMesosMasterURL() {
-        return mesosMasterIP + ":" + clusterConfig.mesosMasterPort;
+        return getIpAddress() + ":" + clusterConfig.mesosMasterPort;
+    }
+
+    @Override
+    protected void pullImage() {
+        dockerUtil.pullImage(MESOS_LOCAL_IMAGE, REGISTRY_TAG);
+    }
+
+    @Override
+    protected CreateContainerCmd dockerCommand() {
+        String mesosClusterContainerName = generateMesosMasterContainerName();
+
+        return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE)
+                .withName(mesosClusterContainerName)
+                .withPrivileged(true)
+                        // the registry container will be known as 'private-registry' to mesos-local
+                .withLinks(Link.parse(registryContainerId + ":private-registry"))
+                .withEnv(createMesosLocalEnvironment())
+                .withVolumes(new Volume("/sys/fs/cgroup"))
+                .withBinds(Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup:rw"));
     }
 }
