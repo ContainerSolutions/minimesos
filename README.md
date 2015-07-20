@@ -20,11 +20,19 @@ A possible testing scenario could be:
  5. The test utilities take care of stopping and removing the used Mesos cluster container...
 
 ## Running on a mac
-The only requirement is to ensure that your docker-machine envrionmental variables are visible to the tests. For example, in Idea, add the `docker-machine env` variables to the idea junit testing dialog. E.g.
+
+Create a docker machine and make sure its environment variables are visible to the test
+
+```
+$ docker-machine create -d virtualbox --virtualbox-memory 4096 mini-mesos
+$ eval $(docker-machine env mini-mesos)
+```
+
+In Idea, add the `docker-machine env` variables to the idea junit testing dialog. E.g.
 ```
 DOCKER_TLS_VERIFY=1
 DOCKER_HOST=tcp://192.168.99.100:2376
-DOCKER_CERT_PATH=/Users/phil-mac/.docker/machine/machines/dev
+DOCKER_CERT_PATH=/home/user/.docker/machine/machines/mini-mesos
 ```
 
 ## Usage
