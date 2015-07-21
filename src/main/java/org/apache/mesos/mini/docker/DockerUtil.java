@@ -3,7 +3,6 @@ package org.apache.mesos.mini.docker;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.StartContainerCmd;
 import com.jayway.awaitility.core.ConditionTimeoutException;
 import org.apache.commons.io.IOUtils;
@@ -68,28 +67,6 @@ public class DockerUtil {
         }
     }
 
-    public String getContainerIp(String containerId) {
-
-        InspectContainerResponse inspectContainerResponse = dockerClient.inspectContainerCmd(containerId).exec();
-
-        assertThat(inspectContainerResponse.getNetworkSettings().getIpAddress(), notNullValue());
-        return inspectContainerResponse.getNetworkSettings().getIpAddress();
-    }
-
-    public void buildImageFromFolder(File dir, String tag) {
-        String fullLog;
-        assert dir.isDirectory();
-        InputStream responseBuildImage = dockerClient.buildImageCmd(dir).withTag(tag).exec();
-
-        fullLog = consumeInputStream(responseBuildImage);
-        assertThat(fullLog, containsString("Successfully built"));
-    }
-
-    public void buildImageFromFolder(String name, String tag) {
-        File folder = new File(Thread.currentThread().getContextClassLoader().getResource(name).getFile());
-        buildImageFromFolder(folder, tag);
-    }
-
     public String createAndStart(CreateContainerCmd createCommand) {
         LOGGER.debug("*****************************         Creating container \"" + createCommand.getName() + "\"         *****************************");
 
@@ -109,10 +86,6 @@ public class DockerUtil {
         awaitEchoResponse(containerId, createCommand.getName());
 
         return containerId;
-    }
-
-    public void awaitEchoResponse(String containerId) throws ConditionTimeoutException {
-        awaitEchoResponse(containerId, containerId);
     }
 
     public void awaitEchoResponse(String containerId, String containerName) throws ConditionTimeoutException {
