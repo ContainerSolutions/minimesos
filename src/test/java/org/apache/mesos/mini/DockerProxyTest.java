@@ -15,6 +15,8 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.security.SecureRandom;
+
 public class DockerProxyTest {
 
     public static final int PROXY_PORT = 8777;
@@ -71,7 +73,7 @@ public class DockerProxyTest {
 
         @Override
         protected CreateContainerCmd dockerCommand() {
-            return dockerClient.createContainerCmd(HELLO_WORLD_IMAGE).withName("hello-world");
+            return dockerClient.createContainerCmd(HELLO_WORLD_IMAGE).withName("hello-world_" + new SecureRandom().nextInt());
         }
     }
 }

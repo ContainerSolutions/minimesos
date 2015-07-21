@@ -19,6 +19,7 @@ import org.apache.mesos.mini.util.Predicate;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
+import java.security.SecureRandom;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -77,13 +78,12 @@ public class MesosCluster extends ExternalResource {
     /**
      * Pull and start a docker image. This container will be destroyed when the Mesos cluster is shut down.
      *
-     * @param containerName The name of the image
+     * @param imageName The name of the image
      * @return The id of the container
      */
-    public String addAndStartContainer(String containerName, PortBinding ... portBindings) {
-
-        String name = containerName.replace("/","_");
-        CreateContainerCmd command = config.dockerClient.createContainerCmd(containerName).withName(name);
+    public String addAndStartContainer(String imageName, PortBinding ... portBindings) {
+        String name = imageName.replace("/","_") + new SecureRandom().nextInt();
+        CreateContainerCmd command = config.dockerClient.createContainerCmd(imageName).withName(name);
         if (portBindings != null) {
             command.withPortBindings(portBindings);
         }
