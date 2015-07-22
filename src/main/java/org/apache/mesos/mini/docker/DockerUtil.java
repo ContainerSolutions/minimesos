@@ -11,7 +11,6 @@ import org.apache.log4j.Logger;
 import org.apache.mesos.mini.MesosCluster;
 import org.apache.mesos.mini.util.ContainerEchoResponse;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
