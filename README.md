@@ -77,7 +77,9 @@ Once the mesos cluster is running, you will probably want to push your own image
         proxy.start();
 
         HelloWorldContainer helloWorldContainer = new HelloWorldContainer(dockerClient);
-        helloWorldContainer.start();
+        cluster.addAndStartContainer(helloWorldContainer); // This will automatically shut down your container.
+        //helloWorld.start(); // Alternatively, you can start and shutdown the container yourself.
+        //helloWorld.remove();
 
         String ipAddress = helloWorldContainer.getIpAddress();
         String url = "http://" + ipAddress + ":" + HelloWorldContainer.PORT;
