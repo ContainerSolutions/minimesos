@@ -10,7 +10,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.mesos.mini.container.AbstractContainer;
 import org.apache.mesos.mini.docker.DockerProxy;
-import org.apache.mesos.mini.docker.DockerUtil;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
@@ -21,9 +20,13 @@ public class DockerProxyTest {
 
     public static final int PROXY_PORT = 8777;
 
+    private static HelloWorldContainer helloWorld;
+    private static DockerProxy proxy;
+
     @AfterClass
     public static void callShutdownHook() {
-        new DockerUtil(getDockerClient()).stop();
+        helloWorld.remove();
+        proxy.remove();
     }
 
     private static DockerClient getDockerClient() {
@@ -46,13 +49,13 @@ public class DockerProxyTest {
     @Test
     public void testInstantiate() throws InterruptedException, UnirestException {
         DockerClient dockerClient = getDockerClient();
-        DockerProxy proxy = new DockerProxy(dockerClient, PROXY_PORT);
+        proxy = new DockerProxy(dockerClient, PROXY_PORT);
         proxy.start();
 
-        HelloWorldContainer helloWorldContainer = new HelloWorldContainer(dockerClient);
-        helloWorldContainer.start();
+        helloWorld = new HelloWorldContainer(dockerClient);
+        helloWorld.start();
 
-        String ipAddress = helloWorldContainer.getIpAddress();
+        String ipAddress = helloWorld.getIpAddress();
         String url = "http://" + ipAddress + ":" + HelloWorldContainer.PORT;
         Assert.assertEquals(200, Unirest.get(url).asString().getStatus());
     }

@@ -39,7 +39,8 @@ public class MesosClusterTest {
 
     @Test
     public void testPullAndStartContainer() throws UnirestException {
-        String containerId = cluster.addAndStartContainer("tutum/hello-world");
+        HelloWorldContainer container = new HelloWorldContainer(config.dockerClient);
+        String containerId = cluster.addAndStartContainer(container);
         String ipAddress = config.dockerClient.inspectContainerCmd(containerId).exec().getNetworkSettings().getIpAddress();
         String url = "http://" + ipAddress + ":80";
         Assert.assertEquals(200, Unirest.get(url).asString().getStatus());

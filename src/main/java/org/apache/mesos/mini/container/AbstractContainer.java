@@ -53,4 +53,15 @@ public abstract class AbstractContainer {
         }
         return res;
     }
+
+    public String getName() {
+        return dockerCommand().getName();
+    }
+
+    /**
+     * Removes a container with force
+     */
+    public void remove() {
+        dockerClient.removeContainerCmd(containerId).withForce().exec();
+    }
 }
