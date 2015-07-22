@@ -1,6 +1,13 @@
 # mini-mesos
 Testing infrastructure for Mesos frameworks. 
 
+Build
+-----
+
+Let's say hello
+
+    echo "Hello world"
+
 ## Overview
 
 The basic idea is to provide simple to use test utilities to setup a Mesos cluster that can be tested against.
