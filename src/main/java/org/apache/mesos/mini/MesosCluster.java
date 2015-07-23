@@ -141,11 +141,8 @@ public class MesosCluster extends ExternalResource {
 
     private void removeContainers() {
         for (AbstractContainer container : containers) {
-            try {
-                container.remove();
-                LOGGER.info("Removing container [" + container.getName() + "]");
-            } catch (Exception ignore) {
-            }
+            container.remove();
+            LOGGER.info("Removing container [" + container.getName() + "]");
         }
         containers.clear();
     }
