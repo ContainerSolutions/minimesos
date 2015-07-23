@@ -17,6 +17,10 @@ import org.apache.mesos.mini.util.Predicate;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -140,11 +144,21 @@ public class MesosCluster extends ExternalResource {
     }
 
     private void removeContainers() {
-        for (AbstractContainer container : containers) {
+        for (AbstractContainer container : this.containers) {
+            writeLog(container.getName(), container.getContainerId());
             container.remove();
             LOGGER.info("Removing container [" + container.getName() + "]");
         }
-        containers.clear();
+        this.containers.clear();
+    }
+
+    private void writeLog(String containerName, String containerId) {
+        try {
+            InputStream logStream = this.config.dockerClient.logContainerCmd(containerId).withStdOut().exec();
+            Files.copy(logStream, Paths.get(containerName + ".log"));
+        } catch (IOException e) {
+            LOGGER.error("Could not write logs of container " + containerName);
+        }
     }
 
     public List<AbstractContainer> getContainers() {
