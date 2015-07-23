@@ -3,7 +3,7 @@ package org.apache.mesos.mini.util;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import org.apache.log4j.Logger;
-import org.apache.mesos.mini.docker.DockerUtil;
+import org.apache.mesos.mini.docker.ResponseCollector;
 
 import java.io.InputStream;
 import java.util.concurrent.Callable;
@@ -32,7 +32,7 @@ public class ContainerEchoResponse implements Callable<Boolean> {
             ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(containerId)
                     .withAttachStdout(true).withCmd("echo", "hello-container").exec();
             InputStream execCmdStream = dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec();
-            assertThat(DockerUtil.consumeInputStream(execCmdStream), containsString("hello-container"));
+            assertThat(ResponseCollector.collectResponse(execCmdStream), containsString("hello-container"));
         } catch (Exception e) {
             LOGGER.error("An error occured while waiting for container to echo test message", e);
             return false;

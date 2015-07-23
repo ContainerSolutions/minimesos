@@ -20,14 +20,14 @@ public class ImagePusher {
     }
 
     public void injectImage(String imageName) {
-        LOGGER.info("*****************************         Injecting image \"" + privateRepoURL + "/" + imageName + "\"         *****************************");
+        LOGGER.info("Injecting image [" + privateRepoURL + "/" + imageName + "]");
 
         // Retag image in local docker daemon
         dockerClient.tagImageCmd(imageName, privateRepoURL + "/" + imageName, "latest").withForce().exec();
 
         // Push from local docker daemon to private registry
         InputStream responsePushImage = dockerClient.pushImageCmd(privateRepoURL + "/" + imageName).exec();
-        String fullLog = DockerUtil.consumeInputStream(responsePushImage);
+        String fullLog = ResponseCollector.collectResponse(responsePushImage);
         if (!successfulPush(fullLog)){
             throw new DockerException("Unable to push image: " + fullLog, 404);
         }
@@ -35,7 +35,7 @@ public class ImagePusher {
         // As mesos-local daemon, pull from private registry
         ExecCreateCmdResponse exec = dockerClient.execCreateCmd(mesosClusterContainerId).withAttachStdout(true).withCmd("docker", "pull", "private-registry:5000/" + imageName).exec();
         InputStream execCmdStream = dockerClient.execStartCmd(exec.getId()).exec();
-        fullLog = DockerUtil.consumeInputStream(execCmdStream);
+        fullLog = ResponseCollector.collectResponse(execCmdStream);
         if (!successfulPull(fullLog)){
             throw new DockerException("Unable to pull image: " + fullLog, 404);
         }
@@ -43,7 +43,7 @@ public class ImagePusher {
         // As mesos-local daemon, retag in local registry
         exec = dockerClient.execCreateCmd(mesosClusterContainerId).withAttachStdout(true).withCmd("docker", "tag", "-f", "private-registry:5000/" + imageName, imageName).exec();
         dockerClient.execStartCmd(exec.getId()).exec(); // This doesn't produce any log messages
-        LOGGER.info("**** Injected successfully ****");
+        LOGGER.info("Succesfully injected [" + privateRepoURL + "/" + imageName + "]");
     }
 
     private boolean successfulPull(String fullLog) {
