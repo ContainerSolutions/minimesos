@@ -59,14 +59,17 @@ public class MesosCluster extends ExternalResource {
         try {
             DockerProxy dockerProxy = new DockerProxy(config.dockerClient, config.proxyPort);
             addAndStartContainer(dockerProxy);
+            LOGGER.info("Started Proxy at " + dockerProxy.getIpAddress() + ":" + config.proxyPort);
 
             // Pulls registry images and start container
             PrivateDockerRegistry privateDockerRegistry = new PrivateDockerRegistry(config.dockerClient, this.config);
             addAndStartContainer(privateDockerRegistry);
+            LOGGER.info("Started Registry at " + privateDockerRegistry.getIpAddress() + ":" + config.privateRegistryPort);
 
             // start the container
             mesosContainer = new MesosContainer(config.dockerClient, this.config, privateDockerRegistry.getContainerId());
             addAndStartContainer(mesosContainer);
+            LOGGER.info("Starting Mesos cluster at " + mesosContainer.getMesosMasterURL());
 
             DockerClientConfig.DockerClientConfigBuilder builder = DockerClientConfig.createDefaultConfigBuilder();
             String innerDockerHost = "http://" + mesosContainer.getIpAddress() + ":2376";
@@ -76,7 +79,6 @@ public class MesosCluster extends ExternalResource {
 
             // wait until the given number of slaves are registered
             new MesosClusterStateResponse(mesosContainer.getMesosMasterURL(), config.numberOfSlaves).waitFor();
-
         } catch (Throwable e) {
             LOGGER.error("Error during startup", e);
             throw e;
