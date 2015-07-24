@@ -48,7 +48,7 @@ public class MesosContainer extends AbstractContainer {
 
     @Override
     protected void pullImage() {
-        dockerUtil.pullImage(MESOS_LOCAL_IMAGE, REGISTRY_TAG);
+        pullImage(MESOS_LOCAL_IMAGE, REGISTRY_TAG);
     }
 
     @Override

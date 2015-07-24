@@ -21,7 +21,7 @@ public class DockerProxy extends AbstractContainer {
 
     @Override
     protected void pullImage() {
-        dockerUtil.pullImage(PROXY_IMAGE, "1.8.3");
+        pullImage(PROXY_IMAGE, "1.8.3");
     }
 
     @Override

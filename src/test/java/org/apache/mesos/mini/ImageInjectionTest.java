@@ -1,6 +1,5 @@
 package org.apache.mesos.mini;
 
-import org.apache.mesos.mini.docker.DockerUtil;
 import org.apache.mesos.mini.mesos.MesosClusterConfig;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -18,8 +17,9 @@ public class ImageInjectionTest {
 
     @Test
     public void testInjectImage() {
-        DockerUtil dockerUtil = new DockerUtil(config.dockerClient);
-        dockerUtil.pullImage("tutum/hello-world", "latest"); // Pull hello world image for test
+        HelloWorldContainer container = new HelloWorldContainer(config.dockerClient);
+        container.pullImage();
+
         cluster.injectImage("tutum/hello-world");
     }
 }

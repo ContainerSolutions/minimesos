@@ -153,12 +153,6 @@ public class MesosCluster extends ExternalResource {
 
     private void removeContainers() {
         for (AbstractContainer container : this.containers) {
-            if (container instanceof MesosContainer) {
-                List<Container> containers = innerDockerClient.listContainersCmd().exec();
-                for (Container innerContainer : containers) {
-                    writeLog("mesos-container-" + innerContainer.getId(), innerContainer.getId());
-                }
-            }
             writeLog(container.getName(), container.getContainerId());
             container.remove();
             LOGGER.info("Removing container [" + container.getName() + "]");

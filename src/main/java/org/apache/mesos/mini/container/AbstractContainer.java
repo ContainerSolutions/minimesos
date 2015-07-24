@@ -2,19 +2,31 @@ package org.apache.mesos.mini.container;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
-import org.apache.mesos.mini.docker.DockerUtil;
+import com.github.dockerjava.api.command.CreateContainerResponse;
+import com.github.dockerjava.api.command.StartContainerCmd;
+import org.apache.log4j.Logger;
+import org.apache.mesos.mini.docker.ResponseCollector;
+import org.apache.mesos.mini.util.ContainerEchoResponse;
+
+import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
+
+import static com.jayway.awaitility.Awaitility.await;
+import static org.hamcrest.CoreMatchers.is;
 
 /**
  * Extend this class to start and manage your own containers
  */
 public abstract class AbstractContainer {
+
+    private static Logger LOGGER = Logger.getLogger(AbstractContainer.class);
+
     protected final DockerClient dockerClient;
-    protected final DockerUtil dockerUtil;
+
     private String containerId = "";
 
     protected AbstractContainer(DockerClient dockerClient) {
         this.dockerClient = dockerClient;
-        dockerUtil = new DockerUtil(this.dockerClient);
     }
 
     /**
@@ -24,16 +36,33 @@ public abstract class AbstractContainer {
     protected abstract void pullImage();
 
     /**
-     * Implement this method to create your container. If you use {@link DockerUtil} then your container will be
-     * automatically deleted.
+     * Implement this method to create your container.
+     *
      * For example, see {@link org.apache.mesos.mini.docker.DockerProxy}
+     *
      * @return Your {@link CreateContainerCmd} for docker.
      */
     protected abstract CreateContainerCmd dockerCommand();
 
     public void start() {
         pullImage();
-        containerId = dockerUtil.createAndStart(dockerCommand());
+
+        CreateContainerCmd createCommand = dockerCommand();
+
+        LOGGER.debug("Creating container [" + createCommand.getName() + "]");
+
+        CreateContainerResponse r = createCommand.exec();
+        String containerId = r.getId();
+        StartContainerCmd startMesosClusterContainerCmd = dockerClient.startContainerCmd(containerId);
+        startMesosClusterContainerCmd.exec();
+        await("Waiting for container: " + createCommand.getName())
+                .atMost(20, TimeUnit.SECONDS)
+                .pollInterval(1, TimeUnit.SECONDS)
+                .until(new ContainerEchoResponse(dockerClient, containerId), is(true));
+
+        this.containerId = containerId;
+
+        LOGGER.debug("Container is up and running");
     }
 
     /**
@@ -63,5 +92,11 @@ public abstract class AbstractContainer {
      */
     public void remove() {
         dockerClient.removeContainerCmd(containerId).withForce().exec();
+    }
+
+    protected void pullImage(String imageName, String registryTag) {
+        LOGGER.debug("Pulling image [" + imageName + ":" + registryTag + "]");
+        InputStream responsePullImages = dockerClient.pullImageCmd(imageName).withTag(registryTag).exec();
+        ResponseCollector.collectResponse(responsePullImages);
     }
 }

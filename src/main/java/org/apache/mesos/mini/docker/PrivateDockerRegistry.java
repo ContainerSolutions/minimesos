@@ -40,7 +40,7 @@ public class PrivateDockerRegistry extends AbstractContainer {
 
     @Override
     protected void pullImage() {
-        dockerUtil.pullImage(REGISTRY_IMAGE_NAME, REGISTRY_TAG);
+        pullImage(REGISTRY_IMAGE_NAME, REGISTRY_TAG);
     }
 
     @Override

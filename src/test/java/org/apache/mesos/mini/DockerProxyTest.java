@@ -71,7 +71,7 @@ public class DockerProxyTest {
 
         @Override
         protected void pullImage() {
-            dockerUtil.pullImage(HELLO_WORLD_IMAGE, "latest");
+            pullImage(HELLO_WORLD_IMAGE, "latest");
         }
 
         @Override
