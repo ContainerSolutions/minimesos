@@ -1,4 +1,5 @@
 # mini-mesos
+
 Testing infrastructure for Mesos frameworks. 
 
 ## Overview
@@ -20,6 +21,8 @@ A possible testing scenario could be:
  5. The test utilities take care of stopping and removing the used Mesos cluster container...
 
 ![Mini Mesos](/docs/mini-mesos.gif?raw=true "Mini Mesos")
+
+![Creative Commons Licence](/docs/cc-cc.png "Creative Commons Licence") This work is licensed under CC BY | Authors: [remember to play](http://remembertoplay.co/) in collaboration with [Container Solutions](http://www.container-solutions.com/).
 
 ## Running on a mac
 
