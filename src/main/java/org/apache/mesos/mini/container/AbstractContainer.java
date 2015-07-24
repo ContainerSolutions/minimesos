@@ -2,17 +2,16 @@ package org.apache.mesos.mini.container;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.command.CreateContainerResponse;
-import com.github.dockerjava.api.command.StartContainerCmd;
+import com.github.dockerjava.api.model.Container;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.docker.ResponseCollector;
-import org.apache.mesos.mini.util.ContainerEchoResponse;
 
 import java.io.InputStream;
+import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.await;
-import static org.hamcrest.CoreMatchers.is;
 
 /**
  * Extend this class to start and manage your own containers
@@ -44,23 +43,19 @@ public abstract class AbstractContainer {
      */
     protected abstract CreateContainerCmd dockerCommand();
 
+    /**
+     * Starts the container and waits until is started
+     */
     public void start() {
         pullImage();
 
         CreateContainerCmd createCommand = dockerCommand();
-
         LOGGER.debug("Creating container [" + createCommand.getName() + "]");
+        containerId = createCommand.exec().getId();
 
-        CreateContainerResponse r = createCommand.exec();
-        String containerId = r.getId();
-        StartContainerCmd startMesosClusterContainerCmd = dockerClient.startContainerCmd(containerId);
-        startMesosClusterContainerCmd.exec();
-        await("Waiting for container: " + createCommand.getName())
-                .atMost(20, TimeUnit.SECONDS)
-                .pollInterval(1, TimeUnit.SECONDS)
-                .until(new ContainerEchoResponse(dockerClient, containerId), is(true));
+        dockerClient.startContainerCmd(containerId).exec();
 
-        this.containerId = containerId;
+        await().atMost(20, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new ContainerIsRunning<Boolean>(containerId));
 
         LOGGER.debug("Container is up and running");
     }
@@ -98,5 +93,25 @@ public abstract class AbstractContainer {
         LOGGER.debug("Pulling image [" + imageName + ":" + registryTag + "]");
         InputStream responsePullImages = dockerClient.pullImageCmd(imageName).withTag(registryTag).exec();
         ResponseCollector.collectResponse(responsePullImages);
+    }
+
+    private class ContainerIsRunning<T> implements Callable<Boolean> {
+
+        private String containerId;
+
+        public ContainerIsRunning(String containerId) {
+            this.containerId = containerId;
+        }
+
+        @Override
+        public Boolean call() throws Exception {
+            List<Container> containers = dockerClient.listContainersCmd().exec();
+            for (Container container : containers) {
+                if (container.getId().equals(containerId)) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }
