@@ -160,7 +160,7 @@ public class MesosCluster extends ExternalResource {
             if (container instanceof MesosContainer) {
                 List<Container> containers = innerDockerClient.listContainersCmd().exec();
                 for (Container innerContainer : containers) {
-                    writeLog(innerContainer.getNames()[0], innerContainer.getId());
+                    writeLog("mesos-container-" + innerContainer.getId(), innerContainer.getId());
                 }
             }
             writeLog(container.getName(), container.getContainerId());
