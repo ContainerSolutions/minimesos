@@ -45,6 +45,6 @@ public class MesosClusterStateResponse implements Callable<Boolean> {
                 .pollInterval(1, TimeUnit.SECONDS)
                 .until(this, is(true));
 
-        LOGGER.info("MesosMaster state discovered successfully");
+        LOGGER.debug("MesosMaster state discovered successfully");
     }
 }
