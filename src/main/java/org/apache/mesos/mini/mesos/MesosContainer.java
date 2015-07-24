@@ -3,6 +3,7 @@ package org.apache.mesos.mini.mesos;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.Volume;
 import org.apache.mesos.mini.container.AbstractContainer;
@@ -59,6 +60,7 @@ public class MesosContainer extends AbstractContainer {
                 .withPrivileged(true)
                         // the registry container will be known as 'private-registry' to mesos-local
                 .withLinks(Link.parse(registryContainerId + ":private-registry"))
+                .withExposedPorts(new ExposedPort(2376))
                 .withEnv(createMesosLocalEnvironment())
                 .withVolumes(new Volume("/sys/fs/cgroup"))
                 .withBinds(Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup:rw"));

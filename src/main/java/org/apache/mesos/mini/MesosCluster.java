@@ -1,7 +1,11 @@
 package org.apache.mesos.mini;
 
+import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.InternalServerErrorException;
+import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.core.DockerClientBuilder;
+import com.github.dockerjava.core.DockerClientConfig;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.log4j.Logger;
@@ -43,6 +47,8 @@ public class MesosCluster extends ExternalResource {
 
     private MesosContainer mesosContainer;
 
+    private DockerClient innerDockerClient;
+
     public MesosCluster(MesosClusterConfig config) {
         this.config = config;
     }
@@ -67,6 +73,12 @@ public class MesosCluster extends ExternalResource {
             // start the container
             mesosContainer = new MesosContainer(config.dockerClient, this.config, privateDockerRegistry.getContainerId());
             addAndStartContainer(mesosContainer);
+
+            DockerClientConfig.DockerClientConfigBuilder builder = DockerClientConfig.createDefaultConfigBuilder();
+            String innerDockerHost = "http://" + mesosContainer.getIpAddress() + ":2376";
+            builder.withUri(innerDockerHost);
+            DockerClientConfig innerDockerConfig = builder.build();
+            innerDockerClient = DockerClientBuilder.getInstance(innerDockerConfig).build();
 
             // wait until the given number of slaves are registered
             new MesosClusterStateResponse(mesosContainer.getMesosMasterURL(), config.numberOfSlaves).waitFor();
@@ -145,6 +157,12 @@ public class MesosCluster extends ExternalResource {
 
     private void removeContainers() {
         for (AbstractContainer container : this.containers) {
+            if (container instanceof MesosContainer) {
+                List<Container> containers = innerDockerClient.listContainersCmd().exec();
+                for (Container innerContainer : containers) {
+                    writeLog(innerContainer.getNames()[0], innerContainer.getId());
+                }
+            }
             writeLog(container.getName(), container.getContainerId());
             container.remove();
             LOGGER.info("Removing container [" + container.getName() + "]");
