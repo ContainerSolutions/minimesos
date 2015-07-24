@@ -1,4 +1,5 @@
 # mini-mesos
+
 Testing infrastructure for Mesos frameworks. 
 
 ## Overview
@@ -18,6 +19,10 @@ A possible testing scenario could be:
  3. The scheduler launches a task (which runs the executor as a docker container) on a suitable slave.
  4. Poll the state of the Mesos cluster to verify that you framework is running
  5. The test utilities take care of stopping and removing the used Mesos cluster container...
+
+![Mini Mesos](/docs/mini-mesos.gif?raw=true "Mini Mesos")
+
+![Creative Commons Licence](/docs/cc-cc.png "Creative Commons Licence") Licenced under CC BY [remember to play](http://remembertoplay.co/) in collaboration with [Container Solutions](http://www.container-solutions.com/)
 
 ## Running on a mac
 
