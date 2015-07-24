@@ -175,7 +175,7 @@ public class MesosCluster extends ExternalResource {
             InputStream logStream = this.config.dockerClient.logContainerCmd(containerId).withStdOut().exec();
             Files.copy(logStream, Paths.get(containerName + ".log"));
         } catch (IOException e) {
-            LOGGER.error("Could not write logs of container " + containerName);
+            LOGGER.error("Could not write logs of container " + containerName, e);
         }
     }
 
