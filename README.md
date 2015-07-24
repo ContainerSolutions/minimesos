@@ -19,6 +19,8 @@ A possible testing scenario could be:
  4. Poll the state of the Mesos cluster to verify that you framework is running
  5. The test utilities take care of stopping and removing the used Mesos cluster container...
 
+![Mini Mesos](/docs/mini-mesos.gif?raw=true "Mini Mesos")
+
 ## Running on a mac
 
 Create a docker machine and make sure its environment variables are visible to the test
