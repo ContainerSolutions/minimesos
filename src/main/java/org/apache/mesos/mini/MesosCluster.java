@@ -56,18 +56,20 @@ public class MesosCluster extends ExternalResource {
         LOGGER.info("Starting Mesos cluster");
 
         try {
+            LOGGER.info("Starting Proxy");
             DockerProxy dockerProxy = new DockerProxy(config.dockerClient, config.proxyPort);
             addAndStartContainer(dockerProxy);
             LOGGER.info("Started Proxy at " + dockerProxy.getIpAddress() + ":" + config.proxyPort);
 
-            // Pulls registry images and start container
+            LOGGER.info("Starting Registry");
             PrivateDockerRegistry privateDockerRegistry = new PrivateDockerRegistry(config.dockerClient, this.config);
             addAndStartContainer(privateDockerRegistry);
             LOGGER.info("Started Registry at " + privateDockerRegistry.getIpAddress() + ":" + config.privateRegistryPort);
 
-            // start the container
+            LOGGER.info("Starting Mesos Local");
             mesosContainer = new MesosContainer(config.dockerClient, this.config, privateDockerRegistry.getContainerId());
             addAndStartContainer(mesosContainer);
+            LOGGER.info("Started Mesos Local " + mesosContainer.getMesosMasterURL());
 
             DockerClientConfig.DockerClientConfigBuilder builder = DockerClientConfig.createDefaultConfigBuilder();
             String innerDockerHost = "http://" + mesosContainer.getIpAddress() + ":2376";
@@ -81,7 +83,7 @@ public class MesosCluster extends ExternalResource {
             LOGGER.error("Error during startup", e);
             throw e;
         }
-        LOGGER.info("Mesos cluster started at " + mesosContainer.getMesosMasterURL());
+        LOGGER.info("Mesos cluster started");
     }
 
     /**
@@ -152,9 +154,9 @@ public class MesosCluster extends ExternalResource {
 
     private void removeContainers() {
         for (AbstractContainer container : this.containers) {
+            LOGGER.info("Removing container [" + container.getName() + "]");
             writeLog(container.getName(), container.getContainerId());
             container.remove();
-            LOGGER.info("Removing container [" + container.getName() + "]");
         }
         this.containers.clear();
     }
