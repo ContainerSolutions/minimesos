@@ -56,14 +56,6 @@ public class MesosCluster extends ExternalResource {
     public void start() {
         LOGGER.info("Starting Mesos cluster");
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                LOGGER.info("Shutdown hook - removing containers");
-                removeContainers();
-            }
-        });
-
         try {
             DockerProxy dockerProxy = new DockerProxy(config.dockerClient, config.proxyPort);
             addAndStartContainer(dockerProxy);
