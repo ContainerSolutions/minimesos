@@ -22,7 +22,7 @@ A possible testing scenario could be:
 
 ![Mini Mesos](/docs/mini-mesos.gif?raw=true "Mini Mesos")
 
-![Creative Commons Licence](/docs/cc-cc.png "Creative Commons Licence") This work is licensed under CC BY | Authors: [remember to play](http://remembertoplay.co/) in collaboration with [Container Solutions](http://www.container-solutions.com/).
+![Creative Commons Licence](/docs/cc-cc.png "Creative Commons Licence") Licenced under CC BY [remember to play](http://remembertoplay.co/) in collaboration with [Container Solutions](http://www.container-solutions.com/)
 
 ## Running on a mac
 
