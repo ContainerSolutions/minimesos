@@ -174,6 +174,9 @@ public class MesosCluster extends ExternalResource {
     }
 
     private void writeLog(String containerName, String containerId) {
+        if (containerId == null) {
+            return;
+        }
         try {
             InputStream logStream = this.config.dockerClient.logContainerCmd(containerId).withStdOut().exec();
             Files.copy(logStream, Paths.get(containerName + ".log"));
