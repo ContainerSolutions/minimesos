@@ -25,7 +25,7 @@ public class MesosClusterStateResponse implements Callable<Boolean> {
         try {
             int activated_slaves = Unirest.get("http://" + mesosMasterUrl + "/state.json").asJson().getBody().getObject().getInt("activated_slaves");
             if (!(activated_slaves == expectedNumberOfSlaves)) {
-                LOGGER.info("Waiting for " + expectedNumberOfSlaves + " activated slaves - current number of activated slaves: " + activated_slaves);
+                LOGGER.debug("Waiting for " + expectedNumberOfSlaves + " activated slaves - current number of activated slaves: " + activated_slaves);
                 return false;
             }
         } catch (UnirestException e) {
