@@ -69,7 +69,6 @@ public class MesosCluster extends ExternalResource {
             // start the container
             mesosContainer = new MesosContainer(config.dockerClient, this.config, privateDockerRegistry.getContainerId());
             addAndStartContainer(mesosContainer);
-            LOGGER.info("Starting Mesos cluster at " + mesosContainer.getMesosMasterURL());
 
             DockerClientConfig.DockerClientConfigBuilder builder = DockerClientConfig.createDefaultConfigBuilder();
             String innerDockerHost = "http://" + mesosContainer.getIpAddress() + ":2376";
@@ -83,7 +82,7 @@ public class MesosCluster extends ExternalResource {
             LOGGER.error("Error during startup", e);
             throw e;
         }
-        LOGGER.info("Mesos cluster started");
+        LOGGER.info("Mesos cluster started at " + mesosContainer.getMesosMasterURL());
     }
 
     /**
