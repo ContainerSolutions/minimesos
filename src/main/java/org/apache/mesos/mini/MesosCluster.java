@@ -54,6 +54,8 @@ public class MesosCluster extends ExternalResource {
     }
 
     public void start() {
+        LOGGER.info("Starting Mesos cluster");
+
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
@@ -87,6 +89,7 @@ public class MesosCluster extends ExternalResource {
             LOGGER.error("Error during startup", e);
             throw e;
         }
+        LOGGER.info("Mesos cluster started");
     }
 
     /**

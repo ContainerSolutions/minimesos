@@ -43,7 +43,7 @@ public class DockerUtil {
 
     public void awaitEchoResponse(String containerId, String containerName) throws ConditionTimeoutException {
         await("Waiting for container: " + containerName)
-                .atMost(10, TimeUnit.SECONDS)
+                .atMost(20, TimeUnit.SECONDS)
                 .pollInterval(1, TimeUnit.SECONDS)
                 .until(new ContainerEchoResponse(dockerClient, containerId), is(true));
     }

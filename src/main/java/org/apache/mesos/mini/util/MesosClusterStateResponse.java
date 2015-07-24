@@ -29,7 +29,7 @@ public class MesosClusterStateResponse implements Callable<Boolean> {
                 return false;
             }
         } catch (UnirestException e) {
-            LOGGER.info("Polling MesosMaster state on host: \"" + mesosMasterUrl + "\"...");
+            LOGGER.debug("Polling MesosMaster state on host: \"" + mesosMasterUrl + "\"...");
             return false;
         } catch (Exception e) {
             LOGGER.error("An error occured while polling mesos master", e);
