@@ -52,6 +52,9 @@ public class MesosCluster extends ExternalResource {
         this.config = config;
     }
 
+    /**
+     * Starts the Mesos cluster and its containers
+     */
     public void start() {
         LOGGER.info("Starting Mesos cluster");
 
@@ -84,6 +87,14 @@ public class MesosCluster extends ExternalResource {
             throw e;
         }
         LOGGER.info("Mesos cluster started");
+    }
+
+    /**
+     * Stops the Mesos cluster and its containers
+     */
+    public void stop() {
+        LOGGER.info("Stopping Mesos cluster");
+        removeContainers();
     }
 
     /**
@@ -149,7 +160,7 @@ public class MesosCluster extends ExternalResource {
 
     @Override
     protected void after() {
-        removeContainers();
+        stop();
     }
 
     private void removeContainers() {
