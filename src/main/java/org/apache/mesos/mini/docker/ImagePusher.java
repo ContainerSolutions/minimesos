@@ -29,7 +29,7 @@ public class ImagePusher {
         InputStream responsePushImage = dockerClient.pushImageCmd(privateRepoURL + "/" + imageName).exec();
         String fullLog = ResponseCollector.collectResponse(responsePushImage);
         if (!successfulPush(fullLog)){
-            throw new DockerException("Unable to push image: " + fullLog, 404);
+            throw new DockerException("Unable to push image: " + imageName + "\n" + fullLog, 404);
         }
 
         // As mesos-local daemon, pull from private registry
@@ -37,7 +37,7 @@ public class ImagePusher {
         InputStream execCmdStream = dockerClient.execStartCmd(exec.getId()).exec();
         fullLog = ResponseCollector.collectResponse(execCmdStream);
         if (!successfulPull(fullLog)){
-            throw new DockerException("Unable to pull image: " + fullLog, 404);
+            throw new DockerException("Unable to pull image: " + imageName + "\n" + fullLog, 404);
         }
 
         // As mesos-local daemon, retag in local registry
