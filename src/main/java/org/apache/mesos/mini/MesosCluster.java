@@ -94,7 +94,12 @@ public class MesosCluster extends ExternalResource {
      */
     public void stop() {
         LOGGER.info("Stopping Mesos cluster");
-        removeContainers();
+        for (AbstractContainer container : this.containers) {
+            LOGGER.info("Removing container [" + container.getName() + "]");
+            writeLog(container.getName(), container.getContainerId());
+            container.remove();
+        }
+        this.containers.clear();
     }
 
     /**
@@ -161,15 +166,6 @@ public class MesosCluster extends ExternalResource {
     @Override
     protected void after() {
         stop();
-    }
-
-    private void removeContainers() {
-        for (AbstractContainer container : this.containers) {
-            LOGGER.info("Removing container [" + container.getName() + "]");
-            writeLog(container.getName(), container.getContainerId());
-            container.remove();
-        }
-        this.containers.clear();
     }
 
     private void writeLog(String containerName, String containerId) {
