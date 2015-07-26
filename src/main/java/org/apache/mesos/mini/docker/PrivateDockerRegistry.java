@@ -17,7 +17,7 @@ public class PrivateDockerRegistry extends AbstractContainer {
     private final Logger LOGGER = Logger.getLogger(PrivateDockerRegistry.class);
     private final MesosClusterConfig config;
     private final String REGISTRY_IMAGE_NAME = "registry";
-    private final String REGISTRY_TAG = "0.9.1";
+    private final String REGISTRY_TAG = "2.0.1";
 
     public PrivateDockerRegistry(DockerClient dockerClient, MesosClusterConfig config) {
         super(dockerClient);
