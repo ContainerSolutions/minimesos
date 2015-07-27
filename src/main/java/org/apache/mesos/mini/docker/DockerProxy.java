@@ -12,6 +12,7 @@ public class DockerProxy extends AbstractContainer {
 
     public static final String PROXY_IMAGE = "paintedfox/tinyproxy";
     public static final String CONTAINER_NAME = "tinyproxy";
+    public static final String TAG = "latest";
     public final int proxyPort;
 
     public DockerProxy(DockerClient dockerClient, int port) {
@@ -21,13 +22,13 @@ public class DockerProxy extends AbstractContainer {
 
     @Override
     protected void pullImage() {
-        pullImage(PROXY_IMAGE, "1.8.3");
+        pullImage(PROXY_IMAGE, TAG);
     }
 
     @Override
     protected CreateContainerCmd dockerCommand() {
         return dockerClient
-                .createContainerCmd(PROXY_IMAGE)
+                .createContainerCmd(PROXY_IMAGE + ":" + TAG)
                 .withName(generateRegistryContainerName())
                 .withExposedPorts(ExposedPort.parse("" + proxyPort))
                 .withPortBindings(PortBinding.parse("0.0.0.0:" + proxyPort + ":8888"));
