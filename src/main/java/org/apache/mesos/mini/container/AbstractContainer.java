@@ -86,7 +86,7 @@ public abstract class AbstractContainer {
      * Removes a container with force
      */
     public void remove() {
-        dockerClient.removeContainerCmd(containerId).withForce().exec();
+        dockerClient.removeContainerCmd(containerId).withForce().withRemoveVolumes(true).exec();
     }
 
     protected void pullImage(String imageName, String registryTag) {
