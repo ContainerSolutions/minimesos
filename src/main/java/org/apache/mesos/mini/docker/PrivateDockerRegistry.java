@@ -35,7 +35,7 @@ public class PrivateDockerRegistry extends AbstractContainer {
         return dockerClient.createContainerCmd(REGISTRY_IMAGE_NAME + ":" + REGISTRY_TAG)
                 .withName(generateRegistryContainerName())
                 .withExposedPorts(ExposedPort.parse("5000"))
-                .withEnv("STORAGE_PATH=/var/lib/registry")
+                .withEnv("REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/var/lib/registry")
                 .withPortBindings(PortBinding.parse("0.0.0.0:" + config.privateRegistryPort + ":5000"));
     }
 }
