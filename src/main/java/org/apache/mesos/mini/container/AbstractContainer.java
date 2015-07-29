@@ -47,6 +47,14 @@ public abstract class AbstractContainer {
      * Starts the container and waits until is started
      */
     public void start() {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                LOGGER.info("Shutdown hook - Removing container " + AbstractContainer.this.getName());
+                remove();
+            }
+        });
+
         pullImage();
 
         CreateContainerCmd createCommand = dockerCommand();
