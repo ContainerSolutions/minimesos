@@ -122,4 +122,8 @@ public abstract class AbstractContainer {
             return false;
         }
     }
+
+    @Override public String toString() {
+        return String.format("Container: %s (%s)", this.getName(), this.getContainerId());
+    }
 }
