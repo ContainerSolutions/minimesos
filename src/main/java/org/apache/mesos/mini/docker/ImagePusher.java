@@ -51,6 +51,6 @@ public class ImagePusher {
     }
 
     private boolean successfulPush(String fullLog) {
-        return fullLog.contains("successfully pushed") || fullLog.contains("already pushed");
+        return fullLog.contains("successfully pushed") || fullLog.contains("already pushed") || fullLog.contains("already exists");
     }
 }
