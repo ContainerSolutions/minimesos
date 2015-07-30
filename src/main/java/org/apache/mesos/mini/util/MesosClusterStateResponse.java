@@ -41,7 +41,7 @@ public class MesosClusterStateResponse implements Callable<Boolean> {
     public void waitFor() {
 
         await()
-                .atMost(20, TimeUnit.SECONDS)
+                .atMost(60, TimeUnit.SECONDS)
                 .pollInterval(1, TimeUnit.SECONDS)
                 .until(this, is(true));
 
