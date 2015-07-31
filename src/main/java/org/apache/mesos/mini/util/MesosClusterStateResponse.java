@@ -25,11 +25,11 @@ public class MesosClusterStateResponse implements Callable<Boolean> {
         try {
             int activated_slaves = Unirest.get("http://" + mesosMasterUrl + "/state.json").asJson().getBody().getObject().getInt("activated_slaves");
             if (!(activated_slaves == expectedNumberOfSlaves)) {
-                LOGGER.info("Waiting for " + expectedNumberOfSlaves + " activated slaves - current number of activated slaves: " + activated_slaves);
+                LOGGER.debug("Waiting for " + expectedNumberOfSlaves + " activated slaves - current number of activated slaves: " + activated_slaves);
                 return false;
             }
         } catch (UnirestException e) {
-            LOGGER.info("Polling MesosMaster state on host: \"" + mesosMasterUrl + "\"...");
+            LOGGER.debug("Polling MesosMaster state on host: \"" + mesosMasterUrl + "\"...");
             return false;
         } catch (Exception e) {
             LOGGER.error("An error occured while polling mesos master", e);
@@ -41,10 +41,10 @@ public class MesosClusterStateResponse implements Callable<Boolean> {
     public void waitFor() {
 
         await()
-                .atMost(20, TimeUnit.SECONDS)
+                .atMost(60, TimeUnit.SECONDS)
                 .pollInterval(1, TimeUnit.SECONDS)
                 .until(this, is(true));
 
-        LOGGER.info("MesosMaster state discovered successfully");
+        LOGGER.debug("MesosMaster state discovered successfully");
     }
 }

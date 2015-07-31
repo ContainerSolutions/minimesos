@@ -8,29 +8,22 @@ import com.mashape.unirest.http.Unirest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
 
-import java.io.File;
-import java.net.URI;
-
 public class MesosClusterConfig {
 
     public final DockerClient dockerClient;
     public final int numberOfSlaves;
     public final String[] slaveResources;
-    public final URI dockerHost;
     public final Integer mesosMasterPort;
     public final Integer privateRegistryPort;
-    public final String[] dindImages;
-    public final ImageToBuild[] imagesToBuild;
+    public final Integer proxyPort;
 
-    private MesosClusterConfig(DockerClient dockerClient, int numberOfSlaves, String[] slaveResources, URI dockerHost, Integer mesosMasterPort, String[] dindImages, Integer privateRegistryPort, ImageToBuild[] imagesToBuild) {
+    private MesosClusterConfig(DockerClient dockerClient, int numberOfSlaves, String[] slaveResources, Integer mesosMasterPort, Integer privateRegistryPort, Integer proxyPort) {
         this.dockerClient = dockerClient;
         this.numberOfSlaves = numberOfSlaves;
         this.slaveResources = slaveResources;
-        this.dockerHost = dockerHost;
         this.mesosMasterPort = mesosMasterPort;
-        this.dindImages = dindImages;
         this.privateRegistryPort = privateRegistryPort;
-        this.imagesToBuild = imagesToBuild;
+        this.proxyPort = proxyPort;
     }
 
 
@@ -43,12 +36,9 @@ public class MesosClusterConfig {
         DockerClient dockerClient;
         int numberOfSlaves = 3;
         String[] slaveResources = new String[]{};
-        URI dockerHost;
         Integer mesosMasterPort = Integer.valueOf(5050);
         Integer privateRegistryPort = Integer.valueOf(5000);
-        String[] dindImages = new String[]{};
-        ImageToBuild[] imagesToBuild = new ImageToBuild[]{};
-
+        Integer proxyPort = Integer.valueOf(8888);
 
 
         private Builder() {
@@ -75,12 +65,13 @@ public class MesosClusterConfig {
             return this;
         }
 
-        public Builder masterPort(int port) {
-            this.mesosMasterPort = Integer.valueOf(port);
+        public Builder proxyPort(int port){
+            this.proxyPort = port;
             return this;
         }
-        public Builder imagesToBuild(ImageToBuild ... imagesToBuild){
-            this.imagesToBuild = imagesToBuild;
+
+        public Builder masterPort(int port) {
+            this.mesosMasterPort = Integer.valueOf(port);
             return this;
         }
 
@@ -96,11 +87,10 @@ public class MesosClusterConfig {
             DockerClientConfig config = builder.build();
 
             if (config.getUri().getScheme().startsWith("http")) {
-                HttpHost proxy = new HttpHost(config.getUri().getHost(), 8888);
+                HttpHost proxy = new HttpHost(config.getUri().getHost(), this.proxyPort);
                 Unirest.setProxy(proxy);
             }
             this.dockerClient = DockerClientBuilder.getInstance(config).build();
-            this.dockerHost = config.getUri();
             return this;
         }
 
@@ -123,24 +113,9 @@ public class MesosClusterConfig {
                 }
             }
 
-            return new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, dockerHost, mesosMasterPort, dindImages, privateRegistryPort, imagesToBuild);
+            return new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, mesosMasterPort, privateRegistryPort, proxyPort);
         }
 
-
-        public Builder dockerInDockerImages(String[] dindImages) {
-            this.dindImages = dindImages;
-            return this;
-        }
-    }
-
-    public static class ImageToBuild {
-        final File srcFolder;
-        final String tag;
-
-        public ImageToBuild(File srcFolder, String tag) {
-            this.srcFolder = srcFolder;
-            this.tag = tag;
-        }
     }
 
 }

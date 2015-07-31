@@ -1,4 +1,5 @@
 # mini-mesos
+
 Testing infrastructure for Mesos frameworks. 
 
 ## Overview
@@ -19,12 +20,24 @@ A possible testing scenario could be:
  4. Poll the state of the Mesos cluster to verify that you framework is running
  5. The test utilities take care of stopping and removing the used Mesos cluster container...
 
+![Mini Mesos](/docs/mini-mesos.gif?raw=true "Mini Mesos")
+
+![Creative Commons Licence](/docs/cc-cc.png "Creative Commons Licence") Licenced under CC BY [remember to play](http://remembertoplay.co/) in collaboration with [Container Solutions](http://www.container-solutions.com/)
+
 ## Running on a mac
-The only requirement is to ensure that your docker-machine envrionmental variables are visible to the tests. For example, in Idea, add the `docker-machine env` variables to the idea junit testing dialog. E.g.
+
+Create a docker machine and make sure its environment variables are visible to the test
+
+```
+$ docker-machine create -d virtualbox --virtualbox-memory 4096 mini-mesos
+$ eval $(docker-machine env mini-mesos)
+```
+
+In Idea, add the `docker-machine env` variables to the idea junit testing dialog. E.g.
 ```
 DOCKER_TLS_VERIFY=1
 DOCKER_HOST=tcp://192.168.99.100:2376
-DOCKER_CERT_PATH=/Users/phil-mac/.docker/machine/machines/dev
+DOCKER_CERT_PATH=/home/user/.docker/machine/machines/mini-mesos
 ```
 
 ## Usage
@@ -45,7 +58,6 @@ public class MesosClusterTest {
             
     @Test
     public void mesosClusterCanBeStarted() throws Exception {
-        cluster.start();
         JSONObject stateInfo = cluster.getStateInfoJSON();
     
         Assert.assertEquals(3, stateInfo.getInt("activated_slaves"));
@@ -55,9 +67,7 @@ public class MesosClusterTest {
 }
 ```
 
-In this snippet we're configuring the Mesos cluster to start 3 slaves with different resources. We want to make the 
-docker image "mesos/elasticsearch-executor" which is build automically because we configured it with "imagesToBuild" to
-be available inside the Mesos cluster container. 
+In this snippet we're configuring the Mesos cluster to start 3 slaves with different resources. 
 
 Other test cases could call the scheduler directly...
 
@@ -72,7 +82,9 @@ Once the mesos cluster is running, you will probably want to push your own image
         proxy.start();
 
         HelloWorldContainer helloWorldContainer = new HelloWorldContainer(dockerClient);
-        helloWorldContainer.start();
+        cluster.addAndStartContainer(helloWorldContainer); // This will automatically shut down your container.
+        //helloWorld.start(); // Alternatively, you can start and shutdown the container yourself.
+        //helloWorld.remove();
 
         String ipAddress = helloWorldContainer.getIpAddress();
         String url = "http://" + ipAddress + ":" + HelloWorldContainer.PORT;
