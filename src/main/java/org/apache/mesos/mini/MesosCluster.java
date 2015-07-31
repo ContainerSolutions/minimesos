@@ -1,10 +1,7 @@
 package org.apache.mesos.mini;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.InternalServerErrorException;
-import com.github.dockerjava.core.DockerClientBuilder;
-import com.github.dockerjava.core.DockerClientConfig;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.log4j.Logger;
@@ -46,8 +43,6 @@ public class MesosCluster extends ExternalResource {
 
     private MesosContainer mesosContainer;
 
-    private DockerClient innerDockerClient;
-
     public MesosCluster(MesosClusterConfig config) {
         this.config = config;
     }
@@ -73,12 +68,6 @@ public class MesosCluster extends ExternalResource {
             mesosContainer = new MesosContainer(config.dockerClient, this.config, privateDockerRegistry.getContainerId());
             addAndStartContainer(mesosContainer);
             LOGGER.info("Started Mesos Local at " + mesosContainer.getMesosMasterURL());
-
-            DockerClientConfig.DockerClientConfigBuilder builder = DockerClientConfig.createDefaultConfigBuilder();
-            String innerDockerHost = "http://" + mesosContainer.getIpAddress() + ":2376";
-            builder.withUri(innerDockerHost);
-            DockerClientConfig innerDockerConfig = builder.build();
-            innerDockerClient = DockerClientBuilder.getInstance(innerDockerConfig).build();
 
             // wait until the given number of slaves are registered
             new MesosClusterStateResponse(mesosContainer.getMesosMasterURL(), config.numberOfSlaves).waitFor();
