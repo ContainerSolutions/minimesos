@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.InternalServerErrorException;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.http.HttpHost;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.container.AbstractContainer;
 import org.apache.mesos.mini.docker.DockerProxy;
@@ -70,8 +71,15 @@ public class MesosCluster extends ExternalResource {
             LOGGER.info("Started Mesos Local at " + mesosContainer.getMesosMasterURL());
 
             // wait until the given number of slaves are registered
+            if (!System.getenv("MINI_MESOS_PROXY_HOST").isEmpty()) {
+                HttpHost proxy = new HttpHost(System.getenv("MINI_MESOS_PROXY_HOST"), Integer.parseInt(System.getenv("MINI_MESOS_PROXY_PORT")), System.getenv("MINI_MESOS_PROXY_SCHEME"));
+                LOGGER.info("Using proxy: " + System.getenv("MINI_MESOS_PROXY_HOST") + ":" + System.getenv("MINI_MESOS_PROXY_PORT"));
+                new MesosClusterStateResponse(mesosContainer.getMesosMasterURL(), config.numberOfSlaves, proxy).waitFor();
+            }
             new MesosClusterStateResponse(mesosContainer.getMesosMasterURL(), config.numberOfSlaves).waitFor();
-        } catch (Throwable e) {
+
+            }
+             catch (Throwable e) {
             LOGGER.error("Error during startup", e);
             throw e;
         }
