@@ -1,0 +1,12 @@
+{
+  "containers": [
+    {
+      "image": "tutum/hello-world",
+      "with": {
+        "name": "hello-world",
+//        "cmd": ["java", "blah", "blah"],
+        "exposed_ports": [80]
+      }
+    }
+  ]
+}
