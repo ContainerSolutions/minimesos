@@ -1,10 +1,10 @@
 package org.apache.mesos.mini;
 
+import org.apache.log4j.Logger;
 import org.apache.mesos.mini.container.AbstractContainer;
 import org.apache.mesos.mini.mesos.MesosClusterConfig;
 import org.apache.mesos.mini.util.JsonContainerSpec;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.util.List;
@@ -14,14 +14,13 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 public class JsonContainerSpecTest {
+    private Logger LOGGER = Logger.getLogger(JsonContainerSpec.class);
     private static final MesosClusterConfig config = MesosClusterConfig.builder()
             .numberOfSlaves(3)
             .privateRegistryPort(16000) // Currently you have to choose an available port by yourself
             .proxyPort(8777)
             .slaveResources(new String[]{"ports(*):[9200-9200,9300-9300]", "ports(*):[9201-9201,9301-9301]", "ports(*):[9202-9202,9302-9302]"})
             .build();
-    @ClassRule
-    public static MesosCluster cluster = new MesosCluster(config);
 
     public static String jsonSpec = "{" +
             "  \"containers\": [" +
@@ -30,7 +29,10 @@ public class JsonContainerSpecTest {
             "      \"tag\": \"latest\"," +
             "      \"with\": {" +
             "        \"name\": \"hello-world_1\"," +
-            "        \"exposed-ports\": [80]" +
+            "        \"expose\": [80]," +
+            "        \"volumes\": [\"some:/mapping\"]," +
+            "        \"links\": [\"link:other_container\"]," +
+            "        \"volumes_from\": [\"other_container\"]" +
             "      }" +
             "    }," +
             "    {" +
@@ -38,7 +40,7 @@ public class JsonContainerSpecTest {
             "      \"tag\": \"latest\"," +
             "      \"with\": {" +
             "        \"name\": \"hello-world_2\"," +
-            "        \"exposed-ports\": [8080]" +
+            "        \"expose\": [8080]" +
             "      }" +
             "    }" +
             "  ]" +
@@ -50,7 +52,7 @@ public class JsonContainerSpecTest {
             "      \"tag\": \"latest\"," +
             "      \"with\": {" +
             "        \"name\": \"hello-world\"," +
-            "        \"exposed-ports\": [80]" +
+            "        \"expose\": [80]" +
             "      }" +
             "    }" +
             "  ]" +
@@ -62,7 +64,7 @@ public class JsonContainerSpecTest {
             "      \"image\": \"tutum/hello-world\"," +
             "      \"tag\": \"latest\"," +
             "      \"with\": {" +
-            "        \"exposed-ports\": [80]" +
+            "        \"expose\": [80]" +
             "      }" +
             "    }" +
             "  ]" +
@@ -100,8 +102,7 @@ public class JsonContainerSpecTest {
     @Test
     public void ensureSpecContainersExecute() {
         for (AbstractContainer ac : containersList) {
-            cluster.addAndStartContainer(ac);
+            assertTrue(ac.getName().contains("hello-world_"));
         }
-
     }
 }

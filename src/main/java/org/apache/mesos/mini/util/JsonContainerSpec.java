@@ -24,9 +24,7 @@ public class JsonContainerSpec {
         this.dockerClient = dockerClient;
     }
 
-    /**
-     *
-     */
+    // Json spec classes
     class ContainerSpec {
         public ArrayList<ContainerSpecInner> containers;
     }
@@ -37,29 +35,37 @@ public class JsonContainerSpec {
     }
     class WithSpec {
         public String name;
-        public ArrayList<String> exposed_ports;
+        public ArrayList<Integer> expose;
+        public ArrayList<String> cmd;
+        public ArrayList<String> volumes;
+        public ArrayList<String> volumes_from;
+        public ArrayList<String> environment;
+        public ArrayList<String> links;
     }
+
 
     /**
      *
+     * @return
+     * @throws Exception
      */
-
     public List<AbstractContainer> getContainers() throws Exception {
         Gson gsRef = new Gson();
         ContainerSpec cs = gsRef.fromJson(jsonSpec, ContainerSpec.class);
         logger.info(cs);
-        ArrayList<AbstractContainer> retList = new ArrayList();
+        ArrayList<AbstractContainer> retList = new ArrayList<>();
 
         for (ContainerSpecInner o : cs.containers) {
             if (o.image.isEmpty()) {
                 throw new Exception("Image name is not specified!");
             }
-            if (o.with.name.isEmpty()) {
-                throw new Exception("Container name is not specified!");
-            }
             if (o.tag.isEmpty()) {
                 o.tag = "latest";
             }
+            if (o.with.name.isEmpty()) {
+                throw new Exception("Container name is not specified!");
+            }
+
             retList.add(new ContainerBuilder(this.dockerClient, o));
         }
 
