@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Created by aleks on 17/08/15.
  */
-class ContainerBuilder extends AbstractContainer {
+public class ContainerBuilder extends AbstractContainer {
     protected JsonContainerSpec.ContainerSpecInner providedSpec;
     protected static Logger LOGGER = Logger.getLogger(ContainerBuilder.class);
 
@@ -34,10 +34,12 @@ class ContainerBuilder extends AbstractContainer {
     @Override
     protected CreateContainerCmd dockerCommand() {
         CreateContainerCmd cmd = dockerClient.createContainerCmd(providedSpec.image).withName(providedSpec.with.name + new SecureRandom().nextInt());
+        LOGGER.info(String.format("Creating container %s cmd", providedSpec.with.name));
 
         if (providedSpec.with.expose != null) {
             List<ExposedPort> ep = new ArrayList<>();
-            for (Integer o : providedSpec.with.expose) { ep.add(new ExposedPort(o)); };
+            for (Integer o : providedSpec.with.expose) { ep.add(new ExposedPort(o)); }
+            LOGGER.info(providedSpec.with.expose);
             cmd.withExposedPorts(ep.toArray(new ExposedPort[ep.size()]));
         }
         if (providedSpec.with.cmd != null) {
@@ -46,6 +48,7 @@ class ContainerBuilder extends AbstractContainer {
         if (providedSpec.with.volumes != null) {
             List<Volume> vl = new ArrayList<>();
             for (String o : providedSpec.with.volumes) { vl.add(new Volume(o)); }
+            LOGGER.info(providedSpec.with.volumes);
             cmd.withVolumes(vl.toArray(new Volume[vl.size()]));
         }
 
@@ -56,15 +59,22 @@ class ContainerBuilder extends AbstractContainer {
         if (providedSpec.with.volumes_from != null) {
             List<VolumesFrom> vlf = new ArrayList<>();
             for (String o : providedSpec.with.volumes_from) { vlf.add(new VolumesFrom(o)); }
+            LOGGER.info(providedSpec.with.volumes_from);
             cmd.withVolumesFrom(vlf.toArray(new VolumesFrom[vlf.size()]));
         }
 
         if (providedSpec.with.links != null) {
             List<Link> ll = new ArrayList<>();
             for (String o : providedSpec.with.links) { ll.add(Link.parse(o)); }
+            LOGGER.info(providedSpec.with.links);
             cmd.withLinks(ll.toArray(new Link[ll.size()]));
         }
 
         return cmd;
     }
+
+    public JsonContainerSpec.ContainerSpecInner getProvidedSpec() {
+        return providedSpec;
+    }
+
 }

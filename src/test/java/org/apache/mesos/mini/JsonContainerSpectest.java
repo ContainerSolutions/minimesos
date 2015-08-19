@@ -3,6 +3,7 @@ package org.apache.mesos.mini;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.container.AbstractContainer;
 import org.apache.mesos.mini.mesos.MesosClusterConfig;
+import org.apache.mesos.mini.util.ContainerBuilder;
 import org.apache.mesos.mini.util.JsonContainerSpec;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -70,7 +71,7 @@ public class JsonContainerSpecTest {
             "  ]" +
             "}";
 
-    public static List<AbstractContainer> containersList;
+    public static List<ContainerBuilder> containersList;
 
     @BeforeClass
     public static void provideSpec() throws Exception {
@@ -101,7 +102,7 @@ public class JsonContainerSpecTest {
     }
     @Test
     public void ensureSpecContainersExecute() {
-        for (AbstractContainer ac : containersList) {
+        for (ContainerBuilder ac : containersList) {
             assertTrue(ac.getName().contains("hello-world_"));
         }
     }

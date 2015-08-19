@@ -79,7 +79,7 @@ public class MesosCluster extends ExternalResource {
             new MesosClusterStateResponse(mesosContainer.getMesosMasterURL(), config.numberOfSlaves).waitFor();
 
             }
-             catch (Throwable e) {
+        catch (Throwable e) {
             LOGGER.error("Error during startup", e);
             throw e;
         }

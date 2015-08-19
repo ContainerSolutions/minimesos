@@ -3,7 +3,6 @@ package org.apache.mesos.mini.util;
 import com.github.dockerjava.api.DockerClient;
 import com.google.gson.Gson;
 import org.apache.log4j.Logger;
-import org.apache.mesos.mini.container.AbstractContainer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +27,7 @@ public class JsonContainerSpec {
     class ContainerSpec {
         public ArrayList<ContainerSpecInner> containers;
     }
-    class ContainerSpecInner {
+    public class ContainerSpecInner {
         public String image;
         public String tag;
         public WithSpec with;
@@ -49,11 +48,11 @@ public class JsonContainerSpec {
      * @return
      * @throws Exception
      */
-    public List<AbstractContainer> getContainers() throws Exception {
+    public List<ContainerBuilder> getContainers() throws Exception {
         Gson gsRef = new Gson();
         ContainerSpec cs = gsRef.fromJson(jsonSpec, ContainerSpec.class);
         logger.info(cs);
-        ArrayList<AbstractContainer> retList = new ArrayList<>();
+        ArrayList<ContainerBuilder> retList = new ArrayList<>();
 
         for (ContainerSpecInner o : cs.containers) {
             if (o.image.isEmpty()) {
