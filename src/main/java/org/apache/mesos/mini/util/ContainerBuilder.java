@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by aleks on 17/08/15.
+ * ContainerBuilder
  */
 public class ContainerBuilder extends AbstractContainer {
     protected JsonContainerSpec.ContainerSpecInner providedSpec;
