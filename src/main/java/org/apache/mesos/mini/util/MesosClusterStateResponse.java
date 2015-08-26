@@ -43,6 +43,7 @@ public class MesosClusterStateResponse implements Callable<Boolean> {
                 return false;
             }
         } catch (UnirestException e) {
+            LOGGER.error(e.getMessage());
             LOGGER.debug("Polling MesosMaster state on host: \"" + mesosMasterUrl + "\"...");
             return false;
         } catch (Exception e) {

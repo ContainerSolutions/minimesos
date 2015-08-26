@@ -43,7 +43,7 @@ public class Main {
         try {
             List<ContainerBuilder> al = new JsonContainerSpec(marathonJson, config.dockerClient).getContainers();
             for(ContainerBuilder o : al) {
-                cluster.injectImage(o.getProvidedSpec().image, o.getProvidedSpec().tag);
+//                cluster.injectImage(o.getProvidedSpec().image, o.getProvidedSpec().tag);
                 cluster.addAndStartContainer(o);
             }
         } catch (Exception e) {
