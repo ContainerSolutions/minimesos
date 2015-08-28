@@ -24,6 +24,8 @@ public abstract class AbstractContainer {
 
     private String containerId = "";
 
+    private boolean removed;
+
     protected AbstractContainer(DockerClient dockerClient) {
         this.dockerClient = dockerClient;
     }
@@ -51,7 +53,9 @@ public abstract class AbstractContainer {
             @Override
             public void run() {
                 LOGGER.info("Shutdown hook - Removing container " + AbstractContainer.this.getName());
-                remove();
+                if (!isRemoved()) {
+                    remove();
+                }
             }
         });
 
@@ -94,7 +98,12 @@ public abstract class AbstractContainer {
      * Removes a container with force
      */
     public void remove() {
-        dockerClient.removeContainerCmd(containerId).withForce().withRemoveVolumes(true).exec();
+        try {
+            dockerClient.removeContainerCmd(containerId).withForce().withRemoveVolumes(true).exec();
+            this.removed = true;
+        } catch (Exception e) {
+            LOGGER.error("Could not remove container " + getName(), e);
+        }
     }
 
     protected void pullImage(String imageName, String registryTag) {
@@ -125,5 +134,9 @@ public abstract class AbstractContainer {
 
     @Override public String toString() {
         return String.format("Container: %s (%s)", this.getName(), this.getContainerId());
+    }
+
+    public boolean isRemoved() {
+        return removed;
     }
 }

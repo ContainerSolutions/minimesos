@@ -19,31 +19,38 @@ public class ImagePusher {
         this.mesosClusterContainerId = mesosClusterContainerId;
     }
 
+    /**
+     * Injects the latest version of the image.
+     */
     public void injectImage(String imageName) {
-        LOGGER.info("Injecting image [" + privateRepoURL + "/" + imageName + "]");
+        injectImage(imageName, "latest");
+    }
+    public void injectImage(String imageName, String tag) {
+        String imageNameWithTag = imageName + ":" + tag;
+        LOGGER.info("Injecting image [" + privateRepoURL + "/" + imageNameWithTag + "]");
 
         // Retag image in local docker daemon
-        dockerClient.tagImageCmd(imageName, privateRepoURL + "/" + imageName, "latest").withForce().exec();
+        dockerClient.tagImageCmd(imageName, privateRepoURL + "/" + imageName, tag).withForce().exec();
 
         // Push from local docker daemon to private registry
-        InputStream responsePushImage = dockerClient.pushImageCmd(privateRepoURL + "/" + imageName).exec();
+        InputStream responsePushImage = dockerClient.pushImageCmd(privateRepoURL + "/" + imageName).withTag(tag).exec();
         String fullLog = ResponseCollector.collectResponse(responsePushImage);
         if (!successfulPush(fullLog)){
-            throw new DockerException("Unable to push image: " + imageName + "\n" + fullLog, 404);
+            throw new DockerException("Unable to push image: " + imageNameWithTag + "\n" + fullLog, 404);
         }
 
         // As mesos-local daemon, pull from private registry
-        ExecCreateCmdResponse exec = dockerClient.execCreateCmd(mesosClusterContainerId).withAttachStdout(true).withCmd("docker", "pull", "private-registry:5000/" + imageName).exec();
+        ExecCreateCmdResponse exec = dockerClient.execCreateCmd(mesosClusterContainerId).withAttachStdout(true).withCmd("docker", "pull", "private-registry:5000/" + imageNameWithTag).exec();
         InputStream execCmdStream = dockerClient.execStartCmd(exec.getId()).exec();
         fullLog = ResponseCollector.collectResponse(execCmdStream);
         if (!successfulPull(fullLog)){
-            throw new DockerException("Unable to pull image: " + imageName + "\n" + fullLog, 404);
+            throw new DockerException("Unable to pull image: " + imageNameWithTag + "\n" + fullLog, 404);
         }
 
         // As mesos-local daemon, retag in local registry
-        exec = dockerClient.execCreateCmd(mesosClusterContainerId).withAttachStdout(true).withCmd("docker", "tag", "-f", "private-registry:5000/" + imageName, imageName).exec();
+        exec = dockerClient.execCreateCmd(mesosClusterContainerId).withAttachStdout(true).withCmd("docker", "tag", "-f", "private-registry:5000/" + imageNameWithTag, imageNameWithTag).exec();
         dockerClient.execStartCmd(exec.getId()).exec(); // This doesn't produce any log messages
-        LOGGER.info("Succesfully injected [" + privateRepoURL + "/" + imageName + "]");
+        LOGGER.info("Succesfully injected [" + privateRepoURL + "/" + imageNameWithTag + "]");
     }
 
     private boolean successfulPull(String fullLog) {

@@ -104,14 +104,25 @@ public class MesosCluster extends ExternalResource {
     }
 
     /**
-     * Inject an image from your local docker daemon into the mesos cluster.
+     * Inject an image (with tag "latest") from your local docker daemon into the mesos cluster.
      *
-     * @param imageName The name of the image you want to push (in the format domain/image)
+     * @param imageName The name of the image (without tag) you want to push (in the format domain/image)
      * @throws DockerException when an error pulling or pushing occurs.
      */
     public void injectImage(String imageName) throws DockerException {
+        injectImage(imageName,"latest");
+    }
+
+    /**
+     * Inject an image from your local docker daemon into the mesos cluster.
+     *
+     * @param imageName The name of the image you want to push (in the format domain/image)
+     * @param tag The tag of image to inject (e.g. "1.0.0" or "latest")
+     * @throws DockerException when an error pulling or pushing occurs.
+     */
+    public void injectImage(String imageName, String tag) throws DockerException {
         ImagePusher imagePusher = new ImagePusher(config.dockerClient, "localhost" + ":" + config.privateRegistryPort, getMesosContainer().getContainerId());
-        imagePusher.injectImage(imageName);
+        imagePusher.injectImage(imageName, tag);
     }
 
     public State getStateInfo() throws UnirestException {
