@@ -7,11 +7,14 @@ import com.github.dockerjava.core.DockerClientConfig;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.http.HttpHost;
 import org.apache.mesos.mini.container.AbstractContainer;
 import org.apache.mesos.mini.docker.DockerProxy;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.security.SecureRandom;
@@ -23,10 +26,19 @@ public class DockerProxyTest {
     private static HelloWorldContainer helloWorld;
     private static DockerProxy proxy;
 
+    @BeforeClass
+    public static void beforeClass() {
+        Assume.assumeFalse(SystemUtils.IS_OS_LINUX);
+    }
+
     @AfterClass
     public static void callShutdownHook() {
-        helloWorld.remove();
-        proxy.remove();
+        if (helloWorld != null) {
+            helloWorld.remove();
+        }
+        if (proxy != null) {
+            proxy.remove();
+        }
     }
 
     private static DockerClient getDockerClient() {
