@@ -3,6 +3,7 @@ package org.apache.mesos.mini.container;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.api.model.Image;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.docker.ResponseCollector;
 
@@ -107,7 +108,16 @@ public abstract class AbstractContainer {
     }
 
     protected void pullImage(String imageName, String registryTag) {
-        LOGGER.debug("Pulling image [" + imageName + ":" + registryTag + "]");
+        List<Image> images = dockerClient.listImagesCmd().exec();
+        for (Image image : images) {
+            for (String repoTag : image.getRepoTags()) {
+                if (repoTag.equals(imageName + ":" + registryTag)) {
+                    LOGGER.info("Image '" + imageName + ":" + registryTag + "' already exists. No need to pull");
+                    return;
+                }
+            }
+        }
+        LOGGER.info("Image [" + imageName + ":" + registryTag + "] not found. Pulling...");
         InputStream responsePullImages = dockerClient.pullImageCmd(imageName).withTag(registryTag).exec();
         ResponseCollector.collectResponse(responsePullImages);
     }
