@@ -51,8 +51,8 @@ public class MesosContainer extends AbstractContainer {
         } else {
             innerDockerConfigBuilder = DockerClientConfig.createDefaultConfigBuilder();
             innerDockerConfigBuilder.withUri("http://" + getIpAddress() + ":" + getDockerPort());
-            this.innerDockerClient = DockerClientBuilder.getInstance(innerDockerConfigBuilder.build()).build();
         }
+        this.innerDockerClient = DockerClientBuilder.getInstance(innerDockerConfigBuilder.build()).build();
     }
 
     String[] createMesosLocalEnvironment() {
