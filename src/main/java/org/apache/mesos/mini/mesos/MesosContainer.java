@@ -2,11 +2,7 @@ package org.apache.mesos.mini.mesos;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.Container;
-import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.Link;
-import com.github.dockerjava.api.model.Volume;
+import com.github.dockerjava.api.model.*;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import org.apache.log4j.Logger;
@@ -47,7 +43,7 @@ public class MesosContainer extends AbstractContainer {
             innerDockerProxy = new InnerDockerProxy(clusterConfig.dockerClient, this);
             innerDockerProxy.start();
             innerDockerConfigBuilder = DockerClientConfig.createDefaultConfigBuilder();
-            innerDockerConfigBuilder.withUri("http://" + innerDockerProxy.getIpAddress() + ":" + innerDockerProxy.getProxyPort());
+            innerDockerConfigBuilder.withUri("http://" + innerDockerConfigBuilder.build().getUri().getHost() + ":" + innerDockerProxy.getProxyPort());
         } else {
             innerDockerConfigBuilder = DockerClientConfig.createDefaultConfigBuilder();
             innerDockerConfigBuilder.withUri("http://" + getIpAddress() + ":" + getDockerPort());
@@ -107,7 +103,7 @@ public class MesosContainer extends AbstractContainer {
         List<Container> innerContainers = innerDockerClient.listContainersCmd().exec();
         for (Container innerContainer : innerContainers) {
             LOGGER.info("Removing Mesos-Local inner container including volumes: " + innerContainer.getNames()[0]);
-            innerDockerClient.removeContainerCmd(innerContainer.getId());
+            innerDockerClient.removeContainerCmd(innerContainer.getId()).withForce().withRemoveVolumes(true).exec();
         }
 
         if (innerDockerProxy != null) {
