@@ -1,5 +1,6 @@
 package org.apache.mesos.mini;
 
+import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.InternalServerErrorException;
 import com.mashape.unirest.http.Unirest;
@@ -187,5 +188,9 @@ public class MesosCluster extends ExternalResource {
 
     public List<AbstractContainer> getContainers() {
         return Collections.unmodifiableList(containers);
+    }
+
+    public DockerClient getInnerDockerClient() {
+        return this.mesosContainer.getInnerDockerClient();
     }
 }
