@@ -89,7 +89,7 @@ public class MesosClusterConfig {
             if (config.getUri().getScheme().startsWith("http") && !System.getProperty("os.name").equals("Linux")) {
                 HttpHost proxy = new HttpHost(config.getUri().getHost(), this.proxyPort);
                 Unirest.setProxy(proxy);
-                Unirest.setTimeouts(5000L, 5000L);
+                Unirest.setTimeouts(20_000L, 20_000L);
             }
             this.dockerClient = DockerClientBuilder.getInstance(config).build();
             return this;
