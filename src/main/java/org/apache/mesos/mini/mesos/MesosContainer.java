@@ -9,9 +9,6 @@ import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
-import com.mashape.unirest.http.Unirest;
-import org.apache.commons.lang.StringUtils;
-import org.apache.http.HttpHost;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.container.AbstractContainer;
 
@@ -20,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MesosContainer extends AbstractContainer {
+
+    private static final int DOCKER_PORT = 2376;
 
     private static Logger LOGGER = Logger.getLogger(MesosContainer.class);
 
@@ -71,10 +70,14 @@ public class MesosContainer extends AbstractContainer {
                 .withPrivileged(true)
                         // the registry container will be known as 'private-registry' to mesos-local
                 .withLinks(Link.parse(registryContainerId + ":private-registry"))
-                .withExposedPorts(new ExposedPort(2376))
+                .withExposedPorts(new ExposedPort(getDockerPort()))
                 .withEnv(createMesosLocalEnvironment())
                 .withVolumes(new Volume("/sys/fs/cgroup"))
                 .withBinds(Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup:rw"));
+    }
+
+    public int getDockerPort() {
+        return DOCKER_PORT;
     }
 
     @Override
