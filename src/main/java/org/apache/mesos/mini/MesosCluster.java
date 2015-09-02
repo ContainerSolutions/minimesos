@@ -12,6 +12,7 @@ import org.apache.mesos.mini.container.AbstractContainer;
 import org.apache.mesos.mini.docker.DockerProxy;
 import org.apache.mesos.mini.docker.ImagePusher;
 import org.apache.mesos.mini.docker.PrivateDockerRegistry;
+import org.apache.mesos.mini.mesos.InnerDockerProxy;
 import org.apache.mesos.mini.mesos.MesosClusterConfig;
 import org.apache.mesos.mini.mesos.MesosContainer;
 import org.apache.mesos.mini.state.State;
@@ -79,9 +80,18 @@ public class MesosCluster extends ExternalResource {
             addAndStartContainer(mesosContainer);
             LOGGER.info("Started Mesos Local at " + mesosContainer.getMesosMasterURL());
 
-            DockerClientConfig.DockerClientConfigBuilder innerDockerConfigBuilder = DockerClientConfig.createDefaultConfigBuilder();
-            innerDockerConfigBuilder.withUri("http://" + mesosContainer.getIpAddress() + ":" + mesosContainer.getDockerPort());
-            this.innerDockerClient = DockerClientBuilder.getInstance(innerDockerConfigBuilder.build()).build();
+            DockerClientConfig.DockerClientConfigBuilder innerDockerConfigBuilder;
+            if (!os.equals("Linux")) {
+                LOGGER.info("Mini-Mesos runs on '" + os + "'. Starting inner Docker Proxy");
+                InnerDockerProxy innerDockerProxy = new InnerDockerProxy(config.dockerClient, mesosContainer);
+                addAndStartContainer(innerDockerProxy);
+                innerDockerConfigBuilder = DockerClientConfig.createDefaultConfigBuilder();
+                innerDockerConfigBuilder.withUri("http://" + innerDockerProxy.getIpAddress() + ":" + innerDockerProxy.getProxyPort());
+            } else {
+                innerDockerConfigBuilder = DockerClientConfig.createDefaultConfigBuilder();
+                innerDockerConfigBuilder.withUri("http://" + mesosContainer.getIpAddress() + ":" + mesosContainer.getDockerPort());
+                this.innerDockerClient = DockerClientBuilder.getInstance(innerDockerConfigBuilder.build()).build();
+            }
 
             mesosContainer.setInnerDockerClient(this.innerDockerClient);
 
