@@ -6,12 +6,15 @@ import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import org.apache.log4j.Logger;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ImagePusher {
     private static final Logger LOGGER = Logger.getLogger(ImagePusher.class.getCanonicalName());
     private final DockerClient dockerClient;
     private final String privateRepoURL;
     private final String mesosClusterContainerId;
+    private final List<String> injectedImages = new ArrayList<>();
 
     public ImagePusher(DockerClient dockerClient, String privateRepoURL, String mesosClusterContainerId) {
         this.dockerClient = dockerClient;
@@ -26,6 +29,11 @@ public class ImagePusher {
         injectImage(imageName, "latest");
     }
     public void injectImage(String imageName, String tag) {
+        if (injectedImages.contains(imageName + ":" + tag)) {
+            LOGGER.info("Image " + imageName + ":" + tag + " is already injected");
+            return;
+        }
+
         String imageNameWithTag = imageName + ":" + tag;
         LOGGER.info("Injecting image [" + privateRepoURL + "/" + imageNameWithTag + "]");
 
@@ -51,6 +59,8 @@ public class ImagePusher {
         exec = dockerClient.execCreateCmd(mesosClusterContainerId).withAttachStdout(true).withCmd("docker", "tag", "-f", "private-registry:5000/" + imageNameWithTag, imageNameWithTag).exec();
         dockerClient.execStartCmd(exec.getId()).exec(); // This doesn't produce any log messages
         LOGGER.info("Succesfully injected [" + privateRepoURL + "/" + imageNameWithTag + "]");
+
+        this.injectedImages.add(imageName + ":" + tag);
     }
 
     private boolean successfulPull(String fullLog) {
