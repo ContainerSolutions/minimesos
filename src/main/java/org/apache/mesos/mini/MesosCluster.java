@@ -3,8 +3,6 @@ package org.apache.mesos.mini;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.InternalServerErrorException;
-import com.github.dockerjava.core.DockerClientBuilder;
-import com.github.dockerjava.core.DockerClientConfig;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.log4j.Logger;
@@ -12,7 +10,6 @@ import org.apache.mesos.mini.container.AbstractContainer;
 import org.apache.mesos.mini.docker.DockerProxy;
 import org.apache.mesos.mini.docker.ImagePusher;
 import org.apache.mesos.mini.docker.PrivateDockerRegistry;
-import org.apache.mesos.mini.mesos.InnerDockerProxy;
 import org.apache.mesos.mini.mesos.MesosClusterConfig;
 import org.apache.mesos.mini.mesos.MesosContainer;
 import org.apache.mesos.mini.state.State;
@@ -47,8 +44,6 @@ public class MesosCluster extends ExternalResource {
 
     private MesosContainer mesosContainer;
 
-    private DockerClient innerDockerClient;
-
     public MesosCluster(MesosClusterConfig config) {
         this.config = config;
     }
@@ -79,21 +74,6 @@ public class MesosCluster extends ExternalResource {
             mesosContainer = new MesosContainer(config.dockerClient, this.config, privateDockerRegistry.getContainerId());
             addAndStartContainer(mesosContainer);
             LOGGER.info("Started Mesos Local at " + mesosContainer.getMesosMasterURL());
-
-            DockerClientConfig.DockerClientConfigBuilder innerDockerConfigBuilder;
-            if (!os.equals("Linux")) {
-                LOGGER.info("Mini-Mesos runs on '" + os + "'. Starting inner Docker Proxy");
-                InnerDockerProxy innerDockerProxy = new InnerDockerProxy(config.dockerClient, mesosContainer);
-                addAndStartContainer(innerDockerProxy);
-                innerDockerConfigBuilder = DockerClientConfig.createDefaultConfigBuilder();
-                innerDockerConfigBuilder.withUri("http://" + innerDockerProxy.getIpAddress() + ":" + innerDockerProxy.getProxyPort());
-            } else {
-                innerDockerConfigBuilder = DockerClientConfig.createDefaultConfigBuilder();
-                innerDockerConfigBuilder.withUri("http://" + mesosContainer.getIpAddress() + ":" + mesosContainer.getDockerPort());
-                this.innerDockerClient = DockerClientBuilder.getInstance(innerDockerConfigBuilder.build()).build();
-            }
-
-            mesosContainer.setInnerDockerClient(this.innerDockerClient);
 
             // wait until the given number of slaves are registered
             new MesosClusterStateResponse(mesosContainer.getMesosMasterURL(), config.numberOfSlaves).waitFor();
@@ -211,6 +191,6 @@ public class MesosCluster extends ExternalResource {
     }
 
     public DockerClient getInnerDockerClient() {
-        return innerDockerClient;
+        return this.mesosContainer.getInnerDockerClient();
     }
 }

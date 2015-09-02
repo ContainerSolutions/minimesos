@@ -7,6 +7,8 @@ import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.Volume;
+import com.github.dockerjava.core.DockerClientBuilder;
+import com.github.dockerjava.core.DockerClientConfig;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.container.AbstractContainer;
 
@@ -26,11 +28,31 @@ public class MesosContainer extends AbstractContainer {
     private final MesosClusterConfig clusterConfig;
     private final String registryContainerId;
     private DockerClient innerDockerClient;
+    private InnerDockerProxy innerDockerProxy;
 
     public MesosContainer(DockerClient dockerClient, MesosClusterConfig clusterConfig, String registryContainerId) {
         super(dockerClient);
         this.clusterConfig = clusterConfig;
         this.registryContainerId = registryContainerId;
+    }
+
+    @Override
+    public void start() {
+        super.start();
+
+        String os = System.getProperty("os.name");
+        DockerClientConfig.DockerClientConfigBuilder innerDockerConfigBuilder;
+        if (!os.equals("Linux")) {
+            LOGGER.info("Mini-Mesos runs on '" + os + "'. Starting inner Docker Proxy");
+            innerDockerProxy = new InnerDockerProxy(clusterConfig.dockerClient, this);
+            innerDockerProxy.start();
+            innerDockerConfigBuilder = DockerClientConfig.createDefaultConfigBuilder();
+            innerDockerConfigBuilder.withUri("http://" + innerDockerProxy.getIpAddress() + ":" + innerDockerProxy.getProxyPort());
+        } else {
+            innerDockerConfigBuilder = DockerClientConfig.createDefaultConfigBuilder();
+            innerDockerConfigBuilder.withUri("http://" + getIpAddress() + ":" + getDockerPort());
+            this.innerDockerClient = DockerClientBuilder.getInstance(innerDockerConfigBuilder.build()).build();
+        }
     }
 
     String[] createMesosLocalEnvironment() {
@@ -88,11 +110,15 @@ public class MesosContainer extends AbstractContainer {
             innerDockerClient.removeContainerCmd(innerContainer.getId());
         }
 
+        if (innerDockerProxy != null) {
+            innerDockerProxy.remove();
+        }
+
         LOGGER.info("Removing Mesos-Local container");
         super.remove();
     }
 
-    public void setInnerDockerClient(DockerClient innerDockerClient) {
-        this.innerDockerClient = innerDockerClient;
+    public DockerClient getInnerDockerClient() {
+        return innerDockerClient;
     }
 }
