@@ -7,8 +7,6 @@ import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.Volume;
-import com.github.dockerjava.core.DockerClientBuilder;
-import com.github.dockerjava.core.DockerClientConfig;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.container.AbstractContainer;
 
@@ -24,8 +22,10 @@ public class MesosContainer extends AbstractContainer {
 
     private static final String MESOS_LOCAL_IMAGE = "containersol/mesos-local";
     public static final String REGISTRY_TAG = "0.2.1";
+
     private final MesosClusterConfig clusterConfig;
     private final String registryContainerId;
+    private DockerClient innerDockerClient;
 
     public MesosContainer(DockerClient dockerClient, MesosClusterConfig clusterConfig, String registryContainerId) {
         super(dockerClient);
@@ -82,10 +82,6 @@ public class MesosContainer extends AbstractContainer {
 
     @Override
     public void remove() {
-        DockerClientConfig.DockerClientConfigBuilder innerDockerConfigBuilder = DockerClientConfig.createDefaultConfigBuilder();
-        innerDockerConfigBuilder.withUri("http://" + getIpAddress() + ":2376");
-        DockerClient innerDockerClient = DockerClientBuilder.getInstance(innerDockerConfigBuilder.build()).build();
-
         List<Container> innerContainers = innerDockerClient.listContainersCmd().exec();
         for (Container innerContainer : innerContainers) {
             LOGGER.info("Removing Mesos-Local inner container including volumes: " + innerContainer.getNames()[0]);
@@ -94,5 +90,9 @@ public class MesosContainer extends AbstractContainer {
 
         LOGGER.info("Removing Mesos-Local container");
         super.remove();
+    }
+
+    public void setInnerDockerClient(DockerClient innerDockerClient) {
+        this.innerDockerClient = innerDockerClient;
     }
 }
