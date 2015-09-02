@@ -13,13 +13,12 @@ public class ImagePusher {
     private static final Logger LOGGER = Logger.getLogger(ImagePusher.class.getCanonicalName());
     private final DockerClient dockerClient;
     private final String privateRepoURL;
-    private final String mesosClusterContainerId;
+    private String mesosClusterContainerId;
     private final List<String> injectedImages = new ArrayList<>();
 
-    public ImagePusher(DockerClient dockerClient, String privateRepoURL, String mesosClusterContainerId) {
+    public ImagePusher(DockerClient dockerClient, String privateRepoURL) {
         this.dockerClient = dockerClient;
         this.privateRepoURL = privateRepoURL;
-        this.mesosClusterContainerId = mesosClusterContainerId;
     }
 
     /**
@@ -69,5 +68,9 @@ public class ImagePusher {
 
     private boolean successfulPush(String fullLog) {
         return fullLog.contains("successfully pushed") || fullLog.contains("already pushed") || fullLog.contains("already exists");
+    }
+
+    public void setMesosClusterContainerId(String mesosClusterContainerId) {
+        this.mesosClusterContainerId = mesosClusterContainerId;
     }
 }
