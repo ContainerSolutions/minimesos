@@ -44,6 +44,8 @@ public class MesosCluster extends ExternalResource {
 
     private MesosContainer mesosContainer;
 
+    private static PrivateDockerRegistry privateDockerRegistry;
+
     public MesosCluster(MesosClusterConfig config) {
         this.config = config;
     }
@@ -65,10 +67,14 @@ public class MesosCluster extends ExternalResource {
                 LOGGER.info("Mini-Mesos runs on 'Linux'. No need to run HTTP Proxy for container networking");
             }
 
-            LOGGER.info("Starting Registry");
-            PrivateDockerRegistry privateDockerRegistry = new PrivateDockerRegistry(config.dockerClient, this.config);
-            addAndStartContainer(privateDockerRegistry);
-            LOGGER.info("Started Registry at " + privateDockerRegistry.getIpAddress() + ":" + config.privateRegistryPort);
+            if (privateDockerRegistry == null) {
+                LOGGER.info("Starting Registry");
+                privateDockerRegistry = new PrivateDockerRegistry(config.dockerClient, this.config);
+                privateDockerRegistry.start();
+                LOGGER.info("Started Registry at " + privateDockerRegistry.getIpAddress() + ":" + config.privateRegistryPort);
+            } else {
+                LOGGER.info("Registry is already running");
+            }
 
             LOGGER.info("Starting Mesos Local");
             mesosContainer = new MesosContainer(config.dockerClient, this.config, privateDockerRegistry.getContainerId());

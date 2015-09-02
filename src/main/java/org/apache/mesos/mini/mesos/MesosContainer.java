@@ -23,7 +23,7 @@ public class MesosContainer extends AbstractContainer {
     private static Logger LOGGER = Logger.getLogger(MesosContainer.class);
 
     private static final String MESOS_LOCAL_IMAGE = "containersol/mesos-local";
-    public static final String REGISTRY_TAG = "0.2.1";
+    public static final String REGISTRY_TAG = "14";
 
     private final MesosClusterConfig clusterConfig;
     private final String registryContainerId;
