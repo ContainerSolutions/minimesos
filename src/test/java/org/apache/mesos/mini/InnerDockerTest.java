@@ -18,11 +18,10 @@ import static org.junit.Assert.assertEquals;
  * Test inner docker client.
  * Should instantiate container INSIDE the daemon of the MesosContainer (i.e. not directly visible)
  * The only way to do this on a mac is via a proxy.
- * At the end, the internal containers should be removed, and all local containers should be deleted.
  */
 public class InnerDockerTest {
     @Test
-    public void shouldStart() {
+    public void shouldStart() throws InterruptedException {
         MesosClusterConfig config = MesosClusterConfig.builder().defaultDockerClient()
                 .slaveResources(new String[]{"ports(*):[9200-9200,9300-9300]", "ports(*):[9201-9201,9301-9301]", "ports(*):[9202-9202,9302-9302]"})
                 .build();
@@ -36,14 +35,7 @@ public class InnerDockerTest {
 
         List<Container> containers = mesosContainer.getInnerDockerClient().listContainersCmd().exec();
         assertEquals(1, containers.size());
-
-        mesosContainer.remove(); // I.e. we don't remove the hello world container, mini-mesos should do this automatically.
-        registry.remove();
-        containers = config.dockerClient.listContainersCmd().exec();
-        assertEquals(0, containers.size());
     }
-
-
 
     class HelloWorldNoRemoveContainer extends AbstractContainer {
 
@@ -67,7 +59,6 @@ public class InnerDockerTest {
         protected CreateContainerCmd dockerCommand() {
             return dockerClient.createContainerCmd(HELLO_WORLD_IMAGE).withName("hello-world_" + new SecureRandom().nextInt());
         }
-
 
     }
 }

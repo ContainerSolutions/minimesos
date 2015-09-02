@@ -8,9 +8,15 @@ import com.github.dockerjava.core.DockerClientConfig;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.container.AbstractContainer;
 
+import java.io.IOException;
+import java.net.Socket;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
+import static com.jayway.awaitility.Awaitility.await;
 
 public class MesosContainer extends AbstractContainer {
 
@@ -19,7 +25,7 @@ public class MesosContainer extends AbstractContainer {
     private static Logger LOGGER = Logger.getLogger(MesosContainer.class);
 
     private static final String MESOS_LOCAL_IMAGE = "containersol/mesos-local";
-    public static final String REGISTRY_TAG = "0.2.1";
+    public static final String REGISTRY_TAG = "14";
 
     private final MesosClusterConfig clusterConfig;
     private final String registryContainerId;
@@ -35,6 +41,8 @@ public class MesosContainer extends AbstractContainer {
     @Override
     public void start() {
         super.start();
+
+        await().atMost(10, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new DockerSocketIsAvailable<Boolean>(this));
 
         String os = System.getProperty("os.name");
         DockerClientConfig.DockerClientConfigBuilder innerDockerConfigBuilder;
@@ -117,4 +125,23 @@ public class MesosContainer extends AbstractContainer {
     public DockerClient getInnerDockerClient() {
         return innerDockerClient;
     }
+
+    class DockerSocketIsAvailable<T> implements Callable<Boolean> {
+
+        private MesosContainer container;
+
+        public DockerSocketIsAvailable(MesosContainer container) {
+            this.container = container;
+        }
+
+        @Override
+        public Boolean call() throws Exception {
+            try (Socket ignored = new Socket(container.getIpAddress(), container.getDockerPort())) {
+                return true;
+            } catch (IOException ignored) {
+                return false;
+            }
+        }
+    }
+
 }
