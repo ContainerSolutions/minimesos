@@ -1,5 +1,6 @@
 package org.apache.mesos.mini;
 
+import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.InternalServerErrorException;
 import com.mashape.unirest.http.Unirest;
@@ -54,10 +55,15 @@ public class MesosCluster extends ExternalResource {
         LOGGER.info("Starting Mesos cluster");
 
         try {
-            LOGGER.info("Starting Proxy");
-            DockerProxy dockerProxy = new DockerProxy(config.dockerClient, config.proxyPort);
-            addAndStartContainer(dockerProxy);
-            LOGGER.info("Started Proxy at " + dockerProxy.getIpAddress() + ":" + config.proxyPort);
+            String os = System.getProperty("os.name");
+            if (!os.equals("Linux")) {
+                LOGGER.info("Mini-Mesos runs on '" + os + "'. Starting HTTP Proxy for container networking");
+                DockerProxy dockerProxy = new DockerProxy(config.dockerClient, config.proxyPort);
+                addAndStartContainer(dockerProxy);
+                LOGGER.info("Started Proxy at " + dockerProxy.getIpAddress() + ":" + config.proxyPort);
+            } else {
+                LOGGER.info("Mini-Mesos runs on 'Linux'. No need to run HTTP Proxy for container networking");
+            }
 
             LOGGER.info("Starting Registry");
             PrivateDockerRegistry privateDockerRegistry = new PrivateDockerRegistry(config.dockerClient, this.config);
@@ -182,5 +188,9 @@ public class MesosCluster extends ExternalResource {
 
     public List<AbstractContainer> getContainers() {
         return Collections.unmodifiableList(containers);
+    }
+
+    public DockerClient getInnerDockerClient() {
+        return this.mesosContainer.getInnerDockerClient();
     }
 }
