@@ -7,7 +7,6 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.container.AbstractContainer;
-import org.apache.mesos.mini.docker.DockerProxy;
 import org.apache.mesos.mini.docker.ImagePusher;
 import org.apache.mesos.mini.docker.PrivateDockerRegistry;
 import org.apache.mesos.mini.mesos.MesosClusterConfig;
@@ -59,16 +58,6 @@ public class MesosCluster extends ExternalResource {
         LOGGER.info("Starting Mesos cluster");
 
         try {
-            String os = System.getProperty("os.name");
-            if (!os.equals("Linux")) {
-                LOGGER.info("Mini-Mesos runs on '" + os + "'. Starting HTTP Proxy for container networking");
-                DockerProxy dockerProxy = new DockerProxy(config.dockerClient, config.proxyPort);
-                addAndStartContainer(dockerProxy);
-                LOGGER.info("Started Proxy at " + dockerProxy.getIpAddress() + ":" + config.proxyPort);
-            } else {
-                LOGGER.info("Mini-Mesos runs on 'Linux'. No need to run HTTP Proxy for container networking");
-            }
-
             if (privateDockerRegistry == null) {
                 LOGGER.info("Starting Registry");
                 privateDockerRegistry = new PrivateDockerRegistry(config.dockerClient, this.config);

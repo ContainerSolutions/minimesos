@@ -30,7 +30,6 @@ public class MesosContainer extends AbstractContainer {
     private final MesosClusterConfig clusterConfig;
     private final String registryContainerId;
     private DockerClient innerDockerClient;
-    private InnerDockerProxy innerDockerProxy;
 
     public MesosContainer(DockerClient dockerClient, MesosClusterConfig clusterConfig, String registryContainerId) {
         super(dockerClient);
@@ -46,16 +45,8 @@ public class MesosContainer extends AbstractContainer {
 
         String os = System.getProperty("os.name");
         DockerClientConfig.DockerClientConfigBuilder innerDockerConfigBuilder;
-        if (!os.equals("Linux")) {
-            LOGGER.info("Mini-Mesos runs on '" + os + "'. Starting inner Docker Proxy");
-            innerDockerProxy = new InnerDockerProxy(clusterConfig.dockerClient, this);
-            innerDockerProxy.start();
-            innerDockerConfigBuilder = DockerClientConfig.createDefaultConfigBuilder();
-            innerDockerConfigBuilder.withUri("http://" + innerDockerConfigBuilder.build().getUri().getHost() + ":" + innerDockerProxy.getProxyPort());
-        } else {
-            innerDockerConfigBuilder = DockerClientConfig.createDefaultConfigBuilder();
-            innerDockerConfigBuilder.withUri("http://" + getIpAddress() + ":" + getDockerPort());
-        }
+        innerDockerConfigBuilder = DockerClientConfig.createDefaultConfigBuilder();
+        innerDockerConfigBuilder.withUri("http://" + getIpAddress() + ":" + getDockerPort());
         this.innerDockerClient = DockerClientBuilder.getInstance(innerDockerConfigBuilder.build()).build();
     }
 
@@ -91,7 +82,7 @@ public class MesosContainer extends AbstractContainer {
     protected CreateContainerCmd dockerCommand() {
         String mesosClusterContainerName = generateMesosMasterContainerName();
 
-        return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE)
+        return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE + ":" + REGISTRY_TAG)
                 .withName(mesosClusterContainerName)
                 .withPrivileged(true)
                         // the registry container will be known as 'private-registry' to mesos-local
@@ -112,10 +103,6 @@ public class MesosContainer extends AbstractContainer {
         for (Container innerContainer : innerContainers) {
             LOGGER.info("Removing Mesos-Local inner container including volumes: " + innerContainer.getNames()[0]);
             innerDockerClient.removeContainerCmd(innerContainer.getId()).withForce().withRemoveVolumes(true).exec();
-        }
-
-        if (innerDockerProxy != null) {
-            innerDockerProxy.remove();
         }
 
         LOGGER.info("Removing Mesos-Local container");
