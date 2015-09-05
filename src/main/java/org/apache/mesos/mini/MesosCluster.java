@@ -1,14 +1,14 @@
 package org.apache.mesos.mini;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.InternalServerErrorException;
+import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.container.AbstractContainer;
-import org.apache.mesos.mini.docker.ImagePusher;
 import org.apache.mesos.mini.docker.PrivateDockerRegistry;
+import org.apache.mesos.mini.docker.ResponseCollector;
 import org.apache.mesos.mini.mesos.MesosClusterConfig;
 import org.apache.mesos.mini.mesos.MesosContainer;
 import org.apache.mesos.mini.state.State;
@@ -45,10 +45,13 @@ public class MesosCluster extends ExternalResource {
 
     private static PrivateDockerRegistry privateDockerRegistry;
 
-    private static ImagePusher imagePusher;
+    private String privateRepoUrl;
+
+    public final List<String> injectedImages = new ArrayList<>();
 
     public MesosCluster(MesosClusterConfig config) {
         this.config = config;
+        this.privateRepoUrl = "localhost" + ":" + config.privateRegistryPort;
     }
 
     /**
@@ -71,15 +74,6 @@ public class MesosCluster extends ExternalResource {
             mesosContainer = new MesosContainer(config.dockerClient, this.config, privateDockerRegistry.getContainerId());
             addAndStartContainer(mesosContainer);
             LOGGER.info("Started Mesos Local at " + mesosContainer.getMesosMasterURL());
-
-            if (imagePusher == null) {
-                LOGGER.info("Creating Image Pusher");
-                imagePusher = new ImagePusher(config.dockerClient, "localhost" + ":" + config.privateRegistryPort);
-            } else {
-                LOGGER.info("Image Pusher already exists");
-            }
-            LOGGER.info("Configuring image pusher with Mesos Local");
-            imagePusher.setMesosClusterContainerId(mesosContainer.getContainerId());
 
             // wait until the given number of slaves are registered
             new MesosClusterStateResponse(mesosContainer.getMesosMasterURL(), config.numberOfSlaves).waitFor();
@@ -122,7 +116,7 @@ public class MesosCluster extends ExternalResource {
      * @throws DockerException when an error pulling or pushing occurs.
      */
     public void injectImage(String imageName) throws DockerException {
-        injectImage(imageName,"latest");
+        injectImage(imageName, "latest");
     }
 
     /**
@@ -133,7 +127,39 @@ public class MesosCluster extends ExternalResource {
      * @throws DockerException when an error pulling or pushing occurs.
      */
     public void injectImage(String imageName, String tag) throws DockerException {
-        imagePusher.injectImage(imageName, tag);
+        if (injectedImages.contains(imageName + ":" + tag)) {
+            LOGGER.info("Image " + imageName + ":" + tag + " is already injected");
+            return;
+        }
+
+        String imageNameWithTag = imageName + ":" + tag;
+        LOGGER.info("Injecting image [" + privateRepoUrl + "/" + imageNameWithTag + "]");
+
+        // Retag image in local docker daemon
+        config.dockerClient.tagImageCmd(imageName, privateRepoUrl + "/" + imageName, tag).withForce().exec();
+
+        // Push from local docker daemon to private registry
+        InputStream responsePushImage = config.dockerClient.pushImageCmd(privateRepoUrl + "/" + imageName).withTag(tag).exec();
+        String fullLog = ResponseCollector.collectResponse(responsePushImage);
+        if (!successfulPush(fullLog)){
+            throw new DockerException("Unable to push image: " + imageNameWithTag + "\n" + fullLog, 404);
+        }
+
+        // As mesos-local daemon, pull from private registry
+        ExecCreateCmdResponse exec = config.dockerClient.execCreateCmd(getMesosContainer().getContainerId()).withAttachStdout(true).withCmd("docker", "pull", "private-registry:5000/" + imageNameWithTag).exec();
+        InputStream execCmdStream = config.dockerClient.execStartCmd(exec.getId()).exec();
+        fullLog = ResponseCollector.collectResponse(execCmdStream);
+        if (!successfulPull(fullLog)){
+            throw new DockerException("Unable to pull image: " + imageNameWithTag + "\n" + fullLog, 404);
+        }
+
+        // As mesos-local daemon, retag in local registry
+        exec = config.dockerClient.execCreateCmd(getMesosContainer().getContainerId()).withAttachStdout(true).withCmd("docker", "tag", "-f", "private-registry:5000/" + imageNameWithTag, imageNameWithTag).exec();
+        config.dockerClient.execStartCmd(exec.getId()).exec(); // This doesn't produce any log messages
+
+        LOGGER.info("Succesfully injected [" + privateRepoUrl + "/" + imageNameWithTag + "]");
+
+        injectedImages.add(imageName + ":" + tag);
     }
 
     public State getStateInfo() throws UnirestException {
@@ -191,11 +217,12 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
-    public List<AbstractContainer> getContainers() {
-        return Collections.unmodifiableList(containers);
+    private static boolean successfulPull(String fullLog) {
+        return fullLog.contains("up to date") || fullLog.contains("Downloaded newer image");
     }
 
-    public DockerClient getInnerDockerClient() {
-        return this.mesosContainer.getInnerDockerClient();
+    private static boolean successfulPush(String fullLog) {
+        return fullLog.contains("successfully pushed") || fullLog.contains("already pushed") || fullLog.contains("already exists");
     }
+
 }
