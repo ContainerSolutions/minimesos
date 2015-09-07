@@ -82,7 +82,7 @@ public class MesosContainer extends AbstractContainer {
     protected CreateContainerCmd dockerCommand() {
         String mesosClusterContainerName = generateMesosMasterContainerName();
 
-        return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE)
+        return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE + ":" + REGISTRY_TAG)
                 .withName(mesosClusterContainerName)
                 .withPrivileged(true)
                         // the registry container will be known as 'private-registry' to mesos-local
