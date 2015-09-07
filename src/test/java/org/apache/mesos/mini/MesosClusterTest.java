@@ -1,5 +1,7 @@
 package org.apache.mesos.mini;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.mesos.mini.mesos.MesosClusterConfig;
@@ -19,6 +21,11 @@ public class MesosClusterTest {
 
     @ClassRule
     public static MesosCluster cluster = new MesosCluster(config);
+
+    @Test
+    public void mesosClusterStateInfoJSONMatchesSchema() throws UnirestException, JsonParseException, JsonMappingException {
+        cluster.getStateInfo();
+    }
 
     @Test
     public void mesosClusterCanBeStarted() throws Exception {

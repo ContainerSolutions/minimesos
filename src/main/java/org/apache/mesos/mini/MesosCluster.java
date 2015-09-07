@@ -1,5 +1,7 @@
 package org.apache.mesos.mini;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.InternalServerErrorException;
@@ -105,7 +107,7 @@ public class MesosCluster extends ExternalResource {
      * @throws DockerException when an error pulling or pushing occurs.
      */
     public void injectImage(String imageName) throws DockerException {
-        injectImage(imageName,"latest");
+        injectImage(imageName, "latest");
     }
 
     /**
@@ -120,7 +122,7 @@ public class MesosCluster extends ExternalResource {
         imagePusher.injectImage(imageName, tag);
     }
 
-    public State getStateInfo() throws UnirestException {
+    public State getStateInfo() throws UnirestException, JsonParseException, JsonMappingException {
         String json = Unirest.get("http://" + mesosContainer.getMesosMasterURL() + "/state.json").asString().getBody();
 
         return State.fromJSON(json);

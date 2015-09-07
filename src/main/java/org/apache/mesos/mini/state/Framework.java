@@ -1,6 +1,7 @@
 package org.apache.mesos.mini.state;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 
@@ -11,12 +12,20 @@ import java.util.ArrayList;
 public class Framework {
 
     private boolean active;
+
     private boolean checkpoint;
-    private int failover_timeout;
+
+    @JsonProperty("failover_timeout")
+    private int failoverTimeout;
+
     private String hostname;
+
     private String id;
+
     private String name;
+
     private String role;
+
     private ArrayList<Task> tasks;
 
     public boolean isActive() {
@@ -36,11 +45,11 @@ public class Framework {
     }
 
     public int getFailoverTimeout() {
-        return failover_timeout;
+        return failoverTimeout;
     }
 
     public void setFailoverTimeout(int failoverTimeout) {
-        this.failover_timeout = failoverTimeout;
+        this.failoverTimeout = failoverTimeout;
     }
 
     public String getHostname() {
