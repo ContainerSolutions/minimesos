@@ -4,9 +4,12 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Image;
+import com.jayway.awaitility.core.ConditionTimeoutException;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.docker.ResponseCollector;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -68,7 +71,17 @@ public abstract class AbstractContainer {
 
         dockerClient.startContainerCmd(containerId).exec();
 
-        await().atMost(20, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new ContainerIsRunning<Boolean>(containerId));
+        try {
+            await().atMost(20, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new ContainerIsRunning<Boolean>(containerId));
+        } catch (ConditionTimeoutException cte) {
+            LOGGER.error("Container did not start within 20 seconds");
+            InputStream logs = dockerClient.logContainerCmd(containerId).withStdOut().withStdErr().exec();
+            try {
+                LOGGER.error(IOUtils.toString(logs));
+            } catch (IOException ioe) {
+                LOGGER.error("Could not write container logs: ", ioe);
+            }
+        }
 
         LOGGER.debug("Container is up and running");
     }
