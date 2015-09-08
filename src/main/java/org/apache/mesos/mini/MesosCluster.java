@@ -59,12 +59,12 @@ public class MesosCluster extends ExternalResource {
             LOGGER.info("Starting Registry");
             PrivateDockerRegistry privateDockerRegistry = new PrivateDockerRegistry(config.dockerClient, this.config);
             addAndStartContainer(privateDockerRegistry);
-            LOGGER.info("Started Registry at " + privateDockerRegistry.getIpAddress() + ":" + config.privateRegistryPort);
+            LOGGER.info("Started Registry at http://" + privateDockerRegistry.getIpAddress() + ":" + config.privateRegistryPort);
 
             LOGGER.info("Starting Mesos Local");
             mesosContainer = new MesosContainer(config.dockerClient, this.config, privateDockerRegistry.getContainerId());
             addAndStartContainer(mesosContainer);
-            LOGGER.info("Started Mesos Local at " + mesosContainer.getMesosMasterURL());
+            LOGGER.info("Started Mesos Local at http://" + mesosContainer.getMesosMasterURL());
 
             // wait until the given number of slaves are registered
             new MesosClusterStateResponse(mesosContainer.getMesosMasterURL(), config.numberOfSlaves).waitFor();
