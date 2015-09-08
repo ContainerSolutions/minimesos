@@ -1,6 +1,7 @@
 package org.apache.mesos.mini;
 
-import com.github.dockerjava.api.DockerClient;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.InternalServerErrorException;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
@@ -18,10 +19,7 @@ import org.apache.mesos.mini.util.Predicate;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
