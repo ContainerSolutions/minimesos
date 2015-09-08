@@ -36,14 +36,11 @@ public abstract class AbstractContainer {
 
     /**
      * Implement this method to pull your image. This will be called before the container is run.
-     * For example, see {@link org.apache.mesos.mini.docker.DockerProxy}
      */
     protected abstract void pullImage();
 
     /**
      * Implement this method to create your container.
-     *
-     * For example, see {@link org.apache.mesos.mini.docker.DockerProxy}
      *
      * @return Your {@link CreateContainerCmd} for docker.
      */

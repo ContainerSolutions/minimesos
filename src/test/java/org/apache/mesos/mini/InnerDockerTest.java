@@ -17,7 +17,6 @@ import static org.junit.Assert.assertEquals;
 /**
  * Test inner docker client.
  * Should instantiate container INSIDE the daemon of the MesosContainer (i.e. not directly visible)
- * The only way to do this on a mac is via a proxy.
  */
 public class InnerDockerTest {
     @Test
