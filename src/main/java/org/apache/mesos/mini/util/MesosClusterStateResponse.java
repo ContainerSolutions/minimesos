@@ -8,7 +8,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.await;
-import static org.hamcrest.CoreMatchers.is;
 
 public class MesosClusterStateResponse implements Callable<Boolean> {
     private final Logger LOGGER = Logger.getLogger(MesosClusterStateResponse.class);
@@ -43,7 +42,7 @@ public class MesosClusterStateResponse implements Callable<Boolean> {
         await()
                 .atMost(60, TimeUnit.SECONDS)
                 .pollInterval(1, TimeUnit.SECONDS)
-                .until(this, is(true));
+                .until(this);
 
         LOGGER.debug("MesosMaster state discovered successfully");
     }
