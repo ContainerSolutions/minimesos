@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 import static com.jayway.awaitility.Awaitility.await;
 
 /**
- * Starts the mesos cluster. Responsible for setting up proxy and private docker registry. Once started, users can add
+ * Starts the mesos cluster. Responsible for setting up a private docker registry. Once started, users can add
  * their own images to the private registry and start containers which will be removed when the Mesos cluster is
  * destroyed.
  */

@@ -82,8 +82,6 @@ Once the mesos cluster is running, you will probably want to push your own image
     @Test
     public void testInstantiate() throws InterruptedException, UnirestException {
         DockerClient dockerClient = getDockerClient();
-        DockerProxy proxy = new DockerProxy(dockerClient);
-        proxy.start();
 
         HelloWorldContainer helloWorldContainer = new HelloWorldContainer(dockerClient);
         cluster.addAndStartContainer(helloWorldContainer); // This will automatically shut down your container.
