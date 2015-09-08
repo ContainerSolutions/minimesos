@@ -1,6 +1,8 @@
 package org.apache.mesos.mini.state;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -17,7 +19,7 @@ public class State {
     // add missing ones as needed
 
 
-    public static State fromJSON(String jsonString) {
+    public static State fromJSON(String jsonString) throws JsonParseException, JsonMappingException {
         ObjectMapper mapper = new ObjectMapper();
         try {
             return mapper.readValue(jsonString, State.class);

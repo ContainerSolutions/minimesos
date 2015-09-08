@@ -1,5 +1,6 @@
 package org.apache.mesos.mini;
 
+import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.InternalServerErrorException;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
@@ -30,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import static com.jayway.awaitility.Awaitility.await;
 
 /**
- * Starts the mesos cluster. Responsible for setting up proxy and private docker registry. Once started, users can add
+ * Starts the mesos cluster. Responsible for setting up a private docker registry. Once started, users can add
  * their own images to the private registry and start containers which will be removed when the Mesos cluster is
  * destroyed.
  */
@@ -73,7 +74,7 @@ public class MesosCluster extends ExternalResource {
             LOGGER.info("Starting Mesos Local");
             mesosContainer = new MesosContainer(config.dockerClient, this.config, privateDockerRegistry.getContainerId());
             addAndStartContainer(mesosContainer);
-            LOGGER.info("Started Mesos Local at " + mesosContainer.getMesosMasterURL());
+            LOGGER.info("Started Mesos Local at http://" + mesosContainer.getMesosMasterURL());
 
             // wait until the given number of slaves are registered
             new MesosClusterStateResponse(mesosContainer.getMesosMasterURL(), config.numberOfSlaves).waitFor();
@@ -91,7 +92,6 @@ public class MesosCluster extends ExternalResource {
         LOGGER.info("Stopping Mesos cluster");
         for (AbstractContainer container : this.containers) {
             LOGGER.info("Removing container [" + container.getName() + "]");
-            writeLog(container.getName(), container.getContainerId());
             container.remove();
         }
         this.containers.clear();
@@ -162,7 +162,7 @@ public class MesosCluster extends ExternalResource {
         injectedImages.add(imageName + ":" + tag);
     }
 
-    public State getStateInfo() throws UnirestException {
+    public State getStateInfo() throws UnirestException, JsonParseException, JsonMappingException {
         String json = Unirest.get("http://" + mesosContainer.getMesosMasterURL() + "/state.json").asString().getBody();
 
         return State.fromJSON(json);
@@ -203,18 +203,6 @@ public class MesosCluster extends ExternalResource {
     @Override
     protected void after() {
         stop();
-    }
-
-    private void writeLog(String containerName, String containerId) {
-        if (containerId == null) {
-            return;
-        }
-        try {
-            InputStream logStream = this.config.dockerClient.logContainerCmd(containerId).withStdOut().exec();
-            Files.copy(logStream, Paths.get(containerName + ".log"));
-        } catch (IOException e) {
-            LOGGER.error("Could not write logs of container " + containerName, e);
-        }
     }
 
     private static boolean successfulPull(String fullLog) {

@@ -26,11 +26,15 @@ A possible testing scenario could be:
 
 ## Running on a mac
 
-Create a docker machine and make sure its environment variables are visible to the test
+Create a docker machine, make sure its environment variables are
+visible to the test, ensure the docker containers' IP addresses are
+available on the host, and then build and run the tests:
 
 ```
 $ docker-machine create -d virtualbox --virtualbox-memory 4096 mini-mesos
 $ eval $(docker-machine env mini-mesos)
+$ sudo route delete 172.17.0.0/16; sudo route -n add 172.17.0.0/16 $(docker-machine ip mini-mesos)
+$ mvn clean verify
 ```
 
 In Idea, add the `docker-machine env` variables to the idea junit testing dialog. E.g.
@@ -78,8 +82,6 @@ Once the mesos cluster is running, you will probably want to push your own image
     @Test
     public void testInstantiate() throws InterruptedException, UnirestException {
         DockerClient dockerClient = getDockerClient();
-        DockerProxy proxy = new DockerProxy(dockerClient);
-        proxy.start();
 
         HelloWorldContainer helloWorldContainer = new HelloWorldContainer(dockerClient);
         cluster.addAndStartContainer(helloWorldContainer); // This will automatically shut down your container.

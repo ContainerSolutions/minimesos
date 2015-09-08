@@ -1,5 +1,7 @@
 package org.apache.mesos.mini;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.mesos.mini.mesos.MesosClusterConfig;
@@ -13,12 +15,16 @@ public class MesosClusterTest {
     private static final MesosClusterConfig config = MesosClusterConfig.builder()
             .numberOfSlaves(3)
             .privateRegistryPort(16000) // Currently you have to choose an available port by yourself
-            .proxyPort(8777)
             .slaveResources(new String[]{"ports(*):[9200-9200,9300-9300]", "ports(*):[9201-9201,9301-9301]", "ports(*):[9202-9202,9302-9302]"})
             .build();
 
     @ClassRule
     public static MesosCluster cluster = new MesosCluster(config);
+
+    @Test
+    public void mesosClusterStateInfoJSONMatchesSchema() throws UnirestException, JsonParseException, JsonMappingException {
+        cluster.getStateInfo();
+    }
 
     @Test
     public void mesosClusterCanBeStarted() throws Exception {
