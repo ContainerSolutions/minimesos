@@ -33,7 +33,7 @@ available on the host, and then build and run the tests:
 ```
 $ docker-machine create -d virtualbox --virtualbox-memory 4096 mini-mesos
 $ eval $(docker-machine env mini-mesos)
-$ sudo route delete 172.17.0.0/16; sudo route -n add 172.17.0.0/16 $(docker-machine ip mini-mesos)
+$ sudo route delete 172.17.0.0/16; sudo route -n add 172.17.0.0/16 $(docker-machine ip ${DOCKER_MACHINE_NAME})
 $ mvn clean verify
 ```
 
