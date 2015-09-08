@@ -64,7 +64,7 @@ public class MesosCluster extends ExternalResource {
                 LOGGER.info("Starting Registry");
                 privateDockerRegistry = new PrivateDockerRegistry(config.dockerClient, this.config);
                 privateDockerRegistry.start();
-                LOGGER.info("Started Registry at " + privateDockerRegistry.getIpAddress() + ":" + config.privateRegistryPort);
+                LOGGER.info("Started Registry at http://" + privateDockerRegistry.getIpAddress() + ":" + config.privateRegistryPort);
             } else {
                 LOGGER.info("Registry is already running");
             }
