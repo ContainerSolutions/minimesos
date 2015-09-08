@@ -2,15 +2,15 @@ package org.apache.mesos.mini;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.InternalServerErrorException;
+import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.container.AbstractContainer;
-import org.apache.mesos.mini.docker.ImagePusher;
 import org.apache.mesos.mini.docker.PrivateDockerRegistry;
+import org.apache.mesos.mini.docker.ResponseCollector;
 import org.apache.mesos.mini.mesos.MesosClusterConfig;
 import org.apache.mesos.mini.mesos.MesosContainer;
 import org.apache.mesos.mini.state.State;
@@ -19,10 +19,7 @@ import org.apache.mesos.mini.util.Predicate;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -45,8 +42,15 @@ public class MesosCluster extends ExternalResource {
 
     private MesosContainer mesosContainer;
 
+    private static PrivateDockerRegistry privateDockerRegistry;
+
+    private String privateRepoUrl;
+
+    public final List<String> injectedImages = new ArrayList<>();
+
     public MesosCluster(MesosClusterConfig config) {
         this.config = config;
+        this.privateRepoUrl = "localhost" + ":" + config.privateRegistryPort;
     }
 
     /**
@@ -56,10 +60,14 @@ public class MesosCluster extends ExternalResource {
         LOGGER.info("Starting Mesos cluster");
 
         try {
-            LOGGER.info("Starting Registry");
-            PrivateDockerRegistry privateDockerRegistry = new PrivateDockerRegistry(config.dockerClient, this.config);
-            addAndStartContainer(privateDockerRegistry);
-            LOGGER.info("Started Registry at http://" + privateDockerRegistry.getIpAddress() + ":" + config.privateRegistryPort);
+            if (privateDockerRegistry == null) {
+                LOGGER.info("Starting Registry");
+                privateDockerRegistry = new PrivateDockerRegistry(config.dockerClient, this.config);
+                privateDockerRegistry.start();
+                LOGGER.info("Started Registry at http://" + privateDockerRegistry.getIpAddress() + ":" + config.privateRegistryPort);
+            } else {
+                LOGGER.info("Registry is already running at http://" + privateDockerRegistry.getIpAddress() + ":" + config.privateRegistryPort);
+            }
 
             LOGGER.info("Starting Mesos Local");
             mesosContainer = new MesosContainer(config.dockerClient, this.config, privateDockerRegistry.getContainerId());
@@ -117,8 +125,39 @@ public class MesosCluster extends ExternalResource {
      * @throws DockerException when an error pulling or pushing occurs.
      */
     public void injectImage(String imageName, String tag) throws DockerException {
-        ImagePusher imagePusher = new ImagePusher(config.dockerClient, "localhost" + ":" + config.privateRegistryPort, getMesosContainer().getContainerId());
-        imagePusher.injectImage(imageName, tag);
+        if (injectedImages.contains(imageName + ":" + tag)) {
+            LOGGER.info("Image " + imageName + ":" + tag + " is already injected");
+            return;
+        }
+
+        String imageNameWithTag = imageName + ":" + tag;
+        LOGGER.info("Injecting image [" + privateRepoUrl + "/" + imageNameWithTag + "]");
+
+        // Retag image in local docker daemon
+        config.dockerClient.tagImageCmd(imageName, privateRepoUrl + "/" + imageName, tag).withForce().exec();
+
+        // Push from local docker daemon to private registry
+        InputStream responsePushImage = config.dockerClient.pushImageCmd(privateRepoUrl + "/" + imageName).withTag(tag).exec();
+        String fullLog = ResponseCollector.collectResponse(responsePushImage);
+        if (!successfulPush(fullLog)){
+            throw new DockerException("Unable to push image: " + imageNameWithTag + "\n" + fullLog, 404);
+        }
+
+        // As mesos-local daemon, pull from private registry
+        ExecCreateCmdResponse exec = config.dockerClient.execCreateCmd(getMesosContainer().getContainerId()).withAttachStdout(true).withCmd("docker", "pull", "private-registry:5000/" + imageNameWithTag).exec();
+        InputStream execCmdStream = config.dockerClient.execStartCmd(exec.getId()).exec();
+        fullLog = ResponseCollector.collectResponse(execCmdStream);
+        if (!successfulPull(fullLog)){
+            throw new DockerException("Unable to pull image: " + imageNameWithTag + "\n" + fullLog, 404);
+        }
+
+        // As mesos-local daemon, retag in local registry
+        exec = config.dockerClient.execCreateCmd(getMesosContainer().getContainerId()).withAttachStdout(true).withCmd("docker", "tag", "-f", "private-registry:5000/" + imageNameWithTag, imageNameWithTag).exec();
+        config.dockerClient.execStartCmd(exec.getId()).exec(); // This doesn't produce any log messages
+
+        LOGGER.info("Succesfully injected [" + privateRepoUrl + "/" + imageNameWithTag + "]");
+
+        injectedImages.add(imageName + ":" + tag);
     }
 
     public State getStateInfo() throws UnirestException, JsonParseException, JsonMappingException {
@@ -164,11 +203,12 @@ public class MesosCluster extends ExternalResource {
         stop();
     }
 
-    public List<AbstractContainer> getContainers() {
-        return Collections.unmodifiableList(containers);
+    private static boolean successfulPull(String fullLog) {
+        return fullLog.contains("up to date") || fullLog.contains("Downloaded newer image");
     }
 
-    public DockerClient getInnerDockerClient() {
-        return this.mesosContainer.getInnerDockerClient();
+    private static boolean successfulPush(String fullLog) {
+        return fullLog.contains("successfully pushed") || fullLog.contains("already pushed") || fullLog.contains("already exists");
     }
+
 }
