@@ -19,10 +19,6 @@ import org.apache.mesos.mini.util.Predicate;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -47,6 +43,10 @@ public class MesosCluster extends ExternalResource {
 
     public MesosCluster(MesosClusterConfig config) {
         this.config = config;
+    }
+
+    public static MesosClusterConfig.Builder builder() {
+        return MesosClusterConfig.builder();
     }
 
     /**
@@ -170,5 +170,9 @@ public class MesosCluster extends ExternalResource {
 
     public DockerClient getInnerDockerClient() {
         return this.mesosContainer.getInnerDockerClient();
+    }
+
+    public MesosClusterConfig getConfig() {
+        return config;
     }
 }

@@ -12,14 +12,12 @@ import org.junit.Test;
 
 public class MesosClusterTest {
 
-    private static final MesosClusterConfig config = MesosClusterConfig.builder()
+    @ClassRule
+    public static final MesosCluster cluster = MesosClusterConfig.builder()
             .numberOfSlaves(3)
             .privateRegistryPort(16000) // Currently you have to choose an available port by yourself
             .slaveResources(new String[]{"ports(*):[9200-9200,9300-9300]", "ports(*):[9201-9201,9301-9301]", "ports(*):[9202-9202,9302-9302]"})
             .build();
-
-    @ClassRule
-    public static MesosCluster cluster = new MesosCluster(config);
 
     @Test
     public void mesosClusterStateInfoJSONMatchesSchema() throws UnirestException, JsonParseException, JsonMappingException {
@@ -45,9 +43,9 @@ public class MesosClusterTest {
 
     @Test
     public void testPullAndStartContainer() throws UnirestException {
-        HelloWorldContainer container = new HelloWorldContainer(config.dockerClient);
+        HelloWorldContainer container = new HelloWorldContainer(cluster.getConfig().dockerClient);
         String containerId = cluster.addAndStartContainer(container);
-        String ipAddress = config.dockerClient.inspectContainerCmd(containerId).exec().getNetworkSettings().getIpAddress();
+        String ipAddress = cluster.getConfig().dockerClient.inspectContainerCmd(containerId).exec().getNetworkSettings().getIpAddress();
         String url = "http://" + ipAddress + ":80";
         Assert.assertEquals(200, Unirest.get(url).asString().getStatus());
     }
