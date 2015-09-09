@@ -13,8 +13,11 @@ import java.net.Socket;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.jayway.awaitility.Awaitility.await;
 
@@ -51,18 +54,22 @@ public class MesosContainer extends AbstractContainer {
     }
 
     String[] createMesosLocalEnvironment() {
-        ArrayList<String> envs = new ArrayList<String>();
-        envs.add("NUMBER_OF_SLAVES=" + clusterConfig.numberOfSlaves);
-        envs.add("MESOS_QUORUM=1");
-        envs.add("MESOS_ZK=zk://localhost:2181/mesos");
-        envs.add("MESOS_EXECUTOR_REGISTRATION_TIMEOUT=5mins");
-        envs.add("MESOS_CONTAINERIZERS=docker,mesos");
-        envs.add("MESOS_ISOLATOR=cgroups/cpu,cgroups/mem");
-        envs.add("MESOS_LOG_DIR=/var/log");
+        TreeMap<String,String> envs = new TreeMap<>();
+
+        envs.put("NUMBER_OF_SLAVES", Integer.toString(clusterConfig.numberOfSlaves));
+        envs.put("MESOS_QUORUM", "1");
+        envs.put("MESOS_ZK", "zk://localhost:2181/mesos");
+
+        envs.put("MESOS_EXECUTOR_REGISTRATION_TIMEOUT", "5mins");
+        envs.put("MESOS_CONTAINERIZERS", "docker,mesos");
+        envs.put("MESOS_ISOLATOR", "cgroups/cpu,cgroups/mem");
+        envs.put("MESOS_LOG_DIR", "/var/log");
         for (int i = 1; i <= clusterConfig.numberOfSlaves; i++) {
-            envs.add("SLAVE" + i + "_RESOURCES=" + clusterConfig.slaveResources[i - 1]);
+            envs.put("SLAVE" + i + "_RESOURCES", clusterConfig.slaveResources[i - 1]);
         }
-        return envs.toArray(new String[]{});
+        envs.putAll(clusterConfig.extraEnvironmentVariables);
+
+        return envs.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
     }
 
     String generateMesosMasterContainerName() {
