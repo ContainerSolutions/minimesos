@@ -8,3 +8,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - [Print container logs when it fails to start](https://github.com/ContainerSolutions/mini-mesos/pull/54) 
 
+## [0.2.8] - [9 September 2015]
+
+### Added
+
+- [Allow passing extra environment variables to supervised programs](https://github.com/ContainerSolutions/mini-mesos/pull/61)
