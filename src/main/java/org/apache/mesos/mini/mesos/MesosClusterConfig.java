@@ -5,6 +5,9 @@ import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.Map;
+import java.util.TreeMap;
+
 public class MesosClusterConfig {
 
     public final DockerClient dockerClient;
@@ -12,13 +15,22 @@ public class MesosClusterConfig {
     public final String[] slaveResources;
     public final Integer mesosMasterPort;
     public final Integer privateRegistryPort;
+    public final Map<String,String> extraEnvironmentVariables;
 
-    private MesosClusterConfig(DockerClient dockerClient, int numberOfSlaves, String[] slaveResources, Integer mesosMasterPort, Integer privateRegistryPort) {
+    private MesosClusterConfig(
+            DockerClient dockerClient,
+            int numberOfSlaves,
+            String[] slaveResources,
+            Integer mesosMasterPort,
+            Integer privateRegistryPort,
+            Map<String,String> extraEnvironmentVariables
+    ) {
         this.dockerClient = dockerClient;
         this.numberOfSlaves = numberOfSlaves;
         this.slaveResources = slaveResources;
         this.mesosMasterPort = mesosMasterPort;
         this.privateRegistryPort = privateRegistryPort;
+        this.extraEnvironmentVariables = extraEnvironmentVariables;
     }
 
     public static Builder builder() {
@@ -32,6 +44,7 @@ public class MesosClusterConfig {
         String[] slaveResources = new String[]{};
         Integer mesosMasterPort = 5050;
         Integer privateRegistryPort = 5000;
+        Map<String,String> extraEnvironmentVariables = new TreeMap<>();
 
         private Builder() {
 
@@ -59,6 +72,11 @@ public class MesosClusterConfig {
 
         public Builder masterPort(int port) {
             this.mesosMasterPort = port;
+            return this;
+        }
+
+        public Builder extraEnvironmentVariables(Map<String,String> extraEnvironmentVariables) {
+            this.extraEnvironmentVariables = extraEnvironmentVariables;
             return this;
         }
 
@@ -93,7 +111,14 @@ public class MesosClusterConfig {
                 }
             }
 
-            return new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, mesosMasterPort, privateRegistryPort);
+            return new MesosClusterConfig(
+                    dockerClient,
+                    numberOfSlaves,
+                    slaveResources,
+                    mesosMasterPort,
+                    privateRegistryPort,
+                    extraEnvironmentVariables
+            );
         }
 
     }
