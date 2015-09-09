@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import org.apache.commons.lang.StringUtils;
+import org.apache.mesos.mini.MesosCluster;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -94,7 +95,7 @@ public class MesosClusterConfig {
             return this;
         }
 
-        public MesosClusterConfig build() {
+        public MesosCluster build() {
 
             if (numberOfSlaves <= 0) {
                 throw new IllegalStateException("At least one slave is required to run a mesos cluster");
@@ -111,16 +112,11 @@ public class MesosClusterConfig {
                 }
             }
 
-            return new MesosClusterConfig(
-                    dockerClient,
-                    numberOfSlaves,
-                    slaveResources,
-                    mesosMasterPort,
-                    privateRegistryPort,
-                    extraEnvironmentVariables
-            );
+            return new MesosCluster(new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, mesosMasterPort, privateRegistryPort, extraEnvironmentVariables));
         }
-
     }
 
+    public int getNumberOfSlaves() {
+        return numberOfSlaves;
+    }
 }

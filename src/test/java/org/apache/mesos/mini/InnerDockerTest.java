@@ -5,7 +5,6 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Container;
 import org.apache.mesos.mini.container.AbstractContainer;
 import org.apache.mesos.mini.docker.PrivateDockerRegistry;
-import org.apache.mesos.mini.mesos.MesosClusterConfig;
 import org.apache.mesos.mini.mesos.MesosContainer;
 import org.junit.Test;
 
@@ -21,12 +20,12 @@ import static org.junit.Assert.assertEquals;
 public class InnerDockerTest {
     @Test
     public void shouldStart() throws InterruptedException {
-        MesosClusterConfig config = MesosClusterConfig.builder().defaultDockerClient()
+        MesosCluster cluster = MesosCluster.builder().defaultDockerClient()
                 .slaveResources(new String[]{"ports(*):[9200-9200,9300-9300]", "ports(*):[9201-9201,9301-9301]", "ports(*):[9202-9202,9302-9302]"})
                 .build();
-        PrivateDockerRegistry registry = new PrivateDockerRegistry(config.dockerClient, config);
+        PrivateDockerRegistry registry = new PrivateDockerRegistry(cluster.getConfig().dockerClient, cluster.getConfig());
         registry.start();
-        MesosContainer mesosContainer = new MesosContainer(config.dockerClient, config, registry.getContainerId());
+        MesosContainer mesosContainer = new MesosContainer(cluster.getConfig().dockerClient, cluster.getConfig(), registry.getContainerId());
         mesosContainer.start();
 
         HelloWorldNoRemoveContainer helloWorldContainer = new HelloWorldNoRemoveContainer(mesosContainer.getInnerDockerClient());
