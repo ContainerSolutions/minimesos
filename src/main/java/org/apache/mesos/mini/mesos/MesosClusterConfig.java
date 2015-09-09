@@ -112,7 +112,7 @@ public class MesosClusterConfig {
                 }
             }
 
-            return new MesosCluster(new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, mesosMasterPort, privateRegistryPort));
+            return new MesosCluster(new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, mesosMasterPort, privateRegistryPort, extraEnvironmentVariables));
         }
     }
 
