@@ -45,10 +45,6 @@ public class MesosCluster extends ExternalResource {
         this.config = config;
     }
 
-    public static MesosClusterConfig.Builder builder() {
-        return MesosClusterConfig.builder();
-    }
-
     /**
      * Starts the Mesos cluster and its containers
      */

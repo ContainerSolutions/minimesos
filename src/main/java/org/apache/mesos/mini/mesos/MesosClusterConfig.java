@@ -95,7 +95,7 @@ public class MesosClusterConfig {
             return this;
         }
 
-        public MesosCluster build() {
+        public MesosClusterConfig build() {
 
             if (numberOfSlaves <= 0) {
                 throw new IllegalStateException("At least one slave is required to run a mesos cluster");
@@ -112,7 +112,7 @@ public class MesosClusterConfig {
                 }
             }
 
-            return new MesosCluster(new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, mesosMasterPort, privateRegistryPort, extraEnvironmentVariables));
+            return new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, mesosMasterPort, privateRegistryPort, extraEnvironmentVariables);
         }
     }
 
