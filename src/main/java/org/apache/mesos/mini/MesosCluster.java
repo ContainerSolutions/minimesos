@@ -9,8 +9,6 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.container.AbstractContainer;
-import org.apache.mesos.mini.docker.ImagePusher;
-import org.apache.mesos.mini.docker.PrivateDockerRegistry;
 import org.apache.mesos.mini.mesos.MesosClusterConfig;
 import org.apache.mesos.mini.mesos.MesosContainer;
 import org.apache.mesos.mini.state.State;
@@ -35,7 +33,7 @@ import static com.jayway.awaitility.Awaitility.await;
 public class MesosCluster extends ExternalResource {
     private static Logger LOGGER = Logger.getLogger(MesosCluster.class);
 
-    private final List<AbstractContainer> containers = Collections.synchronizedList(new ArrayList<AbstractContainer>());
+    private final List<AbstractContainer> containers = Collections.synchronizedList(new ArrayList<>());
 
     private final MesosClusterConfig config;
 
@@ -52,13 +50,8 @@ public class MesosCluster extends ExternalResource {
         LOGGER.info("Starting Mesos cluster");
 
         try {
-            LOGGER.info("Starting Registry");
-            PrivateDockerRegistry privateDockerRegistry = new PrivateDockerRegistry(config.dockerClient, this.config);
-            addAndStartContainer(privateDockerRegistry);
-            LOGGER.info("Started Registry at http://" + privateDockerRegistry.getIpAddress() + ":" + config.privateRegistryPort);
-
             LOGGER.info("Starting Mesos Local");
-            mesosContainer = new MesosContainer(config.dockerClient, this.config, privateDockerRegistry.getContainerId());
+            mesosContainer = new MesosContainer(config.dockerClient, this.config);
             addAndStartContainer(mesosContainer);
             LOGGER.info("Started Mesos Local at http://" + mesosContainer.getMesosMasterURL());
 
@@ -93,28 +86,6 @@ public class MesosCluster extends ExternalResource {
         container.start();
         containers.add(container);
         return container.getContainerId();
-    }
-
-    /**
-     * Inject an image (with tag "latest") from your local docker daemon into the mesos cluster.
-     *
-     * @param imageName The name of the image (without tag) you want to push (in the format domain/image)
-     * @throws DockerException when an error pulling or pushing occurs.
-     */
-    public void injectImage(String imageName) throws DockerException {
-        injectImage(imageName, "latest");
-    }
-
-    /**
-     * Inject an image from your local docker daemon into the mesos cluster.
-     *
-     * @param imageName The name of the image you want to push (in the format domain/image)
-     * @param tag The tag of image to inject (e.g. "1.0.0" or "latest")
-     * @throws DockerException when an error pulling or pushing occurs.
-     */
-    public void injectImage(String imageName, String tag) throws DockerException {
-        ImagePusher imagePusher = new ImagePusher(config.dockerClient, "localhost" + ":" + config.privateRegistryPort, getMesosContainer().getContainerId());
-        imagePusher.injectImage(imageName, tag);
     }
 
     public State getStateInfo() throws UnirestException, JsonParseException, JsonMappingException {
@@ -165,7 +136,7 @@ public class MesosCluster extends ExternalResource {
     }
 
     public DockerClient getInnerDockerClient() {
-        return this.mesosContainer.getInnerDockerClient();
+        return this.mesosContainer.getOuterDockerClient();
     }
 
     public MesosClusterConfig getConfig() {
