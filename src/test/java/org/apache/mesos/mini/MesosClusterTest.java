@@ -8,6 +8,7 @@ import org.apache.mesos.mini.mesos.MesosClusterConfig;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class MesosClusterTest {
