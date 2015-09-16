@@ -2,14 +2,14 @@ package org.apache.mesos.mini.mesos;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.model.*;
+import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.container.AbstractContainer;
 
 import java.security.SecureRandom;
-import java.util.List;
 import java.util.TreeMap;
 
 public class MesosContainer extends AbstractContainer {
@@ -74,6 +74,10 @@ public class MesosContainer extends AbstractContainer {
     @Override
     protected CreateContainerCmd dockerCommand() {
         String mesosClusterContainerName = generateMesosMasterContainerName();
+        String dockerBin = System.getenv("DOCKER_BIN");
+        if (dockerBin.isEmpty()) {
+            dockerBin = "/usr/bin/docker";
+        }
 
         return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE + ":" + REGISTRY_TAG)
                 .withName(mesosClusterContainerName)
@@ -81,10 +85,11 @@ public class MesosContainer extends AbstractContainer {
                         // the registry container will be known as 'private-registry' to mesos-local
                 .withExposedPorts(new ExposedPort(getDockerPort()))
                 .withEnv(createMesosLocalEnvironment())
-                .withVolumes(new Volume("/sys/fs/cgroup"))
-                .withBinds(Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup:rw"),
-                           Bind.parse("/usr/bin/docker:/usr/bin/docker"),
-                           Bind.parse("/var/run/docker.sock:/var/run/docker.sock"));
+                .withBinds(
+                        Bind.parse(String.format("/sys/fs/cgroup:/sys/fs/cgroup")),
+                        Bind.parse(String.format("%s:/usr/bin/docker", dockerBin)),
+                        Bind.parse("/var/run/docker.sock:/var/run/docker.sock")
+                );
     }
 
     public int getDockerPort() {
