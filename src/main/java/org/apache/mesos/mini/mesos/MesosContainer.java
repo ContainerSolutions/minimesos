@@ -36,7 +36,7 @@ public class MesosContainer extends AbstractContainer {
 
         DockerClientConfig.DockerClientConfigBuilder outerDockerClient;
         outerDockerClient = DockerClientConfig.createDefaultConfigBuilder();
-        outerDockerClient.withUri("http://" + getIpAddress() + ":" + getDockerPort());
+        outerDockerClient.withUri(System.getenv("DOCKER_HOST").replace("tcp", "http"));
         this.outerDockerClient = DockerClientBuilder.getInstance(outerDockerClient.build()).build();
     }
 
@@ -87,7 +87,6 @@ public class MesosContainer extends AbstractContainer {
         return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE + ":" + REGISTRY_TAG)
                 .withName(mesosClusterContainerName)
                 .withPrivileged(true)
-                        // the registry container will be known as 'private-registry' to mesos-local
                 .withExposedPorts(new ExposedPort(getDockerPort()))
                 .withEnv(createMesosLocalEnvironment())
                 .withBinds(
