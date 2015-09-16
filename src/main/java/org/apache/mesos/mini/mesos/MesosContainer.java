@@ -4,8 +4,6 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.core.DockerClientBuilder;
-import com.github.dockerjava.core.DockerClientConfig;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.container.AbstractContainer;
 
@@ -23,7 +21,6 @@ public class MesosContainer extends AbstractContainer {
     public static final String REGISTRY_TAG = "dood";
 
     private final MesosClusterConfig clusterConfig;
-    private DockerClient outerDockerClient;
 
     public MesosContainer(DockerClient dockerClient, MesosClusterConfig clusterConfig) {
         super(dockerClient);
@@ -33,11 +30,6 @@ public class MesosContainer extends AbstractContainer {
     @Override
     public void start() {
         super.start();
-
-        DockerClientConfig.DockerClientConfigBuilder outerDockerClient;
-        outerDockerClient = DockerClientConfig.createDefaultConfigBuilder();
-        outerDockerClient.withUri("unix:///var/run/docker.sock");
-        this.outerDockerClient = DockerClientBuilder.getInstance(outerDockerClient.build()).build();
     }
 
     String[] createMesosLocalEnvironment() {
@@ -101,7 +93,7 @@ public class MesosContainer extends AbstractContainer {
     }
 
     public DockerClient getOuterDockerClient() {
-        return outerDockerClient;
+        return this.dockerClient;
     }
 
 }
