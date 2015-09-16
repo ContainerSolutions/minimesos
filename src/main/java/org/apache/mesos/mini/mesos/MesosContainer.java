@@ -9,6 +9,7 @@ import com.github.dockerjava.core.DockerClientConfig;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.container.AbstractContainer;
 
+import java.io.File;
 import java.security.SecureRandom;
 import java.util.TreeMap;
 
@@ -74,9 +75,13 @@ public class MesosContainer extends AbstractContainer {
     @Override
     protected CreateContainerCmd dockerCommand() {
         String mesosClusterContainerName = generateMesosMasterContainerName();
-        String dockerBin = System.getenv("DOCKER_BIN");
-        if (dockerBin.isEmpty()) {
-            dockerBin = "/usr/bin/docker";
+        String dockerBin = "/usr/bin/docker";
+
+        if (! (new File(dockerBin).exists())) {
+            dockerBin = "/usr/local/bin/docker";
+            if (! (new File(dockerBin).exists())) {
+                LOGGER.error("Docker binary not found in /usr/local/bin or /usr/bin. Creating containers will most likely fail.");
+            }
         }
 
         return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE + ":" + REGISTRY_TAG)
@@ -86,7 +91,7 @@ public class MesosContainer extends AbstractContainer {
                 .withExposedPorts(new ExposedPort(getDockerPort()))
                 .withEnv(createMesosLocalEnvironment())
                 .withBinds(
-                        Bind.parse(String.format("/sys/fs/cgroup:/sys/fs/cgroup")),
+                        Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),
                         Bind.parse(String.format("%s:/usr/bin/docker", dockerBin)),
                         Bind.parse("/var/run/docker.sock:/var/run/docker.sock")
                 );
