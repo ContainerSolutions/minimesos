@@ -36,7 +36,7 @@ public class MesosContainer extends AbstractContainer {
 
         DockerClientConfig.DockerClientConfigBuilder outerDockerClient;
         outerDockerClient = DockerClientConfig.createDefaultConfigBuilder();
-        outerDockerClient.withUri(System.getenv("DOCKER_HOST").replace("tcp", "http"));
+        outerDockerClient.withUri("unix:///var/run/docker.sock");
         this.outerDockerClient = DockerClientBuilder.getInstance(outerDockerClient.build()).build();
     }
 
