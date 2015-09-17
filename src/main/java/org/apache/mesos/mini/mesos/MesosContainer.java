@@ -2,14 +2,13 @@ package org.apache.mesos.mini.mesos;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.model.*;
-import com.github.dockerjava.core.DockerClientBuilder;
-import com.github.dockerjava.core.DockerClientConfig;
+import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.ExposedPort;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.container.AbstractContainer;
 
+import java.io.File;
 import java.security.SecureRandom;
-import java.util.List;
 import java.util.TreeMap;
 
 public class MesosContainer extends AbstractContainer {
@@ -22,7 +21,6 @@ public class MesosContainer extends AbstractContainer {
     public static final String REGISTRY_TAG = "dood";
 
     private final MesosClusterConfig clusterConfig;
-    private DockerClient outerDockerClient;
 
     public MesosContainer(DockerClient dockerClient, MesosClusterConfig clusterConfig) {
         super(dockerClient);
@@ -32,11 +30,6 @@ public class MesosContainer extends AbstractContainer {
     @Override
     public void start() {
         super.start();
-
-        DockerClientConfig.DockerClientConfigBuilder outerDockerClient;
-        outerDockerClient = DockerClientConfig.createDefaultConfigBuilder();
-        outerDockerClient.withUri("http://" + getIpAddress() + ":" + getDockerPort());
-        this.outerDockerClient = DockerClientBuilder.getInstance(outerDockerClient.build()).build();
     }
 
     String[] createMesosLocalEnvironment() {
@@ -74,17 +67,25 @@ public class MesosContainer extends AbstractContainer {
     @Override
     protected CreateContainerCmd dockerCommand() {
         String mesosClusterContainerName = generateMesosMasterContainerName();
+        String dockerBin = "/usr/bin/docker";
+
+        if (! (new File(dockerBin).exists())) {
+            dockerBin = "/usr/local/bin/docker";
+            if (! (new File(dockerBin).exists())) {
+                LOGGER.error("Docker binary not found in /usr/local/bin or /usr/bin. Creating containers will most likely fail.");
+            }
+        }
 
         return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE + ":" + REGISTRY_TAG)
                 .withName(mesosClusterContainerName)
                 .withPrivileged(true)
-                        // the registry container will be known as 'private-registry' to mesos-local
                 .withExposedPorts(new ExposedPort(getDockerPort()))
                 .withEnv(createMesosLocalEnvironment())
-                .withVolumes(new Volume("/sys/fs/cgroup"))
-                .withBinds(Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup:rw"),
-                           Bind.parse("/usr/bin/docker:/usr/bin/docker"),
-                           Bind.parse("/var/run/docker.sock:/var/run/docker.sock"));
+                .withBinds(
+                        Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),
+                        Bind.parse(String.format("%s:/usr/bin/docker", dockerBin)),
+                        Bind.parse("/var/run/docker.sock:/var/run/docker.sock")
+                );
     }
 
     public int getDockerPort() {
@@ -92,7 +93,7 @@ public class MesosContainer extends AbstractContainer {
     }
 
     public DockerClient getOuterDockerClient() {
-        return outerDockerClient;
+        return this.dockerClient;
     }
 
 }
