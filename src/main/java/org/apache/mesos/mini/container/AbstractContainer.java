@@ -26,6 +26,8 @@ public abstract class AbstractContainer {
 
     protected final DockerClient dockerClient;
 
+    protected String containerName;
+
     private String containerId = "";
 
     private boolean removed;
@@ -69,9 +71,9 @@ public abstract class AbstractContainer {
         dockerClient.startContainerCmd(containerId).exec();
 
         try {
-            await().atMost(20, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new ContainerIsRunning<Boolean>(containerId));
+            await().atMost(60, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new ContainerIsRunning<Boolean>(containerId));
         } catch (ConditionTimeoutException cte) {
-            LOGGER.error("Container did not start within 20 seconds");
+            LOGGER.error("Container did not start within 60 seconds");
             InputStream logs = dockerClient.logContainerCmd(containerId).withStdOut().withStdErr().exec();
             try {
                 LOGGER.error(IOUtils.toString(logs));

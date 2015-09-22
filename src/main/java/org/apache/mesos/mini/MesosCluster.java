@@ -3,14 +3,16 @@ package org.apache.mesos.mini;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.InternalServerErrorException;
+import com.github.dockerjava.api.NotFoundException;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.container.AbstractContainer;
 import org.apache.mesos.mini.mesos.MesosClusterConfig;
-import org.apache.mesos.mini.mesos.MesosContainer;
+import org.apache.mesos.mini.mesos.MesosMaster;
+import org.apache.mesos.mini.mesos.MesosSlave;
+import org.apache.mesos.mini.mesos.ZooKeeper;
 import org.apache.mesos.mini.state.State;
 import org.apache.mesos.mini.util.MesosClusterStateResponse;
 import org.apache.mesos.mini.util.Predicate;
@@ -37,7 +39,9 @@ public class MesosCluster extends ExternalResource {
 
     private final MesosClusterConfig config;
 
-    private MesosContainer mesosContainer;
+    private MesosSlave[] mesosSlaves;
+
+    protected MesosMaster mesosMasterContainer;
 
     public MesosCluster(MesosClusterConfig config) {
         this.config = config;
@@ -48,15 +52,25 @@ public class MesosCluster extends ExternalResource {
      */
     public void start() {
         LOGGER.info("Starting Mesos cluster");
+        ZooKeeper zkContainer = new ZooKeeper(config.dockerClient);
+        addAndStartContainer(zkContainer);
+        LOGGER.info("Started zookeeper on " + zkContainer.getIpAddress());
 
+        this.mesosMasterContainer = new MesosMaster(config.dockerClient, zkContainer.getIpAddress());
+        addAndStartContainer(this.mesosMasterContainer);
+        LOGGER.info("Started mesos master on http://" + this.mesosMasterContainer.getIpAddress() + ":5050");
         try {
             LOGGER.info("Starting Mesos Local");
-            mesosContainer = new MesosContainer(config.dockerClient, this.config);
-            addAndStartContainer(mesosContainer);
-            LOGGER.info("Started Mesos Local at http://" + mesosContainer.getMesosMasterURL());
+            mesosSlaves = new MesosSlave[config.getNumberOfSlaves()];
+            for (int i = 0; i < this.config.getNumberOfSlaves(); i++) {
+                mesosSlaves[i] = new MesosSlave(config.dockerClient, this.config, zkContainer.getIpAddress(), config.slaveResources[i]);
+                addAndStartContainer(mesosSlaves[i]);
+
+                LOGGER.info("Started Mesos Local at " + mesosSlaves[i].getIpAddress());
+            }
 
             // wait until the given number of slaves are registered
-            new MesosClusterStateResponse(mesosContainer.getMesosMasterURL(), config.numberOfSlaves).waitFor();
+            new MesosClusterStateResponse(this.mesosMasterContainer.getIpAddress() + ":5050", config.numberOfSlaves).waitFor();
         } catch (Throwable e) {
             LOGGER.error("Error during startup", e);
             throw e;
@@ -71,7 +85,11 @@ public class MesosCluster extends ExternalResource {
         LOGGER.info("Stopping Mesos cluster");
         for (AbstractContainer container : this.containers) {
             LOGGER.info("Removing container [" + container.getName() + "]");
-            container.remove();
+            try {
+                container.remove();
+            } catch (NotFoundException e) {
+                LOGGER.error(String.format("Cannot remove container %s, maybe it's already dead?", container.getContainerId()));
+            }
         }
         this.containers.clear();
     }
@@ -89,17 +107,17 @@ public class MesosCluster extends ExternalResource {
     }
 
     public State getStateInfo() throws UnirestException, JsonParseException, JsonMappingException {
-        String json = Unirest.get("http://" + mesosContainer.getMesosMasterURL() + "/state.json").asString().getBody();
+        String json = Unirest.get("http://" + this.getMesosMasterContainer().getIpAddress() + ":5050" +"/state.json").asString().getBody();
 
         return State.fromJSON(json);
     }
 
     public JSONObject getStateInfoJSON() throws UnirestException {
-        return Unirest.get("http://" + mesosContainer.getMesosMasterURL() + "/state.json").asJson().getBody().getObject();
+        return Unirest.get("http://" + this.getMesosMasterContainer().getIpAddress() + ":5050" + "/state.json").asJson().getBody().getObject();
     }
 
-    public MesosContainer getMesosContainer() {
-        return mesosContainer;
+    public MesosSlave[] getMesosSlaves() {
+        return mesosSlaves;
     }
 
     public void waitForState(final Predicate<State> predicate, int seconds) {
@@ -118,7 +136,7 @@ public class MesosCluster extends ExternalResource {
     }
 
     public void waitForState(Predicate<State> predicate) {
-        waitForState(predicate, 20);
+        waitForState(predicate, 60);
     }
 
     @Override
@@ -136,10 +154,14 @@ public class MesosCluster extends ExternalResource {
     }
 
     public DockerClient getInnerDockerClient() {
-        return this.mesosContainer.getOuterDockerClient();
+        return this.mesosSlaves[0].getOuterDockerClient();
     }
 
     public MesosClusterConfig getConfig() {
         return config;
+    }
+
+    public MesosMaster getMesosMasterContainer() {
+        return mesosMasterContainer;
     }
 }
