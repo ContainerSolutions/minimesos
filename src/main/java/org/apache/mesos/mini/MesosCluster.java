@@ -47,13 +47,10 @@ public class MesosCluster extends ExternalResource {
      * Starts the Mesos cluster and its containers
      */
     public void start() {
-        LOGGER.info("Starting Mesos cluster");
-
         try {
-            LOGGER.info("Starting Mesos Local");
             mesosContainer = new MesosContainer(config.dockerClient, this.config);
             addAndStartContainer(mesosContainer);
-            LOGGER.info("Started Mesos Local at http://" + mesosContainer.getMesosMasterURL());
+            LOGGER.info("http://" + mesosContainer.getMesosMasterURL());
 
             // wait until the given number of slaves are registered
             new MesosClusterStateResponse(mesosContainer.getMesosMasterURL(), config.numberOfSlaves).waitFor();
@@ -61,16 +58,15 @@ public class MesosCluster extends ExternalResource {
             LOGGER.error("Error during startup", e);
             throw e;
         }
-        LOGGER.info("Mesos cluster started");
     }
 
     /**
      * Stops the Mesos cluster and its containers
      */
     public void stop() {
-        LOGGER.info("Stopping Mesos cluster");
+        LOGGER.debug("Stopping Mesos cluster");
         for (AbstractContainer container : this.containers) {
-            LOGGER.info("Removing container [" + container.getName() + "]");
+            LOGGER.debug("Removing container [" + container.getName() + "]");
             container.remove();
         }
         this.containers.clear();

@@ -1,0 +1,27 @@
+// used for unit tests
+apply plugin: 'groovy'
+
+def spockVersion = '1.0-groovy-2.4'
+def powermockVersion = "1.6.1"
+
+dependencies {
+
+    testCompile "org.codehaus.groovy:groovy-all:2.4.1"
+    testCompile "org.spockframework:spock-core:$spockVersion"
+
+    testCompile 'cglib:cglib-nodep:2.2.2'               // need to mock classes
+
+//    // useful to mock out statics and final classes in Java.
+//    testCompile "org.powermock:powermock-module-junit4:$powermockVersion"
+//    testCompile "org.powermock:powermock-module-junit4-rule:$powermockVersion"
+//    testCompile "org.powermock:powermock-classloading-xstream:$powermockVersion"
+//    testCompile "org.powermock:powermock-api-mockito:$powermockVersion"
+}
+
+// for spock to live in test java tree
+sourceSets {
+    test {
+        groovy { srcDir 'src/test/java' }
+    }
+}
+
