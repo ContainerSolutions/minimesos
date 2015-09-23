@@ -44,9 +44,9 @@ public class MesosSlave extends AbstractContainer {
     String[] createMesosLocalEnvironment() {
         TreeMap<String,String> envs = new TreeMap<>();
 
-        envs.put("MESOS_ZK", "zk://" + zkIp  + ":2181/" + this.zkPath);
+        envs.put("MESOS_ZK", this.zkPath);
         envs.put("MESOS_PORT", this.portNumber);
-        envs.put("MESOS_MASTER", "zk://" + zkIp + ":2181/" + this.zkPath);
+        envs.put("MESOS_MASTER", this.zkPath);
         envs.put("MESOS_EXECUTOR_REGISTRATION_TIMEOUT", "5mins");
         envs.put("MESOS_CONTAINERIZERS", "docker,mesos");
         envs.put("MESOS_ISOLATOR", "cgroups/cpu,cgroups/mem");

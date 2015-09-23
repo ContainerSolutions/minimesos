@@ -37,6 +37,8 @@ public class MesosCluster extends ExternalResource {
 
     protected MesosMaster mesosMasterContainer;
 
+    protected String zkUrl;
+
     public MesosCluster(MesosClusterConfig config) {
         this.config = config;
     }
@@ -49,6 +51,7 @@ public class MesosCluster extends ExternalResource {
         addAndStartContainer(zkContainer);
         LOGGER.info("Started zookeeper on " + zkContainer.getIpAddress());
         String zkPath = UUID.randomUUID().toString();
+        this.zkUrl = "zk://" + zkContainer.getIpAddress() + ":2181/" + zkPath;
         this.mesosMasterContainer = new MesosMaster(config.dockerClient, zkContainer.getIpAddress(), zkPath);
         addAndStartContainer(this.mesosMasterContainer);
         LOGGER.info("Started mesos master on http://" + this.mesosMasterContainer.getIpAddress() + ":5050");
@@ -56,7 +59,7 @@ public class MesosCluster extends ExternalResource {
             LOGGER.info("Starting Mesos Local");
             mesosSlaves = new MesosSlave[config.getNumberOfSlaves()];
             for (int i = 0; i < this.config.getNumberOfSlaves(); i++) {
-                mesosSlaves[i] = new MesosSlave(config.dockerClient, zkContainer.getIpAddress(), config.slaveResources[i], "5051", zkPath);
+                mesosSlaves[i] = new MesosSlave(config.dockerClient, zkContainer.getIpAddress(), config.slaveResources[i], "5051", zkUrl);
                 addAndStartContainer(mesosSlaves[i]);
                 LOGGER.info("Started Mesos slave at " + mesosSlaves[i].getIpAddress());
             }
@@ -132,5 +135,9 @@ public class MesosCluster extends ExternalResource {
 
     public MesosMaster getMesosMasterContainer() {
         return mesosMasterContainer;
+    }
+
+    public String getZkUrl() {
+        return zkUrl;
     }
 }
