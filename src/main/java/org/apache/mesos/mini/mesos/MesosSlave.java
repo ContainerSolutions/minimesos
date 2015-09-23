@@ -8,8 +8,7 @@ import org.apache.log4j.Logger;
 import org.apache.mesos.mini.container.AbstractContainer;
 
 import java.io.File;
-import java.security.SecureRandom;
-import java.util.TreeMap;
+import java.util.*;
 
 public class MesosSlave extends AbstractContainer {
 
@@ -28,11 +27,9 @@ public class MesosSlave extends AbstractContainer {
 
     protected final String zkPath;
 
-    private final MesosClusterConfig clusterConfig;
 
-    public MesosSlave(DockerClient dockerClient, MesosClusterConfig clusterConfig, String zkIp, String resources, String portNumber, String zkPath) {
+    public MesosSlave(DockerClient dockerClient, String zkIp, String resources, String portNumber, String zkPath) {
         super(dockerClient);
-        this.clusterConfig = clusterConfig;
         this.zkIp = zkIp;
         this.zkPath = zkPath;
         this.resources = resources;
@@ -54,12 +51,13 @@ public class MesosSlave extends AbstractContainer {
         envs.put("MESOS_CONTAINERIZERS", "docker,mesos");
         envs.put("MESOS_ISOLATOR", "cgroups/cpu,cgroups/mem");
         envs.put("MESOS_LOG_DIR", "/var/log");
+        envs.put("MESOS_RESOURCES", this.resources);
 
         return envs.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
     }
 
     String generateSlaveName() {
-        return "cluster-slave_" + new SecureRandom().nextInt();
+        return "mini-mesos-slave-" + UUID.randomUUID();
     }
 
 
@@ -79,17 +77,46 @@ public class MesosSlave extends AbstractContainer {
                 LOGGER.error("Docker binary not found in /usr/local/bin or /usr/bin. Creating containers will most likely fail.");
             }
         }
+        ArrayList<ExposedPort> exposedPorts= new ArrayList<>();
+        exposedPorts.add(new ExposedPort(Integer.parseInt(this.portNumber)));
+        try {
+            ArrayList<Integer> resourcePorts = this.parsePortsFromResource(this.resources);
+            for (Integer port : resourcePorts) {
+                exposedPorts.add(new ExposedPort(port));
+            }
+        } catch (Exception e) {
+            LOGGER.error("Port binding is incorrect: " + e.getMessage());
+        }
 
         return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE + ":" + REGISTRY_TAG)
                 .withName(mesosClusterContainerName)
                 .withPrivileged(true)
-                .withExposedPorts(new ExposedPort(Integer.parseInt(this.portNumber)))
+                .withExposedPorts(exposedPorts.toArray(new ExposedPort[exposedPorts.size()]))
                 .withEnv(createMesosLocalEnvironment())
+
                 .withBinds(
                         Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),
                         Bind.parse(String.format("%s:/usr/bin/docker", dockerBin)),
                         Bind.parse("/var/run/docker.sock:/var/run/docker.sock")
                 )
                 ;
+    }
+
+    public String getResources() {
+        return resources;
+    }
+
+    public ArrayList<Integer> parsePortsFromResource(String resources) throws Exception {
+        String port = resources.replaceAll(".*ports\\(.+\\):\\[(.*)\\].*", "$1");
+        ArrayList<String> ports = new ArrayList<>(Arrays.asList(port.split(",")));
+        ArrayList<Integer> returnList = new ArrayList<>();
+        for (String el : ports) {
+            String firstPortFromBinding = el.trim().split("-")[0];
+            if (firstPortFromBinding == el.trim()) {
+                throw new Exception("Port binding " + firstPortFromBinding + " is incorrect");
+            }
+            returnList.add(Integer.parseInt(firstPortFromBinding)); // XXXX-YYYY will return XXXX
+        }
+        return returnList;
     }
 }

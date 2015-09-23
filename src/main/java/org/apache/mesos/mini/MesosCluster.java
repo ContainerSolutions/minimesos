@@ -2,7 +2,6 @@ package org.apache.mesos.mini;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.github.dockerjava.api.InternalServerErrorException;
 import com.github.dockerjava.api.NotFoundException;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -14,7 +13,6 @@ import org.apache.mesos.mini.mesos.MesosSlave;
 import org.apache.mesos.mini.mesos.ZooKeeper;
 import org.apache.mesos.mini.state.State;
 import org.apache.mesos.mini.util.MesosClusterStateResponse;
-import org.apache.mesos.mini.util.Predicate;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
@@ -22,10 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
-
-import static com.jayway.awaitility.Awaitility.await;
 
 /**
  * Starts the mesos cluster. Responsible for setting up a private docker registry. Once started, users can add
@@ -51,7 +45,6 @@ public class MesosCluster extends ExternalResource {
      * Starts the Mesos cluster and its containers
      */
     public void start() {
-        LOGGER.info("Starting Mesos cluster");
         ZooKeeper zkContainer = new ZooKeeper(config.dockerClient);
         addAndStartContainer(zkContainer);
         LOGGER.info("Started zookeeper on " + zkContainer.getIpAddress());
@@ -61,10 +54,9 @@ public class MesosCluster extends ExternalResource {
         LOGGER.info("Started mesos master on http://" + this.mesosMasterContainer.getIpAddress() + ":5050");
         try {
             LOGGER.info("Starting Mesos Local");
-//            Thread.sleep(10000);
             mesosSlaves = new MesosSlave[config.getNumberOfSlaves()];
             for (int i = 0; i < this.config.getNumberOfSlaves(); i++) {
-                mesosSlaves[i] = new MesosSlave(config.dockerClient, this.config, zkContainer.getIpAddress(), config.slaveResources[i], "505" + (i + 1), zkPath);
+                mesosSlaves[i] = new MesosSlave(config.dockerClient, zkContainer.getIpAddress(), config.slaveResources[i], "5051", zkPath);
                 addAndStartContainer(mesosSlaves[i]);
                 LOGGER.info("Started Mesos slave at " + mesosSlaves[i].getIpAddress());
             }
@@ -82,7 +74,6 @@ public class MesosCluster extends ExternalResource {
      * Stops the Mesos cluster and its containers
      */
     public void stop() {
-        LOGGER.info("Stopping Mesos cluster");
         for (AbstractContainer container : this.containers) {
             LOGGER.info("Removing container [" + container.getName() + "]");
             try {
@@ -116,32 +107,18 @@ public class MesosCluster extends ExternalResource {
         return Unirest.get("http://" + this.getMesosMasterContainer().getIpAddress() + ":5050" + "/state.json").asJson().getBody().getObject();
     }
 
-    public MesosSlave[] getMesosSlaves() {
-        return mesosSlaves;
-    }
-
-    public void waitForState(final Predicate<State> predicate, int seconds) {
-        await().atMost(seconds, TimeUnit.SECONDS).until(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                try {
-                    return predicate.test(MesosCluster.this.getStateInfo());
-                } catch (InternalServerErrorException e) {
-                    LOGGER.error(e);
-                    // This probably means that the mesos cluster isn't ready yet..
-                    return false;
-                }
-            }
-        });
-    }
-
-    public void waitForState(Predicate<State> predicate) {
-        waitForState(predicate, 60);
-    }
-
     @Override
     protected void before() throws Throwable {
         start();
+    }
+
+    public List<AbstractContainer> getContainers() {
+        return containers;
+    }
+
+    public MesosSlave[] getSlaves()
+    {
+           return mesosSlaves;
     }
 
     @Override
