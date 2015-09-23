@@ -17,9 +17,9 @@ public class MesosClusterTest {
         MesosClusterConfig.builder()
             .numberOfSlaves(3)
             .slaveResources(new String[]{
-                    "ports(*):[9201-9201, 9301-9301]; cpus(*):0.1; mem(*):512; disk(*):200",
-                    "ports(*):[9201-9201, 9301-9301]; cpus(*):0.1; mem(*):512; disk(*):200",
-                    "ports(*):[9201-9201, 9301-9301]; cpus(*):0.1; mem(*):512; disk(*):200"
+                    "ports(*):[9201-9201, 9301-9301]; cpus(*):0.2; mem(*):512; disk(*):200",
+                    "ports(*):[9202-9202, 9302-9302]; cpus(*):0.2; mem(*):512; disk(*):200",
+                    "ports(*):[9203-9203, 9303-9303]; cpus(*):0.2; mem(*):512; disk(*):200"
             })
             .build()
     );

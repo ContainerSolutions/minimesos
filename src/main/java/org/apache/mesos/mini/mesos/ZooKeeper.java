@@ -9,13 +9,9 @@ import org.apache.mesos.mini.container.AbstractContainer;
 import java.security.SecureRandom;
 
 public class ZooKeeper extends AbstractContainer {
-
-    private static final int DOCKER_PORT = 2376;
-
     private static Logger LOGGER = Logger.getLogger(ZooKeeper.class);
-
     private static final String MESOS_LOCAL_IMAGE = "jplock/zookeeper";
-    public static final String REGISTRY_TAG = "latest";
+    public static final String REGISTRY_TAG = "3.4.5";
 
 
     public ZooKeeper(DockerClient dockerClient) {
@@ -40,20 +36,8 @@ public class ZooKeeper extends AbstractContainer {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-//        this.containerName = "zookeeper_" + UUID.randomUUID();
-
         return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE + ":" + REGISTRY_TAG)
-//                .withNetworkMode("host")
                 .withName(this.generateContainerName())
                 .withExposedPorts(new ExposedPort(2181), new ExposedPort(2888), new ExposedPort(3888));
     }
-
-    public int getDockerPort() {
-        return DOCKER_PORT;
-    }
-
-    public DockerClient getOuterDockerClient() {
-        return this.dockerClient;
-    }
-
 }
