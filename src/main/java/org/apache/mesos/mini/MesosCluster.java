@@ -39,6 +39,8 @@ public class MesosCluster extends ExternalResource {
 
     protected String zkUrl;
 
+    protected ZooKeeper zkContainer;
+
     public MesosCluster(MesosClusterConfig config) {
         this.config = config;
     }
@@ -47,12 +49,13 @@ public class MesosCluster extends ExternalResource {
      * Starts the Mesos cluster and its containers
      */
     public void start() {
-        ZooKeeper zkContainer = new ZooKeeper(config.dockerClient);
-        addAndStartContainer(zkContainer);
-        LOGGER.info("Started zookeeper on " + zkContainer.getIpAddress());
+        this.zkContainer = new ZooKeeper(config.dockerClient);
+        addAndStartContainer(this.zkContainer);
+        LOGGER.info("Started zookeeper on " + this.zkContainer.getIpAddress());
         String zkPath = UUID.randomUUID().toString();
-        this.zkUrl = "zk://" + zkContainer.getIpAddress() + ":2181/" + zkPath;
-        this.mesosMasterContainer = new MesosMaster(config.dockerClient, zkContainer.getIpAddress(), zkPath);
+
+        this.zkUrl = "zk://" + this.zkContainer.getIpAddress() + ":2181/" + zkPath;
+        this.mesosMasterContainer = new MesosMaster(config.dockerClient, this.zkContainer.getIpAddress(), zkPath);
         addAndStartContainer(this.mesosMasterContainer);
         LOGGER.info("Started mesos master on http://" + this.mesosMasterContainer.getIpAddress() + ":5050");
         try {
@@ -139,5 +142,9 @@ public class MesosCluster extends ExternalResource {
 
     public String getZkUrl() {
         return zkUrl;
+    }
+
+    public ZooKeeper getZkContainer() {
+        return zkContainer;
     }
 }
