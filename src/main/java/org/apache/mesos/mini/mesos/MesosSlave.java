@@ -49,6 +49,7 @@ public class MesosSlave extends AbstractContainer {
         envs.put("MESOS_MASTER", this.zkPath);
         envs.put("MESOS_EXECUTOR_REGISTRATION_TIMEOUT", "5mins");
         envs.put("MESOS_CONTAINERIZERS", "docker,mesos");
+        envs.put("MESOS_VERBOSE", "1");
         envs.put("MESOS_ISOLATOR", "cgroups/cpu,cgroups/mem");
         envs.put("MESOS_LOG_DIR", "/var/log");
         envs.put("MESOS_RESOURCES", this.resources);
@@ -93,8 +94,8 @@ public class MesosSlave extends AbstractContainer {
                 .withPrivileged(true)
                 .withExposedPorts(exposedPorts.toArray(new ExposedPort[exposedPorts.size()]))
                 .withEnv(createMesosLocalEnvironment())
-
                 .withBinds(
+                        Bind.parse("/lib/libpthread.so.0:/lib/libpthread.so.0:ro"),
                         Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),
                         Bind.parse(String.format("%s:/usr/bin/docker", dockerBin)),
                         Bind.parse("/var/run/docker.sock:/var/run/docker.sock")
