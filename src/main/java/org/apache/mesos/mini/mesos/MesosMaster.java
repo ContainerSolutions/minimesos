@@ -42,6 +42,7 @@ public class MesosMaster extends AbstractContainer {
         envs.put("MESOS_EXECUTOR_REGISTRATION_TIMEOUT", "5mins");
         envs.put("MESOS_CONTAINERIZERS", "docker,mesos");
         envs.put("MESOS_ISOLATOR", "cgroups/cpu,cgroups/mem");
+        envs.put("MESOS_GLOG_v", "1");
         envs.put("MESOS_LOG_DIR", "/var/log");
         envs.put("MESOS_WORK_DIR", "/tmp/mesos");
 

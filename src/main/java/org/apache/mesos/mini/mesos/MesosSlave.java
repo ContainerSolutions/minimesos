@@ -47,6 +47,7 @@ public class MesosSlave extends AbstractContainer {
         envs.put("MESOS_ZK", this.zkPath);
         envs.put("MESOS_PORT", this.portNumber);
         envs.put("MESOS_MASTER", this.zkPath);
+        envs.put("MESOS_GLOG_v", "1");
         envs.put("MESOS_EXECUTOR_REGISTRATION_TIMEOUT", "5mins");
         envs.put("MESOS_CONTAINERIZERS", "docker,mesos");
         envs.put("MESOS_VERBOSE", "1");
