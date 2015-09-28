@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.Volume;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.container.AbstractContainer;
 
@@ -17,8 +18,9 @@ public class MesosContainer extends AbstractContainer {
 
     private static Logger LOGGER = Logger.getLogger(MesosContainer.class);
 
-    private static final String MESOS_LOCAL_IMAGE = "containersol/mesos-local";
-    public static final String REGISTRY_TAG = "dood";
+    private static final String MESOS_LOCAL_IMAGE = "containersol/minimesos";
+
+    public static final String REGISTRY_TAG = "latest";
 
     private final MesosClusterConfig clusterConfig;
 
@@ -81,11 +83,8 @@ public class MesosContainer extends AbstractContainer {
                 .withPrivileged(true)
                 .withExposedPorts(new ExposedPort(getDockerPort()))
                 .withEnv(createMesosLocalEnvironment())
-                .withBinds(
-                        Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),
-                        Bind.parse(String.format("%s:/usr/bin/docker", dockerBin)),
-                        Bind.parse("/var/run/docker.sock:/var/run/docker.sock")
-                );
+                .withVolumes(new Volume("/sys/fs/cgroup"))
+                .withBinds(Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup:rw"));
     }
 
     public int getDockerPort() {
