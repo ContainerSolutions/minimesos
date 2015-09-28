@@ -16,8 +16,8 @@ public class MesosSlave extends AbstractContainer {
 
     private static Logger LOGGER = Logger.getLogger(MesosSlave.class);
 
-    private static final String MESOS_LOCAL_IMAGE = "redjack/mesos-slave";
-    public static final String REGISTRY_TAG = "0.21.0";
+    private static final String MESOS_LOCAL_IMAGE = "mesosphere/mesos-slave";
+    public static final String REGISTRY_TAG = "0.23.0-1.0.ubuntu1404";
 
     protected final String resources;
 

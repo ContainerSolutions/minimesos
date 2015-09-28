@@ -16,8 +16,8 @@ public class MesosMaster extends AbstractContainer {
 
     private static Logger LOGGER = Logger.getLogger(MesosMaster.class);
 
-    private static final String MESOS_LOCAL_IMAGE = "redjack/mesos-master";
-    public static final String REGISTRY_TAG = "0.21.0";
+    private static final String MESOS_LOCAL_IMAGE = "mesosphere/mesos-master";
+    public static final String REGISTRY_TAG = "0.23.0-1.0.ubuntu1404";
 
     private final String zkIp;
     private final String zkPath;
