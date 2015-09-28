@@ -107,8 +107,8 @@ public class MesosSlave extends AbstractContainer {
                         Bind.parse("/lib/libpthread.so.0:/lib/libpthread.so.0:ro"),
                         Bind.parse("/var/lib/docker:/var/lib/docker"),
                         Bind.parse("/sys/:/sys/"),
-                        Bind.parse(String.format("%s:/usr/bin/docker", dockerBin)),
-                        Bind.parse("/var/run/docker.sock:/var/run/docker.sock")
+                        Bind.parse(String.format("%s:/usr/bin/docker", dockerBin))
+//                        Bind.parse("/var/run/docker.sock:/var/run/docker.sock")
                 )
                 ;
     }
