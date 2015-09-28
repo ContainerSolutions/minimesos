@@ -4,11 +4,15 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.Link;
 import org.apache.log4j.Logger;
 import org.apache.mesos.mini.container.AbstractContainer;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.TreeMap;
+import java.util.UUID;
 
 public class MesosSlave extends AbstractContainer {
 
@@ -27,13 +31,16 @@ public class MesosSlave extends AbstractContainer {
 
     protected final String zkPath;
 
+    protected final String master;
 
-    public MesosSlave(DockerClient dockerClient, String zkIp, String resources, String portNumber, String zkPath) {
+
+    public MesosSlave(DockerClient dockerClient, String zkIp, String resources, String portNumber, String zkPath, String master) {
         super(dockerClient);
         this.zkIp = zkIp;
         this.zkPath = zkPath;
         this.resources = resources;
         this.portNumber = portNumber;
+        this.master = master;
     }
 
     @Override
@@ -95,6 +102,7 @@ public class MesosSlave extends AbstractContainer {
                 .withPrivileged(true)
                 .withExposedPorts(exposedPorts.toArray(new ExposedPort[exposedPorts.size()]))
                 .withEnv(createMesosLocalEnvironment())
+                .withLinks(new Link(this.master, "mini-mesos-master"))
                 .withBinds(
                         Bind.parse("/lib/libpthread.so.0:/lib/libpthread.so.0:ro"),
                         Bind.parse("/var/lib/docker:/var/lib/docker"),

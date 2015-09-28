@@ -68,7 +68,7 @@ public class MesosCluster extends ExternalResource {
             LOGGER.info("Starting Mesos Local");
             mesosSlaves = new MesosSlave[config.getNumberOfSlaves()];
             for (int i = 0; i < this.config.getNumberOfSlaves(); i++) {
-                mesosSlaves[i] = new MesosSlave(config.dockerClient, zkContainer.getIpAddress(), config.slaveResources[i], "5051", zkUrl);
+                mesosSlaves[i] = new MesosSlave(config.dockerClient, zkContainer.getIpAddress(), config.slaveResources[i], "5051", zkUrl, mesosMasterContainer.getContainerId());
                 addAndStartContainer(mesosSlaves[i]);
                 LOGGER.info("Started Mesos slave at " + mesosSlaves[i].getIpAddress());
             }
