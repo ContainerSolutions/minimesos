@@ -74,12 +74,8 @@ public abstract class AbstractContainer {
             await().atMost(60, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new ContainerIsRunning<Boolean>(containerId));
         } catch (ConditionTimeoutException cte) {
             LOGGER.error("Container did not start within 60 seconds");
-            InputStream logs = dockerClient.logContainerCmd(containerId).withStdOut().withStdErr().exec();
-            try {
-                LOGGER.error(IOUtils.toString(logs));
-            } catch (IOException ioe) {
-                LOGGER.error("Could not write container logs: ", ioe);
-            }
+//            InputStream logs = dockerClient.logContainerCmd(containerId).exec();
+
         }
 
         LOGGER.debug("Container is up and running");
@@ -129,9 +125,9 @@ public abstract class AbstractContainer {
                 }
             }
         }
-        LOGGER.info("Image [" + imageName + ":" + registryTag + "] not found. Pulling...");
-        InputStream responsePullImages = dockerClient.pullImageCmd(imageName).withTag(registryTag).exec();
-        ResponseCollector.collectResponse(responsePullImages);
+        LOGGER.info("Image [" + imageName + ":" + registryTag + "] not found. Pu//lling...");
+//        InputStream responsePullImages = dockerClient.pullImageCmd(imageName).withTag(registryTag).exec();
+//        ResponseCollector.collectResponse(responsePullImages);
     }
 
     private class ContainerIsRunning<T> implements Callable<Boolean> {

@@ -20,7 +20,7 @@ class HelloWorldContainer extends AbstractContainer {
 
     @Override
     protected void pullImage() {
-        pullImage(HELLO_WORLD_IMAGE, "latest");
+//        pullImage(HELLO_WORLD_IMAGE, "latest");
     }
 
     @Override

@@ -102,13 +102,14 @@ public class MesosSlave extends AbstractContainer {
                 .withPrivileged(true)
                 .withExposedPorts(exposedPorts.toArray(new ExposedPort[exposedPorts.size()]))
                 .withEnv(createMesosLocalEnvironment())
+                .withPidMode("host")
                 .withLinks(new Link(this.master, "mini-mesos-master"))
                 .withBinds(
                         Bind.parse("/lib/libpthread.so.0:/lib/libpthread.so.0:ro"),
                         Bind.parse("/var/lib/docker:/var/lib/docker"),
                         Bind.parse("/sys/:/sys/"),
-                        Bind.parse(String.format("%s:/usr/bin/docker", dockerBin))
-//                        Bind.parse("/var/run/docker.sock:/var/run/docker.sock")
+                        Bind.parse(String.format("%s:/usr/bin/docker", dockerBin)),
+                        Bind.parse("/var/run/docker.sock:/var/run/docker.sock")
                 )
                 ;
     }
