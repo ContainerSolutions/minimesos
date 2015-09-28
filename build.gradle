@@ -82,6 +82,15 @@ jar {
     exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
 }
 
+task copyJar(type: Copy) {
+    dependsOn 'jar'
+    rename { String fileName ->
+        fileName.replace("-${project.version}", "")
+    }
+    from        "build/libs/minimesos-${project.version}.jar"
+    into        'build/libs'
+}
+
 afterEvaluate { project ->
     if (new File(project.projectDir, 'Dockerfile').exists()) {
         if (!project.hasProperty('imageName')) {
@@ -131,3 +140,5 @@ afterEvaluate { project ->
         }
     }
 }
+
+build.dependsOn copyJar
