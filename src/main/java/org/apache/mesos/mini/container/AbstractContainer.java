@@ -53,7 +53,7 @@ public abstract class AbstractContainer {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                LOGGER.info("Shutdown hook - Removing container " + AbstractContainer.this.getName());
+                LOGGER.debug("Shutdown hook - Removing container " + AbstractContainer.this.getName());
                 if (!isRemoved()) {
                     remove();
                 }
@@ -122,12 +122,12 @@ public abstract class AbstractContainer {
         for (Image image : images) {
             for (String repoTag : image.getRepoTags()) {
                 if (repoTag.equals(imageName + ":" + registryTag)) {
-                    LOGGER.info("Image '" + imageName + ":" + registryTag + "' already exists. No need to pull");
+                    LOGGER.debug("Image '" + imageName + ":" + registryTag + "' already exists. No need to pull");
                     return;
                 }
             }
         }
-        LOGGER.info("Image [" + imageName + ":" + registryTag + "] not found. Pulling...");
+        LOGGER.debug("Image [" + imageName + ":" + registryTag + "] not found. Pulling...");
         InputStream responsePullImages = dockerClient.pullImageCmd(imageName).withTag(registryTag).exec();
         ResponseCollector.collectResponse(responsePullImages);
     }
