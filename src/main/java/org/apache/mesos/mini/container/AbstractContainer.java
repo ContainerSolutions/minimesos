@@ -61,7 +61,7 @@ public abstract class AbstractContainer {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                LOGGER.info("Shutdown hook - Removing container " + AbstractContainer.this.getName());
+                LOGGER.debug("Shutdown hook - Removing container " + AbstractContainer.this.getName());
                 if (!isRemoved()) {
                     remove();
                 }

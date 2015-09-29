@@ -79,7 +79,6 @@ public class MesosCluster extends ExternalResource {
             LOGGER.error("Error during startup", e);
 
         }
-        LOGGER.info("Mesos cluster started");
     }
 
     /**
