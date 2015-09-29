@@ -2,8 +2,14 @@ package org.apache.mesos.mini.container;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.model.BuildResponseItem;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Image;
+import com.github.dockerjava.api.model.PullResponseItem;
+import com.github.dockerjava.core.command.BuildImageResultCallback;
+import com.github.dockerjava.core.command.PullImageResultCallback;
+import com.jayway.awaitility.Awaitility;
+import com.jayway.awaitility.Duration;
 import com.jayway.awaitility.core.ConditionTimeoutException;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
@@ -115,19 +121,46 @@ public abstract class AbstractContainer {
         }
     }
 
-    protected void pullImage(String imageName, String registryTag) {
+    protected Boolean imageExists(String imageName, String registryTag) {
         List<Image> images = dockerClient.listImagesCmd().exec();
         for (Image image : images) {
             for (String repoTag : image.getRepoTags()) {
                 if (repoTag.equals(imageName + ":" + registryTag)) {
-                    LOGGER.info("Image '" + imageName + ":" + registryTag + "' already exists. No need to pull");
-                    return;
+                    return true;
                 }
             }
         }
-        LOGGER.info("Image [" + imageName + ":" + registryTag + "] not found. Pu//lling...");
-//        InputStream responsePullImages = dockerClient.pullImageCmd(imageName).withTag(registryTag).exec();
-//        ResponseCollector.collectResponse(responsePullImages);
+        return false;
+    }
+
+    protected void pullImage(String imageName, String registryTag) {
+        if (imageExists(imageName, registryTag)) {
+            return;
+        }
+
+        LOGGER.info("Image [" + imageName + ":" + registryTag + "] not found. Pulling...");
+
+        PullImageResultCallback callback = new PullImageResultCallback() {
+            @Override
+            public void awaitSuccess() {
+                LOGGER.info("Finished pulling the image: " + imageName + ":" + registryTag);
+            }
+            @Override
+            public void onNext(PullResponseItem item) {
+                if (!item.getStatus().contains("Downloading") &&
+                        !item.getStatus().contains("Extracting")) {
+                    LOGGER.debug("Status: " + item.getStatus());
+                }
+            }
+        };
+
+        dockerClient.pullImageCmd(imageName).withTag(registryTag).exec(callback);
+        await().atMost(Duration.FIVE_MINUTES).until(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return imageExists(imageName, registryTag);
+            }
+        });
     }
 
     private class ContainerIsRunning<T> implements Callable<Boolean> {
