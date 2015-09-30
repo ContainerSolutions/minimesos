@@ -58,7 +58,7 @@ public class MesosClusterTest {
     public void dockerExposeResourcesPorts() {
         DockerClient docker = cluster.getMesosMasterContainer().getOuterDockerClient();
         List<MesosSlave> containers = Arrays.asList(cluster.getSlaves());
-        ArrayList<Integer> ports = new ArrayList();
+        ArrayList<Integer> ports = new ArrayList<>();
         for (MesosSlave container : containers) {
             try {
                 ports = container.parsePortsFromResource(container.getResources());

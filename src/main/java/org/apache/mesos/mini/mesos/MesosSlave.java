@@ -102,7 +102,7 @@ public class MesosSlave extends AbstractContainer {
                 .withPrivileged(true)
                 .withExposedPorts(exposedPorts.toArray(new ExposedPort[exposedPorts.size()]))
                 .withEnv(createMesosLocalEnvironment())
-                .withPid("host")
+                .withPidMode("host")
                 .withLinks(new Link(this.master, "mini-mesos-master"))
                 .withBinds(
                         Bind.parse("/lib/libpthread.so.0:/lib/libpthread.so.0:ro"),
