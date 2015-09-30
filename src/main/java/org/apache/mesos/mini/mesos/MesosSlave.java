@@ -25,8 +25,6 @@ public class MesosSlave extends AbstractContainer {
 
     protected final String resources;
 
-    protected final String zkIp;
-
     protected final String portNumber;
 
     protected final String zkPath;
@@ -34,9 +32,8 @@ public class MesosSlave extends AbstractContainer {
     protected final String master;
 
 
-    public MesosSlave(DockerClient dockerClient, String zkIp, String resources, String portNumber, String zkPath, String master) {
+    public MesosSlave(DockerClient dockerClient, String resources, String portNumber, String zkPath, String master) {
         super(dockerClient);
-        this.zkIp = zkIp;
         this.zkPath = zkPath;
         this.resources = resources;
         this.portNumber = portNumber;
@@ -57,7 +54,6 @@ public class MesosSlave extends AbstractContainer {
         envs.put("MESOS_GLOG_v", "1");
         envs.put("MESOS_EXECUTOR_REGISTRATION_TIMEOUT", "5mins");
         envs.put("MESOS_CONTAINERIZERS", "docker,mesos");
-        envs.put("MESOS_VERBOSE", "1");
         envs.put("MESOS_ISOLATOR", "cgroups/cpu,cgroups/mem");
         envs.put("MESOS_LOG_DIR", "/var/log");
         envs.put("MESOS_RESOURCES", this.resources);
@@ -69,6 +65,28 @@ public class MesosSlave extends AbstractContainer {
         return "mini-mesos-slave-" + UUID.randomUUID();
     }
 
+    public CreateContainerCmd getBaseCommand() {
+        String dockerBin = "/usr/bin/docker";
+
+        if (!(new File(dockerBin).exists())) {
+            dockerBin = "/usr/local/bin/docker";
+            if (!(new File(dockerBin).exists())) {
+                LOGGER.error("Docker binary not found in /usr/local/bin or /usr/bin. Creating containers will most likely fail.");
+            }
+        }
+        return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE + ":" + REGISTRY_TAG)
+                .withName(generateSlaveName())
+                .withPrivileged(true)
+                .withEnv(createMesosLocalEnvironment())
+                .withPid("host")
+                .withLinks(new Link(this.master, "mini-mesos-master"))
+                .withBinds(
+                        Bind.parse("/var/lib/docker:/var/lib/docker"),
+                        Bind.parse("/sys/:/sys/"),
+                        Bind.parse(String.format("%s:/usr/bin/docker", dockerBin)),
+                        Bind.parse("/var/run/docker.sock:/var/run/docker.sock")
+                );
+    }
 
     @Override
     protected void pullImage() {
@@ -97,21 +115,9 @@ public class MesosSlave extends AbstractContainer {
             LOGGER.error("Port binding is incorrect: " + e.getMessage());
         }
 
-        return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE + ":" + REGISTRY_TAG)
-                .withName(mesosClusterContainerName)
-                .withPrivileged(true)
-                .withExposedPorts(exposedPorts.toArray(new ExposedPort[exposedPorts.size()]))
-                .withEnv(createMesosLocalEnvironment())
-                .withPid("host")
-                .withLinks(new Link(this.master, "mini-mesos-master"))
-                .withBinds(
-                        Bind.parse("/lib/libpthread.so.0:/lib/libpthread.so.0:ro"),
-                        Bind.parse("/var/lib/docker:/var/lib/docker"),
-                        Bind.parse("/sys/:/sys/"),
-                        Bind.parse(String.format("%s:/usr/bin/docker", dockerBin)),
-                        Bind.parse("/var/run/docker.sock:/var/run/docker.sock")
-                )
-                ;
+        CreateContainerCmd cmd = this.getBaseCommand();
+
+        return cmd.withExposedPorts(exposedPorts.toArray(new ExposedPort[exposedPorts.size()]));
     }
 
     public String getResources() {
