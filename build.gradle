@@ -69,7 +69,7 @@ dependencies {
     compile 'ch.qos.logback:logback-classic:1.1.3'
 }
 
-mainClassName = "org.apache.mesos.mini.main.Main"
+mainClassName = "com.containersol.minimesos.main.Main"
 
 jar {
     baseName = "minimesos"

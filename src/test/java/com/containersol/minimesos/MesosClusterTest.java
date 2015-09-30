@@ -16,9 +16,6 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.containersol.minimesos.mesos.MesosClusterConfig;
 import com.containersol.minimesos.mesos.MesosSlave;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.mesos.mini.mesos.MesosClusterConfig;
-import org.apache.mesos.mini.mesos.MesosSlave;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -31,7 +28,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.logging.Logger;
 
 public class MesosClusterTest {
 
