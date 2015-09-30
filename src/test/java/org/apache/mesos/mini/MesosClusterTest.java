@@ -129,7 +129,14 @@ public class MesosClusterTest {
                 "5051",
                 cluster.getZkUrl(),
                 cluster.getMesosMasterContainer().getContainerId()).getBaseCommand()
-                .withEntrypoint("mesos-execute", "--master=" + cluster.getMesosMasterContainer().getIpAddress() + ":5050", "--docker_image=busybox", "--command=echo 1", "--name=test-cmd", "--resources=cpus(*):0.1;mem(*):256");
+                .withEntrypoint(
+                        "mesos-execute",
+                        "--master=" + cluster.getMesosMasterContainer().getIpAddress() + ":5050",
+                        "--docker_image=busybox",
+                        "--command=echo 1",
+                        "--name=test-cmd",
+                        "--resources=cpus(*):0.1;mem(*):256"
+                );
 
         String containerId = cmd.exec().getId();
         cluster.getMesosMasterContainer().getOuterDockerClient().startContainerCmd(containerId).exec();
