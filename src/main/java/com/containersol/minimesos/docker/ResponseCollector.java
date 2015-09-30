@@ -1,4 +1,4 @@
-package org.apache.mesos.mini.docker;
+package com.containersol.minimesos.docker;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;

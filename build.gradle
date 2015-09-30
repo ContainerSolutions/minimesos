@@ -51,7 +51,7 @@ version = rootProject.version.toString()
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
-group = "org.apache.mesos.mini"
+group = "com.containersol.minimesos"
 
 dependencies {
     compile 'com.github.docker-java:docker-java:4f094c112'

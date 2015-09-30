@@ -1,4 +1,4 @@
-package org.apache.mesos.mini.state;
+package com.containersol.minimesos.state;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

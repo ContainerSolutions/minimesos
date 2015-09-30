@@ -1,4 +1,4 @@
-package org.apache.mesos.mini;
+package com.containersol.minimesos;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -14,6 +14,8 @@ import com.jayway.awaitility.Awaitility;
 import com.jayway.awaitility.Duration;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import com.containersol.minimesos.mesos.MesosClusterConfig;
+import com.containersol.minimesos.mesos.MesosSlave;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.mesos.mini.mesos.MesosClusterConfig;
 import org.apache.mesos.mini.mesos.MesosSlave;

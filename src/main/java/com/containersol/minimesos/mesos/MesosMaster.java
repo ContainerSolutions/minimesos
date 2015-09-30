@@ -1,11 +1,10 @@
-package org.apache.mesos.mini.mesos;
+package com.containersol.minimesos.mesos;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.Link;
 import org.apache.log4j.Logger;
-import org.apache.mesos.mini.container.AbstractContainer;
+import com.containersol.minimesos.container.AbstractContainer;
 
 import java.io.File;
 import java.security.SecureRandom;

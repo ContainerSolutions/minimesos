@@ -1,10 +1,9 @@
-package org.apache.mesos.mini.mesos;
+package com.containersol.minimesos.mesos;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import org.apache.commons.lang.StringUtils;
-import org.apache.mesos.mini.MesosCluster;
 
 import java.util.Map;
 import java.util.TreeMap;

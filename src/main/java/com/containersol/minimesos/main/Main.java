@@ -1,8 +1,8 @@
-package org.apache.mesos.mini.main;
+package com.containersol.minimesos.main;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
-import org.apache.mesos.mini.MesosCluster;
-import org.apache.mesos.mini.mesos.MesosClusterConfig;
+import com.containersol.minimesos.MesosCluster;
+import com.containersol.minimesos.mesos.MesosClusterConfig;
 
 import java.io.IOException;
 

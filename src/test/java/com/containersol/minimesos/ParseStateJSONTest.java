@@ -1,9 +1,9 @@
-package org.apache.mesos.mini;
+package com.containersol.minimesos;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import org.apache.mesos.mini.state.Framework;
-import org.apache.mesos.mini.state.State;
+import com.containersol.minimesos.state.Framework;
+import com.containersol.minimesos.state.State;
 import org.junit.Assert;
 import org.junit.Test;
 

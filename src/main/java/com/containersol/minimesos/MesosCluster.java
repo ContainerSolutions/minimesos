@@ -1,4 +1,4 @@
-package org.apache.mesos.mini;
+package com.containersol.minimesos;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -7,14 +7,14 @@ import com.github.dockerjava.api.NotFoundException;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.log4j.Logger;
-import org.apache.mesos.mini.container.AbstractContainer;
-import org.apache.mesos.mini.mesos.MesosClusterConfig;
-import org.apache.mesos.mini.mesos.MesosMaster;
-import org.apache.mesos.mini.mesos.MesosSlave;
-import org.apache.mesos.mini.mesos.ZooKeeper;
-import org.apache.mesos.mini.state.State;
-import org.apache.mesos.mini.util.MesosClusterStateResponse;
-import org.apache.mesos.mini.util.Predicate;
+import com.containersol.minimesos.container.AbstractContainer;
+import com.containersol.minimesos.mesos.MesosClusterConfig;
+import com.containersol.minimesos.mesos.MesosMaster;
+import com.containersol.minimesos.mesos.MesosSlave;
+import com.containersol.minimesos.mesos.ZooKeeper;
+import com.containersol.minimesos.state.State;
+import com.containersol.minimesos.util.MesosClusterStateResponse;
+import com.containersol.minimesos.util.Predicate;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 

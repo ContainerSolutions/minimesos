@@ -1,8 +1,8 @@
-package org.apache.mesos.mini;
+package com.containersol.minimesos;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
-import org.apache.mesos.mini.container.AbstractContainer;
+import com.containersol.minimesos.container.AbstractContainer;
 
 import java.security.SecureRandom;
 
