@@ -54,7 +54,7 @@ version = rootProject.version.toString()
 group = "org.apache.mesos.mini"
 
 dependencies {
-    compile 'com.github.docker-java:docker-java:3ebe8ca8eabdef9b512570fe8b60f1b1234df9c6'
+    compile 'com.github.docker-java:docker-java:4f094c112'
     compile 'junit:junit:4.11'
     compile 'com.jayway.awaitility:awaitility:1.6.3'
     compile 'com.mashape.unirest:unirest-java:1.4.5'
