@@ -2,8 +2,14 @@ package org.apache.mesos.mini.container;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.model.BuildResponseItem;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Image;
+import com.github.dockerjava.api.model.PullResponseItem;
+import com.github.dockerjava.core.command.BuildImageResultCallback;
+import com.github.dockerjava.core.command.PullImageResultCallback;
+import com.jayway.awaitility.Awaitility;
+import com.jayway.awaitility.Duration;
 import com.jayway.awaitility.core.ConditionTimeoutException;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
@@ -25,6 +31,8 @@ public abstract class AbstractContainer {
     private static Logger LOGGER = Logger.getLogger(AbstractContainer.class);
 
     protected final DockerClient dockerClient;
+
+    protected String containerName;
 
     private String containerId = "";
 
@@ -69,15 +77,11 @@ public abstract class AbstractContainer {
         dockerClient.startContainerCmd(containerId).exec();
 
         try {
-            await().atMost(20, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new ContainerIsRunning<Boolean>(containerId));
+            await().atMost(60, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new ContainerIsRunning<Boolean>(containerId));
         } catch (ConditionTimeoutException cte) {
-            LOGGER.error("Container did not start within 20 seconds");
-            InputStream logs = dockerClient.logContainerCmd(containerId).withStdOut().withStdErr().exec();
-            try {
-                LOGGER.error(IOUtils.toString(logs));
-            } catch (IOException ioe) {
-                LOGGER.error("Could not write container logs: ", ioe);
-            }
+            LOGGER.error("Container did not start within 60 seconds");
+//            InputStream logs = dockerClient.logContainerCmd(containerId).exec();
+
         }
 
         LOGGER.debug("Container is up and running");
@@ -117,19 +121,46 @@ public abstract class AbstractContainer {
         }
     }
 
-    protected void pullImage(String imageName, String registryTag) {
+    protected Boolean imageExists(String imageName, String registryTag) {
         List<Image> images = dockerClient.listImagesCmd().exec();
         for (Image image : images) {
             for (String repoTag : image.getRepoTags()) {
                 if (repoTag.equals(imageName + ":" + registryTag)) {
-                    LOGGER.debug("Image '" + imageName + ":" + registryTag + "' already exists. No need to pull");
-                    return;
+                    return true;
                 }
             }
         }
-        LOGGER.debug("Image [" + imageName + ":" + registryTag + "] not found. Pulling...");
-        InputStream responsePullImages = dockerClient.pullImageCmd(imageName).withTag(registryTag).exec();
-        ResponseCollector.collectResponse(responsePullImages);
+        return false;
+    }
+
+    protected void pullImage(String imageName, String registryTag) {
+        if (imageExists(imageName, registryTag)) {
+            return;
+        }
+
+        LOGGER.info("Image [" + imageName + ":" + registryTag + "] not found. Pulling...");
+
+        PullImageResultCallback callback = new PullImageResultCallback() {
+            @Override
+            public void awaitSuccess() {
+                LOGGER.info("Finished pulling the image: " + imageName + ":" + registryTag);
+            }
+            @Override
+            public void onNext(PullResponseItem item) {
+                if (!item.getStatus().contains("Downloading") &&
+                        !item.getStatus().contains("Extracting")) {
+                    LOGGER.debug("Status: " + item.getStatus());
+                }
+            }
+        };
+
+        dockerClient.pullImageCmd(imageName).withTag(registryTag).exec(callback);
+        await().atMost(Duration.FIVE_MINUTES).until(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return imageExists(imageName, registryTag);
+            }
+        });
     }
 
     private class ContainerIsRunning<T> implements Callable<Boolean> {

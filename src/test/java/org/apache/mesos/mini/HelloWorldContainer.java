@@ -25,6 +25,6 @@ class HelloWorldContainer extends AbstractContainer {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        return dockerClient.createContainerCmd(HELLO_WORLD_IMAGE).withName("hello-world_" + new SecureRandom().nextInt());
+        return dockerClient.createContainerCmd(HELLO_WORLD_IMAGE).withPrivileged(true).withName("hello-world_" + new SecureRandom().nextInt());
     }
 }

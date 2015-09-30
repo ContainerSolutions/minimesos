@@ -19,6 +19,7 @@ buildscript {
             url "https://jitpack.io"
         }
         mavenCentral()
+        mavenLocal()
     }
     dependencies {
         classpath "com.bmuschko:gradle-docker-plugin:2.4.1"
@@ -53,7 +54,7 @@ version = rootProject.version.toString()
 group = "org.apache.mesos.mini"
 
 dependencies {
-    compile 'com.github.docker-java:docker-java:1.3.0'
+    compile 'com.github.docker-java:docker-java:2.1.2-SNAPSHOT'
     compile 'junit:junit:4.11'
     compile 'com.jayway.awaitility:awaitility:1.6.3'
     compile 'com.mashape.unirest:unirest-java:1.4.5'

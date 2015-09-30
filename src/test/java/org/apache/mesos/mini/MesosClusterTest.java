@@ -2,14 +2,22 @@ package org.apache.mesos.mini;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.model.ExposedPort;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.mesos.mini.mesos.MesosClusterConfig;
+import org.apache.mesos.mini.mesos.MesosSlave;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class MesosClusterTest {
 
@@ -17,8 +25,11 @@ public class MesosClusterTest {
     public static final MesosCluster cluster = new MesosCluster(
         MesosClusterConfig.builder()
             .numberOfSlaves(3)
-            .privateRegistryPort(16000) // Currently you have to choose an available port by yourself
-            .slaveResources(new String[]{"ports(*):[9200-9200,9300-9300]", "ports(*):[9201-9201,9301-9301]", "ports(*):[9202-9202,9302-9302]"})
+            .slaveResources(new String[]{
+                    "ports(*):[9201-9201, 9301-9301]; cpus(*):0.2; mem(*):256; disk(*):200",
+                    "ports(*):[9202-9202, 9302-9302]; cpus(*):0.2; mem(*):256; disk(*):200",
+                    "ports(*):[9203-9203, 9303-9303]; cpus(*):0.2; mem(*):256; disk(*):200"
+            })
             .build()
     );
 
@@ -35,13 +46,32 @@ public class MesosClusterTest {
     }
 
     @Test
-    public void mesosClusterCanBeStarted2() throws Exception {
+    public void mesosResourcesCorrect() throws Exception {
         JSONObject stateInfo = cluster.getStateInfoJSON();
-        Assert.assertEquals(3, stateInfo.getInt("activated_slaves"));
+        for (int i = 0; i < 3; i++) {
+            Assert.assertEquals((long) 0.2, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getLong("cpus"));
+            Assert.assertEquals(256, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getInt("mem"));
+        }
+    }
 
+    @Test
+    public void dockerExposeResourcesPorts() {
+        DockerClient docker = cluster.getMesosMasterContainer().getOuterDockerClient();
+        List<MesosSlave> containers = Arrays.asList(cluster.getSlaves());
+        ArrayList<Integer> ports = new ArrayList();
+        for (MesosSlave container : containers) {
+            try {
+                ports = container.parsePortsFromResource(container.getResources());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            InspectContainerResponse response = docker.inspectContainerCmd(container.getContainerId()).exec();
+            Map bindings = response.getNetworkSettings().getPorts().getBindings();
+            for (Integer port : ports) {
+                Assert.assertTrue(bindings.containsKey(new ExposedPort(port)));
+            }
 
-        String mesosMasterUrl = cluster.getMesosContainer().getMesosMasterURL();
-        Assert.assertTrue(mesosMasterUrl.contains(":5050"));
+        }
     }
 
     @Test
