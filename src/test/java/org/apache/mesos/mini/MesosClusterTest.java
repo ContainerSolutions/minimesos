@@ -10,6 +10,8 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
+import com.jayway.awaitility.Awaitility;
+import com.jayway.awaitility.Duration;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.lang.ArrayUtils;
@@ -26,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
 public class MesosClusterTest {
@@ -134,5 +137,17 @@ public class MesosClusterTest {
         cluster.getMesosMasterContainer().getOuterDockerClient().logContainerCmd(containerId).withStdOut().exec(cb);
         cb.awaitCompletion();
         Assert.assertThat(cb.toString().contains("task test-cmd submitted to slave"), is(equalTo(true)));
+
+        Awaitility.await().atMost(Duration.FIVE_SECONDS).until(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                LogContainerTestCallback cb = new LogContainerTestCallback();
+                cluster.getMesosMasterContainer().getOuterDockerClient().logContainerCmd(containerId).withStdOut().exec(cb);
+                cb.awaitCompletion();
+                return cb.toString().contains("Received status update TASK_FINISHED for task test-cmd");
+            }
+        });
+
+
     }
 }
