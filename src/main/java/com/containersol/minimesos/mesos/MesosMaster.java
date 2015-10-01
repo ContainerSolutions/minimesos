@@ -16,14 +16,16 @@ public class MesosMaster extends AbstractContainer {
 
     private static Logger LOGGER = Logger.getLogger(MesosMaster.class);
 
-    private static final String MESOS_LOCAL_IMAGE = "mesosphere/mesos-master";
-    public static final String REGISTRY_TAG = "0.22.1-1.0.ubuntu1404";
+    private final String mesosLocalImage;
+    public final String registryTag;
 
     private final String zkUrl;
 
-    public MesosMaster(DockerClient dockerClient, String zkPath) {
+    public MesosMaster(DockerClient dockerClient, String zkPath, String mesosLocalImage, String registryTag) {
         super(dockerClient);
         this.zkUrl = zkPath;
+        this.mesosLocalImage = mesosLocalImage;
+        this.registryTag = registryTag;
     }
 
     @Override
@@ -51,7 +53,7 @@ public class MesosMaster extends AbstractContainer {
 
     @Override
     protected void pullImage() {
-        pullImage(MESOS_LOCAL_IMAGE, REGISTRY_TAG);
+        pullImage(mesosLocalImage, registryTag);
     }
 
     @Override
@@ -66,7 +68,7 @@ public class MesosMaster extends AbstractContainer {
             }
         }
 
-        return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE + ":" + REGISTRY_TAG)
+        return dockerClient.createContainerCmd(mesosLocalImage + ":" + registryTag)
                 .withName(mesosClusterContainerName)
                 .withExposedPorts(new ExposedPort(5050))
                 .withEnv(createMesosLocalEnvironment());
@@ -78,6 +80,14 @@ public class MesosMaster extends AbstractContainer {
 
     public DockerClient getOuterDockerClient() {
         return this.dockerClient;
+    }
+
+    public String getMesosLocalImage() {
+        return mesosLocalImage;
+    }
+
+    public String getRegistryTag() {
+        return registryTag;
     }
 
 }

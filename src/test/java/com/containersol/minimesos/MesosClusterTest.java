@@ -126,7 +126,9 @@ public class MesosClusterTest {
                 "cpus(*):0.2; mem(*):256; disk(*):200",
                 "5051",
                 cluster.getZkUrl(),
-                cluster.getMesosMasterContainer().getContainerId()).getBaseCommand()
+                cluster.getMesosMasterContainer().getContainerId(),
+                "mesosphere/mesos-slave",
+                "0.22.1-1.0.ubuntu1404").getBaseCommand()
                 .withEntrypoint(
                         "mesos-execute",
                         "--master=" + cluster.getMesosMasterContainer().getIpAddress() + ":5050",
@@ -151,7 +153,5 @@ public class MesosClusterTest {
                 return cb.toString().contains("Received status update TASK_FINISHED for task test-cmd");
             }
         });
-
-
     }
 }

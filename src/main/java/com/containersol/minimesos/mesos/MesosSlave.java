@@ -18,8 +18,8 @@ public class MesosSlave extends AbstractContainer {
 
     private static Logger LOGGER = Logger.getLogger(MesosSlave.class);
 
-    private static final String MESOS_LOCAL_IMAGE = "mesosphere/mesos-slave";
-    public static final String REGISTRY_TAG = "0.22.1-1.0.ubuntu1404";
+    public final String mesosLocalImage;
+    public final String registryTag;
 
     protected final String resources;
 
@@ -30,12 +30,14 @@ public class MesosSlave extends AbstractContainer {
     protected final String master;
 
 
-    public MesosSlave(DockerClient dockerClient, String resources, String portNumber, String zkUrl, String master) {
+    public MesosSlave(DockerClient dockerClient, String resources, String portNumber, String zkUrl, String master, String mesosLocalImage, String registryTag) {
         super(dockerClient);
         this.zkUrl = zkUrl;
         this.resources = resources;
         this.portNumber = portNumber;
         this.master = master;
+        this.mesosLocalImage = mesosLocalImage;
+        this.registryTag = registryTag;
     }
 
     @Override
@@ -71,7 +73,7 @@ public class MesosSlave extends AbstractContainer {
                 LOGGER.error("Docker binary not found in /usr/local/bin or /usr/bin. Creating containers will most likely fail.");
             }
         }
-        return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE + ":" + REGISTRY_TAG)
+        return dockerClient.createContainerCmd(mesosLocalImage + ":" + registryTag)
                 .withName(generateSlaveName())
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
@@ -87,7 +89,7 @@ public class MesosSlave extends AbstractContainer {
 
     @Override
     protected void pullImage() {
-        pullImage(MESOS_LOCAL_IMAGE, REGISTRY_TAG);
+        pullImage(mesosLocalImage, registryTag);
     }
 
     @Override

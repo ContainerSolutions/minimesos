@@ -59,14 +59,14 @@ public class MesosCluster extends ExternalResource {
         addAndStartContainer(this.zkContainer);
         LOGGER.info("Started zookeeper on " + this.zkContainer.getIpAddress());
         this.zkUrl = "zk://" + this.zkContainer.getIpAddress() + ":2181/" + this.config.zkUrl;
-        this.mesosMasterContainer = new MesosMaster(config.dockerClient, this.zkUrl);
+        this.mesosMasterContainer = new MesosMaster(config.dockerClient, this.zkUrl, this.config.mesosMasterImage, this.config.mesosMasterTag);
         addAndStartContainer(this.mesosMasterContainer);
         LOGGER.info("Started mesos master on http://" + this.mesosMasterContainer.getIpAddress() + ":5050");
         try {
             LOGGER.info("Starting Mesos Local");
             mesosSlaves = new MesosSlave[config.getNumberOfSlaves()];
             for (int i = 0; i < this.config.getNumberOfSlaves(); i++) {
-                mesosSlaves[i] = new MesosSlave(config.dockerClient, config.slaveResources[i], "5051", this.zkUrl, mesosMasterContainer.getContainerId());
+                mesosSlaves[i] = new MesosSlave(config.dockerClient, config.slaveResources[i], "5051", this.zkUrl, mesosMasterContainer.getContainerId(), this.config.mesosSlaveImage, this.config.mesosSlaveTag);
                 addAndStartContainer(mesosSlaves[i]);
                 LOGGER.info("Started Mesos slave at " + mesosSlaves[i].getIpAddress());
             }
