@@ -19,13 +19,11 @@ public class MesosMaster extends AbstractContainer {
     private static final String MESOS_LOCAL_IMAGE = "mesosphere/mesos-master";
     public static final String REGISTRY_TAG = "0.22.1-1.0.ubuntu1404";
 
-    private final String zkIp;
-    private final String zkPath;
+    private final String zkUrl;
 
-    public MesosMaster(DockerClient dockerClient, String zkIp, String zkPath) {
+    public MesosMaster(DockerClient dockerClient, String zkPath) {
         super(dockerClient);
-        this.zkIp = zkIp;
-        this.zkPath = zkPath;
+        this.zkUrl = zkPath;
     }
 
     @Override
@@ -37,7 +35,7 @@ public class MesosMaster extends AbstractContainer {
         TreeMap<String,String> envs = new TreeMap<>();
 
         envs.put("MESOS_QUORUM", "1");
-        envs.put("MESOS_ZK", "zk://" + zkIp + ":2181/mesos");
+        envs.put("MESOS_ZK", zkUrl);
         envs.put("MESOS_EXECUTOR_REGISTRATION_TIMEOUT", "5mins");
         envs.put("MESOS_CONTAINERIZERS", "docker,mesos");
         envs.put("MESOS_ISOLATOR", "cgroups/cpu,cgroups/mem");

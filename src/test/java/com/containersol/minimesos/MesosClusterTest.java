@@ -141,7 +141,7 @@ public class MesosClusterTest {
         cluster.getMesosMasterContainer().getOuterDockerClient().logContainerCmd(containerId).withStdOut().exec(cb);
         cb.awaitCompletion();
 
-        Awaitility.await().atMost(Duration.FIVE_SECONDS).until(new Callable<Boolean>() {
+        Awaitility.await().atMost(Duration.ONE_MINUTE).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 LogContainerTestCallback cb = new LogContainerTestCallback();
