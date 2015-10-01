@@ -140,7 +140,6 @@ public class MesosClusterTest {
         LogContainerTestCallback cb = new LogContainerTestCallback();
         cluster.getMesosMasterContainer().getOuterDockerClient().logContainerCmd(containerId).withStdOut().exec(cb);
         cb.awaitCompletion();
-        Assert.assertThat(cb.toString().contains("task test-cmd submitted to slave"), is(equalTo(true)));
 
         Awaitility.await().atMost(Duration.FIVE_SECONDS).until(new Callable<Boolean>() {
             @Override

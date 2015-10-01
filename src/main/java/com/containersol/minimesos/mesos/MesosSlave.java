@@ -16,25 +16,23 @@ import java.util.UUID;
 
 public class MesosSlave extends AbstractContainer {
 
-    private static final int DOCKER_PORT = 2376;
-
     private static Logger LOGGER = Logger.getLogger(MesosSlave.class);
 
     private static final String MESOS_LOCAL_IMAGE = "mesosphere/mesos-slave";
-    public static final String REGISTRY_TAG = "0.23.0-1.0.ubuntu1404";
+    public static final String REGISTRY_TAG = "0.22.1-1.0.ubuntu1404";
 
     protected final String resources;
 
     protected final String portNumber;
 
-    protected final String zkPath;
+    protected final String zkUrl;
 
     protected final String master;
 
 
-    public MesosSlave(DockerClient dockerClient, String resources, String portNumber, String zkPath, String master) {
+    public MesosSlave(DockerClient dockerClient, String resources, String portNumber, String zkUrl, String master) {
         super(dockerClient);
-        this.zkPath = zkPath;
+        this.zkUrl = zkUrl;
         this.resources = resources;
         this.portNumber = portNumber;
         this.master = master;
@@ -48,9 +46,8 @@ public class MesosSlave extends AbstractContainer {
     String[] createMesosLocalEnvironment() {
         TreeMap<String,String> envs = new TreeMap<>();
 
-        envs.put("MESOS_ZK", this.zkPath);
         envs.put("MESOS_PORT", this.portNumber);
-        envs.put("MESOS_MASTER", this.zkPath);
+        envs.put("MESOS_MASTER", this.zkUrl);
         envs.put("MESOS_GLOG_v", "1");
         envs.put("MESOS_EXECUTOR_REGISTRATION_TIMEOUT", "5mins");
         envs.put("MESOS_CONTAINERIZERS", "docker,mesos");
