@@ -14,7 +14,8 @@ public class MesosClusterConfig {
     public final int numberOfSlaves;
     public final String[] slaveResources;
     public final Integer mesosMasterPort;
-    public final Integer privateRegistryPort;
+    public final String zkUrl;
+
     public final Map<String,String> extraEnvironmentVariables;
 
     private MesosClusterConfig(
@@ -22,15 +23,15 @@ public class MesosClusterConfig {
             int numberOfSlaves,
             String[] slaveResources,
             Integer mesosMasterPort,
-            Integer privateRegistryPort,
-            Map<String,String> extraEnvironmentVariables
+            Map<String,String> extraEnvironmentVariables,
+            String zkUrl
     ) {
         this.dockerClient = dockerClient;
         this.numberOfSlaves = numberOfSlaves;
         this.slaveResources = slaveResources;
         this.mesosMasterPort = mesosMasterPort;
-        this.privateRegistryPort = privateRegistryPort;
         this.extraEnvironmentVariables = extraEnvironmentVariables;
+        this.zkUrl = zkUrl;
     }
 
     public static Builder builder() {
@@ -43,7 +44,7 @@ public class MesosClusterConfig {
         int numberOfSlaves = 3;
         String[] slaveResources = new String[]{};
         Integer mesosMasterPort = 5050;
-        Integer privateRegistryPort = 5000;
+        String zkUrl = null;
         Map<String,String> extraEnvironmentVariables = new TreeMap<>();
 
         private Builder() {
@@ -65,11 +66,6 @@ public class MesosClusterConfig {
             return this;
         }
 
-        public Builder privateRegistryPort(int port){
-            this.privateRegistryPort = port;
-            return this;
-        }
-
         public Builder masterPort(int port) {
             this.mesosMasterPort = port;
             return this;
@@ -77,6 +73,11 @@ public class MesosClusterConfig {
 
         public Builder extraEnvironmentVariables(Map<String,String> extraEnvironmentVariables) {
             this.extraEnvironmentVariables = extraEnvironmentVariables;
+            return this;
+        }
+
+        public Builder zkUrl(String zkUrl) {
+            this.zkUrl = zkUrl;
             return this;
         }
 
@@ -111,7 +112,11 @@ public class MesosClusterConfig {
                 }
             }
 
-            return new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, mesosMasterPort, privateRegistryPort, extraEnvironmentVariables);
+            if (zkUrl == null) {
+                zkUrl = "mesos";
+            }
+
+            return new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, mesosMasterPort, extraEnvironmentVariables, zkUrl);
         }
     }
 

@@ -58,9 +58,7 @@ public class MesosCluster extends ExternalResource {
         this.zkContainer = new ZooKeeper(config.dockerClient);
         addAndStartContainer(this.zkContainer);
         LOGGER.info("Started zookeeper on " + this.zkContainer.getIpAddress());
-        String zkPath = UUID.randomUUID().toString();
-
-        this.zkUrl = "zk://" + this.zkContainer.getIpAddress() + ":2181/" + zkPath;
+        this.zkUrl = "zk://" + this.zkContainer.getIpAddress() + ":2181/" + this.config.zkUrl;
         this.mesosMasterContainer = new MesosMaster(config.dockerClient, this.zkUrl);
         addAndStartContainer(this.mesosMasterContainer);
         LOGGER.info("Started mesos master on http://" + this.mesosMasterContainer.getIpAddress() + ":5050");
