@@ -25,7 +25,7 @@ public class ZooKeeper extends AbstractContainer {
 
 
     String generateContainerName() {
-        return "zookeeper" + new SecureRandom().nextInt();
+        return "minimesos-zookeeper-" + Integer.toUnsignedString(new SecureRandom().nextInt());
     }
 
 
