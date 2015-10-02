@@ -48,7 +48,7 @@ public class MesosMaster extends AbstractContainer {
     }
 
     String generateMesosMasterContainerName() {
-        return "mini_mesos_cluster_" + new SecureRandom().nextInt();
+        return "minimesos-master-" + Integer.toUnsignedString(new SecureRandom().nextInt());
     }
 
     @Override

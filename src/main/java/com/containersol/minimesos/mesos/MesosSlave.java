@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import com.containersol.minimesos.container.AbstractContainer;
 
 import java.io.File;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.TreeMap;
@@ -61,7 +62,7 @@ public class MesosSlave extends AbstractContainer {
     }
 
     String generateSlaveName() {
-        return "mini-mesos-slave-" + UUID.randomUUID();
+        return "minimesos-slave-" + Integer.toUnsignedString(new SecureRandom().nextInt());
     }
 
     public CreateContainerCmd getBaseCommand() {
