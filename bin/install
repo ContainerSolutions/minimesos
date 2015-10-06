@@ -16,7 +16,7 @@ command_exists() {
 }
 
 if ! command_exists curl; then
-	echo "Please install curl or wget to fetch the minimesos files"
+	echo "Please install curl to fetch the minimesos files"
 	exit 1
 fi
 
