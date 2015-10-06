@@ -1,9 +1,3 @@
 #!/bin/sh
 
-if [ ! -e "../build/libs/minimesos.jar" ]
-then
-    echo "Please build MiniMesos with ./gradlew build"
-    exit 1
-fi
-
-java -jar ../build/libs/minimesos.jar
+java -jar /usr/local/share/minimesos/minimesos.jar
