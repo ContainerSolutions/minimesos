@@ -1,0 +1,30 @@
+#!/bin/bash
+#
+# This script is meant for quick & easy install via:
+#   'curl -sSL https://get.minimesos.org/ | sh'
+# or:
+#   'wget -qO- https://get.minimesos.org/ | sh'
+#
+# For test builds (ie. release candidates):
+#   'curl -sSL https://get.minimesos.org/ | sh'
+# or:
+#   'wget -qO- https://get.minimesos.org/ | sh'
+#
+
+command_exists() {
+	command -v "$@" > /dev/null 2>&1
+}
+
+if ! command_exists curl; then
+	echo "Please install curl to fetch the minimesos files"
+	exit 1
+fi
+
+VERSION=`curl -s -I https://github.com/ContainerSolutions/mini-mesos/releases/latest | awk '/Location: (.*)/ {print $2}' | tail -n 1 | cut -d '/' -f 8 | tr -d '\r'`
+
+mkdir -p /usr/local/share/minimesos
+
+curl -sSL https://jitpack.io/com/github/ContainerSolutions/mini-mesos/$VERSION/mini-mesos-$VERSION.jar > /usr/local/share/minimesos/mini-mesos-$VERSION.jar
+curl -sSL https://raw.githubusercontent.com/ContainerSolutions/mini-mesos/$VERSION/bin/minimesos > /usr/local/bin/minimesos
+
+chmod +x /usr/local/bin/minimesos
