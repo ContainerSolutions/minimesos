@@ -202,44 +202,36 @@ public class MesosCluster extends ExternalResource {
     }
 
     public static void destroy() {
-        String clusterId = null;
-        try {
-            clusterId = readClusterId();
-        } catch (IOException e) {
-            return;
+        String clusterId = readClusterId();
+        if (clusterId != null) {
+            destroyContainers(clusterId);
+            miniMesosFile.deleteOnExit();
         }
-
-        destroyContainers(clusterId);
-
-        miniMesosFile.deleteOnExit();
     }
 
-    private static String readClusterId() throws IOException {
-        return IOUtils.toString(new FileReader(miniMesosFile));
-    }
-
-    public static void print() {
-        String clusterId;
+    public static String readClusterId() {
         try {
-            clusterId = readClusterId();
+            return IOUtils.toString(new FileReader(miniMesosFile));
+        } catch (IOException e) {
+            return null;
+        }
+    }
 
-            DockerClient dockerClient = DockerClientFactory.build();
-            List<Container> containers = dockerClient.listContainersCmd().exec();
-            for (Container container : containers) {
-                for (String name : container.getNames()) {
-                    if (name.contains("minimesos-master-" + clusterId) ) {
-                        String ipAddress = dockerClient.inspectContainerCmd(container.getId()).exec().getNetworkSettings().getIpAddress();
-                        LOGGER.info("http://" + ipAddress + ":5050");
-                        return;
-                    }
+    public static void printMasterIp(String clusterId) {
+        DockerClient dockerClient = DockerClientFactory.build();
+        List<Container> containers = dockerClient.listContainersCmd().exec();
+        for (Container container : containers) {
+            for (String name : container.getNames()) {
+                if (name.contains("minimesos-master-" + clusterId) ) {
+                    String ipAddress = dockerClient.inspectContainerCmd(container.getId()).exec().getNetworkSettings().getIpAddress();
+                    LOGGER.info("http://" + ipAddress + ":5050");
+                    return;
                 }
             }
-        } catch (IOException e) {
-            printUsage();
         }
     }
 
-    private static void printUsage() {
+    public static void printUsage() {
         LOGGER.info("Usage: minimesos");
         LOGGER.info("           up      - Create a mini mesos cluster");
         LOGGER.info("           destroy - Destroy a mini mesos cluster");
