@@ -19,8 +19,6 @@ import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.equalTo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -121,15 +119,19 @@ public class MesosClusterTest {
 
     @Test
     public void testMesosExecuteContainerSuccess() throws InterruptedException {
-        CreateContainerCmd cmd = new MesosSlave(
-                cluster.getMesosMasterContainer().getOuterDockerClient(),
-                "cpus(*):0.2; mem(*):256; disk(*):200",
+        MesosSlave mesosSlave = new MesosSlave(
+                cluster.getConfig().dockerClient,
+                "ports(*):[9204-9204, 9304-9304]; cpus(*):0.2; mem(*):256; disk(*):200",
                 "5051",
                 cluster.getZkUrl(),
                 cluster.getMesosMasterContainer().getContainerId(),
                 "mesosphere/mesos-slave",
-                "0.22.1-1.0.ubuntu1404").getBaseCommand()
-                .withEntrypoint(
+                "0.22.1-1.0.ubuntu1404", cluster.getClusterId()) {
+
+            @Override
+            protected CreateContainerCmd dockerCommand() {
+                CreateContainerCmd containerCmd = super.dockerCommand();
+                containerCmd.withEntrypoint(
                         "mesos-execute",
                         "--master=" + cluster.getMesosMasterContainer().getIpAddress() + ":5050",
                         "--docker_image=busybox",
@@ -137,18 +139,20 @@ public class MesosClusterTest {
                         "--name=test-cmd",
                         "--resources=cpus(*):0.1;mem(*):256"
                 );
+                return containerCmd;
+            }
+        };
 
-        String containerId = cmd.exec().getId();
-        cluster.getMesosMasterContainer().getOuterDockerClient().startContainerCmd(containerId).exec();
+        cluster.addAndStartContainer(mesosSlave);
         LogContainerTestCallback cb = new LogContainerTestCallback();
-        cluster.getMesosMasterContainer().getOuterDockerClient().logContainerCmd(containerId).withStdOut().exec(cb);
+        cluster.getMesosMasterContainer().getOuterDockerClient().logContainerCmd(mesosSlave.getContainerId()).withStdOut().exec(cb);
         cb.awaitCompletion();
 
         Awaitility.await().atMost(Duration.ONE_MINUTE).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 LogContainerTestCallback cb = new LogContainerTestCallback();
-                cluster.getMesosMasterContainer().getOuterDockerClient().logContainerCmd(containerId).withStdOut().exec(cb);
+                cluster.getMesosMasterContainer().getOuterDockerClient().logContainerCmd(mesosSlave.getContainerId()).withStdOut().exec(cb);
                 cb.awaitCompletion();
                 return cb.toString().contains("Received status update TASK_FINISHED for task test-cmd");
             }

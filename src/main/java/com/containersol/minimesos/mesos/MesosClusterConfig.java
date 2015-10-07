@@ -1,9 +1,6 @@
 package com.containersol.minimesos.mesos;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.core.DockerClientBuilder;
-import com.github.dockerjava.core.DockerClientConfig;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -120,16 +117,7 @@ public class MesosClusterConfig {
         }
 
         public Builder defaultDockerClient() {
-            DockerClientConfig.DockerClientConfigBuilder builder = DockerClientConfig.createDefaultConfigBuilder();
-
-            String dockerHostEnv = System.getenv("DOCKER_HOST");
-            if (StringUtils.isBlank(dockerHostEnv)) {
-                builder.withUri("unix:///var/run/docker.sock");
-            }
-
-            DockerClientConfig config = builder.build();
-
-            this.dockerClient = DockerClientBuilder.getInstance(config).build();
+            this.dockerClient = DockerClientFactory.build();
             return this;
         }
 

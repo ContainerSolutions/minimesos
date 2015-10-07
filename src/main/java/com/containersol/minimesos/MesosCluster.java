@@ -1,11 +1,15 @@
 package com.containersol.minimesos;
 
+import com.containersol.minimesos.mesos.DockerClientFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.InternalServerErrorException;
 import com.github.dockerjava.api.NotFoundException;
+import com.github.dockerjava.api.model.Container;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.mesos.MesosClusterConfig;
@@ -18,10 +22,13 @@ import com.containersol.minimesos.util.Predicate;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -35,6 +42,8 @@ import static com.jayway.awaitility.Awaitility.await;
 public class MesosCluster extends ExternalResource {
     private static Logger LOGGER = Logger.getLogger(MesosCluster.class);
 
+    private static File miniMesosFile = new File(System.getProperty("user.home"), ".minimesos/minimesos.cluster");
+
     private final List<AbstractContainer> containers = Collections.synchronizedList(new ArrayList<>());
 
     private final MesosClusterConfig config;
@@ -47,36 +56,37 @@ public class MesosCluster extends ExternalResource {
 
     protected ZooKeeper zkContainer;
 
+    private String clusterId;
+
     public MesosCluster(MesosClusterConfig config) {
         this.config = config;
+        this.clusterId = Integer.toUnsignedString(new SecureRandom().nextInt());
     }
 
     /**
      * Starts the Mesos cluster and its containers
      */
     public void start() {
-        this.zkContainer = new ZooKeeper(config.dockerClient);
+        this.zkContainer = new ZooKeeper(this.config.dockerClient, clusterId);
         addAndStartContainer(this.zkContainer);
-        LOGGER.info("Started zookeeper on " + this.zkContainer.getIpAddress());
+
         this.zkUrl = "zk://" + this.zkContainer.getIpAddress() + ":2181/" + this.config.zkUrl;
-        this.mesosMasterContainer = new MesosMaster(config.dockerClient, this.zkUrl, this.config.mesosMasterImage, this.config.mesosMasterTag);
+        this.mesosMasterContainer = new MesosMaster(this.config.dockerClient, this.zkUrl, this.config.mesosMasterImage, this.config.mesosMasterTag, clusterId);
         addAndStartContainer(this.mesosMasterContainer);
-        LOGGER.info("Started mesos master on http://" + this.mesosMasterContainer.getIpAddress() + ":5050");
+
         try {
-            LOGGER.info("Starting Mesos Local");
             mesosSlaves = new MesosSlave[config.getNumberOfSlaves()];
             for (int i = 0; i < this.config.getNumberOfSlaves(); i++) {
-                mesosSlaves[i] = new MesosSlave(config.dockerClient, config.slaveResources[i], "5051", this.zkUrl, mesosMasterContainer.getContainerId(), this.config.mesosSlaveImage, this.config.mesosSlaveTag);
+                mesosSlaves[i] = new MesosSlave(this.config.dockerClient, config.slaveResources[i], "5051", this.zkUrl, mesosMasterContainer.getContainerId(), this.config.mesosSlaveImage, this.config.mesosSlaveTag, clusterId);
                 addAndStartContainer(mesosSlaves[i]);
-                LOGGER.info("Started Mesos slave at " + mesosSlaves[i].getIpAddress());
             }
-
             // wait until the given number of slaves are registered
             new MesosClusterStateResponse(this.mesosMasterContainer.getIpAddress() + ":5050", config.numberOfSlaves).waitFor();
         } catch (Throwable e) {
             LOGGER.error("Error during startup", e);
-
         }
+
+        LOGGER.info("http://" + this.mesosMasterContainer.getIpAddress() + ":5050");
     }
 
     /**
@@ -84,7 +94,7 @@ public class MesosCluster extends ExternalResource {
      */
     public void stop() {
         for (AbstractContainer container : this.containers) {
-            LOGGER.info("Removing container [" + container.getName() + "]");
+            LOGGER.debug("Removing container [" + container.getContainerId() + "]");
             try {
                 container.remove();
             } catch (NotFoundException e) {
@@ -119,6 +129,23 @@ public class MesosCluster extends ExternalResource {
     @Override
     protected void before() throws Throwable {
         start();
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                destroyContainers(clusterId);
+            }
+        });
+    }
+
+    private static void destroyContainers(String clusterId) {
+        DockerClient dockerClient = DockerClientFactory.build();
+        List<Container> containers = dockerClient.listContainersCmd().exec();
+        for (Container container : containers) {
+            if (container.getNames()[0].contains(clusterId)) {
+                dockerClient.removeContainerCmd(container.getId()).withForce().withRemoveVolumes(true).exec();
+            }
+        }
+        LOGGER.info("Destroyed minimesos cluster " + clusterId);
     }
 
     public List<AbstractContainer> getContainers() {
@@ -169,4 +196,53 @@ public class MesosCluster extends ExternalResource {
     public void waitForState(Predicate<State> predicate) {
         waitForState(predicate, 20);
     }
+
+    public String getClusterId() {
+        return clusterId;
+    }
+
+    public static void destroy() {
+        String clusterId = null;
+        try {
+            clusterId = readClusterId();
+        } catch (IOException e) {
+            return;
+        }
+
+        destroyContainers(clusterId);
+
+        miniMesosFile.deleteOnExit();
+    }
+
+    private static String readClusterId() throws IOException {
+        return IOUtils.toString(new FileReader(miniMesosFile));
+    }
+
+    public static void print() {
+        String clusterId;
+        try {
+            clusterId = readClusterId();
+
+            DockerClient dockerClient = DockerClientFactory.build();
+            List<Container> containers = dockerClient.listContainersCmd().exec();
+            for (Container container : containers) {
+                for (String name : container.getNames()) {
+                    if (name.contains("minimesos-master-" + clusterId) ) {
+                        String ipAddress = dockerClient.inspectContainerCmd(container.getId()).exec().getNetworkSettings().getIpAddress();
+                        LOGGER.info("http://" + ipAddress + ":5050");
+                        return;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            printUsage();
+        }
+    }
+
+    private static void printUsage() {
+        LOGGER.info("Usage: minimesos");
+        LOGGER.info("           up      - Create a mini mesos cluster");
+        LOGGER.info("           destroy - Destroy a mini mesos cluster");
+    }
+
 }

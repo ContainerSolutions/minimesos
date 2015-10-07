@@ -10,6 +10,7 @@ import com.jayway.awaitility.Duration;
 import com.jayway.awaitility.core.ConditionTimeoutException;
 import org.apache.log4j.Logger;
 
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -23,16 +24,17 @@ public abstract class AbstractContainer {
 
     private static Logger LOGGER = Logger.getLogger(AbstractContainer.class);
 
-    protected final DockerClient dockerClient;
-
-    protected String containerName;
+    private final String randomId;
 
     private String containerId = "";
 
     private boolean removed;
 
+    protected DockerClient dockerClient;
+
     protected AbstractContainer(DockerClient dockerClient) {
         this.dockerClient = dockerClient;
+        this.randomId = Integer.toUnsignedString(new SecureRandom().nextInt());
     }
 
     /**
@@ -51,16 +53,6 @@ public abstract class AbstractContainer {
      * Starts the container and waits until is started
      */
     public void start() {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                LOGGER.debug("Shutdown hook - Removing container " + AbstractContainer.this.getName());
-                if (!isRemoved()) {
-                    remove();
-                }
-            }
-        });
-
         pullImage();
 
         CreateContainerCmd createCommand = dockerCommand();
@@ -110,7 +102,7 @@ public abstract class AbstractContainer {
             dockerClient.removeContainerCmd(containerId).withForce().withRemoveVolumes(true).exec();
             this.removed = true;
         } catch (Exception e) {
-            LOGGER.error("Could not remove container " + getName(), e);
+            LOGGER.error("Could not remove container " + dockerCommand().getName(), e);
         }
     }
 
@@ -131,12 +123,12 @@ public abstract class AbstractContainer {
             return;
         }
 
-        LOGGER.info("Image [" + imageName + ":" + registryTag + "] not found. Pulling...");
+        LOGGER.debug("Image [" + imageName + ":" + registryTag + "] not found. Pulling...");
 
         PullImageResultCallback callback = new PullImageResultCallback() {
             @Override
             public void awaitSuccess() {
-                LOGGER.info("Finished pulling the image: " + imageName + ":" + registryTag);
+                LOGGER.debug("Finished pulling the image: " + imageName + ":" + registryTag);
             }
             @Override
             public void onNext(PullResponseItem item) {
@@ -177,10 +169,14 @@ public abstract class AbstractContainer {
     }
 
     @Override public String toString() {
-        return String.format("Container: %s (%s)", this.getName(), this.getContainerId());
+        return String.format("Container: %s", this.getContainerId());
     }
 
     public boolean isRemoved() {
         return removed;
+    }
+
+    public String getRandomId() {
+        return randomId;
     }
 }
