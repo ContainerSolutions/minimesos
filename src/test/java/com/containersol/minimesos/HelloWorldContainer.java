@@ -4,8 +4,6 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.containersol.minimesos.container.AbstractContainer;
 
-import java.security.SecureRandom;
-
 /**
  * Test container
  */
@@ -25,6 +23,9 @@ class HelloWorldContainer extends AbstractContainer {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        return dockerClient.createContainerCmd(HELLO_WORLD_IMAGE).withPrivileged(true).withName("hello-world_" + new SecureRandom().nextInt());
+        return dockerClient.createContainerCmd(HELLO_WORLD_IMAGE).withPrivileged(true)
+                .withName("helloworld-" + getRandomId());
     }
+
+
 }

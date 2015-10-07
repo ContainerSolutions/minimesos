@@ -9,11 +9,10 @@ import org.apache.log4j.Logger;
 import com.containersol.minimesos.container.AbstractContainer;
 
 import java.io.File;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.TreeMap;
-import java.util.UUID;
 
 public class MesosSlave extends AbstractContainer {
 
@@ -30,9 +29,11 @@ public class MesosSlave extends AbstractContainer {
 
     protected final String master;
 
+    private final String clusterId;
 
-    public MesosSlave(DockerClient dockerClient, String resources, String portNumber, String zkUrl, String master, String mesosLocalImage, String registryTag) {
+    public MesosSlave(DockerClient dockerClient, String resources, String portNumber, String zkUrl, String master, String mesosLocalImage, String registryTag, String clusterId) {
         super(dockerClient);
+        this.clusterId = clusterId;
         this.zkUrl = zkUrl;
         this.resources = resources;
         this.portNumber = portNumber;
@@ -61,10 +62,6 @@ public class MesosSlave extends AbstractContainer {
         return envs.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
     }
 
-    String generateSlaveName() {
-        return "minimesos-slave-" + Integer.toUnsignedString(new SecureRandom().nextInt());
-    }
-
     public CreateContainerCmd getBaseCommand() {
         String dockerBin = "/usr/bin/docker";
 
@@ -75,7 +72,7 @@ public class MesosSlave extends AbstractContainer {
             }
         }
         return dockerClient.createContainerCmd(mesosLocalImage + ":" + registryTag)
-                .withName(generateSlaveName())
+                .withName("minimesos-agent-" + clusterId + "-" + getRandomId())
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
                 .withPid("host")
@@ -128,11 +125,12 @@ public class MesosSlave extends AbstractContainer {
         ArrayList<Integer> returnList = new ArrayList<>();
         for (String el : ports) {
             String firstPortFromBinding = el.trim().split("-")[0];
-            if (firstPortFromBinding == el.trim()) {
+            if (Objects.equals(firstPortFromBinding, el.trim())) {
                 throw new Exception("Port binding " + firstPortFromBinding + " is incorrect");
             }
             returnList.add(Integer.parseInt(firstPortFromBinding)); // XXXX-YYYY will return XXXX
         }
         return returnList;
     }
+
 }

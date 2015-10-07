@@ -7,7 +7,6 @@ import org.apache.log4j.Logger;
 import com.containersol.minimesos.container.AbstractContainer;
 
 import java.io.File;
-import java.security.SecureRandom;
 import java.util.TreeMap;
 
 public class MesosMaster extends AbstractContainer {
@@ -17,12 +16,16 @@ public class MesosMaster extends AbstractContainer {
     private static Logger LOGGER = Logger.getLogger(MesosMaster.class);
 
     private final String mesosLocalImage;
+
     public final String registryTag;
 
     private final String zkUrl;
 
-    public MesosMaster(DockerClient dockerClient, String zkPath, String mesosLocalImage, String registryTag) {
+    private final String clusterId;
+
+    public MesosMaster(DockerClient dockerClient, String zkPath, String mesosLocalImage, String registryTag, String clusterId) {
         super(dockerClient);
+        this.clusterId = clusterId;
         this.zkUrl = zkPath;
         this.mesosLocalImage = mesosLocalImage;
         this.registryTag = registryTag;
@@ -47,10 +50,6 @@ public class MesosMaster extends AbstractContainer {
         return envs.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
     }
 
-    String generateMesosMasterContainerName() {
-        return "minimesos-master-" + Integer.toUnsignedString(new SecureRandom().nextInt());
-    }
-
     @Override
     protected void pullImage() {
         pullImage(mesosLocalImage, registryTag);
@@ -58,7 +57,6 @@ public class MesosMaster extends AbstractContainer {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        String mesosClusterContainerName = generateMesosMasterContainerName();
         String dockerBin = "/usr/bin/docker";
 
         if (! (new File(dockerBin).exists())) {
@@ -69,7 +67,7 @@ public class MesosMaster extends AbstractContainer {
         }
 
         return dockerClient.createContainerCmd(mesosLocalImage + ":" + registryTag)
-                .withName(mesosClusterContainerName)
+                .withName("minimesos-master-" + clusterId + "-" + getRandomId())
                 .withExposedPorts(new ExposedPort(5050))
                 .withEnv(createMesosLocalEnvironment());
     }
@@ -79,7 +77,7 @@ public class MesosMaster extends AbstractContainer {
     }
 
     public DockerClient getOuterDockerClient() {
-        return this.dockerClient;
+        return dockerClient;
     }
 
     public String getMesosLocalImage() {
