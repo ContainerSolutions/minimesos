@@ -9,8 +9,13 @@ import org.apache.log4j.Logger;
 import com.containersol.minimesos.container.AbstractContainer;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.Objects;
 import java.util.TreeMap;
 
@@ -71,11 +76,13 @@ public class MesosSlave extends AbstractContainer {
                 LOGGER.error("Docker binary not found in /usr/local/bin or /usr/bin. Creating containers will most likely fail.");
             }
         }
+
         return dockerClient.createContainerCmd(mesosLocalImage + ":" + registryTag)
                 .withName("minimesos-agent-" + clusterId + "-" + getRandomId())
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
                 .withPid("host")
+                .withExtraHosts(getHostName() + ":" + getDockerBridgeIp())
                 .withLinks(new Link(this.master, "mini-mesos-master"))
                 .withBinds(
                         Bind.parse("/var/lib/docker:/var/lib/docker"),
@@ -83,6 +90,36 @@ public class MesosSlave extends AbstractContainer {
                         Bind.parse(String.format("%s:/usr/bin/docker", dockerBin)),
                         Bind.parse("/var/run/docker.sock:/var/run/docker.sock")
                 );
+    }
+
+    private String getHostName() {
+        String hostname;
+        try {
+            hostname = InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            LOGGER.error("Could not resolve hostname");
+            throw new RuntimeException(e);
+        }
+        return hostname;
+    }
+
+    private String getDockerBridgeIp() {
+        Enumeration<NetworkInterface> networkInterfaces;
+        try {
+            networkInterfaces = NetworkInterface.getNetworkInterfaces();
+            while (networkInterfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = networkInterfaces.nextElement();
+                if (networkInterface.getDisplayName().equals("docker0")) {
+                    Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
+                    inetAddresses.nextElement();
+                    return inetAddresses.nextElement().getHostAddress();
+                }
+            }
+        } catch (SocketException ignored) {
+
+        }
+        LOGGER.error("Could not determine docker0 IP");
+        throw new RuntimeException("Could not determine docker0 IP");
     }
 
     @Override
