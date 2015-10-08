@@ -111,8 +111,12 @@ public class MesosSlave extends AbstractContainer {
                 NetworkInterface networkInterface = networkInterfaces.nextElement();
                 if (networkInterface.getDisplayName().equals("docker0")) {
                     Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
-                    inetAddresses.nextElement();
-                    return inetAddresses.nextElement().getHostAddress();
+                    while (inetAddresses.hasMoreElements()) {
+                        InetAddress inetAddress = inetAddresses.nextElement();
+                        if (inetAddress.isSiteLocalAddress()) {
+                            return inetAddress.getHostAddress();
+                        }
+                    }
                 }
             }
         } catch (SocketException ignored) {
