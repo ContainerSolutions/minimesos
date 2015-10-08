@@ -62,6 +62,8 @@ public class MesosSlave extends AbstractContainer {
         envs.put("MESOS_CONTAINERIZERS", "docker,mesos");
         envs.put("MESOS_ISOLATOR", "cgroups/cpu,cgroups/mem");
         envs.put("MESOS_LOG_DIR", "/var/log");
+        envs.put("MESOS_LOGGING_LEVEL", "INFO");
+        envs.put("MESOS_NO_SWITCH_USER", "true");
         envs.put("MESOS_RESOURCES", this.resources);
 
         return envs.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
