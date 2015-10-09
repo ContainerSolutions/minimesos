@@ -67,6 +67,8 @@ dependencies {
 
     compile 'ch.qos.logback:logback-core:1.1.3'
     compile 'ch.qos.logback:logback-classic:1.1.3'
+
+    compile 'com.beust:jcommander:1.48'
 }
 
 mainClassName = "com.containersol.minimesos.main.Main"

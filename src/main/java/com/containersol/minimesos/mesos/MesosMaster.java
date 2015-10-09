@@ -15,20 +15,20 @@ public class MesosMaster extends AbstractContainer {
 
     private static Logger LOGGER = Logger.getLogger(MesosMaster.class);
 
-    private final String mesosLocalImage;
+    private final String mesosMasterImage;
 
-    public final String registryTag;
+    public final String mesosImageTag;
 
     private final String zkUrl;
 
     private final String clusterId;
 
-    public MesosMaster(DockerClient dockerClient, String zkPath, String mesosLocalImage, String registryTag, String clusterId) {
+    public MesosMaster(DockerClient dockerClient, String zkPath, String mesosMasterImage, String mesosImageTag, String clusterId) {
         super(dockerClient);
         this.clusterId = clusterId;
         this.zkUrl = zkPath;
-        this.mesosLocalImage = mesosLocalImage;
-        this.registryTag = registryTag;
+        this.mesosMasterImage = mesosMasterImage;
+        this.mesosImageTag = mesosImageTag;
     }
 
     @Override
@@ -52,7 +52,7 @@ public class MesosMaster extends AbstractContainer {
 
     @Override
     protected void pullImage() {
-        pullImage(mesosLocalImage, registryTag);
+        pullImage(mesosMasterImage, mesosImageTag);
     }
 
     @Override
@@ -66,7 +66,7 @@ public class MesosMaster extends AbstractContainer {
             }
         }
 
-        return dockerClient.createContainerCmd(mesosLocalImage + ":" + registryTag)
+        return dockerClient.createContainerCmd(mesosMasterImage + ":" + mesosImageTag)
                 .withName("minimesos-master-" + clusterId + "-" + getRandomId())
                 .withExposedPorts(new ExposedPort(5050))
                 .withEnv(createMesosLocalEnvironment());
@@ -80,12 +80,12 @@ public class MesosMaster extends AbstractContainer {
         return dockerClient;
     }
 
-    public String getMesosLocalImage() {
-        return mesosLocalImage;
+    public String getMesosMasterImage() {
+        return mesosMasterImage;
     }
 
-    public String getRegistryTag() {
-        return registryTag;
+    public String getMesosImageTag() {
+        return mesosImageTag;
     }
 
 }

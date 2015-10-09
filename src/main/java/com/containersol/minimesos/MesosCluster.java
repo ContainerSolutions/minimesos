@@ -71,13 +71,13 @@ public class MesosCluster extends ExternalResource {
         addAndStartContainer(this.zkContainer);
 
         this.zkUrl = "zk://" + this.zkContainer.getIpAddress() + ":2181/" + this.config.zkUrl;
-        this.mesosMasterContainer = new MesosMaster(this.config.dockerClient, this.zkUrl, this.config.mesosMasterImage, this.config.mesosMasterTag, clusterId);
+        this.mesosMasterContainer = new MesosMaster(this.config.dockerClient, this.zkUrl, this.config.mesosMasterImage, this.config.mesosImageTag, clusterId);
         addAndStartContainer(this.mesosMasterContainer);
 
         try {
             mesosSlaves = new MesosSlave[config.getNumberOfSlaves()];
             for (int i = 0; i < this.config.getNumberOfSlaves(); i++) {
-                mesosSlaves[i] = new MesosSlave(this.config.dockerClient, config.slaveResources[i], "5051", this.zkUrl, mesosMasterContainer.getContainerId(), this.config.mesosSlaveImage, this.config.mesosSlaveTag, clusterId);
+                mesosSlaves[i] = new MesosSlave(this.config.dockerClient, config.slaveResources[i], "5051", this.zkUrl, mesosMasterContainer.getContainerId(), this.config.mesosSlaveImage, this.config.mesosImageTag, clusterId);
                 addAndStartContainer(mesosSlaves[i]);
             }
             // wait until the given number of slaves are registered
@@ -229,12 +229,6 @@ public class MesosCluster extends ExternalResource {
                 }
             }
         }
-    }
-
-    public static void printUsage() {
-        LOGGER.info("Usage: minimesos");
-        LOGGER.info("           up      - Create a mini mesos cluster");
-        LOGGER.info("           destroy - Destroy a mini mesos cluster");
     }
 
 }
