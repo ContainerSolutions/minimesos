@@ -123,15 +123,19 @@ public abstract class AbstractContainer {
             return;
         }
 
-        LOGGER.debug("Image [" + imageName + ":" + registryTag + "] not found. Pulling...");
+        LOGGER.info("Image [" + imageName + ":" + registryTag + "] not found. Pulling...");
 
         PullImageResultCallback callback = new PullImageResultCallback() {
             @Override
             public void awaitSuccess() {
-                LOGGER.debug("Finished pulling the image: " + imageName + ":" + registryTag);
+                LOGGER.info("Finished pulling the image: " + imageName + ":" + registryTag);
             }
             @Override
             public void onNext(PullResponseItem item) {
+                if (item.getStatus() == null) {
+                    LOGGER.info("Error pulling image or image not found in registry: " + imageName + ":" + registryTag);
+                    System.exit(1);
+                }
                 if (!item.getStatus().contains("Downloading") &&
                         !item.getStatus().contains("Extracting")) {
                     LOGGER.debug("Status: " + item.getStatus());

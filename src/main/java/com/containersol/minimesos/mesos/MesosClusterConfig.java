@@ -7,16 +7,18 @@ import java.util.TreeMap;
 
 public class MesosClusterConfig {
 
+    public static final String MESOS_MASTER_IMAGE = "mesosphere/mesos-master";
+    public static final String MESOS_SLAVE_IMAGE = "mesosphere/mesos-slave";
+    public static final String MESOS_IMAGE_TAG = "0.22.1-1.0.ubuntu1404";
+
     public final DockerClient dockerClient;
     public final int numberOfSlaves;
     public final String[] slaveResources;
     public final Integer mesosMasterPort;
     public final String zkUrl;
     public final String mesosMasterImage;
-    public final String mesosMasterTag;
     public final String mesosSlaveImage;
-    public final String mesosSlaveTag;
-
+    public final String mesosImageTag;
 
     public final Map<String,String> extraEnvironmentVariables;
 
@@ -28,9 +30,8 @@ public class MesosClusterConfig {
             Map<String,String> extraEnvironmentVariables,
             String zkUrl,
             String mesosMasterImage,
-            String mesosMasterTag,
             String mesosSlaveImage,
-            String mesosSlaveTag
+            String mesosImageTag
     ) {
         this.dockerClient = dockerClient;
         this.numberOfSlaves = numberOfSlaves;
@@ -39,9 +40,8 @@ public class MesosClusterConfig {
         this.extraEnvironmentVariables = extraEnvironmentVariables;
         this.zkUrl = zkUrl;
         this.mesosMasterImage = mesosMasterImage;
-        this.mesosMasterTag = mesosMasterTag;
         this.mesosSlaveImage = mesosSlaveImage;
-        this.mesosSlaveTag = mesosSlaveTag;
+        this.mesosImageTag = mesosImageTag;
     }
 
     public static Builder builder() {
@@ -56,11 +56,9 @@ public class MesosClusterConfig {
         Integer mesosMasterPort = 5050;
         String zkUrl = null;
         Map<String,String> extraEnvironmentVariables = new TreeMap<>();
-        String mesosMasterImage = "mesosphere/mesos-master";
-        String mesosMasterTag = "0.22.1-1.0.ubuntu1404";
-        String mesosSlaveImage = "mesosphere/mesos-slave";
-        String mesosSlaveTag = "0.22.1-1.0.ubuntu1404";
-
+        String mesosMasterImage = MESOS_MASTER_IMAGE;
+        String mesosSlaveImage = MESOS_SLAVE_IMAGE;
+        String mesosImageTag = MESOS_IMAGE_TAG;
 
         private Builder() {
 
@@ -101,18 +99,13 @@ public class MesosClusterConfig {
             return this;
         }
 
-        public Builder mesosMasterTag(String mesosMasterTag) {
-            this.mesosMasterTag = mesosMasterTag;
-            return this;
-        }
-
         public Builder mesosSlaveImage(String mesosSlaveImage) {
             this.mesosSlaveImage = mesosSlaveImage;
             return this;
         }
 
-        public Builder mesosSlaveTag(String mesosSlaveTag) {
-            this.mesosSlaveTag = mesosSlaveTag;
+        public Builder mesosImageTag(String mesosImageTag) {
+            this.mesosImageTag = mesosImageTag;
             return this;
         }
 
@@ -142,7 +135,7 @@ public class MesosClusterConfig {
                 zkUrl = "mesos";
             }
 
-            return new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, mesosMasterPort, extraEnvironmentVariables, zkUrl, mesosMasterImage, mesosMasterTag, mesosSlaveImage, mesosSlaveTag);
+            return new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, mesosMasterPort, extraEnvironmentVariables, zkUrl, mesosMasterImage, mesosSlaveImage, mesosImageTag);
         }
     }
 

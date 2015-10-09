@@ -1,5 +1,6 @@
 package com.containersol.minimesos.main;
 
+import com.beust.jcommander.JCommander;
 import com.containersol.minimesos.MesosCluster;
 import com.containersol.minimesos.mesos.MesosClusterConfig;
 import org.apache.commons.io.FileUtils;
@@ -17,15 +18,39 @@ public class Main {
 
     private static Logger LOGGER = Logger.getLogger(Main.class);
 
+    private static CommandUp commandUp;
+
     public static void main(String[] args)  {
-        if (args.length == 0) {
-            printIpOrUsage();
-        } else if (args.length == 1) {
-            if (args[0].equals("up")) {
-                doUp();
-            } else if (args[0].equals("destroy")) {
-                MesosCluster.destroy();
+        JCommander jc = new JCommander();
+        jc.setProgramName("minimesos");
+
+        commandUp = new CommandUp();
+        CommandDestroy commandDestroy = new CommandDestroy();
+        CommandHelp commandHelp = new CommandHelp();
+
+        jc.addCommand("up", commandUp);
+        jc.addCommand("destroy", commandDestroy);
+        jc.addCommand("help", commandHelp);
+        jc.parseWithoutValidation(args);
+
+        if (jc.getParsedCommand() == null) {
+            String clusterId = MesosCluster.readClusterId();
+            if (clusterId != null) {
+                MesosCluster.printMasterIp(clusterId);
+            } else {
+                jc.usage();
             }
+            return;
+        }
+
+        switch (jc.getParsedCommand()) {
+            case "up":
+                doUp();
+                break;
+            case "destroy":
+                MesosCluster.destroy();
+            case "help":
+                jc.usage();
         }
     }
 
@@ -38,6 +63,7 @@ public class Main {
                     MesosClusterConfig.builder()
                             .numberOfSlaves(1)
                             .slaveResources(new String[]{"ports(*):[9200-9200,9300-9300]"})
+                            .mesosImageTag(commandUp.getMesosImageTag())
                             .build()
             );
             cluster.start();
@@ -53,12 +79,4 @@ public class Main {
         }
     }
 
-    private static void printIpOrUsage() {
-        String clusterId = MesosCluster.readClusterId();
-        if (clusterId == null) {
-            MesosCluster.printUsage();
-        } else {
-            MesosCluster.printMasterIp(clusterId);
-        }
-    }
 }
