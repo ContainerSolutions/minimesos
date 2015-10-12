@@ -49,6 +49,7 @@ public class Main {
                 break;
             case "destroy":
                 MesosCluster.destroy();
+                break;
             case "help":
                 jc.usage();
         }
