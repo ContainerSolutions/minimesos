@@ -8,7 +8,7 @@ import com.containersol.minimesos.container.AbstractContainer;
 public class ZooKeeper extends AbstractContainer {
 
     private static final String MESOS_LOCAL_IMAGE = "jplock/zookeeper";
-    public static final String REGISTRY_TAG = "3.4.5";
+    public static final String REGISTRY_TAG = "latest";
 
     private final String clusterId;
 

@@ -31,7 +31,6 @@ public class MesosClusterTest {
     @ClassRule
     public static final MesosCluster cluster = new MesosCluster(
         MesosClusterConfig.builder()
-            .numberOfSlaves(3)
             .zkUrl("mesos")
             .slaveResources(new String[]{
                     "ports(*):[9201-9201, 9301-9301]; cpus(*):0.2; mem(*):256; disk(*):200",

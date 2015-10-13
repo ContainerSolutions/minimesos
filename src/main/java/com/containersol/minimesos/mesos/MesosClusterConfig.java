@@ -51,7 +51,6 @@ public class MesosClusterConfig {
     public static class Builder {
 
         DockerClient dockerClient;
-        int numberOfSlaves = 3;
         String[] slaveResources = new String[]{};
         Integer mesosMasterPort = 5050;
         String zkUrl = null;
@@ -66,11 +65,6 @@ public class MesosClusterConfig {
 
         public Builder dockerClient(DockerClient dockerClient) {
             this.dockerClient = dockerClient;
-            return this;
-        }
-
-        public Builder numberOfSlaves(int numberOfSlaves) {
-            this.numberOfSlaves = numberOfSlaves;
             return this;
         }
 
@@ -116,14 +110,6 @@ public class MesosClusterConfig {
 
         public MesosClusterConfig build() {
 
-            if (numberOfSlaves <= 0) {
-                throw new IllegalStateException("At least one slave is required to run a mesos cluster");
-            }
-
-            if (slaveResources.length != numberOfSlaves) {
-                throw new IllegalStateException("Please provide one resource config for each slave");
-            }
-
             if (dockerClient == null) {
                 defaultDockerClient();
                 if (dockerClient == null) {
@@ -135,11 +121,12 @@ public class MesosClusterConfig {
                 zkUrl = "mesos";
             }
 
-            return new MesosClusterConfig(dockerClient, numberOfSlaves, slaveResources, mesosMasterPort, extraEnvironmentVariables, zkUrl, mesosMasterImage, mesosSlaveImage, mesosImageTag);
+            return new MesosClusterConfig(dockerClient, slaveResources.length, slaveResources, mesosMasterPort, extraEnvironmentVariables, zkUrl, mesosMasterImage, mesosSlaveImage, mesosImageTag);
         }
     }
 
     public int getNumberOfSlaves() {
         return numberOfSlaves;
     }
+
 }
