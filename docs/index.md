@@ -62,16 +62,29 @@ visible to the test, ensure the docker containers' IP addresses are
 available on the host, and then build and run the tests:
 
 ```
-$ docker-machine create -d virtualbox --virtualbox-memory 4096 mini-mesos
+# latest version of boot2docker.iso cannot be used
+$ docker-machine create -d virtualbox --virtualbox-memory 2048 --virtualbox-cpu-count 1 --virtualbox-boot2docker-url https://github.com/boot2docker/boot2docker/releases/download/v1.7.1/boot2docker.iso mini-mesos
 $ eval $(docker-machine env mini-mesos)
 $ sudo route delete 172.17.0.0/16; sudo route -n add 172.17.0.0/16 $(docker-machine ip ${DOCKER_MACHINE_NAME})
-$ mvn clean verify
+$ ./gradlew clean build --info --stacktrace
 ```
 
-In Idea, add the `docker-machine env` variables to the idea junit testing dialog. E.g.
+In Idea, add the ```docker-machine env mini-mesos``` variables to the idea junit testing dialog. E.g.
 
 ```
 DOCKER_TLS_VERIFY=1
 DOCKER_HOST=tcp://192.168.99.100:2376
 DOCKER_CERT_PATH=/home/user/.docker/machine/machines/mini-mesos
 ```
+
+### Installing docker-machine on mac
+
+Due to dependencies among versions of Docker, Mesos and docker-machine latest versions of can not be used
+ 
+```
+$ brew install homebrew/versions/docker171
+$ brew link docker171
+$ brew install docker-machine
+```
+
+

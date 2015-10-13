@@ -6,5 +6,7 @@ Testing infrastructure for Mesos frameworks.
 
 ## Documentation
 
+For installation, use and building
+
 [http://mini-mesos.readthedocs.org/](http://mini-mesos.readthedocs.org/)
 
