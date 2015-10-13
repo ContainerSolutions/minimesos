@@ -16,7 +16,7 @@ VERSION=`curl -s -I https://github.com/ContainerSolutions/mini-mesos/releases/la
 
 mkdir -p /usr/local/share/minimesos
 
-curl -sSL https://jitpack.io/com/github/ContainerSolutions/mini-mesos/$VERSION/mini-mesos-$VERSION.jar > /usr/local/share/minimesos/mini-mesos-$VERSION.jar
+curl -sSL https://jitpack.io/com/github/ContainerSolutions/mini-mesos/$VERSION/mini-mesos-all-$VERSION.jar > /usr/local/share/minimesos/mini-mesos-all-$VERSION.jar
 curl -sSL https://raw.githubusercontent.com/ContainerSolutions/mini-mesos/$VERSION/bin/minimesos > /usr/local/bin/minimesos
 
 chmod +x /usr/local/bin/minimesos
