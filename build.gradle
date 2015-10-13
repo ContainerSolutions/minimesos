@@ -75,6 +75,11 @@ mainClassName = "com.containersol.minimesos.main.Main"
 
 jar {
     baseName = "minimesos"
+}
+
+task fatJar(type: Jar) {
+    baseName = 'minimesos'
+    classifier = 'all'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     manifest {
         attributes(
@@ -83,10 +88,11 @@ jar {
         )
     }
     exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+    with jar
 }
 
 task copyJar(type: Copy) {
-    dependsOn 'jar'
+    dependsOn 'fatJar'
     rename { String fileName ->
         fileName.replace("-${project.version}", "")
     }
