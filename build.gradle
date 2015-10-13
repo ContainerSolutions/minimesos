@@ -78,7 +78,8 @@ jar {
 }
 
 task fatJar(type: Jar) {
-    baseName = 'minimesos-all'
+    baseName = 'minimesos'
+    classifier = 'all'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     manifest {
         attributes(
