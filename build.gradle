@@ -107,6 +107,10 @@ task copyExecutableJar(type: Copy) {
     into        'build/libs'
 }
 
+artifacts {
+    archives executableJar
+}
+
 afterEvaluate { project ->
     if (new File(project.projectDir, 'Dockerfile').exists()) {
         if (!project.hasProperty('imageName')) {
