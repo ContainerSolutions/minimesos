@@ -75,7 +75,6 @@ mainClassName = "com.containersol.minimesos.main.Main"
 
 jar {
     baseName = "minimesos"
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     manifest {
         attributes(
                 'Main-Class'                : mainClassName,
@@ -85,12 +84,26 @@ jar {
     exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
 }
 
-task copyJar(type: Copy) {
-    dependsOn 'jar'
-    rename { String fileName ->
-        fileName.replace("-${project.version}", "")
+task executableJar(type: Jar) {
+    baseName = "minimesos"
+    classifier = "all"
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+    manifest {
+        attributes(
+                'Main-Class'                : mainClassName,
+                'Implementation-Version'    : project.version
+        )
     }
-    from        "build/libs/minimesos-${project.version}.jar"
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+}
+
+task copyExecutableJar(type: Copy) {
+    dependsOn 'executableJar'
+    rename { String fileName ->
+        fileName.replace("-${project.version}-all", "")
+    }
+    from        "build/libs/minimesos-${project.version}-all.jar"
     into        'build/libs'
 }
 
@@ -144,4 +157,4 @@ afterEvaluate { project ->
     }
 }
 
-build.dependsOn copyJar
+assemble.dependsOn copyExecutableJar
