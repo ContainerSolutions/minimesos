@@ -91,10 +91,10 @@ $ brew install docker-machine
 
 Since version 0.3.0 mini-mesos uses 'flat' container structure, which means that all containers (agents, master, zookeeper) as well as all Docker executor tasks are run in the same Docker context - host machine.
 This has following benefits:
-1. Shared repository with the host Docker
-2. Transparency of your test-cluster.
-3. Ability to keep track of executor tasks
-4. Easy access to the logs
+  1. Shared repository with the host Docker
+  2. Transparency of your test-cluster.
+  3. Ability to keep track of executor tasks
+  4. Easy access to the logs
 
 However, you should account for this when developing a Mesos framework.
 By default, Mesos starts Docker containerized executor tasks with the ```--host``` mode.
@@ -102,7 +102,9 @@ Libprocess tries to bind on a loopback interface and fails to establish communic
 
 To work around this, start the executor using [```--bridge``` mode](https://issues.apache.org/jira/browse/MESOS-1621) and provide LIBPROCESS_IP environment variable with the IP address of the executor container, for example using this:
 
-```export LIBPROCESS_IP=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | head -n 1)
+``` 
+export LIBPROCESS_IP=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | head -n 1)
+
 ```
 
 This ensures your executor task will be assigned an interface to allow communication within the cluster.
