@@ -100,7 +100,8 @@ However, you should account for this when developing a Mesos framework.
 By default, Mesos starts Docker containerized executor tasks with the ```--host``` mode.
 Libprocess tries to bind on a loopback interface and fails to establish communication with the master node.
 
-To work around this, start the executor using (```--bridge``` mode)[https://issues.apache.org/jira/browse/MESOS-1621] and provide LIBPROCESS_IP environment variable with the IP address of the executor container, for example using this:
+To work around this, start the executor using [```--bridge``` mode](https://issues.apache.org/jira/browse/MESOS-1621) and provide LIBPROCESS_IP environment variable with the IP address of the executor container, for example using this:
+
 ```export LIBPROCESS_IP=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | head -n 1)
 ```
 
