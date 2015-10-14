@@ -1,5 +1,6 @@
 package com.containersol.minimesos;
 
+import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.mesos.DockerClientFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -7,6 +8,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.InternalServerErrorException;
 import com.github.dockerjava.api.NotFoundException;
 import com.github.dockerjava.api.model.Container;
+import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.IOUtils;
@@ -19,6 +21,7 @@ import com.containersol.minimesos.mesos.ZooKeeper;
 import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.MesosClusterStateResponse;
 import com.containersol.minimesos.util.Predicate;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
@@ -43,6 +46,8 @@ public class MesosCluster extends ExternalResource {
     private static Logger LOGGER = Logger.getLogger(MesosCluster.class);
 
     private static File miniMesosFile = new File(System.getProperty("user.home"), ".minimesos/minimesos.cluster");
+
+    private static DockerClient dockerClient = DockerClientFactory.build();
 
     private final List<AbstractContainer> containers = Collections.synchronizedList(new ArrayList<>());
 
@@ -85,6 +90,9 @@ public class MesosCluster extends ExternalResource {
         } catch (Throwable e) {
             LOGGER.error("Error during startup", e);
         }
+
+        Marathon marathon = new Marathon(this.config.dockerClient, clusterId, this.zkContainer);
+        addAndStartContainer(marathon);
 
         LOGGER.info("http://" + this.mesosMasterContainer.getIpAddress() + ":5050");
     }
@@ -201,8 +209,43 @@ public class MesosCluster extends ExternalResource {
         return clusterId;
     }
 
+    public static String getContainerIp(String clusterId, String role) {
+        List<Container> containers = dockerClient.listContainersCmd().exec();
+        for (Container container : containers) {
+            if (container.getNames()[0].contains("minimesos-" + role) && container.getNames()[0].contains(clusterId + "-")) {
+                return dockerClient.inspectContainerCmd(container.getId()).exec().getNetworkSettings().getIpAddress();
+            }
+        }
+        return null;
+    }
+
     public static void destroy() {
         String clusterId = readClusterId();
+
+        String marathonIp = getContainerIp(clusterId, "marathon");
+        if (marathonIp == null) {
+            LOGGER.error("Could not find IP address for cluster " + clusterId + " and role marathon");
+            System.exit(1);
+        }
+
+        String marathonEndpoint = "http://" + marathonIp + ":8080";
+        List<String> taskIds = new ArrayList<>();
+        try {
+            JSONObject tasksResponse = Unirest.get(marathonEndpoint + "/v2/tasks").asJson().getBody().getObject();
+            JSONArray tasks = tasksResponse.getJSONArray("tasks");
+            for (int i = 0; i < tasks.length(); i++) {
+                JSONObject task = tasks.getJSONObject(i);
+                String taskId = task.getString("id");
+                taskIds.add(taskId);
+            }
+        } catch (UnirestException e) {
+            LOGGER.error("Could not retrieve tasks from Marathon at " + marathonEndpoint);
+        }
+
+        JSONObject jsonNode = new JSONObject();
+        jsonNode.put("ids", new JSONArray(taskIds));
+        Unirest.post(marathonEndpoint + "/v2/tasks/delete").body(new JsonNode(jsonNode.toString()));
+
         if (clusterId != null) {
             destroyContainers(clusterId);
             miniMesosFile.deleteOnExit();
@@ -218,7 +261,6 @@ public class MesosCluster extends ExternalResource {
     }
 
     public static void printMasterIp(String clusterId) {
-        DockerClient dockerClient = DockerClientFactory.build();
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
             for (String name : container.getNames()) {
