@@ -1,6 +1,7 @@
 package com.containersol.minimesos;
 
 import com.containersol.minimesos.marathon.Marathon;
+import com.containersol.minimesos.marathon.MarathonClient;
 import com.containersol.minimesos.mesos.DockerClientFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -8,7 +9,6 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.InternalServerErrorException;
 import com.github.dockerjava.api.NotFoundException;
 import com.github.dockerjava.api.model.Container;
-import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.IOUtils;
@@ -21,7 +21,6 @@ import com.containersol.minimesos.mesos.ZooKeeper;
 import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.MesosClusterStateResponse;
 import com.containersol.minimesos.util.Predicate;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
@@ -223,28 +222,9 @@ public class MesosCluster extends ExternalResource {
         String clusterId = readClusterId();
 
         String marathonIp = getContainerIp(clusterId, "marathon");
-        if (marathonIp == null) {
-            LOGGER.error("Could not find IP address for cluster " + clusterId + " and role marathon");
-            System.exit(1);
+        if (marathonIp != null) {
+            MarathonClient.killAllApps(marathonIp);
         }
-
-        String marathonEndpoint = "http://" + marathonIp + ":8080";
-        List<String> taskIds = new ArrayList<>();
-        try {
-            JSONObject tasksResponse = Unirest.get(marathonEndpoint + "/v2/tasks").asJson().getBody().getObject();
-            JSONArray tasks = tasksResponse.getJSONArray("tasks");
-            for (int i = 0; i < tasks.length(); i++) {
-                JSONObject task = tasks.getJSONObject(i);
-                String taskId = task.getString("id");
-                taskIds.add(taskId);
-            }
-        } catch (UnirestException e) {
-            LOGGER.error("Could not retrieve tasks from Marathon at " + marathonEndpoint);
-        }
-
-        JSONObject jsonNode = new JSONObject();
-        jsonNode.put("ids", new JSONArray(taskIds));
-        Unirest.post(marathonEndpoint + "/v2/tasks/delete").body(new JsonNode(jsonNode.toString()));
 
         if (clusterId != null) {
             destroyContainers(clusterId);
