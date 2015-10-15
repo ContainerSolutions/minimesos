@@ -1,5 +1,7 @@
 package com.containersol.minimesos;
 
+import com.containersol.minimesos.marathon.Marathon;
+import com.containersol.minimesos.marathon.MarathonClient;
 import com.containersol.minimesos.mesos.DockerClientFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -44,6 +46,8 @@ public class MesosCluster extends ExternalResource {
 
     private static File miniMesosFile = new File(System.getProperty("user.home"), ".minimesos/minimesos.cluster");
 
+    private static DockerClient dockerClient = DockerClientFactory.build();
+
     private final List<AbstractContainer> containers = Collections.synchronizedList(new ArrayList<>());
 
     private final MesosClusterConfig config;
@@ -85,6 +89,9 @@ public class MesosCluster extends ExternalResource {
         } catch (Throwable e) {
             LOGGER.error("Error during startup", e);
         }
+
+        Marathon marathon = new Marathon(this.config.dockerClient, clusterId, this.zkContainer);
+        addAndStartContainer(marathon);
 
         LOGGER.info("http://" + this.mesosMasterContainer.getIpAddress() + ":5050");
     }
@@ -201,8 +208,24 @@ public class MesosCluster extends ExternalResource {
         return clusterId;
     }
 
+    public static String getContainerIp(String clusterId, String role) {
+        List<Container> containers = dockerClient.listContainersCmd().exec();
+        for (Container container : containers) {
+            if (container.getNames()[0].contains("minimesos-" + role) && container.getNames()[0].contains(clusterId + "-")) {
+                return dockerClient.inspectContainerCmd(container.getId()).exec().getNetworkSettings().getIpAddress();
+            }
+        }
+        return null;
+    }
+
     public static void destroy() {
         String clusterId = readClusterId();
+
+        String marathonIp = getContainerIp(clusterId, "marathon");
+        if (marathonIp != null) {
+            MarathonClient.killAllApps(marathonIp);
+        }
+
         if (clusterId != null) {
             destroyContainers(clusterId);
             miniMesosFile.deleteOnExit();
@@ -218,7 +241,6 @@ public class MesosCluster extends ExternalResource {
     }
 
     public static void printMasterIp(String clusterId) {
-        DockerClient dockerClient = DockerClientFactory.build();
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
             for (String name : container.getNames()) {
