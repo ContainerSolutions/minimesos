@@ -12,7 +12,7 @@ if ! command_exists curl; then
 	exit 1
 fi
 
-VERSION=`curl -s -I https://github.com/ContainerSolutions/mini-mesos/releases/latest | awk '/Location: (.*)/ {print $2}' | tail -n 1 | cut -d '/' -f 8 | tr -d '\r'`
+VERSION=0.3.0
 
 mkdir -p /usr/local/share/minimesos
 
