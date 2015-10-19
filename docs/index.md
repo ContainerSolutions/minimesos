@@ -87,7 +87,9 @@ $ eval $(docker-machine env minimesos)
 $ sudo route delete 172.17.0.0/16; sudo route -n add 172.17.0.0/16 $(docker-machine ip ${DOCKER_MACHINE_NAME})
 ```
 
-### Building minimesos
+When VM is ready you can either build latest version of minimesos or install a released version
+
+### Building latest version of minimesos
 
 In CLI
 
@@ -103,39 +105,33 @@ DOCKER_HOST=tcp://192.168.99.100:2376
 DOCKER_CERT_PATH=/home/user/.docker/machine/machines/minimesos
 ```
 
-### Installing minimesos on docker-machine
-
-SSH to docker VM
+One of the minimesos build results is new docker image. E.g.
 
 ```
-$ docker-machine ssh minimesos
+$ docker images
+REPOSITORY                      TAG                     IMAGE ID            CREATED             VIRTUAL SIZE
+containersol/minimesos          latest                  cf854cfb1865        2 minutes ago       529.3 MB
 ```
 
-and you'll see something like 
+Running ```./gradlew install``` will make latest version of minimesos script available on the PATH
+
+### Installing a released vesion of minimesos on VM
+
+Install minimesos on MAC
 
 ```
-                        ##         .
-                  ## ## ##        ==
-               ## ## ## ## ##    ===
-           /"""""""""""""""""\___/ ===
-      ~~~ {~~ ~~~~ ~~~ ~~~~ ~~~ ~ /  ===- ~~~
-           \______ o           __/
-             \    \         __/
-              \____\_______/
- _                 _   ____     _            _
-| |__   ___   ___ | |_|___ \ __| | ___   ___| | _____ _ __
-| '_ \ / _ \ / _ \| __| __) / _` |/ _ \ / __| |/ / _ \ '__|
-| |_) | (_) | (_) | |_ / __/ (_| | (_) | (__|   <  __/ |
-|_.__/ \___/ \___/ \__|_____\__,_|\___/ \___|_|\_\___|_|
-Boot2Docker version 1.7.1, build master : c202798 - Wed Jul 15 00:16:02 UTC 2015
-Docker version 1.7.1, build 786b29d
-docker@minimesos:$
+$ curl -sSL https://raw.githubusercontent.com/ContainerSolutions/mini-mesos/master/bin/install | sudo sh
 ```
 
-Install minimesos
+try running it from CLI
 
 ```
-docker@minimesos:$ curl -sSL https://raw.githubusercontent.com/ContainerSolutions/mini-mesos/master/bin/install | sudo sh
+$ minimesos up
+http://172.17.2.12:5050
+$ curl -s http://172.17.2.12:5050/state.json | jq ".version"
+0.22.1
+$ minimesos destroy
+Destroyed minimesos cluster 3878417609
 ```
 
 ## Caveats

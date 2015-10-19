@@ -12,12 +12,9 @@ if ! command_exists curl; then
 	exit 1
 fi
 
-VERSION=0.4.0
-
-mkdir -p /usr/local/share/minimesos
+VERSION=feature/docker-machine
 
 curl -sSL -X HEAD https://jitpack.io/com/github/ContainerSolutions/mini-mesos/$VERSION/pom
-curl -sSL https://jitpack.io/com/github/ContainerSolutions/mini-mesos/$VERSION/mini-mesos-$VERSION-all.jar > /usr/local/share/minimesos/mini-mesos.jar
 curl -sSL https://raw.githubusercontent.com/ContainerSolutions/mini-mesos/$VERSION/bin/minimesos > /usr/local/bin/minimesos
 
 chmod +x /usr/local/bin/minimesos
