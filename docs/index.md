@@ -56,7 +56,7 @@ A possible testing scenario could be:
 
 ## Building and running on MAC with docker-machine
 
-### Installing docker-machine on mac
+### Installing docker-machine on MAC
 
 Due to dependencies among versions of Docker, Mesos and docker-machine latest versions of these packages can not be used
  
