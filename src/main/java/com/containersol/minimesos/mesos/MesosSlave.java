@@ -82,7 +82,7 @@ public class MesosSlave extends AbstractContainer {
                 .withLinks(new Link(this.master, "mini-mesos-master"))
                 .withBinds(
                         Bind.parse("/var/lib/docker:/var/lib/docker"),
-                        Bind.parse("/sys/:/sys/"),
+                        Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),
                         Bind.parse(String.format("%s:/usr/bin/docker", dockerBin)),
                         Bind.parse("/var/run/docker.sock:/var/run/docker.sock")
                 );
