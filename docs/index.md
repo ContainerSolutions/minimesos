@@ -68,7 +68,7 @@ $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/maste
 ```  
 
 Due to dependencies among versions of Docker, Mesos and docker-machine latest versions of these packages can not be used. It might be very tempting to use [Docker Toolbox](https://www.docker.com/toolbox), 
-however we recommend to refrain from it as you loose control over used versions
+however we recommend to refrain from it as you lose control over used versions
  
 ```
 $ brew install homebrew/versions/docker171
