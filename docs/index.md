@@ -87,7 +87,7 @@ $ eval $(docker-machine env minimesos)
 $ sudo route delete 172.17.0.0/16; sudo route -n add 172.17.0.0/16 $(docker-machine ip ${DOCKER_MACHINE_NAME})
 ```
 
-When VM is ready you can either build latest version of minimesos or install a released version
+When VM is ready you can either *build latest version* of minimesos or *install a released version*
 
 ### Building latest version of minimesos
 
@@ -123,7 +123,11 @@ Install minimesos on MAC
 $ curl -sSL https://raw.githubusercontent.com/ContainerSolutions/mini-mesos/master/bin/install | sudo sh
 ```
 
-try running it from CLI
+The command above makes minimesos script available on the PATH
+
+### Running minimesos from CLI
+
+*NOT WORKING YET*
 
 ```
 $ minimesos up
