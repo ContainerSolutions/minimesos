@@ -5,7 +5,7 @@ Testing infrastructure for Mesos frameworks.
 ## Installing
 
 ```
-$ sudo curl http://minimesos.org/install | bash
+$ curl https://raw.githubusercontent.com/ContainerSolutions/mini-mesos/master/bin/install | bash
 ```
 
 This installs the minimesos jar into ``/usr/local/share/minimesos`` and the minimesos script in ``/usr/local/bin``
