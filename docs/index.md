@@ -1,4 +1,4 @@
-# Mini Mesos
+# minimesos
 
 Testing infrastructure for Mesos frameworks. 
 
@@ -50,7 +50,7 @@ A possible testing scenario could be:
  4. Poll the state of the Mesos cluster to verify that you framework is running
  5. The test utilities take care of stopping and removing the Mesos cluster
 
-![Mini Mesos](mini-mesos.gif?raw=true "Mini Mesos")
+![Mini Mesos](mini-mesos.gif?raw=true "minimesos")
 
 ![Creative Commons Licence](cc-cc.png "Creative Commons Licence") Licenced under CC BY [remember to play](http://remembertoplay.co/) in collaboration with [Container Solutions](http://www.container-solutions.com/)
 
@@ -58,7 +58,17 @@ A possible testing scenario could be:
 
 ### Installing docker-machine on MAC
 
-Due to dependencies among versions of Docker, Mesos and docker-machine latest versions of these packages can not be used
+If Homebrew is not installed on your machine yet
+
+```
+# Install Command Line Tools.
+$ xcode-select --install
+# Install Homebrew.
+$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+```  
+
+Due to dependencies among versions of Docker, Mesos and docker-machine latest versions of these packages can not be used. It might be very tempting to use [Docker Toolbox](https://www.docker.com/toolbox), 
+however we recommend to refrain from it as you loose control over used versions
  
 ```
 $ brew install homebrew/versions/docker171
@@ -66,18 +76,18 @@ $ brew link docker171
 $ brew install docker-machine
 ```
 
-### Creating VM for mini-mesos
+### Creating VM for minimesos
 
 Create a docker machine, make sure its environment variables are visible to the test, ensure the docker containers' IP addresses are available on the host
 
 ```
 # latest version of boot2docker.iso cannot be used
-$ docker-machine create -d virtualbox --virtualbox-memory 2048 --virtualbox-cpu-count 1 --virtualbox-boot2docker-url https://github.com/boot2docker/boot2docker/releases/download/v1.7.1/boot2docker.iso mini-mesos
-$ eval $(docker-machine env mini-mesos)
+$ docker-machine create -d virtualbox --virtualbox-memory 2048 --virtualbox-cpu-count 1 --virtualbox-boot2docker-url https://github.com/boot2docker/boot2docker/releases/download/v1.7.1/boot2docker.iso minimesos
+$ eval $(docker-machine env minimesos)
 $ sudo route delete 172.17.0.0/16; sudo route -n add 172.17.0.0/16 $(docker-machine ip ${DOCKER_MACHINE_NAME})
 ```
 
-### Building Minimesos
+### Building minimesos
 
 In CLI
 
@@ -85,18 +95,52 @@ In CLI
 $ ./gradlew clean build --info --stacktrace
 ```
 
-In Idea, add the ```docker-machine env mini-mesos``` variables to the idea junit testing dialog. E.g.
+In Idea, add the ```docker-machine env minimesos``` variables to the Idea junit testing dialog. E.g.
 
 ```
 DOCKER_TLS_VERIFY=1
 DOCKER_HOST=tcp://192.168.99.100:2376
-DOCKER_CERT_PATH=/home/user/.docker/machine/machines/mini-mesos
+DOCKER_CERT_PATH=/home/user/.docker/machine/machines/minimesos
 ```
 
+### Installing minimesos on docker-machine
+
+SSH to docker VM
+
+```
+$ docker-machine ssh minimesos
+```
+
+and you'll see something like 
+
+```
+                        ##         .
+                  ## ## ##        ==
+               ## ## ## ## ##    ===
+           /"""""""""""""""""\___/ ===
+      ~~~ {~~ ~~~~ ~~~ ~~~~ ~~~ ~ /  ===- ~~~
+           \______ o           __/
+             \    \         __/
+              \____\_______/
+ _                 _   ____     _            _
+| |__   ___   ___ | |_|___ \ __| | ___   ___| | _____ _ __
+| '_ \ / _ \ / _ \| __| __) / _` |/ _ \ / __| |/ / _ \ '__|
+| |_) | (_) | (_) | |_ / __/ (_| | (_) | (__|   <  __/ |
+|_.__/ \___/ \___/ \__|_____\__,_|\___/ \___|_|\_\___|_|
+Boot2Docker version 1.7.1, build master : c202798 - Wed Jul 15 00:16:02 UTC 2015
+Docker version 1.7.1, build 786b29d
+docker@minimesos:$
+```
+
+Install minimesos
+
+```
+docker@minimesos:$ curl -sSL https://raw.githubusercontent.com/ContainerSolutions/mini-mesos/master/bin/install | sudo sh
+```
 
 ## Caveats
 
-Since version 0.3.0 mini-mesos uses 'flat' container structure, which means that all containers (agents, master, zookeeper) as well as all Docker executor tasks are run in the same Docker context - host machine.
+Since version 0.3.0 minimesos uses 'flat' container structure, which means that all containers (agents, master, zookeeper) as well as all Docker executor tasks are run in the same Docker context - host machine.
 This has following benefits:
   1. Shared repository with the host Docker
   2. Transparency of your test-cluster.
