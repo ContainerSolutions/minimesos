@@ -1,3 +1,9 @@
 #!/bin/sh
 
-java -jar /usr/local/share/minimesos/mini-mesos.jar $@
+docker run -d containersol/minimesos java -jar /usr/local/share/minimesos/mini-mesos.jar $@
+docker run -e DOCKER_HOST="tcp://192.168.99.100:2376" -e DOCKER_MACHINE_NAME="mini-mesos" -d containersol/minimesos java -jar /usr/local/share/minimesos/mini-mesos.jar up
+docker run -a stdout -a stderr -e DOCKER_HOST=$DOCKER_HOST -e DOCKER_MACHINE_NAME=$DOCKER_MACHINE_NAME -e DOCKER_TLS_VERIFY=$DOCKER_TLS_VERIFY -e DOCKER_CERT_PATH=$DOCKER_CERT_PATH containersol/minimesos java -jar /usr/local/share/minimesos/mini-mesos.jar up
+docker run -a stdout -a stderr -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/usr/bin/docker -e DOCKER_MACHINE_NAME=$DOCKER_MACHINE_NAME -e DOCKER_TLS_VERIFY=$DOCKER_TLS_VERIFY -e DOCKER_CERT_PATH=$DOCKER_CERT_PATH containersol/minimesos java -jar /usr/local/share/minimesos/mini-mesos.jar up
+
+
+docker run -a stdout -a stderr -v /var/lib/docker:/var/lib/docker -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/usr/bin/docker -v /sys:/sys containersol/minimesos up
