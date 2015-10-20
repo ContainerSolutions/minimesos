@@ -105,10 +105,6 @@ task installMinimesosScript(type: Copy) {
     into        "/usr/local/bin"
 }
 
-task taskCopyFilesForDocker(type: Copy) {
-    dependsOn "copyExecutableJar"
-}
-
 task copyExecutableJar(type: Copy) {
     dependsOn 'executableJar'
     rename { String fileName ->
@@ -116,6 +112,21 @@ task copyExecutableJar(type: Copy) {
     }
     from        "build/libs/minimesos-${project.version}-all.jar"
     into        'build/libs'
+}
+
+task copyFilesForDocker(type: Copy) {
+    dependsOn   'copyExecutableJar'
+    from        "build/libs/minimesos.jcd /ar"
+    into        'build/docker'
+    rename { String fileName ->
+        fileName.replace("-${project.version}", "")
+    }
+}
+
+task copyDockerfile(type: Copy) {
+    dependsOn   'copyFilesForDocker'
+    from        "Dockerfile"
+    into        'build/docker'
 }
 
 artifacts {
@@ -138,8 +149,8 @@ afterEvaluate { project ->
                 docker.certPath = new File(System.env.DOCKER_CERT_PATH)
             }
         }
-        task buildDockerImage(type: DockerBuildImage, dependsOn: [taskCopyFilesForDocker], description: 'build Docker image') {
-            inputDir = file(project.projectDir)
+        task buildDockerImage(type: DockerBuildImage, dependsOn: [copyDockerfile], description: 'build Docker image') {
+            inputDir = new File("build/docker")
             tag = project.imageName
         }
         project.build.dependsOn buildDockerImage
