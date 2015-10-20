@@ -27,9 +27,11 @@ public class Main {
         commandUp = new CommandUp();
         CommandDestroy commandDestroy = new CommandDestroy();
         CommandHelp commandHelp = new CommandHelp();
+        CommandInstall commandInstall = new CommandInstall();
 
         jc.addCommand("up", commandUp);
         jc.addCommand("destroy", commandDestroy);
+        jc.addCommand("install", commandInstall);
         jc.addCommand("help", commandHelp);
         jc.parseWithoutValidation(args);
 
@@ -50,6 +52,8 @@ public class Main {
             case "destroy":
                 MesosCluster.destroy();
                 break;
+            case "install":
+                MesosCluster.install(commandInstall.getMarathonFile());
             case "help":
                 jc.usage();
         }

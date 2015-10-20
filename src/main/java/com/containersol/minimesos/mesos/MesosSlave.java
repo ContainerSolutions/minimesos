@@ -21,6 +21,8 @@ public class MesosSlave extends AbstractContainer {
     public final String mesosLocalImage;
     public final String registryTag;
 
+    private ZooKeeper zooKeeper;
+
     protected final String resources;
 
     protected final String portNumber;
@@ -31,7 +33,7 @@ public class MesosSlave extends AbstractContainer {
 
     private final String clusterId;
 
-    public MesosSlave(DockerClient dockerClient, String resources, String portNumber, String zkUrl, String master, String mesosLocalImage, String registryTag, String clusterId) {
+    public MesosSlave(DockerClient dockerClient, String resources, String portNumber, String zkUrl, String master, String mesosLocalImage, String registryTag, String clusterId, ZooKeeper zooKeeper) {
         super(dockerClient);
         this.clusterId = clusterId;
         this.zkUrl = zkUrl;
@@ -40,6 +42,7 @@ public class MesosSlave extends AbstractContainer {
         this.master = master;
         this.mesosLocalImage = mesosLocalImage;
         this.registryTag = registryTag;
+        this.zooKeeper = zooKeeper;
     }
 
     @Override
@@ -79,7 +82,8 @@ public class MesosSlave extends AbstractContainer {
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
                 .withPid("host")
-                .withLinks(new Link(this.master, "mini-mesos-master"))
+                .withLinks(new Link(this.master, "minimesos-master"))
+                .withLinks(new Link(this.zooKeeper.getIpAddress(), "minimesos-zookeeper"))
                 .withBinds(
                         Bind.parse("/var/lib/docker:/var/lib/docker"),
                         Bind.parse("/sys/:/sys/"),

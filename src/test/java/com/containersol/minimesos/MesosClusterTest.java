@@ -96,7 +96,8 @@ public class MesosClusterTest {
             InspectContainerResponse exec = cluster.getMesosMasterContainer().getOuterDockerClient().inspectContainerCmd(container.getContainerId()).exec();
             List<Link> links = Arrays.asList(exec.getHostConfig().getLinks());
             for (Link link : links) {
-                Assert.assertEquals("mini-mesos-master", link.getAlias());
+                Assert.assertEquals("minimesos-master", link.getAlias());
+                Assert.assertEquals("minimesos-zookeeper", link.getAlias());
             }
         }
     }
@@ -125,7 +126,7 @@ public class MesosClusterTest {
                 cluster.getZkUrl(),
                 cluster.getMesosMasterContainer().getContainerId(),
                 "mesosphere/mesos-slave",
-                "0.22.1-1.0.ubuntu1404", cluster.getClusterId()) {
+                "0.22.1-1.0.ubuntu1404", cluster.getClusterId(), cluster.getZkContainer()) {
 
             @Override
             protected CreateContainerCmd dockerCommand() {
@@ -156,6 +157,12 @@ public class MesosClusterTest {
                 return cb.toString().contains("Received status update TASK_FINISHED for task test-cmd");
             }
         });
+    }
+
+    @Test
+    public void testMesosInstall() {
+        MesosCluster.install("src/test/resources/marathon.json");
+
     }
 
 }

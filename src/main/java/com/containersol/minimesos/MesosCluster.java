@@ -81,7 +81,7 @@ public class MesosCluster extends ExternalResource {
         try {
             mesosSlaves = new MesosSlave[config.getNumberOfSlaves()];
             for (int i = 0; i < this.config.getNumberOfSlaves(); i++) {
-                mesosSlaves[i] = new MesosSlave(this.config.dockerClient, config.slaveResources[i], "5051", this.zkUrl, mesosMasterContainer.getContainerId(), this.config.mesosSlaveImage, this.config.mesosImageTag, clusterId);
+                mesosSlaves[i] = new MesosSlave(this.config.dockerClient, config.slaveResources[i], "5051", this.zkUrl, mesosMasterContainer.getContainerId(), this.config.mesosSlaveImage, this.config.mesosImageTag, clusterId, this.zkContainer);
                 addAndStartContainer(mesosSlaves[i]);
             }
             // wait until the given number of slaves are registered
@@ -253,4 +253,11 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
+    public static void install(String marathonFile) {
+        String clusterId = readClusterId();
+
+        String marathonIp = getContainerIp(clusterId, "marathon");
+
+        MarathonClient.deployFramework(marathonIp, marathonFile);
+    }
 }
