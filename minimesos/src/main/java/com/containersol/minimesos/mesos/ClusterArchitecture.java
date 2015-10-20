@@ -1,6 +1,7 @@
 package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.container.AbstractContainer;
+import com.containersol.minimesos.marathon.Marathon;
 import com.github.dockerjava.api.DockerClient;
 import org.apache.log4j.Logger;
 
@@ -171,6 +172,13 @@ public class ClusterArchitecture {
                 throw new MesosArchitectureException("ZooKeeper is required by Mesos. You cannot add a Mesos node until you have created a ZooKeeper node. Please add a ZooKeeper node first.");
             }
             return withContainer(slave::apply, Filter.zooKeeper());
+        }
+
+        public Builder withMarathon(Function<ZooKeeper, Marathon> marathon) {
+            if (!isPresent(Filter.zooKeeper())) {
+                throw new MesosArchitectureException("ZooKeeper is required by Mesos. You cannot add a Mesos node until you have created a ZooKeeper node. Please add a ZooKeeper node first.");
+            }
+            return withContainer(marathon::apply, Filter.zooKeeper());
         }
 
         /**

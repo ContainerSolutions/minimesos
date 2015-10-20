@@ -3,6 +3,7 @@ package com.containersol.minimesos.main;
 import com.beust.jcommander.JCommander;
 import com.containersol.minimesos.MesosCluster;
 import com.containersol.minimesos.marathon.Marathon;
+import com.containersol.minimesos.marathon.MarathonClient;
 import com.containersol.minimesos.mesos.*;
 import com.github.dockerjava.api.DockerClient;
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ public class Main {
         CommandDestroy commandDestroy = new CommandDestroy();
         CommandHelp commandHelp = new CommandHelp();
         CommandInfo commandInfo = new CommandInfo();
+        CommandInstall commandInstall = new CommandInstall();
 
         jc.addCommand("up", commandUp);
         jc.addCommand("destroy", commandDestroy);
@@ -57,6 +59,11 @@ public class Main {
             case "destroy":
                 MesosCluster.destroy();
                 break;
+            case "install":
+                String marathonFile = commandInstall.getMarathonFile();
+                String marathonIp = MesosCluster.getContainerIp(MesosCluster.readClusterId(), "marathon");
+                MarathonClient.deployFramework(marathonIp, marathonFile);
+                break;
             case "help":
                 jc.usage();
         }
@@ -77,7 +84,7 @@ public class Main {
                     .withZooKeeper()
                     .withMaster(zooKeeper -> new MesosMasterExtended( dockerClient, zooKeeper, MesosMaster.MESOS_MASTER_IMAGE, mesosImageTag, new TreeMap<>(), exposedHostPorts))
                     .withSlave(zooKeeper -> new MesosSlaveExtended( dockerClient, "ports(*):[33000-34000]", "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, mesosImageTag))
-                    .withContainer( zooKeeper -> new Marathon(dockerClient, zooKeeper, exposedHostPorts), ClusterContainers.Filter.zooKeeper() )
+                    .withMarathon( zooKeeper -> new Marathon(dockerClient, zooKeeper, exposedHostPorts) )
                     .build();
 
             MesosCluster cluster = new MesosCluster( config );

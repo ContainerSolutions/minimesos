@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.Link;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -45,6 +46,7 @@ public class MesosSlave extends MesosContainer {
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
                 .withPid("host")
+                .withLinks(new Link(getZooKeeperContainer().getContainerId(), "minimesos-zookeeper"))
                 .withBinds(
                         Bind.parse("/var/run/docker.sock:/var/run/docker.sock"),
                         Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup")

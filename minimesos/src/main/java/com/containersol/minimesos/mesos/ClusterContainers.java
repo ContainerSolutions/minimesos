@@ -1,6 +1,7 @@
 package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.container.AbstractContainer;
+import com.containersol.minimesos.marathon.Marathon;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,6 +75,10 @@ public class ClusterContainers {
 
         public static Predicate<AbstractContainer> mesosSlave() {
             return abstractContainer -> abstractContainer instanceof MesosSlave;
+        }
+
+        public static Predicate<AbstractContainer> marathon() {
+            return abstractContainer -> abstractContainer instanceof Marathon;
         }
     }
 

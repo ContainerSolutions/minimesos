@@ -26,6 +26,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.*;
+
 public class MesosClusterTest {
 
     protected static final String resources = MesosSlave.DEFAULT_PORT_RESOURCES + "; cpus(*):0.2; mem(*):256; disk(*):200";
@@ -99,10 +101,13 @@ public class MesosClusterTest {
         List<MesosSlave> containers = Arrays.asList(CLUSTER.getSlaves());
         for (MesosSlave container : containers) {
             InspectContainerResponse exec = CONFIG.dockerClient.inspectContainerCmd(container.getContainerId()).exec();
+
             List<Link> links = Arrays.asList(exec.getHostConfig().getLinks());
-            for (Link link : links) {
-                Assert.assertEquals("minimesos-master", link.getAlias());
-            }
+
+            assertNotNull( links );
+            assertEquals( "link to zookeeper is expected", 1, links.size() );
+            assertEquals( "minimesos-zookeeper", links.get(0).getAlias() );
+
         }
     }
 

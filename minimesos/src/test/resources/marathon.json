@@ -1,0 +1,13 @@
+{
+  "id": "elasticsearch-mesos-scheduler",
+  "uris": [
+    "file:///home/frank/src/mesos-elasticsearch/scheduler/build/libs/elasticsearch-mesos-scheduler-0.4.3.jar"
+  ],
+  "cmd": "java -jar elasticseach-mesos-scheduler-0.4.3.jar --zookeeperMesosUrl zk://minimesos-zookeeper:2181/mesos",
+  "cpus": 0.2,
+  "mem": 512.0,
+  "env": {
+    "JAVA_OPTS": "-Xms128m -Xmx256m"
+  },
+  "instances": 1
+}

@@ -57,6 +57,10 @@ public abstract class MesosContainer extends AbstractContainer {
         return envs;
     }
 
+    public ZooKeeper getZooKeeperContainer() {
+        return zooKeeperContainer;
+    }
+
     public String getFormattedZKAddress() {
         return getFormattedZKAddress(zooKeeperContainer);
     }

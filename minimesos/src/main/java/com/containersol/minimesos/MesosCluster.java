@@ -56,6 +56,7 @@ public class MesosCluster extends ExternalResource {
     private static String clusterId;
 
 
+
     /**
      * Create a new cluster with a specified cluster architecture.
      * @param clusterArchitecture Represents the layout of the cluster. See {@link ClusterArchitecture} and {@link ClusterUtil}
@@ -186,6 +187,10 @@ public class MesosCluster extends ExternalResource {
 
     public ZooKeeper getZkContainer() {
         return (ZooKeeper) clusterArchitecture.getClusterContainers().getOne(ClusterContainers.Filter.zooKeeper()).get();
+    }
+
+    public Marathon getMarathonContainer() {
+        return (Marathon) clusterArchitecture.getClusterContainers().getOne(ClusterContainers.Filter.marathon()).get();
     }
 
     public void waitForState(final Predicate<State> predicate, int seconds) {
@@ -331,6 +336,15 @@ public class MesosCluster extends ExternalResource {
                 }
             }
         }
+    }
+
+    public void install(String marathonFile) {
+        String marathonIp = getMarathonContainer().getIpAddress();
+        MarathonClient.deployFramework(marathonIp, marathonFile);
+    }
+
+    public String getStateUrl() {
+        return "http://" + getMesosMasterContainer().getIpAddress() + ":5050/state.json";
     }
 
 }
