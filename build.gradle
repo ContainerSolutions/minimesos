@@ -116,7 +116,7 @@ task copyExecutableJar(type: Copy) {
 
 task copyFilesForDocker(type: Copy) {
     dependsOn   'copyExecutableJar'
-    from        "build/libs/minimesos.jcd /ar"
+    from        "build/libs/minimesos.jar"
     into        'build/docker'
     rename { String fileName ->
         fileName.replace("-${project.version}", "")
