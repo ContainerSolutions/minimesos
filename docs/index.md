@@ -127,7 +127,10 @@ The command above makes minimesos script available on the PATH
 
 ### Running minimesos from CLI
 
-*NOT WORKING YET*
+Execution of minimesos from CLI works only from locations under ```/Users```, which is mapped to VM.
+
+To create minimesos cluster execute ```minimesos up```. It will create temporary container with minimesos process, which will start other containers and will exit.
+When cluster is started ```.minimesos/minimesos.cluster``` file with cluster ID is created in local directory. This file is destroyed with ```minimesos destroy```
 
 ```
 $ minimesos up
@@ -137,6 +140,20 @@ $ curl -s http://172.17.2.12:5050/state.json | jq ".version"
 $ minimesos destroy
 Destroyed minimesos cluster 3878417609
 ```
+
+### Mappings of volumes
+
+The table below is an attempt to summarize mappings, which enable execution of minimesos
+
+| MAC Host        | boot2docker VM        | minimesos container           |
+| --------------- | --------------------- | ----------------------------- |
+| $PWD in /Users  | $PWD in /Users        | ${user.home} = /tmp/minimesos |
+| $PWD/.minimesos | $PWD/.minimesos       | /tmp/minimesos/.minimesos     |
+|                 | /var/lib/docker       | /var/lib/docker               |
+|                 | /var/run/docker.sock  | /var/run/docker.sock          |
+|                 | /usr/local/bin/docker | /usr/local/bin/docker         |
+|                 | /sys/fs/cgroup        | /sys/fs/cgroup                |
+
 
 ## Caveats
 
