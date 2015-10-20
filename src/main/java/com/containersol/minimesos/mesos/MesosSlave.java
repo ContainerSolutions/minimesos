@@ -65,11 +65,13 @@ public class MesosSlave extends AbstractContainer {
     }
 
     public CreateContainerCmd getBaseCommand() {
-        String dockerBin = "/usr/bin/docker";
 
-        if (!(new File(dockerBin).exists())) {
+        String dockerBin = "/usr/bin/docker";
+        File dockerBinFile = new File(dockerBin);
+        if (!(dockerBinFile.exists() && dockerBinFile.canExecute())) {
             dockerBin = "/usr/local/bin/docker";
-            if (!(new File(dockerBin).exists())) {
+            dockerBinFile = new File(dockerBin);
+            if (!(dockerBinFile.exists() && dockerBinFile.canExecute() )) {
                 LOGGER.error("Docker binary not found in /usr/local/bin or /usr/bin. Creating containers will most likely fail.");
             }
         }
@@ -95,14 +97,6 @@ public class MesosSlave extends AbstractContainer {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        String dockerBin = "/usr/bin/docker";
-
-        if (!(new File(dockerBin).exists())) {
-            dockerBin = "/usr/local/bin/docker";
-            if (!(new File(dockerBin).exists())) {
-                LOGGER.error("Docker binary not found in /usr/local/bin or /usr/bin. Creating containers will most likely fail.");
-            }
-        }
         ArrayList<ExposedPort> exposedPorts= new ArrayList<>();
         exposedPorts.add(new ExposedPort(Integer.parseInt(this.portNumber)));
         try {
