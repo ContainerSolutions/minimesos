@@ -5,7 +5,7 @@ Testing infrastructure for Mesos frameworks.
 ## Installing
 
 ```
-$ curl https://raw.githubusercontent.com/ContainerSolutions/mini-mesos/master/bin/install | bash
+$ curl https://raw.githubusercontent.com/ContainerSolutions/minimesos/master/bin/install | bash
 ```
 
 This installs the minimesos jar into ``/usr/local/share/minimesos`` and the minimesos script in ``/usr/local/bin``
@@ -50,7 +50,7 @@ A possible testing scenario could be:
  4. Poll the state of the Mesos cluster to verify that you framework is running
  5. The test utilities take care of stopping and removing the Mesos cluster
 
-![Mini Mesos](mini-mesos.gif?raw=true "minimesos")
+![Mini Mesos](minimesos.gif?raw=true "minimesos")
 
 ![Creative Commons Licence](cc-cc.png "Creative Commons Licence") Licenced under CC BY [remember to play](http://remembertoplay.co/) in collaboration with [Container Solutions](http://www.container-solutions.com/)
 
@@ -120,7 +120,7 @@ Running ```./gradlew install``` will make latest version of minimesos script ava
 Install minimesos on MAC
 
 ```
-$ curl -sSL https://raw.githubusercontent.com/ContainerSolutions/mini-mesos/master/bin/install | sudo sh
+$ curl -sSL https://raw.githubusercontent.com/ContainerSolutions/minimesos/master/bin/install | sudo sh
 ```
 
 The command above makes minimesos script available on the PATH

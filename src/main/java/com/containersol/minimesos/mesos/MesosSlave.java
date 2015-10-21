@@ -81,7 +81,7 @@ public class MesosSlave extends AbstractContainer {
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
                 .withPid("host")
-                .withLinks(new Link(this.master, "mini-mesos-master"))
+                .withLinks(new Link(this.master, "minimesos-master"))
                 .withBinds(
                         Bind.parse("/var/lib/docker:/var/lib/docker"),
                         Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),

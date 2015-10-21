@@ -96,7 +96,7 @@ public class MesosClusterTest {
             InspectContainerResponse exec = cluster.getMesosMasterContainer().getOuterDockerClient().inspectContainerCmd(container.getContainerId()).exec();
             List<Link> links = Arrays.asList(exec.getHostConfig().getLinks());
             for (Link link : links) {
-                Assert.assertEquals("mini-mesos-master", link.getAlias());
+                Assert.assertEquals("minimesos-master", link.getAlias());
             }
         }
     }

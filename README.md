@@ -8,5 +8,5 @@ Testing infrastructure for Mesos frameworks.
 
 For installation, use and building
 
-[http://mini-mesos.readthedocs.org/](http://mini-mesos.readthedocs.org/)
+[http://minimesos.readthedocs.org/](http://minimesos.readthedocs.org/)
 
