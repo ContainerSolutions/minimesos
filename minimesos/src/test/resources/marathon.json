@@ -3,7 +3,7 @@
   "uris": [
     "file:///home/frank/src/minimesos/src/test/resources/elasticsearch-mesos-scheduler-0.5.0.jar"
   ],
-  "cmd": "java -jar elasticsearch-mesos-scheduler-0.5.0.jar --zookeeperMesosUrl zk://minimesos-zookeeper:2181/mesos",
+  "cmd": "java -jar elasticsearch-mesos-scheduler-0.5.0.jar --zookeeperMesosUrl zk://minimesos-zookeeper:2181/mesos  --javaHome /usr/lib/jvm/java-8-openjdk-amd64/bin --frameworkUseDocker false",
   "cpus": 0.2,
   "mem": 512.0,
   "env": {
