@@ -7,7 +7,7 @@ import com.containersol.minimesos.mesos.MesosClusterConfig;
 /**
  * Parameters for the 'up' command
  */
-@Parameters(separators = "=", commandDescription = "Create a mini mesos cluster")
+@Parameters(separators = "=", commandDescription = "Create a minimesos cluster")
 public class CommandUp {
 
     @Parameter(names = "--mesosImageTag", description = "The tag of the Mesos master and agent Docker images.")
