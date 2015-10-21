@@ -66,7 +66,7 @@ public class Main {
         } else {
             MesosCluster cluster = new MesosCluster(
                     MesosClusterConfig.builder()
-                            .slaveResources(new String[]{"ports(*):[9200-9200,9300-9300]"})
+                            .slaveResources(new String[]{"ports(*):[30000-31000]"})
                             .mesosImageTag(commandUp.getMesosImageTag())
                             .build()
             );
