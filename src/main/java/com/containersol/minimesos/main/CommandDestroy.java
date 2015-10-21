@@ -5,7 +5,7 @@ import com.beust.jcommander.Parameters;
 /**
  * Parameters for the 'destroy' command.
  */
-@Parameters(separators = "=", commandDescription = "Destroy a mini mesos cluster")
+@Parameters(separators = "=", commandDescription = "Destroy a minimesos cluster")
 public class CommandDestroy {
 
 

@@ -57,19 +57,12 @@ public class MesosMaster extends AbstractContainer {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        String dockerBin = "/usr/bin/docker";
-
-        if (! (new File(dockerBin).exists())) {
-            dockerBin = "/usr/local/bin/docker";
-            if (! (new File(dockerBin).exists())) {
-                LOGGER.error("Docker binary not found in /usr/local/bin or /usr/bin. Creating containers will most likely fail.");
-            }
-        }
 
         return dockerClient.createContainerCmd(mesosMasterImage + ":" + mesosImageTag)
                 .withName("minimesos-master-" + clusterId + "-" + getRandomId())
                 .withExposedPorts(new ExposedPort(5050))
                 .withEnv(createMesosLocalEnvironment());
+
     }
 
     public int getDockerPort() {

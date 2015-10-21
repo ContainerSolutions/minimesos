@@ -73,6 +73,17 @@ public abstract class AbstractContainer {
     }
 
     /**
+     * @return the hostname of the container
+     */
+    public String getHostname() {
+        String res = "";
+        if (!getContainerId().isEmpty()) {
+            res = dockerClient.inspectContainerCmd(containerId).exec().getConfig().getHostName();
+        }
+        return res;
+    }
+
+    /**
      * @return the ID of the container.
      */
     public String getContainerId() {

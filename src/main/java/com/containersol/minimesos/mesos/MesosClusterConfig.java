@@ -7,9 +7,9 @@ import java.util.TreeMap;
 
 public class MesosClusterConfig {
 
-    public static final String MESOS_MASTER_IMAGE = "mesosphere/mesos-master";
-    public static final String MESOS_SLAVE_IMAGE = "mesosphere/mesos-slave";
-    public static final String MESOS_IMAGE_TAG = "0.22.1-1.0.ubuntu1404";
+    public static final String MESOS_MASTER_IMAGE = "containersol/mesos-master";
+    public static final String MESOS_SLAVE_IMAGE = "containersol/mesos-agent";
+    public static final String MESOS_IMAGE_TAG = "0.25.0-0.2.70.ubuntu1404";
 
     public final DockerClient dockerClient;
     public final int numberOfSlaves;

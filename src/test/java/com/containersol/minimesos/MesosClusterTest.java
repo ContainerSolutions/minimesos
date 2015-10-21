@@ -124,8 +124,8 @@ public class MesosClusterTest {
                 "5051",
                 cluster.getZkUrl(),
                 cluster.getMesosMasterContainer().getContainerId(),
-                "mesosphere/mesos-slave",
-                "0.22.1-1.0.ubuntu1404", cluster.getClusterId(), cluster.getZkContainer()) {
+                "containersol/mesos-agent",
+                "0.25.0-0.2.70.ubuntu1404", cluster.getClusterId()) {
 
             @Override
             protected CreateContainerCmd dockerCommand() {
