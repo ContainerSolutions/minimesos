@@ -16,7 +16,6 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.containersol.minimesos.mesos.MesosClusterConfig;
 import com.containersol.minimesos.mesos.MesosSlave;
 import org.json.JSONObject;
-import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -25,6 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+
+import static org.junit.Assert.*;
 
 public class MesosClusterTest {
 
@@ -49,15 +50,15 @@ public class MesosClusterTest {
     public void mesosClusterCanBeStarted() throws Exception {
         JSONObject stateInfo = cluster.getStateInfoJSON();
 
-        Assert.assertEquals(3, stateInfo.getInt("activated_slaves"));
+        assertEquals(3, stateInfo.getInt("activated_slaves"));
     }
 
     @Test
     public void mesosResourcesCorrect() throws Exception {
         JSONObject stateInfo = cluster.getStateInfoJSON();
         for (int i = 0; i < 3; i++) {
-            Assert.assertEquals((long) 0.2, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getLong("cpus"));
-            Assert.assertEquals(256, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getInt("mem"));
+            assertEquals((long) 0.2, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getLong("cpus"));
+            assertEquals(256, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getInt("mem"));
         }
     }
 
@@ -75,7 +76,7 @@ public class MesosClusterTest {
             InspectContainerResponse response = docker.inspectContainerCmd(container.getContainerId()).exec();
             Map bindings = response.getNetworkSettings().getPorts().getBindings();
             for (Integer port : ports) {
-                Assert.assertTrue(bindings.containsKey(new ExposedPort(port)));
+                assertTrue(bindings.containsKey(new ExposedPort(port)));
             }
         }
     }
@@ -86,7 +87,7 @@ public class MesosClusterTest {
         String containerId = cluster.addAndStartContainer(container);
         String ipAddress = cluster.getConfig().dockerClient.inspectContainerCmd(containerId).exec().getNetworkSettings().getIpAddress();
         String url = "http://" + ipAddress + ":80";
-        Assert.assertEquals(200, Unirest.get(url).asString().getStatus());
+        assertEquals(200, Unirest.get(url).asString().getStatus());
     }
 
     @Test
@@ -95,10 +96,8 @@ public class MesosClusterTest {
         for (MesosSlave container : containers) {
             InspectContainerResponse exec = cluster.getMesosMasterContainer().getOuterDockerClient().inspectContainerCmd(container.getContainerId()).exec();
             List<Link> links = Arrays.asList(exec.getHostConfig().getLinks());
-            for (Link link : links) {
-                Assert.assertEquals("minimesos-master", link.getAlias());
-                Assert.assertEquals("minimesos-zookeeper", link.getAlias());
-            }
+            assertTrue(links.contains(new Link(cluster.getMesosMasterContainer().getName(), "minimesos-master")));
+            assertTrue(links.contains(new Link(cluster.getZkContainer().getName(), "minimesos-zookeeper")));
         }
     }
 
@@ -159,10 +158,10 @@ public class MesosClusterTest {
         });
     }
 
-    @Test
-    public void testMesosInstall() {
-        MesosCluster.install("src/test/resources/marathon.json");
-
-    }
+//    @Test
+//    public void testMesosInstall() {
+//        MesosCluster.install("src/test/resources/marathon.json");
+//
+//    }
 
 }

@@ -82,9 +82,9 @@ public class MesosSlave extends AbstractContainer {
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
                 .withPid("host")
-                .withLinks(new Link(this.master, "minimesos-master"))
-                .withLinks(new Link(this.zooKeeper.getIpAddress(), "minimesos-zookeeper"))
+                .withLinks(new Link(this.master, "minimesos-master"), new Link(this.zooKeeper.getContainerId(), "minimesos-zookeeper"))
                 .withBinds(
+                        Bind.parse(System.getProperty("user.dir") + ":" + System.getProperty("user.dir")),
                         Bind.parse("/var/lib/docker:/var/lib/docker"),
                         Bind.parse("/sys/:/sys/"),
                         Bind.parse(String.format("%s:/usr/bin/docker", dockerBin)),
