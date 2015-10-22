@@ -31,3 +31,7 @@ curl -sSL -X HEAD https://jitpack.io/com/github/ContainerSolutions/minimesos/$VE
 curl -sSL https://raw.githubusercontent.com/ContainerSolutions/minimesos/$VERSION/bin/minimesos > /usr/local/bin/minimesos
 
 chmod +x /usr/local/bin/minimesos
+
+echo "Done"
+
+exit 0
