@@ -26,8 +26,6 @@ DOCKER_IMAGES=(
 for IMAGE in "${DOCKER_IMAGES[@]}"; do
     if [[ "$(docker images -q ${IMAGE%:*} 2> /dev/null)" == "" ]]; then
         echo "Pulling ${IMAGE}" && docker pull "${IMAGE}"
-    else
-        echo "Docker image ${IMAGE} already pulled"
     fi
 done
 
