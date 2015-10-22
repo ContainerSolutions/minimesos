@@ -1,5 +1,7 @@
 package com.containersol.minimesos;
 
+import com.containersol.minimesos.mesos.MesosClusterConfig;
+import com.containersol.minimesos.mesos.MesosSlave;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.dockerjava.api.DockerClient;
@@ -13,8 +15,6 @@ import com.jayway.awaitility.Awaitility;
 import com.jayway.awaitility.Duration;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.containersol.minimesos.mesos.MesosClusterConfig;
-import com.containersol.minimesos.mesos.MesosSlave;
 import org.json.JSONObject;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -25,7 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class MesosClusterTest {
 
@@ -147,21 +148,17 @@ public class MesosClusterTest {
         cluster.getMesosMasterContainer().getOuterDockerClient().logContainerCmd(mesosSlave.getContainerId()).withStdOut().exec(cb);
         cb.awaitCompletion();
 
-        Awaitility.await().atMost(Duration.ONE_MINUTE).until(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                LogContainerTestCallback cb = new LogContainerTestCallback();
-                cluster.getMesosMasterContainer().getOuterDockerClient().logContainerCmd(mesosSlave.getContainerId()).withStdOut().exec(cb);
-                cb.awaitCompletion();
-                return cb.toString().contains("Received status update TASK_FINISHED for task test-cmd");
-            }
+        Awaitility.await().atMost(Duration.ONE_MINUTE).until(() -> {
+            LogContainerTestCallback cb1 = new LogContainerTestCallback();
+            cluster.getMesosMasterContainer().getOuterDockerClient().logContainerCmd(mesosSlave.getContainerId()).withStdOut().exec(cb1);
+            cb1.awaitCompletion();
+            return cb1.toString().contains("Received status update TASK_FINISHED for task test-cmd");
         });
     }
 
-//    @Test
-//    public void testMesosInstall() {
-//        MesosCluster.install("src/test/resources/marathon.json");
-//
-//    }
+    @Test
+    public void testMesosInstall() {
+        cluster.install("src/test/resources/marathon.json");
+    }
 
 }

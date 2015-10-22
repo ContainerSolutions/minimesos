@@ -18,13 +18,12 @@ public class Main {
 
     private static Logger LOGGER = Logger.getLogger(Main.class);
 
-    private static CommandUp commandUp;
+    private static CommandUp commandUp = new CommandUp();
 
     public static void main(String[] args)  {
         JCommander jc = new JCommander();
         jc.setProgramName("minimesos");
 
-        commandUp = new CommandUp();
         CommandDestroy commandDestroy = new CommandDestroy();
         CommandHelp commandHelp = new CommandHelp();
         CommandInstall commandInstall = new CommandInstall();
@@ -53,7 +52,9 @@ public class Main {
                 MesosCluster.destroy();
                 break;
             case "install":
-                MesosCluster.install(commandInstall.getMarathonFile());
+                // TODO: Recreate cluster based on clusterId and install framework
+                LOGGER.info("install cli command not implemented yet");
+                break;
             case "help":
                 jc.usage();
         }
