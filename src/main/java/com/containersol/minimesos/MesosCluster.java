@@ -1,8 +1,16 @@
 package com.containersol.minimesos;
 
+import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.marathon.MarathonClient;
 import com.containersol.minimesos.mesos.DockerClientFactory;
+import com.containersol.minimesos.mesos.MesosClusterConfig;
+import com.containersol.minimesos.mesos.MesosMaster;
+import com.containersol.minimesos.mesos.MesosSlave;
+import com.containersol.minimesos.mesos.ZooKeeper;
+import com.containersol.minimesos.state.State;
+import com.containersol.minimesos.util.MesosClusterStateResponse;
+import com.containersol.minimesos.util.Predicate;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.dockerjava.api.DockerClient;
@@ -13,14 +21,6 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import com.containersol.minimesos.container.AbstractContainer;
-import com.containersol.minimesos.mesos.MesosClusterConfig;
-import com.containersol.minimesos.mesos.MesosMaster;
-import com.containersol.minimesos.mesos.MesosSlave;
-import com.containersol.minimesos.mesos.ZooKeeper;
-import com.containersol.minimesos.state.State;
-import com.containersol.minimesos.util.MesosClusterStateResponse;
-import com.containersol.minimesos.util.Predicate;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
@@ -77,7 +77,7 @@ public class MesosCluster extends ExternalResource {
         addAndStartContainer(this.zkContainer);
 
         this.zkUrl = "zk://" + this.zkContainer.getIpAddress() + ":2181/" + this.config.zkUrl;
-        this.mesosMasterContainer = new MesosMaster(this.config.dockerClient, this.zkUrl, this.config.mesosMasterImage, this.config.mesosImageTag, clusterId, this.config.extraEnvironmentVariables);
+        this.mesosMasterContainer = new MesosMaster(this.config.dockerClient, this.zkUrl, this.config.mesosMasterImage, this.config.mesosImageTag, clusterId, this.config.extraEnvironmentVariables, this.config.exposedHostPorts);
         addAndStartContainer(this.mesosMasterContainer);
 
         try {
@@ -92,7 +92,7 @@ public class MesosCluster extends ExternalResource {
             LOGGER.error("Error during startup", e);
         }
 
-        Marathon marathon = new Marathon(this.config.dockerClient, clusterId, this.zkContainer);
+        Marathon marathon = new Marathon(this.config.dockerClient, clusterId, this.zkContainer, this.config.exposedHostPorts);
         addAndStartContainer(marathon);
 
         LOGGER.info("http://" + this.mesosMasterContainer.getIpAddress() + ":5050");
@@ -126,7 +126,7 @@ public class MesosCluster extends ExternalResource {
     }
 
     public State getStateInfo() throws UnirestException, JsonParseException, JsonMappingException {
-        String json = Unirest.get("http://" + this.getMesosMasterContainer().getIpAddress() + ":5050" +"/state.json").asString().getBody();
+        String json = Unirest.get("http://" + this.getMesosMasterContainer().getIpAddress() + ":5050" + "/state.json").asString().getBody();
 
         return State.fromJSON(json);
     }
@@ -172,9 +172,8 @@ public class MesosCluster extends ExternalResource {
         return containers;
     }
 
-    public MesosSlave[] getSlaves()
-    {
-           return mesosSlaves;
+    public MesosSlave[] getSlaves() {
+        return mesosSlaves;
     }
 
     @Override
@@ -257,13 +256,14 @@ public class MesosCluster extends ExternalResource {
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
             for (String name : container.getNames()) {
-                if (name.contains("minimesos-master-" + clusterId) ) {
+                if (name.contains("minimesos-master-" + clusterId)) {
                     String ipAddress = dockerClient.inspectContainerCmd(container.getId()).exec().getNetworkSettings().getIpAddress();
                     LOGGER.info("http://" + ipAddress + ":5050");
                     return;
                 }
             }
         }
+        LOGGER.warn("No running cluster found.");
     }
 
 }

@@ -4,7 +4,8 @@ import com.beust.jcommander.JCommander;
 import com.containersol.minimesos.MesosCluster;
 import com.containersol.minimesos.mesos.MesosClusterConfig;
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,8 +16,7 @@ import java.nio.file.Paths;
  * Main method for interacting with minimesos.
  */
 public class Main {
-
-    private static Logger LOGGER = Logger.getLogger(Main.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     private static CommandUp commandUp;
 
@@ -64,6 +64,7 @@ public class Main {
                     MesosClusterConfig.builder()
                             .slaveResources(new String[]{"ports(*):[9200-9200,9300-9300]"})
                             .mesosImageTag(commandUp.getMesosImageTag())
+                            .exposedHostPorts(commandUp.isExposedHostPorts())
                             .build()
             );
             cluster.start();

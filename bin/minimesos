@@ -27,4 +27,10 @@ pullImage "containersol/minimesos:${MINIMESOS_TAG}"
 pullImage "containersol/mesos-agent:${MESOS_TAG}"
 pullImage "containersol/mesos-master:${MESOS_TAG}"
 
-docker run -v $PWD:/tmp/minimesos -v /var/lib/docker:/var/lib/docker -v /var/run/docker.sock:/var/run/docker.sock -v $DOCKER_BIN:$DOCKER_BIN -v /sys/fs/cgroup:/sys/fs/cgroup containersol/minimesos:$MINIMESOS_TAG $@
+if [ "$(uname)" = "Darwin" ] && [ $@ = "up" ]; then
+    # You are running OSX, and Docker machine
+    expose="--exposedHostPorts"
+fi
+
+docker run -v $PWD:/tmp/minimesos -v /var/lib/docker:/var/lib/docker -v /var/run/docker.sock:/var/run/docker.sock \
+-v $DOCKER_BIN:$DOCKER_BIN -v /sys/fs/cgroup:/sys/fs/cgroup containersol/minimesos:$MINIMESOS_TAG $@ $expose

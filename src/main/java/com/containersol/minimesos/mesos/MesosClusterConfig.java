@@ -19,19 +19,21 @@ public class MesosClusterConfig {
     public final String mesosMasterImage;
     public final String mesosSlaveImage;
     public final String mesosImageTag;
+    public final Boolean exposedHostPorts;
 
-    public final Map<String,String> extraEnvironmentVariables;
+    public final Map<String, String> extraEnvironmentVariables;
 
     private MesosClusterConfig(
             DockerClient dockerClient,
             int numberOfSlaves,
             String[] slaveResources,
             Integer mesosMasterPort,
-            Map<String,String> extraEnvironmentVariables,
+            Map<String, String> extraEnvironmentVariables,
             String zkUrl,
             String mesosMasterImage,
             String mesosSlaveImage,
-            String mesosImageTag
+            String mesosImageTag,
+            Boolean exposedHostPorts
     ) {
         this.dockerClient = dockerClient;
         this.numberOfSlaves = numberOfSlaves;
@@ -42,6 +44,7 @@ public class MesosClusterConfig {
         this.mesosMasterImage = mesosMasterImage;
         this.mesosSlaveImage = mesosSlaveImage;
         this.mesosImageTag = mesosImageTag;
+        this.exposedHostPorts = exposedHostPorts;
     }
 
     public static Builder builder() {
@@ -54,10 +57,11 @@ public class MesosClusterConfig {
         String[] slaveResources = new String[]{};
         Integer mesosMasterPort = 5050;
         String zkUrl = null;
-        Map<String,String> extraEnvironmentVariables = new TreeMap<>();
+        Map<String, String> extraEnvironmentVariables = new TreeMap<>();
         String mesosMasterImage = MESOS_MASTER_IMAGE;
         String mesosSlaveImage = MESOS_SLAVE_IMAGE;
         String mesosImageTag = MESOS_IMAGE_TAG;
+        Boolean exposedHostPorts = false;
 
         private Builder() {
 
@@ -78,7 +82,7 @@ public class MesosClusterConfig {
             return this;
         }
 
-        public Builder extraEnvironmentVariables(Map<String,String> extraEnvironmentVariables) {
+        public Builder extraEnvironmentVariables(Map<String, String> extraEnvironmentVariables) {
             this.extraEnvironmentVariables = extraEnvironmentVariables;
             return this;
         }
@@ -103,6 +107,11 @@ public class MesosClusterConfig {
             return this;
         }
 
+        public Builder exposedHostPorts(Boolean exposedHostPorts) {
+            this.exposedHostPorts = exposedHostPorts;
+            return this;
+        }
+
         public Builder defaultDockerClient() {
             this.dockerClient = DockerClientFactory.build();
             return this;
@@ -121,7 +130,7 @@ public class MesosClusterConfig {
                 zkUrl = "mesos";
             }
 
-            return new MesosClusterConfig(dockerClient, slaveResources.length, slaveResources, mesosMasterPort, extraEnvironmentVariables, zkUrl, mesosMasterImage, mesosSlaveImage, mesosImageTag);
+            return new MesosClusterConfig(dockerClient, slaveResources.length, slaveResources, mesosMasterPort, extraEnvironmentVariables, zkUrl, mesosMasterImage, mesosSlaveImage, mesosImageTag, exposedHostPorts);
         }
     }
 

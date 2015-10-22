@@ -11,9 +11,16 @@ import com.containersol.minimesos.mesos.MesosClusterConfig;
 public class CommandUp {
 
     @Parameter(names = "--mesosImageTag", description = "The tag of the Mesos master and agent Docker images.")
-    String mesosImageTag = MesosClusterConfig.MESOS_IMAGE_TAG;
+    private String mesosImageTag = MesosClusterConfig.MESOS_IMAGE_TAG;
+
+    @Parameter(names = "--exposedHostPorts", description = "Expose the Mesos and Marathon ui ports on the host level.")
+    private boolean exposedHostPorts = false;
 
     public String getMesosImageTag() {
         return mesosImageTag;
+    }
+
+    public boolean isExposedHostPorts() {
+        return exposedHostPorts;
     }
 }
