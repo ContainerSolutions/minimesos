@@ -31,6 +31,8 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -75,7 +77,7 @@ public class MesosCluster extends ExternalResource {
         addAndStartContainer(this.zkContainer);
 
         this.zkUrl = "zk://" + this.zkContainer.getIpAddress() + ":2181/" + this.config.zkUrl;
-        this.mesosMasterContainer = new MesosMaster(this.config.dockerClient, this.zkUrl, this.config.mesosMasterImage, this.config.mesosImageTag, clusterId);
+        this.mesosMasterContainer = new MesosMaster(this.config.dockerClient, this.zkUrl, this.config.mesosMasterImage, this.config.mesosImageTag, clusterId, this.config.extraEnvironmentVariables);
         addAndStartContainer(this.mesosMasterContainer);
 
         try {
@@ -131,6 +133,17 @@ public class MesosCluster extends ExternalResource {
 
     public JSONObject getStateInfoJSON() throws UnirestException {
         return Unirest.get("http://" + this.getMesosMasterContainer().getIpAddress() + ":5050" + "/state.json").asJson().getBody().getObject();
+    }
+
+    public Map<String, String> getFlags() throws UnirestException {
+        JSONObject flagsJson = this.getStateInfoJSON().getJSONObject("flags");
+        Map<String, String> flags = new TreeMap<String, String>();
+        for (Object key : flagsJson.keySet()) {
+            String keyString = (String) key;
+            String value = flagsJson.getString(keyString);
+            flags.put(keyString, value);
+        }
+        return flags;
     }
 
     @Override

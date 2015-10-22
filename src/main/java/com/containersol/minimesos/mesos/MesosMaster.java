@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import com.containersol.minimesos.container.AbstractContainer;
 
 import java.io.File;
+import java.util.Map;
 import java.util.TreeMap;
 
 public class MesosMaster extends AbstractContainer {
@@ -23,12 +24,15 @@ public class MesosMaster extends AbstractContainer {
 
     private final String clusterId;
 
-    public MesosMaster(DockerClient dockerClient, String zkPath, String mesosMasterImage, String mesosImageTag, String clusterId) {
+    private final Map<String, String> extraEnvironmentVariables;
+
+    public MesosMaster(DockerClient dockerClient, String zkPath, String mesosMasterImage, String mesosImageTag, String clusterId, Map<String, String> extraEnvironmentVariables) {
         super(dockerClient);
         this.clusterId = clusterId;
         this.zkUrl = zkPath;
         this.mesosMasterImage = mesosMasterImage;
         this.mesosImageTag = mesosImageTag;
+        this.extraEnvironmentVariables = extraEnvironmentVariables;
     }
 
     @Override
@@ -46,6 +50,8 @@ public class MesosMaster extends AbstractContainer {
         envs.put("MESOS_ISOLATOR", "cgroups/cpu,cgroups/mem");
         envs.put("MESOS_LOG_DIR", "/var/log");
         envs.put("MESOS_WORK_DIR", "/tmp/mesos");
+
+        envs.putAll(this.extraEnvironmentVariables);
 
         return envs.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
     }
@@ -81,4 +87,7 @@ public class MesosMaster extends AbstractContainer {
         return mesosImageTag;
     }
 
+    public Map<String, String> getExtraEnvironmentVariables() {
+        return this.extraEnvironmentVariables;
+    }
 }
