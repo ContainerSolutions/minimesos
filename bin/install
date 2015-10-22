@@ -1,7 +1,9 @@
 #!/bin/bash
-#
+
 # This script is meant for quick & easy install via:
-#   'sudo curl -sSL https://raw.githubusercontent.com/ContainerSolutions/minimesos/master/bin/install | bash'
+# `sudo curl -sSL https://raw.githubusercontent.com/ContainerSolutions/minimesos/master/bin/install | bash`
+#
+# Uses the latest release, unless a version identifier is specified as a parameter of this script.
 
 command_exists() {
 	command -v "$@" > /dev/null 2>&1
@@ -12,7 +14,18 @@ if ! command_exists curl; then
 	exit 1
 fi
 
-VERSION=feature/docker-machine
+VERSION=$(echo $@ | xargs)
+
+if [ -z "$VERSION" ]; then
+	MAVEN_METADATA=$(curl -s https://jitpack.io/com/github/ContainerSolutions/minimesos/maven-metadata.xml)
+	VERSION=$(echo "$MAVEN_METADATA" | awk -F '[<>]' '/release/{print $3}')
+	if [ ! "$VERSION" ]; then
+		echo "Cannot determine latest release of minimesos"
+		exit 1
+	fi
+fi
+
+echo "Installing minimesos $VERSION"
 
 curl -sSL -X HEAD https://jitpack.io/com/github/ContainerSolutions/minimesos/$VERSION/pom
 curl -sSL https://raw.githubusercontent.com/ContainerSolutions/minimesos/$VERSION/bin/minimesos > /usr/local/bin/minimesos
