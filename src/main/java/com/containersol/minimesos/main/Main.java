@@ -2,6 +2,7 @@ package com.containersol.minimesos.main;
 
 import com.beust.jcommander.JCommander;
 import com.containersol.minimesos.MesosCluster;
+import com.containersol.minimesos.marathon.MarathonClient;
 import com.containersol.minimesos.mesos.MesosClusterConfig;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -52,8 +53,9 @@ public class Main {
                 MesosCluster.destroy();
                 break;
             case "install":
-                // TODO: Recreate cluster based on clusterId and install framework
-                LOGGER.info("install cli command not implemented yet");
+                String marathonFile = commandInstall.getMarathonFile();
+                String marathonIp = MesosCluster.getContainerIp(MesosCluster.readClusterId(), "marathon");
+                MarathonClient.deployFramework(marathonIp, marathonFile);
                 break;
             case "help":
                 jc.usage();
@@ -67,8 +69,11 @@ public class Main {
         } else {
             MesosCluster cluster = new MesosCluster(
                     MesosClusterConfig.builder()
-                            .slaveResources(new String[]{"ports(*):[30000-31000]"})
-                            .mesosImageTag(commandUp.getMesosImageTag())
+                            .slaveResources(new String[] {
+                                            "ports(*):[9200-9200,9300-9300]", "ports(*):[9201-9201,9301-9301]", "ports(*):[9202-9202,9302-9302]"
+                                    }
+                            )
+                            .mesosImageTag("0.22.1-1.0.ubuntu1404")
                             .build()
             );
             cluster.start();
