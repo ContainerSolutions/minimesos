@@ -47,4 +47,7 @@ public class Marathon extends AbstractContainer {
                 .withPortBindings(portBindings);
     }
 
+    public String getEndpoint() {
+        return "http://" + getIpAddress() + ":8080/v2/";
+    }
 }
