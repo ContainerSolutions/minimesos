@@ -2,6 +2,7 @@ package com.containersol.minimesos.main;
 
 import com.beust.jcommander.JCommander;
 import com.containersol.minimesos.MesosCluster;
+import com.containersol.minimesos.marathon.MarathonClient;
 import com.containersol.minimesos.mesos.MesosClusterConfig;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -18,18 +19,19 @@ public class Main {
 
     private static Logger LOGGER = Logger.getLogger(Main.class);
 
-    private static CommandUp commandUp;
+    private static CommandUp commandUp = new CommandUp();
 
     public static void main(String[] args)  {
         JCommander jc = new JCommander();
         jc.setProgramName("minimesos");
 
-        commandUp = new CommandUp();
         CommandDestroy commandDestroy = new CommandDestroy();
         CommandHelp commandHelp = new CommandHelp();
+        CommandInstall commandInstall = new CommandInstall();
 
         jc.addCommand("up", commandUp);
         jc.addCommand("destroy", commandDestroy);
+        jc.addCommand("install", commandInstall);
         jc.addCommand("help", commandHelp);
         jc.parseWithoutValidation(args);
 
@@ -50,6 +52,11 @@ public class Main {
             case "destroy":
                 MesosCluster.destroy();
                 break;
+            case "install":
+                String marathonFile = commandInstall.getMarathonFile();
+                String marathonIp = MesosCluster.getContainerIp(MesosCluster.readClusterId(), "marathon");
+                MarathonClient.deployFramework(marathonIp, marathonFile);
+                break;
             case "help":
                 jc.usage();
         }
@@ -62,8 +69,11 @@ public class Main {
         } else {
             MesosCluster cluster = new MesosCluster(
                     MesosClusterConfig.builder()
-                            .slaveResources(new String[]{"ports(*):[9200-9200,9300-9300]"})
-                            .mesosImageTag(commandUp.getMesosImageTag())
+                            .slaveResources(new String[] {
+                                            "ports(*):[9200-9200,9300-9300]", "ports(*):[9201-9201,9301-9301]", "ports(*):[9202-9202,9302-9302]"
+                                    }
+                            )
+                            .mesosImageTag("0.22.1-1.0.ubuntu1404")
                             .build()
             );
             cluster.start();

@@ -39,4 +39,7 @@ public class Marathon extends AbstractContainer {
                 .withCmd("--master", "zk://minimesos-zookeeper:2181/mesos", "--zk", "zk://minimesos-zookeeper:2181/marathon");
     }
 
+    public String getEndpoint() {
+        return "http://" + getIpAddress() + ":8080/v2/";
+    }
 }

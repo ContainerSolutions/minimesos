@@ -62,6 +62,8 @@ public class MesosCluster extends ExternalResource {
 
     protected ZooKeeper zkContainer;
 
+    private Marathon marathon;
+
     private String clusterId;
 
     public MesosCluster(MesosClusterConfig config) {
@@ -83,17 +85,17 @@ public class MesosCluster extends ExternalResource {
         try {
             mesosSlaves = new MesosSlave[config.getNumberOfSlaves()];
             for (int i = 0; i < this.config.getNumberOfSlaves(); i++) {
-                mesosSlaves[i] = new MesosSlave(this.config.dockerClient, config.slaveResources[i], "5051", this.zkUrl, mesosMasterContainer.getContainerId(), this.config.mesosSlaveImage, this.config.mesosImageTag, clusterId);
+                mesosSlaves[i] = new MesosSlave(this.config.dockerClient, config.slaveResources[i], "5051", this.zkUrl, mesosMasterContainer.getContainerId(), this.config.mesosSlaveImage, this.config.mesosImageTag, clusterId, this.zkContainer);
                 addAndStartContainer(mesosSlaves[i]);
             }
-            // wait until the given number of slaves are registered
-            new MesosClusterStateResponse(this.mesosMasterContainer.getIpAddress() + ":5050", config.numberOfSlaves).waitFor();
         } catch (Throwable e) {
             LOGGER.error("Error during startup", e);
         }
 
-        Marathon marathon = new Marathon(this.config.dockerClient, clusterId, this.zkContainer);
+        marathon = new Marathon(this.config.dockerClient, clusterId, this.zkContainer);
         addAndStartContainer(marathon);
+
+        new MesosClusterStateResponse(this).waitFor();
 
         LOGGER.info("http://" + this.mesosMasterContainer.getIpAddress() + ":5050");
     }
@@ -266,4 +268,17 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
+    public void install(String marathonFile) {
+        String marathonIp = marathon.getIpAddress();
+
+        MarathonClient.deployFramework(marathonIp, marathonFile);
+    }
+
+    public String getStateUrl() {
+        return "http://" + getMesosMasterContainer().getIpAddress() + ":5050/state.json";
+    }
+
+    public Marathon getMarathon() {
+        return marathon;
+    }
 }
