@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# This script is meant to be invoked with VERSION given as a parameter.
+# Installs the given version of minimesos on the box
+
+command_exists() {
+	command -v "$@" > /dev/null 2>&1
+}
+
+if ! command_exists curl; then
+	echo "Please install curl to fetch the minimesos files"
+	exit 1
+fi
+
+if [ ! "$#" -eq 1 ]; then
+	echo "Version is not given as paramenter"
+	exit 1
+fi
+
+VERSION=$1
+echo "VERSION GIVEN IS " $VERSION
+
+curl -sSL https://raw.githubusercontent.com/ContainerSolutions/minimesos/$VERSION/bin/minimesos > /usr/local/bin/minimesos
+chmod +x /usr/local/bin/minimesos
+
+# TODO: pull docker image from Docker Hub
+
+exit 0
