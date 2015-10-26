@@ -1,14 +1,13 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.container.AbstractContainer;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Link;
 import org.apache.log4j.Logger;
-import com.containersol.minimesos.container.AbstractContainer;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
@@ -48,7 +47,7 @@ public class MesosSlave extends AbstractContainer {
     }
 
     String[] createMesosLocalEnvironment() {
-        TreeMap<String,String> envs = new TreeMap<>();
+        TreeMap<String, String> envs = new TreeMap<>();
 
         envs.put("MESOS_PORT", this.portNumber);
         envs.put("MESOS_MASTER", this.zkUrl);
@@ -65,17 +64,6 @@ public class MesosSlave extends AbstractContainer {
     }
 
     public CreateContainerCmd getBaseCommand() {
-
-        String dockerBin = "/usr/bin/docker";
-        File dockerBinFile = new File(dockerBin);
-        if (!(dockerBinFile.exists() && dockerBinFile.canExecute())) {
-            dockerBin = "/usr/local/bin/docker";
-            dockerBinFile = new File(dockerBin);
-            if (!(dockerBinFile.exists() && dockerBinFile.canExecute() )) {
-                LOGGER.error("Docker binary not found in /usr/local/bin or /usr/bin. Creating containers will most likely fail.");
-            }
-        }
-
         return dockerClient.createContainerCmd(mesosLocalImage + ":" + registryTag)
                 .withName("minimesos-agent-" + clusterId + "-" + getRandomId())
                 .withPrivileged(true)
@@ -83,9 +71,7 @@ public class MesosSlave extends AbstractContainer {
                 .withPid("host")
                 .withLinks(new Link(this.master, "minimesos-master"))
                 .withBinds(
-                        Bind.parse("/var/lib/docker:/var/lib/docker"),
                         Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),
-                        Bind.parse(String.format("%s:/usr/bin/docker", dockerBin)),
                         Bind.parse("/var/run/docker.sock:/var/run/docker.sock")
                 );
     }
@@ -97,7 +83,7 @@ public class MesosSlave extends AbstractContainer {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        ArrayList<ExposedPort> exposedPorts= new ArrayList<>();
+        ArrayList<ExposedPort> exposedPorts = new ArrayList<>();
         exposedPorts.add(new ExposedPort(Integer.parseInt(this.portNumber)));
         try {
             ArrayList<Integer> resourcePorts = this.parsePortsFromResource(this.resources);

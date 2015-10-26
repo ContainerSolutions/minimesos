@@ -9,11 +9,6 @@ if ! command_exists docker; then
 	exit 1
 fi
 
-DOCKER_BIN=/usr/local/bin/docker
-if [ ! -f $DOCKER_BIN ]; then
-    DOCKER_BIN=/usr/bin/docker
-fi
-
 MINIMESOS_TAG="latest"
 MESOS_TAG="0.25.0-0.2.70.ubuntu1404"
 
@@ -27,4 +22,4 @@ pullImage "containersol/minimesos:${MINIMESOS_TAG}"
 pullImage "containersol/mesos-agent:${MESOS_TAG}"
 pullImage "containersol/mesos-master:${MESOS_TAG}"
 
-docker run -v $PWD:/tmp/minimesos -v /var/lib/docker:/var/lib/docker -v /var/run/docker.sock:/var/run/docker.sock -v $DOCKER_BIN:$DOCKER_BIN -v /sys/fs/cgroup:/sys/fs/cgroup containersol/minimesos:$MINIMESOS_TAG $@
+docker run --rm -v $PWD:/tmp/minimesos -v /var/run/docker.sock:/var/run/docker.sock containersol/minimesos:$MINIMESOS_TAG $@
