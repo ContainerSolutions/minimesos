@@ -68,7 +68,7 @@ public class Main {
             );
             cluster.start();
 
-            File miniMesosDir = new File(System.getProperty("user.home"), ".minimesos");
+            File miniMesosDir = new File(System.getProperty("minimesos.dir"));
             try {
                 FileUtils.forceMkdir(miniMesosDir);
                 Files.write(Paths.get(miniMesosDir.getAbsolutePath() + "/minimesos.cluster"), cluster.getClusterId().getBytes());
