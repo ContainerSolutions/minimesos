@@ -16,7 +16,7 @@ This installs the minimesos jar into ``/usr/local/share/minimesos`` and the mini
 $ minimesos up
 http://172.17.2.12:5050
 $ curl -s http://172.17.2.12:5050/state.json | jq ".version"
-0.22.1
+0.25.0
 $ minimesos destroy
 Destroyed minimesos cluster 3878417609
 ```
@@ -65,14 +65,6 @@ If Homebrew is not installed on your machine yet
 $ xcode-select --install
 # Install Homebrew.
 $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-```  
-
-Due to dependencies among versions of Docker, Mesos and docker-machine latest versions of these packages can not be used. It might be very tempting to use [Docker Toolbox](https://www.docker.com/toolbox), 
-however we recommend to refrain from it as you lose control over used versions
- 
-```
-$ brew install homebrew/versions/docker171
-$ brew link docker171
 $ brew install docker-machine
 ```
 
@@ -81,8 +73,7 @@ $ brew install docker-machine
 Create a docker machine, make sure its environment variables are visible to the test, ensure the docker containers' IP addresses are available on the host
 
 ```
-# latest version of boot2docker.iso cannot be used
-$ docker-machine create -d virtualbox --virtualbox-memory 2048 --virtualbox-cpu-count 1 --virtualbox-boot2docker-url https://github.com/boot2docker/boot2docker/releases/download/v1.7.1/boot2docker.iso minimesos
+$ docker-machine create -d virtualbox --virtualbox-memory 2048 --virtualbox-cpu-count 1 minimesos
 $ eval $(docker-machine env minimesos)
 $ sudo route delete 172.17.0.0/16; sudo route -n add 172.17.0.0/16 $(docker-machine ip ${DOCKER_MACHINE_NAME})
 ```
@@ -136,7 +127,7 @@ When cluster is started ```.minimesos/minimesos.cluster``` file with cluster ID 
 $ minimesos up
 http://172.17.2.12:5050
 $ curl -s http://172.17.2.12:5050/state.json | jq ".version"
-0.22.1
+0.25.0
 $ minimesos destroy
 Destroyed minimesos cluster 3878417609
 ```
@@ -155,6 +146,9 @@ The table below is an attempt to summarize mappings, which enable execution of m
 
 
 ## Caveats
+
+`minimesos up` command supports `--mesosImageTag` parameter, which can be used to override the version of Mesos to be used. 
+When running an older version of Mesos, you may encounter [compatibility issues between Mesos 0.22 and Docker 1.8](https://issues.apache.org/jira/browse/INFRA-10621).
 
 Since version 0.3.0 minimesos uses 'flat' container structure, which means that all containers (agents, master, zookeeper) as well as all Docker executor tasks are run in the same Docker context - host machine.
 This has following benefits:
