@@ -233,15 +233,15 @@ public class MesosCluster extends ExternalResource {
 
     public static void destroy() {
         String clusterId = readClusterId();
-
         String marathonIp = getContainerIp(clusterId, "marathon");
         if (marathonIp != null) {
             MarathonClient.killAllApps(marathonIp);
         }
-
         if (clusterId != null) {
             destroyContainers(clusterId);
             miniMesosFile.deleteOnExit();
+        } else {
+            LOGGER.info("Minimesos cluster is not running");
         }
     }
 

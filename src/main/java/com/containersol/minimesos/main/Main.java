@@ -27,10 +27,12 @@ public class Main {
         commandUp = new CommandUp();
         CommandDestroy commandDestroy = new CommandDestroy();
         CommandHelp commandHelp = new CommandHelp();
+        CommandInfo commandInfo = new CommandInfo();
 
         jc.addCommand("up", commandUp);
         jc.addCommand("destroy", commandDestroy);
         jc.addCommand("help", commandHelp);
+        jc.addCommand("info", commandInfo);
         jc.parseWithoutValidation(args);
 
         if (jc.getParsedCommand() == null) {
@@ -46,6 +48,9 @@ public class Main {
         switch (jc.getParsedCommand()) {
             case "up":
                 doUp();
+                break;
+            case "info":
+                printInfo();
                 break;
             case "destroy":
                 MesosCluster.destroy();
@@ -76,6 +81,17 @@ public class Main {
                 LOGGER.error("Could not write .minimesos folder", ie);
                 throw new RuntimeException(ie);
             }
+        }
+    }
+
+    private static void printInfo() {
+        String clusterId = MesosCluster.readClusterId();
+        if (clusterId != null) {
+            LOGGER.info("Minimesos cluster is running");
+            MesosCluster.printMasterIp(clusterId);
+            LOGGER.info("Mesos version: " + MesosClusterConfig.MESOS_IMAGE_TAG.substring(0, MesosClusterConfig.MESOS_IMAGE_TAG.indexOf("-")));
+        } else {
+            LOGGER.info("Minimesos cluster is not running");
         }
     }
 
