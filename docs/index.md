@@ -147,8 +147,7 @@ The table below is an attempt to summarize mappings, which enable execution of m
 
 | MAC Host        | boot2docker VM        | minimesos container           |
 | --------------- | --------------------- | ----------------------------- |
-| $PWD in /Users  | $PWD in /Users        | ${user.home} = /tmp/minimesos |
-| $PWD/.minimesos | $PWD/.minimesos       | /tmp/minimesos/.minimesos     |
+| $PWD/.minimesos | $PWD/.minimesos       | /tmp/.minimesos               |
 |                 | /var/lib/docker       | /var/lib/docker               |
 |                 | /var/run/docker.sock  | /var/run/docker.sock          |
 |                 | /usr/local/bin/docker | /usr/local/bin/docker         |

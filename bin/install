@@ -32,7 +32,6 @@ fi
 
 curl -sSL -X HEAD https://jitpack.io/com/github/ContainerSolutions/minimesos/$VERSION/pom
 
-
 # invoking versioned installation script
 echo "Installing minimesos $VERSION"
 SCRIPT_PATH=https://raw.githubusercontent.com/ContainerSolutions/minimesos/$VERSION

@@ -13,4 +13,4 @@ RUN mkdir -p /usr/local/share/minimesos
 
 ADD minimesos.jar /usr/local/share/minimesos/minimesos.jar
 
-ENTRYPOINT ["java",  "-Duser.home=/tmp/minimesos", "-jar", "/usr/local/share/minimesos/minimesos.jar"]
+ENTRYPOINT ["java",  "-Dminimesos.dir=/tmp/.minimesos", "-jar", "/usr/local/share/minimesos/minimesos.jar"]
