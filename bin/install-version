@@ -13,7 +13,7 @@ if ! command_exists curl; then
 fi
 
 if [ ! "$#" -eq 1 ]; then
-	echo "Version is not given as paramenter"
+	echo "Version is not given as parameter"
 	exit 1
 fi
 
