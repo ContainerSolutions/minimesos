@@ -13,7 +13,7 @@ public class CommandUp {
     @Parameter(names = "--mesosImageTag", description = "The tag of the Mesos master and agent Docker images.")
     private String mesosImageTag = MesosClusterConfig.MESOS_IMAGE_TAG;
 
-    @Parameter(names = "--exposedHostPorts", description = "Expose the Mesos and Marathon ui ports on the host level.")
+    @Parameter(names = "--exposedHostPorts", description = "Expose the Mesos and Marathon UI ports on the host level (we recommend to enable this on Mac (e.g. when using docker-machine) and disable on Linux).")
     private boolean exposedHostPorts = false;
 
     public String getMesosImageTag() {
