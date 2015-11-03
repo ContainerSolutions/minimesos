@@ -2,6 +2,7 @@ package com.containersol.minimesos.docker;
 
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Container;
 
 import java.util.HashSet;
@@ -60,6 +61,27 @@ public class DockerContainersUtil {
     }
 
     /**
+     * Filters the set based on the constainer name
+     * @param pattern regular expression pattern of the container name
+     * @return filtered set
+     */
+    public DockerContainersUtil filterByImage( String pattern ) {
+
+        if( this.containers == null ) {
+            return this;
+        }
+
+        Set<Container> matched = new HashSet<>();
+        for (Container container : containers) {
+            if( container.getImage().matches(pattern) ) {
+                matched.add( container );
+            }
+        }
+
+        return new DockerContainersUtil(dockerClient, matched);
+    }
+
+    /**
      * Removes all containers in the util object
      */
     public void remove() {
@@ -68,6 +90,32 @@ public class DockerContainersUtil {
                 dockerClient.removeContainerCmd(container.getId()).exec();
             }
         }
+    }
+
+    /**
+     * Removes all containers in the util object
+     */
+    public DockerContainersUtil kill() {
+        if( containers != null ) {
+            for (Container container : containers) {
+                dockerClient.killContainerCmd(container.getId()).exec();
+            }
+        }
+        return this;
+    }
+
+    /**
+     * @return IP addresses of containers
+     */
+    public Set<String> getIpAddresses() {
+        Set<String> ips = new HashSet<>();
+        if( containers != null ) {
+            for (Container container : containers) {
+                InspectContainerResponse response = dockerClient.inspectContainerCmd(container.getId()).exec();
+                ips.add(response.getNetworkSettings().getIpAddress());
+            }
+        }
+        return ips;
     }
 
 }
