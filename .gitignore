@@ -3,6 +3,10 @@
 .gradle/
 build/
 
+# Build system
+.gradle/
+build/
+
 # IDEA files
 *.i??
 out/
