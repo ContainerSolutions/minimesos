@@ -1,5 +1,7 @@
 .minimesos/*
 *.class
+.gradle/
+build/
 
 # IDEA files
 *.i??
