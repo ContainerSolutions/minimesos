@@ -36,8 +36,8 @@ public class Main {
         if (jc.getParsedCommand() == null) {
             String clusterId = MesosCluster.readClusterId();
             if (clusterId != null) {
-                MesosCluster.printServiceUrl(clusterId, "master");
-                MesosCluster.printServiceUrl(clusterId, "marathon");
+                MesosCluster.printServiceUrl(clusterId, "master", commandUp.isExposedHostPorts());
+                MesosCluster.printServiceUrl(clusterId, "marathon", commandUp.isExposedHostPorts());
             } else {
                 jc.usage();
             }
@@ -77,8 +77,8 @@ public class Main {
             }
         }
         clusterId = MesosCluster.readClusterId();
-        MesosCluster.printServiceUrl(clusterId, "master");
-        MesosCluster.printServiceUrl(clusterId, "marathon");
+        MesosCluster.printServiceUrl(clusterId, "master", commandUp.isExposedHostPorts());
+        MesosCluster.printServiceUrl(clusterId, "marathon", commandUp.isExposedHostPorts());
     }
 
 }

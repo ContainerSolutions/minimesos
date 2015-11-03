@@ -251,20 +251,26 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
-    public static void printServiceUrl(String clusterId, String serviceName) {
+    public static void printServiceUrl(String clusterId, String serviceName, boolean exposedHostPorts) {
+        String dockerHostIp = System.getenv("DOCKER_HOST_IP");
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
             for (String name : container.getNames()) {
                 if (name.contains("minimesos-" + serviceName + "-" + clusterId)) {
-                    String uri;
-                    InspectContainerResponse.NetworkSettings containerNetworkSettings;
-                    containerNetworkSettings = dockerClient.inspectContainerCmd(container.getId()).exec().getNetworkSettings();
+                    String uri, ip;
+                    if (!exposedHostPorts || dockerHostIp.isEmpty()) {
+                        InspectContainerResponse.NetworkSettings containerNetworkSettings;
+                        containerNetworkSettings = dockerClient.inspectContainerCmd(container.getId()).exec().getNetworkSettings();
+                        ip = containerNetworkSettings.getIpAddress();
+                    } else {
+                        ip = dockerHostIp;
+                    }
                     switch (serviceName) {
                         case "master":
-                            uri = "Mesos: http://" + containerNetworkSettings.getIpAddress() + ":" + MesosMaster.MESOS_MASTER_PORT;
+                            uri = "Mesos: http://" + ip + ":" + MesosMaster.MESOS_MASTER_PORT;
                             break;
                         case "marathon":
-                            uri = "Marathon: http://" + containerNetworkSettings.getIpAddress() + ":" + Marathon.MARATHON_PORT;
+                            uri = "Marathon: http://" + ip + ":" + Marathon.MARATHON_PORT;
                             break;
                         default:
                             uri = "Unknown service type '" + serviceName + "'";
