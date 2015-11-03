@@ -14,6 +14,12 @@ if [ ! -f $DOCKER_BIN ]; then
     DOCKER_BIN=/usr/bin/docker
 fi
 
+docker info > /dev/null 2>&1
+if [ $? != 0 ]; then
+    echo "Please make sure docker is set up correctly"
+    exit 1
+fi
+
 MINIMESOS_TAG="latest"
 MESOS_TAG="0.25.0-0.2.70.ubuntu1404"
 
