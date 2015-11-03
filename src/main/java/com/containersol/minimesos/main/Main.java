@@ -36,7 +36,8 @@ public class Main {
         if (jc.getParsedCommand() == null) {
             String clusterId = MesosCluster.readClusterId();
             if (clusterId != null) {
-                MesosCluster.printMasterIp(clusterId);
+                MesosCluster.printServiceUrl(clusterId, "master");
+                MesosCluster.printServiceUrl(clusterId, "marathon");
             } else {
                 jc.usage();
             }
@@ -57,9 +58,7 @@ public class Main {
 
     private static void doUp() {
         String clusterId = MesosCluster.readClusterId();
-        if (clusterId != null) {
-            MesosCluster.printMasterIp(clusterId);
-        } else {
+        if (clusterId == null) {
             MesosCluster cluster = new MesosCluster(
                     MesosClusterConfig.builder()
                             .slaveResources(new String[]{"ports(*):[9200-9200,9300-9300]"})
@@ -68,7 +67,6 @@ public class Main {
                             .build()
             );
             cluster.start();
-
             File miniMesosDir = new File(System.getProperty("minimesos.dir"));
             try {
                 FileUtils.forceMkdir(miniMesosDir);
@@ -78,6 +76,9 @@ public class Main {
                 throw new RuntimeException(ie);
             }
         }
+        clusterId = MesosCluster.readClusterId();
+        MesosCluster.printServiceUrl(clusterId, "master");
+        MesosCluster.printServiceUrl(clusterId, "marathon");
     }
 
 }

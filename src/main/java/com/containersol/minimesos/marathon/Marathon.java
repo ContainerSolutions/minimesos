@@ -17,6 +17,7 @@ public class Marathon extends AbstractContainer {
 
     private static final String MARATHON_IMAGE = "mesosphere/marathon";
     public static final String REGISTRY_TAG = "v0.8.1";
+    public static final int MARATHON_PORT = 8080;
 
     private String clusterId;
 
@@ -38,16 +39,16 @@ public class Marathon extends AbstractContainer {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        ExposedPort tcp8080 = ExposedPort.tcp(8080);
+        ExposedPort exposedPort = ExposedPort.tcp(MARATHON_PORT);
         Ports portBindings = new Ports();
         if (exposedHostPort) {
-            portBindings.bind(tcp8080, Ports.Binding(8080));
+            portBindings.bind(exposedPort, Ports.Binding(MARATHON_PORT));
         }
         return dockerClient.createContainerCmd(MARATHON_IMAGE + ":" + REGISTRY_TAG)
                 .withName("minimesos-marathon-" + clusterId + "-" + getRandomId())
                 .withExtraHosts("minimesos-zookeeper:" + this.zooKeeper.getIpAddress())
                 .withCmd("--master", "zk://minimesos-zookeeper:2181/mesos", "--zk", "zk://minimesos-zookeeper:2181/marathon")
-                .withExposedPorts(tcp8080)
+                .withExposedPorts(exposedPort)
                 .withPortBindings(portBindings);
     }
 

@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.InternalServerErrorException;
 import com.github.dockerjava.api.NotFoundException;
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Container;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -94,8 +95,6 @@ public class MesosCluster extends ExternalResource {
 
         Marathon marathon = new Marathon(this.config.dockerClient, clusterId, this.zkContainer, this.config.exposedHostPorts);
         addAndStartContainer(marathon);
-
-        LOGGER.info("http://" + this.mesosMasterContainer.getIpAddress() + ":5050");
     }
 
     /**
@@ -252,13 +251,25 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
-    public static void printMasterIp(String clusterId) {
+    public static void printServiceUrl(String clusterId, String serviceName) {
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
             for (String name : container.getNames()) {
-                if (name.contains("minimesos-master-" + clusterId)) {
-                    String ipAddress = dockerClient.inspectContainerCmd(container.getId()).exec().getNetworkSettings().getIpAddress();
-                    LOGGER.info("http://" + ipAddress + ":5050");
+                if (name.contains("minimesos-" + serviceName + "-" + clusterId)) {
+                    String uri;
+                    InspectContainerResponse.NetworkSettings containerNetworkSettings;
+                    containerNetworkSettings = dockerClient.inspectContainerCmd(container.getId()).exec().getNetworkSettings();
+                    switch (serviceName) {
+                        case "master":
+                            uri = "Mesos: http://" + containerNetworkSettings.getIpAddress() + ":" + MesosMaster.MESOS_MASTER_PORT;
+                            break;
+                        case "marathon":
+                            uri = "Marathon: http://" + containerNetworkSettings.getIpAddress() + ":" + Marathon.MARATHON_PORT;
+                            break;
+                        default:
+                            uri = "Unknown service type '" + serviceName + "'";
+                    }
+                    LOGGER.info(uri);
                     return;
                 }
             }

@@ -14,6 +14,8 @@ public class MesosMaster extends AbstractContainer {
 
     private static final int DOCKER_PORT = 2376;
 
+    public static final int MESOS_MASTER_PORT = 5050;
+
     private static Logger LOGGER = Logger.getLogger(MesosMaster.class);
 
     private final String mesosMasterImage;
@@ -66,14 +68,14 @@ public class MesosMaster extends AbstractContainer {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        ExposedPort tcp5050 = ExposedPort.tcp(5050);
+        ExposedPort exposedPort = ExposedPort.tcp(MESOS_MASTER_PORT);
         Ports portBindings = new Ports();
         if (exposedHostPort) {
-            portBindings.bind(tcp5050, Ports.Binding(5050));
+            portBindings.bind(exposedPort, Ports.Binding(MESOS_MASTER_PORT));
         }
         return dockerClient.createContainerCmd(mesosMasterImage + ":" + mesosImageTag)
                 .withName("minimesos-master-" + clusterId + "-" + getRandomId())
-                .withExposedPorts(tcp5050)
+                .withExposedPorts(exposedPort)
                 .withEnv(createMesosLocalEnvironment())
                 .withPortBindings(portBindings);
     }
