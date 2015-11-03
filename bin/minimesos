@@ -27,6 +27,12 @@ if [ ! -f $DOCKER_BIN ]; then
     DOCKER_BIN=/usr/bin/docker
 fi
 
+docker info > /dev/null 2>&1
+if [ $? != 0 ]; then
+    echo "Please make sure docker is set up correctly"
+    exit 1
+fi
+
 pullImage() {
   if [ "$(docker images $1 | grep $2 2> /dev/null)" = "" ]; then
     echo "Pulling $1:$2"
