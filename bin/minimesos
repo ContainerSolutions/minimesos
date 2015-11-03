@@ -16,21 +16,31 @@ fi
 
 MINIMESOS_TAG="latest"
 MESOS_TAG="0.25.0-0.2.70.ubuntu1404"
+PARAMS="$@"
 
 pullImage() {
-  if [ "$(docker images -q $1 2> /dev/null)" = "" ]; then
-    echo "Pulling $1" && docker pull "$1"
+  if [ "$(docker images $1 | grep $2 2> /dev/null)" = "" ]; then
+    echo "Pulling $1:$2"
+    docker pull "$1:$2"
   fi
 }
 
-pullImage "containersol/minimesos:${MINIMESOS_TAG}"
-pullImage "containersol/mesos-agent:${MESOS_TAG}"
-pullImage "containersol/mesos-master:${MESOS_TAG}"
-
-if [ "$(uname)" = "Darwin" ] && [ $@ = "up" ]; then
-    # You are running OSX, and Docker machine
-    expose="--exposedHostPorts"
+if [ $PARAMS = "up" ]; then
+    pullImage "containersol/minimesos" ${MINIMESOS_TAG}
+    pullImage "containersol/mesos-agent" ${MESOS_TAG}
+    pullImage "containersol/mesos-master" ${MESOS_TAG}
+    if [ $(uname) == "Darwin" ]; then
+        echo "You are running OS X, enabling --exposedHostPorts"
+        $PARAMS="${PARAMS} --exposedHostPorts"
+    fi
 fi
 
-docker run -v $PWD:/tmp/minimesos -v /var/lib/docker:/var/lib/docker -v /var/run/docker.sock:/var/run/docker.sock \
--v $DOCKER_BIN:$DOCKER_BIN -v /sys/fs/cgroup:/sys/fs/cgroup containersol/minimesos:$MINIMESOS_TAG $@ $expose
+MINIMESOS_DIR=$(pwd)/.minimesos
+mkdir -p $MINIMESOS_DIR
+
+docker run --rm -v $MINIMESOS_DIR:/tmp/.minimesos \
+    -v /var/lib/docker:/var/lib/docker \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v $DOCKER_BIN:$DOCKER_BIN \
+    -v /sys/fs/cgroup:/sys/fs/cgroup \
+    containersol/minimesos:$MINIMESOS_TAG $PARAMS

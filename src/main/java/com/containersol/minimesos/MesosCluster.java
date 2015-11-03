@@ -46,7 +46,7 @@ import static com.jayway.awaitility.Awaitility.await;
 public class MesosCluster extends ExternalResource {
     private static Logger LOGGER = Logger.getLogger(MesosCluster.class);
 
-    private static File miniMesosFile = new File(System.getProperty("user.home"), ".minimesos/minimesos.cluster");
+    private static File miniMesosFile = new File(System.getProperty("minimesos.dir"), "minimesos.cluster");
 
     private static DockerClient dockerClient = DockerClientFactory.build();
 

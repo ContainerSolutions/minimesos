@@ -9,6 +9,11 @@ command_exists() {
 	command -v "$@" > /dev/null 2>&1
 }
 
+install_version() {
+    echo "Using $1 to install minimesos $2"
+    curl -sSL $1 | bash -s $2
+}
+
 if ! command_exists curl; then
 	echo "Please install curl to fetch the minimesos files"
 	exit 1
@@ -25,12 +30,18 @@ if [ -z "$VERSION" ]; then
 	fi
 fi
 
-echo "Installing minimesos $VERSION"
-
 curl -sSL -X HEAD https://jitpack.io/com/github/ContainerSolutions/minimesos/$VERSION/pom
-curl -sSL https://raw.githubusercontent.com/ContainerSolutions/minimesos/$VERSION/bin/minimesos > /usr/local/bin/minimesos
 
-chmod +x /usr/local/bin/minimesos
+# invoking versioned installation script
+echo "Installing minimesos $VERSION"
+SCRIPT_PATH=https://raw.githubusercontent.com/ContainerSolutions/minimesos/$VERSION
+httpcode=$(curl -s -o /dev/null -I -w '%{http_code}' --max-time 1 $SCRIPT_PATH/bin/install-version || echo "404" )
+if [ $httpcode -eq 200 ]; then
+	install_version $SCRIPT_PATH/bin/install-version $VERSION
+else
+    # initial version of minimesos used single install script
+    install_version $SCRIPT_PATH/bin/install $VERSION
+fi
 
 echo "Done"
 

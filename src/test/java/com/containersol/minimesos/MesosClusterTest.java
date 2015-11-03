@@ -2,6 +2,7 @@ package com.containersol.minimesos;
 
 import com.containersol.minimesos.mesos.MesosClusterConfig;
 import com.containersol.minimesos.mesos.MesosSlave;
+import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.dockerjava.api.DockerClient;
@@ -16,6 +17,7 @@ import com.jayway.awaitility.Duration;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -24,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 public class MesosClusterTest {
 
@@ -39,6 +40,14 @@ public class MesosClusterTest {
                     })
                     .build()
     );
+
+    @After
+    public void after() {
+        if( cluster != null ) {
+            DockerContainersUtil util = new DockerContainersUtil(cluster.getConfig().dockerClient);
+            util.getContainers(true).filterByName("^mesos-[0-9a-f\\-]*S\\d*\\.[0-9a-f\\-]*$").remove();
+        }
+    }
 
     @Test
     public void mesosClusterStateInfoJSONMatchesSchema() throws UnirestException, JsonParseException, JsonMappingException {
@@ -147,15 +156,14 @@ public class MesosClusterTest {
         cluster.getMesosMasterContainer().getOuterDockerClient().logContainerCmd(mesosSlave.getContainerId()).withStdOut().exec(cb);
         cb.awaitCompletion();
 
-        Awaitility.await().atMost(Duration.ONE_MINUTE).until(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                LogContainerTestCallback cb = new LogContainerTestCallback();
-                cluster.getMesosMasterContainer().getOuterDockerClient().logContainerCmd(mesosSlave.getContainerId()).withStdOut().exec(cb);
-                cb.awaitCompletion();
-                return cb.toString().contains("Received status update TASK_FINISHED for task test-cmd");
-            }
+        Awaitility.await().atMost(Duration.ONE_MINUTE).until(() -> {
+            LogContainerTestCallback cb1 = new LogContainerTestCallback();
+            cluster.getMesosMasterContainer().getOuterDockerClient().logContainerCmd(mesosSlave.getContainerId()).withStdOut().exec(cb1);
+            cb1.awaitCompletion();
+            String log = cb1.toString();
+            return log.contains("Received status update TASK_FINISHED for task test-cmd");
         });
+
     }
 
 }
