@@ -263,7 +263,6 @@ public class MesosCluster extends ExternalResource {
                 }
             }
         }
-        LOGGER.warn("No running cluster found.");
     }
 
 }
