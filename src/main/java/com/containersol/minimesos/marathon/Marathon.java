@@ -1,7 +1,7 @@
 package com.containersol.minimesos.marathon;
 
 import com.containersol.minimesos.container.AbstractContainer;
-import com.containersol.minimesos.mesos.ZooKeeperExtended;
+import com.containersol.minimesos.mesos.ZooKeeper;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import org.apache.log4j.Logger;
@@ -18,9 +18,9 @@ public class Marathon extends AbstractContainer {
 
     private String clusterId;
 
-    private ZooKeeperExtended zooKeeper;
+    private ZooKeeper zooKeeper;
 
-    public Marathon(DockerClient dockerClient, String clusterId, ZooKeeperExtended zooKeeper) {
+    public Marathon(DockerClient dockerClient, String clusterId, ZooKeeper zooKeeper) {
         super(dockerClient);
         this.clusterId = clusterId;
         this.zooKeeper = zooKeeper;

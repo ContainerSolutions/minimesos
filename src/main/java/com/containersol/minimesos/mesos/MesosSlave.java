@@ -22,11 +22,11 @@ public class MesosSlave extends AbstractContainer {
     public static final String MESOS_SLAVE_IMAGE = "containersol/mesos-agent";
     public static final int MESOS_SLAVE_PORT = 5051;
     public static final String DEFAULT_PORT_RESOURCES = "ports(*):[31000-32000]";
-    private final String zkUrl;
+    private final ZooKeeper zooKeeperContainer;
 
-    protected MesosSlave(DockerClient dockerClient, String zkUrl) {
+    protected MesosSlave(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
         super(dockerClient);
-        this.zkUrl = zkUrl;
+        this.zooKeeperContainer = zooKeeperContainer;
     }
 
     @Override
@@ -101,7 +101,7 @@ public class MesosSlave extends AbstractContainer {
         TreeMap<String,String> envs = new TreeMap<>();
 
         envs.put("MESOS_PORT", String.valueOf(MESOS_SLAVE_PORT));
-        envs.put("MESOS_MASTER", this.zkUrl);
+        envs.put("MESOS_MASTER", MesosMaster.getFormattedZKAddress(zooKeeperContainer));
         envs.put("GLOG_v", "1");
         envs.put("MESOS_EXECUTOR_REGISTRATION_TIMEOUT", "5mins");
         envs.put("MESOS_CONTAINERIZERS", "docker,mesos");

@@ -26,16 +26,16 @@ public class MesosSlaveExtended extends MesosSlave {
 
     protected final String portNumber;
 
-    protected final String master;
 
+    private final MesosMaster mesosMaster;
     private final String clusterId;
 
-    public MesosSlaveExtended(DockerClient dockerClient, String resources, String portNumber, String zkUrl, String master, String mesosLocalImage, String registryTag, String clusterId) {
-        super(dockerClient, zkUrl);
+    public MesosSlaveExtended(DockerClient dockerClient, String resources, String portNumber, ZooKeeper zooKeeperContainer, MesosMaster mesosMaster, String mesosLocalImage, String registryTag, String clusterId) {
+        super(dockerClient, zooKeeperContainer);
+        this.mesosMaster = mesosMaster;
         this.clusterId = clusterId;
         this.resources = resources;
         this.portNumber = portNumber;
-        this.master = master;
         this.mesosLocalImage = mesosLocalImage;
         this.registryTag = registryTag;
     }
@@ -62,7 +62,7 @@ public class MesosSlaveExtended extends MesosSlave {
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
                 .withPid("host")
-                .withLinks(new Link(this.master, "minimesos-master"))
+                .withLinks(new Link(this.mesosMaster.getContainerId(), "minimesos-master"))
                 .withBinds(
                         Bind.parse("/var/lib/docker:/var/lib/docker"),
                         Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),

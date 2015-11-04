@@ -15,12 +15,13 @@ public class MesosMaster extends AbstractContainer {
     public static final String MESOS_MASTER_IMAGE = "containersol/mesos-master";
     public static final String MESOS_IMAGE_TAG = "0.25.0-0.2.70.ubuntu1404";
     public static final int MESOS_PORT = 5050;
+    public static final String DEFAULT_MESOS_ZK_PATH = "/mesos";
 
-    protected final String zkUrl;
+    private final ZooKeeper zooKeeperContainer;
 
-    public MesosMaster(DockerClient dockerClient, String zkUrl) {
+    public MesosMaster(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
         super(dockerClient);
-        this.zkUrl = zkUrl;
+        this.zooKeeperContainer = zooKeeperContainer;
     }
 
     @Override
@@ -46,12 +47,16 @@ public class MesosMaster extends AbstractContainer {
         TreeMap<String,String> envs = new TreeMap<>();
 
         envs.put("MESOS_QUORUM", "1");
-        envs.put("MESOS_ZK", zkUrl);
+        envs.put("MESOS_ZK", MesosMaster.getFormattedZKAddress(zooKeeperContainer));
         envs.put("MESOS_EXECUTOR_REGISTRATION_TIMEOUT", "5mins");
         envs.put("MESOS_CONTAINERIZERS", "docker,mesos");
         envs.put("MESOS_ISOLATOR", "cgroups/cpu,cgroups/mem");
         envs.put("MESOS_LOG_DIR", "/var/log");
         envs.put("MESOS_WORK_DIR", "/tmp/mesos");
         return envs;
+    }
+
+    public static String getFormattedZKAddress(ZooKeeper zooKeeperContainer) {
+        return ZooKeeper.formatZKAddress(zooKeeperContainer.getIpAddress()) + DEFAULT_MESOS_ZK_PATH;
     }
 }

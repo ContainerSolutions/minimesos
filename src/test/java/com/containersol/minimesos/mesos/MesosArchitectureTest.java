@@ -21,9 +21,11 @@ public class MesosArchitectureTest {
         assertTrue(mesosArchitecture.getMesosContainers().getContainers().stream().filter(Filter.mesosSlave()).findFirst().isPresent());
     }
 
-    @Test( expected = MesosArchitecture.MesosArchitectureException.class)
-    public void shouldErrorIfNoZooKeeperIsPresentAndMesosAdded() {
-        new MesosArchitecture.Builder().withMaster();
+    @Test
+    public void shouldBeAbleToAddCustomZooKeeper() {
+        ZooKeeper mock = mock(ZooKeeper.class);
+        MesosArchitecture.Builder builder = new MesosArchitecture.Builder().withZooKeeper(mock);
+        assertEquals(minimumViableClusterSize(), builder.build().getMesosContainers().getContainers().size());
     }
 
     @Test

@@ -1,8 +1,12 @@
 package com.containersol.minimesos;
 
+import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.marathon.MarathonClient;
 import com.containersol.minimesos.mesos.*;
+import com.containersol.minimesos.state.State;
+import com.containersol.minimesos.util.MesosClusterStateResponse;
+import com.containersol.minimesos.util.Predicate;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.dockerjava.api.DockerClient;
@@ -13,10 +17,6 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import com.containersol.minimesos.container.AbstractContainer;
-import com.containersol.minimesos.state.State;
-import com.containersol.minimesos.util.MesosClusterStateResponse;
-import com.containersol.minimesos.util.Predicate;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
@@ -24,11 +24,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -48,7 +44,8 @@ public class MesosCluster extends ExternalResource {
 
     private final List<AbstractContainer> containers = Collections.synchronizedList(new ArrayList<>());
 
-    private final MesosClusterConfig config;
+    private MesosClusterConfig config;
+    private MesosArchitecture mesosArchitecture;
 
     private MesosSlaveExtended[] mesosSlaves;
 
@@ -60,36 +57,47 @@ public class MesosCluster extends ExternalResource {
 
     private static String clusterId;
 
+    @Deprecated
     public MesosCluster(MesosClusterConfig config) {
         this.config = config;
         this.clusterId = Integer.toUnsignedString(new SecureRandom().nextInt());
+    }
+
+    public MesosCluster(MesosArchitecture mesosArchitecture) {
+        this.mesosArchitecture = mesosArchitecture;
     }
 
     /**
      * Starts the Mesos cluster and its containers
      */
     public void start() {
-        this.zkContainer = new ZooKeeperExtended(this.config.dockerClient, clusterId);
-        addAndStartContainer(this.zkContainer);
+        if (config != null) {
+            MesosArchitecture.Builder builder = new MesosArchitecture.Builder();
+            this.zkContainer = new ZooKeeperExtended(this.config.dockerClient, clusterId);
 
-        this.zkUrl = "zk://" + this.zkContainer.getIpAddress() + ":2181/" + this.config.zkUrl;
-        this.mesosMasterContainer = new MesosMasterExtended(this.config.dockerClient, this.zkUrl, this.config.mesosMasterImage, this.config.mesosImageTag, clusterId, this.config.extraEnvironmentVariables);
-        addAndStartContainer(this.mesosMasterContainer);
+            this.zkUrl = "zk://" + this.zkContainer.getIpAddress() + ":2181/" + this.config.zkUrl;
+            this.mesosMasterContainer = new MesosMasterExtended(this.config.dockerClient, this.zkContainer, this.config.mesosMasterImage, this.config.mesosImageTag, clusterId, this.config.extraEnvironmentVariables);
 
-        try {
-            mesosSlaves = new MesosSlaveExtended[config.getNumberOfSlaves()];
-            for (int i = 0; i < this.config.getNumberOfSlaves(); i++) {
-                mesosSlaves[i] = new MesosSlaveExtended(this.config.dockerClient, config.slaveResources[i], "5051", this.zkUrl, mesosMasterContainer.getContainerId(), this.config.mesosSlaveImage, this.config.mesosImageTag, clusterId);
-                addAndStartContainer(mesosSlaves[i]);
+            builder.withZooKeeper(this.zkContainer).withMaster(this.mesosMasterContainer);
+
+            try {
+                mesosSlaves = new MesosSlaveExtended[config.getNumberOfSlaves()];
+                for (int i = 0; i < this.config.getNumberOfSlaves(); i++) {
+                    mesosSlaves[i] = new MesosSlaveExtended(this.config.dockerClient, config.slaveResources[i], "5051", this.zkContainer, mesosMasterContainer, this.config.mesosSlaveImage, this.config.mesosImageTag, clusterId);
+                    builder.withSlave(mesosSlaves[i]);
+                }
+
+                MesosArchitecture architecture = builder.build();
+                architecture.getMesosContainers().getContainers().forEach(this::addAndStartContainer);
+                // wait until the given number of slaves are registered
+                new MesosClusterStateResponse(this.mesosMasterContainer.getIpAddress() + ":5050", config.numberOfSlaves).waitFor();
+            } catch (Throwable e) {
+                LOGGER.error("Error during startup", e);
             }
-            // wait until the given number of slaves are registered
-            new MesosClusterStateResponse(this.mesosMasterContainer.getIpAddress() + ":5050", config.numberOfSlaves).waitFor();
-        } catch (Throwable e) {
-            LOGGER.error("Error during startup", e);
-        }
 
-        Marathon marathon = new Marathon(this.config.dockerClient, clusterId, this.zkContainer);
-        addAndStartContainer(marathon);
+            Marathon marathon = new Marathon(this.config.dockerClient, clusterId, this.zkContainer);
+            addAndStartContainer(marathon);
+        }
 
         LOGGER.info("http://" + this.mesosMasterContainer.getIpAddress() + ":5050");
     }
@@ -182,7 +190,7 @@ public class MesosCluster extends ExternalResource {
         return config;
     }
 
-    public MesosMasterExtended getMesosMasterContainer() {
+    public MesosMaster getMesosMasterContainer() {
         return mesosMasterContainer;
     }
 
@@ -190,7 +198,7 @@ public class MesosCluster extends ExternalResource {
         return zkUrl;
     }
 
-    public ZooKeeperExtended getZkContainer() {
+    public ZooKeeper getZkContainer() {
         return zkContainer;
     }
 

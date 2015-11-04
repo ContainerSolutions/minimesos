@@ -24,8 +24,8 @@ public class MesosMasterExtended extends MesosMaster {
 
     private final Map<String, String> extraEnvironmentVariables;
 
-    public MesosMasterExtended(DockerClient dockerClient, String zkPath, String mesosMasterImage, String mesosImageTag, String clusterId, Map<String, String> extraEnvironmentVariables) {
-        super(dockerClient, zkPath);
+    public MesosMasterExtended(DockerClient dockerClient, ZooKeeper zooKeeperContainer, String mesosMasterImage, String mesosImageTag, String clusterId, Map<String, String> extraEnvironmentVariables) {
+        super(dockerClient, zooKeeperContainer);
         this.clusterId = clusterId;
         this.mesosMasterImage = mesosMasterImage;
         this.mesosImageTag = mesosImageTag;

@@ -13,7 +13,6 @@ import static com.containersol.minimesos.mesos.MesosContainers.*;
  */
 public class MesosArchitecture {
 
-    private static final String DEFAULT_MESOS_ZK_PATH = "/mesos";
     private final MesosContainers mesosContainers = new MesosContainers();
 
     public MesosContainers getMesosContainers() {
@@ -22,7 +21,6 @@ public class MesosArchitecture {
 
     public static class Builder {
         private static final Logger LOGGER = Logger.getLogger(MesosArchitecture.class);
-        public static final int DEFAULT_ZOOKEEPER_PORT = 2181;
         private final MesosArchitecture mesosArchitecture = new MesosArchitecture();
         private final DockerClient dockerClient;
 
@@ -58,20 +56,16 @@ public class MesosArchitecture {
             return mesosArchitecture.getMesosContainers().isPresent(filter);
         }
 
-        private String generateZKUrl() {
-            if (!isPresent(Filter.zooKeeper())) {
-                throw new MesosArchitectureException("ZooKeeper is not yet added to the cluster. Mesos requires ZooKeeper. Please add ZooKeeper first.");
-            }
-            String zkIp = mesosArchitecture.getMesosContainers().getOne(Filter.zooKeeper()).get().getIpAddress();
-            return "zk://" + zkIp + ":" + DEFAULT_ZOOKEEPER_PORT + "/" + DEFAULT_MESOS_ZK_PATH;
+        public Builder withZooKeeper() {
+            return withZooKeeper(new ZooKeeper(dockerClient));
         }
 
-        public Builder withZooKeeper() {
-            return withContainer(new ZooKeeper(dockerClient));
+        public Builder withZooKeeper(ZooKeeper zooKeeper) {
+            return withContainer(zooKeeper);
         }
 
         public Builder withMaster() {
-            return withContainer(new MesosMaster(dockerClient, generateZKUrl()));
+            return withMaster(new MesosMaster(dockerClient, (ZooKeeper) mesosArchitecture.getMesosContainers().getOne(Filter.zooKeeper()).get()));
         }
 
         public Builder withMaster(MesosMaster customMaster) {
@@ -79,7 +73,7 @@ public class MesosArchitecture {
         }
 
         public Builder withSlave() {
-            return withContainer(new MesosSlave(dockerClient, generateZKUrl()));
+            return withSlave(new MesosSlave(dockerClient, (ZooKeeper) mesosArchitecture.getMesosContainers().getOne(Filter.zooKeeper()).get()));
         }
 
         public Builder withSlave(MesosSlave customSlave) {
