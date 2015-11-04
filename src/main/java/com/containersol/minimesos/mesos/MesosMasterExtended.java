@@ -37,7 +37,8 @@ public class MesosMasterExtended extends MesosMaster {
         super.start();
     }
 
-    String[] createMesosLocalEnvironment() {
+    @Override
+    protected String[] createMesosLocalEnvironment() {
         TreeMap<String,String> envs = getMesosEnvVars();
 
         envs.putAll(this.extraEnvironmentVariables);
