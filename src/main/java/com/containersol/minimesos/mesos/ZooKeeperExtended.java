@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 
+@Deprecated
 public class ZooKeeperExtended extends ZooKeeper {
 
     private final String clusterId;

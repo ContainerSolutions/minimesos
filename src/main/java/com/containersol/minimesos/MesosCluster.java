@@ -58,7 +58,7 @@ public class MesosCluster extends ExternalResource {
 
     protected ZooKeeperExtended zkContainer;
 
-    private String clusterId;
+    private static String clusterId;
 
     public MesosCluster(MesosClusterConfig config) {
         this.config = config;
@@ -213,7 +213,7 @@ public class MesosCluster extends ExternalResource {
         waitForState(predicate, 20);
     }
 
-    public String getClusterId() {
+    public static String getClusterId() {
         return clusterId;
     }
 

@@ -1,5 +1,6 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.MesosCluster;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -77,7 +78,7 @@ public class MesosSlave extends AbstractContainer {
         }
 
         return dockerClient.createContainerCmd(MESOS_SLAVE_IMAGE + ":" + MesosMaster.MESOS_IMAGE_TAG)
-                .withName("minimesos-agent-" + "-" + getRandomId())
+                .withName("minimesos-agent-" + MesosCluster.getClusterId() + "-" + getRandomId())
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
                 .withPid("host")

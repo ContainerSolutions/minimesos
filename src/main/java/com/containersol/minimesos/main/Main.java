@@ -71,7 +71,7 @@ public class Main {
             File miniMesosDir = new File(System.getProperty("minimesos.dir"));
             try {
                 FileUtils.forceMkdir(miniMesosDir);
-                Files.write(Paths.get(miniMesosDir.getAbsolutePath() + "/minimesos.cluster"), cluster.getClusterId().getBytes());
+                Files.write(Paths.get(miniMesosDir.getAbsolutePath() + "/minimesos.cluster"), MesosCluster.getClusterId().getBytes());
             } catch (IOException ie) {
                 LOGGER.error("Could not write .minimesos folder", ie);
                 throw new RuntimeException(ie);
