@@ -81,7 +81,7 @@ public class MesosSlaveExtended extends MesosSlave {
         ArrayList<ExposedPort> exposedPorts= new ArrayList<>();
         exposedPorts.add(new ExposedPort(Integer.parseInt(this.portNumber)));
         try {
-            ArrayList<Integer> resourcePorts = this.parsePortsFromResource(this.resources);
+            ArrayList<Integer> resourcePorts = parsePortsFromResource(this.resources);
             for (Integer port : resourcePorts) {
                 exposedPorts.add(new ExposedPort(port));
             }
@@ -95,10 +95,6 @@ public class MesosSlaveExtended extends MesosSlave {
 
     public String getResources() {
         return resources;
-    }
-
-    public ArrayList<Integer> parsePortsFromResource(String resources) throws Exception {
-        return super.parsePortsFromResource(resources);
     }
 
     String[] createMesosLocalEnvironment() {

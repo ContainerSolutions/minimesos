@@ -22,6 +22,7 @@ public class MesosSlave extends AbstractContainer {
     public static final String MESOS_SLAVE_IMAGE = "containersol/mesos-agent";
     public static final int MESOS_SLAVE_PORT = 5051;
     public static final String DEFAULT_PORT_RESOURCES = "ports(*):[31000-32000]";
+    private static final String DEFAULT_RESOURCES = DEFAULT_PORT_RESOURCES + "; cpus(*):0.2; mem(*):256; disk(*):200";
     private final ZooKeeper zooKeeperContainer;
 
     protected MesosSlave(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
@@ -39,7 +40,7 @@ public class MesosSlave extends AbstractContainer {
         ArrayList<ExposedPort> exposedPorts= new ArrayList<>();
         exposedPorts.add(new ExposedPort(MESOS_SLAVE_PORT));
         try {
-            ArrayList<Integer> resourcePorts = this.parsePortsFromResource(DEFAULT_PORT_RESOURCES);
+            ArrayList<Integer> resourcePorts = parsePortsFromResource(DEFAULT_PORT_RESOURCES);
             for (Integer port : resourcePorts) {
                 exposedPorts.add(new ExposedPort(port));
             }
@@ -51,7 +52,7 @@ public class MesosSlave extends AbstractContainer {
         return cmd.withExposedPorts(exposedPorts.toArray(new ExposedPort[exposedPorts.size()]));
     }
 
-    protected ArrayList<Integer> parsePortsFromResource(String resources) throws Exception {
+    public static ArrayList<Integer> parsePortsFromResource(String resources) throws Exception {
         String port = resources.replaceAll(".*ports\\(.+\\):\\[(.*)\\].*", "$1");
         ArrayList<String> ports = new ArrayList<>(Arrays.asList(port.split(",")));
         ArrayList<Integer> returnList = new ArrayList<>();
@@ -92,7 +93,7 @@ public class MesosSlave extends AbstractContainer {
 
     private String[] createMesosLocalEnvironment() {
         TreeMap<String, String> envs = getDefaultEnvVars();
-        envs.put("MESOS_RESOURCES", DEFAULT_PORT_RESOURCES);
+        envs.put("MESOS_RESOURCES", DEFAULT_RESOURCES);
 
         return envs.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
     }

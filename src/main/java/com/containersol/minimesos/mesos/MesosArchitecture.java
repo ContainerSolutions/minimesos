@@ -65,7 +65,7 @@ public class MesosArchitecture {
         }
 
         public Builder withMaster() {
-            return withMaster(new MesosMaster(dockerClient, (ZooKeeper) mesosArchitecture.getMesosContainers().getOne(Filter.zooKeeper()).get()));
+            return withMaster(new MesosMaster(dockerClient, getZooKeeperContainer()));
         }
 
         public Builder withMaster(MesosMaster customMaster) {
@@ -73,7 +73,14 @@ public class MesosArchitecture {
         }
 
         public Builder withSlave() {
-            return withSlave(new MesosSlave(dockerClient, (ZooKeeper) mesosArchitecture.getMesosContainers().getOne(Filter.zooKeeper()).get()));
+            return withSlave(new MesosSlave(dockerClient, getZooKeeperContainer()));
+        }
+
+        private ZooKeeper getZooKeeperContainer() {
+            if (!isPresent(Filter.zooKeeper())) {
+                throw new MesosArchitectureException("ZooKeeper is required by Mesos. You cannot add a Mesos node until you have created a ZooKeeper node. Please add a ZooKeeper node first.");
+            }
+            return (ZooKeeper) mesosArchitecture.getMesosContainers().getOne(Filter.zooKeeper()).get();
         }
 
         public Builder withSlave(MesosSlave customSlave) {

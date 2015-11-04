@@ -27,6 +27,7 @@ import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.jayway.awaitility.Awaitility.await;
 
@@ -47,13 +48,13 @@ public class MesosCluster extends ExternalResource {
     private MesosClusterConfig config;
     private MesosArchitecture mesosArchitecture;
 
-    private MesosSlaveExtended[] mesosSlaves;
+    private MesosSlave[] mesosSlaves;
 
-    protected MesosMasterExtended mesosMasterContainer;
+    protected MesosMaster mesosMasterContainer;
 
     protected String zkUrl;
 
-    protected ZooKeeperExtended zkContainer;
+    protected ZooKeeper zkContainer;
 
     private static String clusterId;
 
@@ -87,18 +88,24 @@ public class MesosCluster extends ExternalResource {
                     builder.withSlave(mesosSlaves[i]);
                 }
 
-                MesosArchitecture architecture = builder.build();
-                architecture.getMesosContainers().getContainers().forEach(this::addAndStartContainer);
-                // wait until the given number of slaves are registered
-                new MesosClusterStateResponse(this.mesosMasterContainer.getIpAddress() + ":5050", config.numberOfSlaves).waitFor();
+                Marathon marathon = new Marathon(this.config.dockerClient, clusterId, this.zkContainer);
+                builder.withContainer(marathon);
+
+                this.mesosArchitecture = builder.build();
             } catch (Throwable e) {
                 LOGGER.error("Error during startup", e);
             }
-
-            Marathon marathon = new Marathon(this.config.dockerClient, clusterId, this.zkContainer);
-            addAndStartContainer(marathon);
+        } else if (mesosArchitecture != null) {
+            this.zkContainer = (ZooKeeper) mesosArchitecture.getMesosContainers().getOne(MesosContainers.Filter.zooKeeper()).get();
+            this.mesosMasterContainer = (MesosMaster) mesosArchitecture.getMesosContainers().getOne(MesosContainers.Filter.mesosMaster()).get();
+            this.mesosSlaves = getSlaves();
+        } else {
+            throw new MesosArchitecture.MesosArchitectureException("No cluster architecture specified");
         }
 
+        mesosArchitecture.getMesosContainers().getContainers().forEach(this::addAndStartContainer);
+        // wait until the given number of slaves are registered
+        new MesosClusterStateResponse(this.mesosMasterContainer.getIpAddress() + ":5050", getSlaves().length).waitFor();
         LOGGER.info("http://" + this.mesosMasterContainer.getIpAddress() + ":5050");
     }
 
@@ -173,12 +180,12 @@ public class MesosCluster extends ExternalResource {
     }
 
     public List<AbstractContainer> getContainers() {
-        return containers;
+        return mesosArchitecture.getMesosContainers().getContainers();
     }
 
-    public MesosSlaveExtended[] getSlaves()
+    public MesosSlave[] getSlaves()
     {
-           return mesosSlaves;
+           return mesosArchitecture.getMesosContainers().getContainers().stream().filter(MesosContainers.Filter.mesosSlave()).collect(Collectors.toList()).toArray(new MesosSlave[0]);
     }
 
     @Override
@@ -186,6 +193,7 @@ public class MesosCluster extends ExternalResource {
         stop();
     }
 
+    @Deprecated
     public MesosClusterConfig getConfig() {
         return config;
     }
