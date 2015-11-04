@@ -15,7 +15,7 @@ import com.jayway.awaitility.Duration;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.containersol.minimesos.mesos.MesosClusterConfig;
-import com.containersol.minimesos.mesos.MesosSlave;
+import com.containersol.minimesos.mesos.MesosSlaveExtended;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Assert;
@@ -73,9 +73,9 @@ public class MesosClusterTest {
     @Test
     public void dockerExposeResourcesPorts() {
         DockerClient docker = cluster.getMesosMasterContainer().getOuterDockerClient();
-        List<MesosSlave> containers = Arrays.asList(cluster.getSlaves());
+        List<MesosSlaveExtended> containers = Arrays.asList(cluster.getSlaves());
         ArrayList<Integer> ports = new ArrayList<>();
-        for (MesosSlave container : containers) {
+        for (MesosSlaveExtended container : containers) {
             try {
                 ports = container.parsePortsFromResource(container.getResources());
             } catch (Exception e) {
@@ -100,8 +100,8 @@ public class MesosClusterTest {
 
     @Test
     public void testMasterLinkedToSlaves() throws UnirestException {
-        List<MesosSlave> containers = Arrays.asList(cluster.getSlaves());
-        for (MesosSlave container : containers) {
+        List<MesosSlaveExtended> containers = Arrays.asList(cluster.getSlaves());
+        for (MesosSlaveExtended container : containers) {
             InspectContainerResponse exec = cluster.getMesosMasterContainer().getOuterDockerClient().inspectContainerCmd(container.getContainerId()).exec();
             List<Link> links = Arrays.asList(exec.getHostConfig().getLinks());
             for (Link link : links) {
@@ -127,7 +127,7 @@ public class MesosClusterTest {
 
     @Test
     public void testMesosExecuteContainerSuccess() throws InterruptedException {
-        MesosSlave mesosSlave = new MesosSlave(
+        MesosSlaveExtended mesosSlave = new MesosSlaveExtended(
                 cluster.getConfig().dockerClient,
                 "ports(*):[9204-9204, 9304-9304]; cpus(*):0.2; mem(*):256; disk(*):200",
                 "5051",

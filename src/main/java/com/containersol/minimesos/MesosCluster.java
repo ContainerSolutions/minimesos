@@ -2,7 +2,7 @@ package com.containersol.minimesos;
 
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.marathon.MarathonClient;
-import com.containersol.minimesos.mesos.DockerClientFactory;
+import com.containersol.minimesos.mesos.*;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.dockerjava.api.DockerClient;
@@ -14,10 +14,6 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import com.containersol.minimesos.container.AbstractContainer;
-import com.containersol.minimesos.mesos.MesosClusterConfig;
-import com.containersol.minimesos.mesos.MesosMaster;
-import com.containersol.minimesos.mesos.MesosSlave;
-import com.containersol.minimesos.mesos.ZooKeeper;
 import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.MesosClusterStateResponse;
 import com.containersol.minimesos.util.Predicate;
@@ -54,13 +50,13 @@ public class MesosCluster extends ExternalResource {
 
     private final MesosClusterConfig config;
 
-    private MesosSlave[] mesosSlaves;
+    private MesosSlaveExtended[] mesosSlaves;
 
-    protected MesosMaster mesosMasterContainer;
+    protected MesosMasterExtended mesosMasterContainer;
 
     protected String zkUrl;
 
-    protected ZooKeeper zkContainer;
+    protected ZooKeeperExtended zkContainer;
 
     private String clusterId;
 
@@ -73,17 +69,17 @@ public class MesosCluster extends ExternalResource {
      * Starts the Mesos cluster and its containers
      */
     public void start() {
-        this.zkContainer = new ZooKeeper(this.config.dockerClient, clusterId);
+        this.zkContainer = new ZooKeeperExtended(this.config.dockerClient, clusterId);
         addAndStartContainer(this.zkContainer);
 
         this.zkUrl = "zk://" + this.zkContainer.getIpAddress() + ":2181/" + this.config.zkUrl;
-        this.mesosMasterContainer = new MesosMaster(this.config.dockerClient, this.zkUrl, this.config.mesosMasterImage, this.config.mesosImageTag, clusterId, this.config.extraEnvironmentVariables);
+        this.mesosMasterContainer = new MesosMasterExtended(this.config.dockerClient, this.zkUrl, this.config.mesosMasterImage, this.config.mesosImageTag, clusterId, this.config.extraEnvironmentVariables);
         addAndStartContainer(this.mesosMasterContainer);
 
         try {
-            mesosSlaves = new MesosSlave[config.getNumberOfSlaves()];
+            mesosSlaves = new MesosSlaveExtended[config.getNumberOfSlaves()];
             for (int i = 0; i < this.config.getNumberOfSlaves(); i++) {
-                mesosSlaves[i] = new MesosSlave(this.config.dockerClient, config.slaveResources[i], "5051", this.zkUrl, mesosMasterContainer.getContainerId(), this.config.mesosSlaveImage, this.config.mesosImageTag, clusterId);
+                mesosSlaves[i] = new MesosSlaveExtended(this.config.dockerClient, config.slaveResources[i], "5051", this.zkUrl, mesosMasterContainer.getContainerId(), this.config.mesosSlaveImage, this.config.mesosImageTag, clusterId);
                 addAndStartContainer(mesosSlaves[i]);
             }
             // wait until the given number of slaves are registered
@@ -172,7 +168,7 @@ public class MesosCluster extends ExternalResource {
         return containers;
     }
 
-    public MesosSlave[] getSlaves()
+    public MesosSlaveExtended[] getSlaves()
     {
            return mesosSlaves;
     }
@@ -186,7 +182,7 @@ public class MesosCluster extends ExternalResource {
         return config;
     }
 
-    public MesosMaster getMesosMasterContainer() {
+    public MesosMasterExtended getMesosMasterContainer() {
         return mesosMasterContainer;
     }
 
@@ -194,7 +190,7 @@ public class MesosCluster extends ExternalResource {
         return zkUrl;
     }
 
-    public ZooKeeper getZkContainer() {
+    public ZooKeeperExtended getZkContainer() {
         return zkContainer;
     }
 

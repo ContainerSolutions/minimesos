@@ -5,6 +5,7 @@ import com.github.dockerjava.api.DockerClient;
 import java.util.Map;
 import java.util.TreeMap;
 
+@Deprecated
 public class MesosClusterConfig {
 
     public static final String MESOS_MASTER_IMAGE = "containersol/mesos-master";
@@ -22,6 +23,7 @@ public class MesosClusterConfig {
 
     public final Map<String,String> extraEnvironmentVariables;
 
+    @Deprecated
     private MesosClusterConfig(
             DockerClient dockerClient,
             int numberOfSlaves,
@@ -44,6 +46,7 @@ public class MesosClusterConfig {
         this.mesosImageTag = mesosImageTag;
     }
 
+    @Deprecated
     public static Builder builder() {
         return new Builder();
     }
