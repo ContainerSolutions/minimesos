@@ -1,13 +1,16 @@
 package com.containersol.minimesos;
 
-import com.github.dockerjava.core.command.LogContainerResultCallback;
+import com.containersol.minimesos.mesos.DockerClientFactory;
+import com.containersol.minimesos.mesos.MesosArchitecture;
+import com.containersol.minimesos.mesos.MesosMaster;
+import com.containersol.minimesos.mesos.ZooKeeper;
+import com.github.dockerjava.api.DockerClient;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.containersol.minimesos.mesos.MesosClusterConfig;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import java.util.HashMap;
+import java.util.TreeMap;
 
 public class FlagsTest {
 
@@ -18,18 +21,9 @@ public class FlagsTest {
 
     @ClassRule
     public static final MesosCluster cluster = new MesosCluster(
-            MesosClusterConfig.builder()
-                    .zkUrl("mesos")
-                    .slaveResources(new String[]{
-                            "ports(*):[9201-9201, 9301-9301]; cpus(*):0.2; mem(*):256; disk(*):200",
-                            "ports(*):[9202-9202, 9302-9302]; cpus(*):0.2; mem(*):256; disk(*):200",
-                            "ports(*):[9203-9203, 9303-9303]; cpus(*):0.2; mem(*):256; disk(*):200"
-                    })
-                    .extraEnvironmentVariables(new HashMap<String, String>() {{
-                        this.put("MESOS_AUTHENTICATE", "true");
-                        this.put("MESOS_ACLS", aclExampleJson);
-                    }})
-                    .build()
+            new MesosArchitecture.Builder()
+                    .withZooKeeper()
+                    .withMaster(zooKeeper -> new MesosMasterEnvVars(DockerClientFactory.build(), zooKeeper)).build()
     );
 
     @Test
@@ -41,6 +35,22 @@ public class FlagsTest {
     public void extraEnvironmentVariablesPassedToMesosMaster() throws UnirestException {
         Assert.assertEquals("true", cluster.getFlags().get("authenticate"));
         Assert.assertEquals(aclExampleUnknownSyntaxUsedInStateJson, cluster.getFlags().get("acls"));
+    }
+
+    public static class MesosMasterEnvVars extends MesosMaster {
+
+        protected MesosMasterEnvVars(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
+            super(dockerClient, zooKeeperContainer);
+        }
+
+        @Override
+        protected String[] createMesosLocalEnvironment() {
+            TreeMap<String, String> envs = getMesosEnvVars();
+            envs.put("MESOS_AUTHENTICATE", "true");
+            envs.put("MESOS_ACLS", aclExampleJson);
+
+            return envs.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
+        }
     }
 }
 

@@ -47,7 +47,7 @@ public class MesosArchitectureTest {
     @Test
     public void shouldBeAbleToAddCustomMaster() {
         MesosMaster mock = mock(MesosMaster.class);
-        MesosArchitecture.Builder builder = new MesosArchitecture.Builder().withZooKeeper().withMaster(mock);
+        MesosArchitecture.Builder builder = new MesosArchitecture.Builder().withZooKeeper().withMaster(zk -> mock);
         assertEquals(minimumViableClusterSize(), builder.build().getMesosContainers().getContainers().size());
     }
 
@@ -60,7 +60,7 @@ public class MesosArchitectureTest {
     @Test
     public void shouldBeAbleToAddCustomSlave() {
         MesosSlave mock = mock(MesosSlave.class);
-        MesosArchitecture.Builder builder = new MesosArchitecture.Builder().withZooKeeper().withSlave(mock);
+        MesosArchitecture.Builder builder = new MesosArchitecture.Builder().withZooKeeper().withSlave(zk -> mock);
         assertEquals(minimumViableClusterSize(), builder.build().getMesosContainers().getContainers().size());
     }
 

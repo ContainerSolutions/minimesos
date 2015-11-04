@@ -22,7 +22,7 @@ public class MesosSlave extends AbstractContainer {
     public static final String MESOS_SLAVE_IMAGE = "containersol/mesos-agent";
     public static final int MESOS_SLAVE_PORT = 5051;
     public static final String DEFAULT_PORT_RESOURCES = "ports(*):[31000-32000]";
-    private static final String DEFAULT_RESOURCES = DEFAULT_PORT_RESOURCES + "; cpus(*):0.2; mem(*):256; disk(*):200";
+    public static final String DEFAULT_RESOURCES = DEFAULT_PORT_RESOURCES + "; cpus(*):0.2; mem(*):256; disk(*):200";
     private final ZooKeeper zooKeeperContainer;
 
     protected MesosSlave(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
@@ -91,7 +91,7 @@ public class MesosSlave extends AbstractContainer {
                 );
     }
 
-    private String[] createMesosLocalEnvironment() {
+    protected String[] createMesosLocalEnvironment() {
         TreeMap<String, String> envs = getDefaultEnvVars();
         envs.put("MESOS_RESOURCES", DEFAULT_RESOURCES);
 

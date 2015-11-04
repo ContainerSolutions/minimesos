@@ -4,6 +4,7 @@ import com.containersol.minimesos.container.AbstractContainer;
 import com.github.dockerjava.api.DockerClient;
 import org.apache.log4j.Logger;
 
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static com.containersol.minimesos.mesos.MesosContainers.*;
@@ -61,19 +62,33 @@ public class MesosArchitecture {
         }
 
         public Builder withZooKeeper(ZooKeeper zooKeeper) {
-            return withContainer(zooKeeper);
+            mesosArchitecture.getMesosContainers().add(zooKeeper); // You don't need a zookeeper container to add a zookeeper container
+            return this;
         }
 
         public Builder withMaster() {
-            return withMaster(new MesosMaster(dockerClient, getZooKeeperContainer()));
+            return withMaster(zooKeeper -> new MesosMaster(dockerClient, zooKeeper));
         }
 
-        public Builder withMaster(MesosMaster customMaster) {
-            return withContainer(customMaster);
+        public Builder withMaster(Function<ZooKeeper, MesosMaster> master) {
+            return withContainer(master::apply);
         }
 
         public Builder withSlave() {
-            return withSlave(new MesosSlave(dockerClient, getZooKeeperContainer()));
+            return withSlave(zooKeeper -> new MesosSlave(dockerClient, zooKeeper));
+        }
+
+        public Builder withSlave(Function<ZooKeeper, MesosSlave> slave) {
+            return withContainer(slave::apply);
+        }
+
+        public Builder withContainer(Function<ZooKeeper, AbstractContainer> container) {
+            return withContainer(container.apply(getZooKeeperContainer()));
+        }
+
+        public Builder withContainer(AbstractContainer container) {
+            mesosArchitecture.getMesosContainers().add(container); // A simple container may not need zookeeper. But is available if required.
+            return this;
         }
 
         private ZooKeeper getZooKeeperContainer() {
@@ -81,15 +96,6 @@ public class MesosArchitecture {
                 throw new MesosArchitectureException("ZooKeeper is required by Mesos. You cannot add a Mesos node until you have created a ZooKeeper node. Please add a ZooKeeper node first.");
             }
             return (ZooKeeper) mesosArchitecture.getMesosContainers().getOne(Filter.zooKeeper()).get();
-        }
-
-        public Builder withSlave(MesosSlave customSlave) {
-            return withContainer(customSlave);
-        }
-
-        public Builder withContainer(AbstractContainer container) {
-            mesosArchitecture.getMesosContainers().add(container);
-            return this;
         }
     }
 

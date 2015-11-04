@@ -39,7 +39,7 @@ public class MesosMaster extends AbstractContainer {
 
     }
 
-    private String[] createMesosLocalEnvironment() {
+    protected String[] createMesosLocalEnvironment() {
         return getMesosEnvVars().entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
     }
 

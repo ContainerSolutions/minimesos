@@ -48,14 +48,6 @@ public class MesosCluster extends ExternalResource {
     private MesosClusterConfig config;
     private MesosArchitecture mesosArchitecture;
 
-    private MesosSlave[] mesosSlaves;
-
-    protected MesosMaster mesosMasterContainer;
-
-    protected String zkUrl;
-
-    protected ZooKeeper zkContainer;
-
     private static String clusterId;
 
     @Deprecated
@@ -72,41 +64,29 @@ public class MesosCluster extends ExternalResource {
      * Starts the Mesos cluster and its containers
      */
     public void start() {
+        if (config == null && mesosArchitecture == null) {
+            throw new MesosArchitecture.MesosArchitectureException("No cluster architecture specified");
+        }
         if (config != null) {
             MesosArchitecture.Builder builder = new MesosArchitecture.Builder();
-            this.zkContainer = new ZooKeeperExtended(this.config.dockerClient, clusterId);
-
-            this.zkUrl = "zk://" + this.zkContainer.getIpAddress() + ":2181/" + this.config.zkUrl;
-            this.mesosMasterContainer = new MesosMasterExtended(this.config.dockerClient, this.zkContainer, this.config.mesosMasterImage, this.config.mesosImageTag, clusterId, this.config.extraEnvironmentVariables);
-
-            builder.withZooKeeper(this.zkContainer).withMaster(this.mesosMasterContainer);
-
+            builder.withZooKeeper().withMaster();
             try {
-                mesosSlaves = new MesosSlaveExtended[config.getNumberOfSlaves()];
                 for (int i = 0; i < this.config.getNumberOfSlaves(); i++) {
-                    mesosSlaves[i] = new MesosSlaveExtended(this.config.dockerClient, config.slaveResources[i], "5051", this.zkContainer, mesosMasterContainer, this.config.mesosSlaveImage, this.config.mesosImageTag, clusterId);
-                    builder.withSlave(mesosSlaves[i]);
+                    builder.withSlave();
                 }
 
-                Marathon marathon = new Marathon(this.config.dockerClient, clusterId, this.zkContainer);
-                builder.withContainer(marathon);
+                builder.withContainer(zooKeeper -> new Marathon(dockerClient, clusterId, zooKeeper));
 
                 this.mesosArchitecture = builder.build();
             } catch (Throwable e) {
                 LOGGER.error("Error during startup", e);
             }
-        } else if (mesosArchitecture != null) {
-            this.zkContainer = (ZooKeeper) mesosArchitecture.getMesosContainers().getOne(MesosContainers.Filter.zooKeeper()).get();
-            this.mesosMasterContainer = (MesosMaster) mesosArchitecture.getMesosContainers().getOne(MesosContainers.Filter.mesosMaster()).get();
-            this.mesosSlaves = getSlaves();
-        } else {
-            throw new MesosArchitecture.MesosArchitectureException("No cluster architecture specified");
         }
 
         mesosArchitecture.getMesosContainers().getContainers().forEach(this::addAndStartContainer);
         // wait until the given number of slaves are registered
-        new MesosClusterStateResponse(this.mesosMasterContainer.getIpAddress() + ":5050", getSlaves().length).waitFor();
-        LOGGER.info("http://" + this.mesosMasterContainer.getIpAddress() + ":5050");
+        new MesosClusterStateResponse(getMesosMasterContainer().getIpAddress() + ":" + MesosMaster.MESOS_PORT, getSlaves().length).waitFor();
+        LOGGER.info("http://" + getMesosMasterContainer().getIpAddress() + ":" + MesosMaster.MESOS_PORT);
     }
 
     /**
@@ -183,8 +163,7 @@ public class MesosCluster extends ExternalResource {
         return mesosArchitecture.getMesosContainers().getContainers();
     }
 
-    public MesosSlave[] getSlaves()
-    {
+    public MesosSlave[] getSlaves() {
            return mesosArchitecture.getMesosContainers().getContainers().stream().filter(MesosContainers.Filter.mesosSlave()).collect(Collectors.toList()).toArray(new MesosSlave[0]);
     }
 
@@ -199,15 +178,15 @@ public class MesosCluster extends ExternalResource {
     }
 
     public MesosMaster getMesosMasterContainer() {
-        return mesosMasterContainer;
+        return (MesosMaster) mesosArchitecture.getMesosContainers().getOne(MesosContainers.Filter.mesosMaster()).get();
     }
 
     public String getZkUrl() {
-        return zkUrl;
+        return MesosMaster.getFormattedZKAddress(getZkContainer());
     }
 
     public ZooKeeper getZkContainer() {
-        return zkContainer;
+        return (ZooKeeper) mesosArchitecture.getMesosContainers().getOne(MesosContainers.Filter.zooKeeper()).get();
     }
 
     public void waitForState(final Predicate<State> predicate, int seconds) {
