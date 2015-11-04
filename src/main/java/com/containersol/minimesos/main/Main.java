@@ -27,14 +27,19 @@ public class Main {
         commandUp = new CommandUp();
         CommandDestroy commandDestroy = new CommandDestroy();
         CommandHelp commandHelp = new CommandHelp();
+        CommandInfo commandInfo = new CommandInfo();
 
         jc.addCommand("up", commandUp);
         jc.addCommand("destroy", commandDestroy);
         jc.addCommand("help", commandHelp);
+        jc.addCommand("info", commandInfo);
         jc.parseWithoutValidation(args);
 
+        String clusterId = MesosCluster.readClusterId();
+        MesosCluster.checkStateFile(clusterId);
+        clusterId = MesosCluster.readClusterId();
+
         if (jc.getParsedCommand() == null) {
-            String clusterId = MesosCluster.readClusterId();
             if (clusterId != null) {
                 MesosCluster.printServiceUrl(clusterId, "master", commandUp.isExposedHostPorts());
                 MesosCluster.printServiceUrl(clusterId, "marathon", commandUp.isExposedHostPorts());
@@ -47,6 +52,9 @@ public class Main {
         switch (jc.getParsedCommand()) {
             case "up":
                 doUp();
+                break;
+            case "info":
+                printInfo();
                 break;
             case "destroy":
                 MesosCluster.destroy();
@@ -79,6 +87,17 @@ public class Main {
         clusterId = MesosCluster.readClusterId();
         MesosCluster.printServiceUrl(clusterId, "master", commandUp.isExposedHostPorts());
         MesosCluster.printServiceUrl(clusterId, "marathon", commandUp.isExposedHostPorts());
+    }
+
+    private static void printInfo() {
+        String clusterId = MesosCluster.readClusterId();
+        if (clusterId != null) {
+            LOGGER.info("Minimesos cluster is running");
+            MesosCluster.printMasterIp(clusterId);
+            LOGGER.info("Mesos version: " + MesosClusterConfig.MESOS_IMAGE_TAG.substring(0, MesosClusterConfig.MESOS_IMAGE_TAG.indexOf("-")));
+        } else {
+            LOGGER.info("Minimesos cluster is not running");
+        }
     }
 
 }

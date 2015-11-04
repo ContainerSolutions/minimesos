@@ -1,9 +1,19 @@
 package com.containersol.minimesos;
 
-import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.marathon.MarathonClient;
 import com.containersol.minimesos.mesos.DockerClientFactory;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.InternalServerErrorException;
+import com.github.dockerjava.api.NotFoundException;
+import com.github.dockerjava.api.model.Container;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
+import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.mesos.MesosClusterConfig;
 import com.containersol.minimesos.mesos.MesosMaster;
 import com.containersol.minimesos.mesos.MesosSlave;
@@ -11,17 +21,6 @@ import com.containersol.minimesos.mesos.ZooKeeper;
 import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.MesosClusterStateResponse;
 import com.containersol.minimesos.util.Predicate;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.InternalServerErrorException;
-import com.github.dockerjava.api.NotFoundException;
-import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.model.Container;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
-import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
@@ -125,7 +124,7 @@ public class MesosCluster extends ExternalResource {
     }
 
     public State getStateInfo() throws UnirestException, JsonParseException, JsonMappingException {
-        String json = Unirest.get("http://" + this.getMesosMasterContainer().getIpAddress() + ":5050" + "/state.json").asString().getBody();
+        String json = Unirest.get("http://" + this.getMesosMasterContainer().getIpAddress() + ":5050" +"/state.json").asString().getBody();
 
         return State.fromJSON(json);
     }
@@ -229,6 +228,26 @@ public class MesosCluster extends ExternalResource {
         return null;
     }
 
+    /**
+     * Check existence of a running minimesos master container
+     * @param clusterId String
+     * @return boolean
+     */
+    public static boolean isUp(String clusterId) {
+        if (clusterId != null) {
+            DockerClient dockerClient = DockerClientFactory.build();
+            List<Container> containers = dockerClient.listContainersCmd().exec();
+            for (Container container : containers) {
+                for (String name : container.getNames()) {
+                    if (name.contains("minimesos-master-" + clusterId)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     public static void destroy() {
         String clusterId = readClusterId();
 
@@ -240,6 +259,8 @@ public class MesosCluster extends ExternalResource {
         if (clusterId != null) {
             destroyContainers(clusterId);
             miniMesosFile.deleteOnExit();
+        } else {
+            LOGGER.info("Minimesos cluster is not running");
         }
     }
 
@@ -248,6 +269,16 @@ public class MesosCluster extends ExternalResource {
             return IOUtils.toString(new FileReader(miniMesosFile));
         } catch (IOException e) {
             return null;
+        }
+    }
+
+    public static void checkStateFile(String clusterId) {
+        if (clusterId != null && !isUp(clusterId)) {
+            if (miniMesosFile.delete()) {
+                LOGGER.info("Invalid state file removed");
+            } else {
+                LOGGER.info("Cannot remove invalid state file " + miniMesosFile.getAbsolutePath());
+            }
         }
     }
 
