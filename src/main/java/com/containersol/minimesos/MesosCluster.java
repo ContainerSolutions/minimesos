@@ -267,10 +267,10 @@ public class MesosCluster extends ExternalResource {
                     }
                     switch (serviceName) {
                         case "master":
-                            uri = "Mesos: http://" + ip + ":" + MesosMaster.MESOS_MASTER_PORT;
+                            uri = "Master http://" + ip + ":" + MesosMaster.MESOS_MASTER_PORT;
                             break;
                         case "marathon":
-                            uri = "Marathon: http://" + ip + ":" + Marathon.MARATHON_PORT;
+                            uri = "Marathon http://" + ip + ":" + Marathon.MARATHON_PORT;
                             break;
                         default:
                             uri = "Unknown service type '" + serviceName + "'";
