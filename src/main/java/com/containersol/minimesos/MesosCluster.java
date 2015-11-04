@@ -231,6 +231,26 @@ public class MesosCluster extends ExternalResource {
         return null;
     }
 
+    /**
+     * Check existence of a running minimesos master container
+     * @param clusterId String
+     * @return boolean
+     */
+    public static boolean isUp(String clusterId) {
+        if (clusterId != null) {
+            DockerClient dockerClient = DockerClientFactory.build();
+            List<Container> containers = dockerClient.listContainersCmd().exec();
+            for (Container container : containers) {
+                for (String name : container.getNames()) {
+                    if (name.contains("minimesos-master-" + clusterId)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     public static void destroy() {
         String clusterId = readClusterId();
 
@@ -250,6 +270,16 @@ public class MesosCluster extends ExternalResource {
             return IOUtils.toString(new FileReader(miniMesosFile));
         } catch (IOException e) {
             return null;
+        }
+    }
+
+    public static void checkStateFile(String clusterId) {
+        if (clusterId != null && !isUp(clusterId)) {
+            if (miniMesosFile.delete()) {
+                LOGGER.info("Invalid state file removed");
+            } else {
+                LOGGER.info("Cannot remove invalid state file " + miniMesosFile.getAbsolutePath());
+            }
         }
     }
 

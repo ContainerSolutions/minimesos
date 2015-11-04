@@ -33,8 +33,11 @@ public class Main {
         jc.addCommand("help", commandHelp);
         jc.parseWithoutValidation(args);
 
+        String clusterId = MesosCluster.readClusterId();
+        MesosCluster.checkStateFile(clusterId);
+        clusterId = MesosCluster.readClusterId();
+
         if (jc.getParsedCommand() == null) {
-            String clusterId = MesosCluster.readClusterId();
             if (clusterId != null) {
                 MesosCluster.printMasterIp(clusterId);
             } else {
