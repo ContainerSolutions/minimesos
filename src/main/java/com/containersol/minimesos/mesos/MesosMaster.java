@@ -1,18 +1,20 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.container.AbstractContainer;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.Ports;
 import org.apache.log4j.Logger;
-import com.containersol.minimesos.container.AbstractContainer;
 
-import java.io.File;
 import java.util.Map;
 import java.util.TreeMap;
 
 public class MesosMaster extends AbstractContainer {
 
     private static final int DOCKER_PORT = 2376;
+
+    public static final int MESOS_MASTER_PORT = 5050;
 
     private static Logger LOGGER = Logger.getLogger(MesosMaster.class);
 
@@ -26,13 +28,16 @@ public class MesosMaster extends AbstractContainer {
 
     private final Map<String, String> extraEnvironmentVariables;
 
-    public MesosMaster(DockerClient dockerClient, String zkPath, String mesosMasterImage, String mesosImageTag, String clusterId, Map<String, String> extraEnvironmentVariables) {
+    private final Boolean exposedHostPort;
+
+    public MesosMaster(DockerClient dockerClient, String zkPath, String mesosMasterImage, String mesosImageTag, String clusterId, Map<String, String> extraEnvironmentVariables, Boolean exposedHostPort) {
         super(dockerClient);
         this.clusterId = clusterId;
         this.zkUrl = zkPath;
         this.mesosMasterImage = mesosMasterImage;
         this.mesosImageTag = mesosImageTag;
         this.extraEnvironmentVariables = extraEnvironmentVariables;
+        this.exposedHostPort = exposedHostPort;
     }
 
     @Override
@@ -41,7 +46,7 @@ public class MesosMaster extends AbstractContainer {
     }
 
     String[] createMesosLocalEnvironment() {
-        TreeMap<String,String> envs = new TreeMap<>();
+        TreeMap<String, String> envs = new TreeMap<>();
 
         envs.put("MESOS_QUORUM", "1");
         envs.put("MESOS_ZK", zkUrl);
@@ -63,12 +68,16 @@ public class MesosMaster extends AbstractContainer {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-
+        ExposedPort exposedPort = ExposedPort.tcp(MESOS_MASTER_PORT);
+        Ports portBindings = new Ports();
+        if (exposedHostPort) {
+            portBindings.bind(exposedPort, Ports.Binding(MESOS_MASTER_PORT));
+        }
         return dockerClient.createContainerCmd(mesosMasterImage + ":" + mesosImageTag)
                 .withName("minimesos-master-" + clusterId + "-" + getRandomId())
-                .withExposedPorts(new ExposedPort(5050))
-                .withEnv(createMesosLocalEnvironment());
-
+                .withExposedPorts(exposedPort)
+                .withEnv(createMesosLocalEnvironment())
+                .withPortBindings(portBindings);
     }
 
     public int getDockerPort() {

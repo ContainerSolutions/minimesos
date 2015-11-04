@@ -1,5 +1,7 @@
 package com.containersol.minimesos;
 
+import com.containersol.minimesos.mesos.MesosClusterConfig;
+import com.containersol.minimesos.mesos.MesosSlave;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -14,8 +16,6 @@ import com.jayway.awaitility.Awaitility;
 import com.jayway.awaitility.Duration;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.containersol.minimesos.mesos.MesosClusterConfig;
-import com.containersol.minimesos.mesos.MesosSlave;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Assert;
@@ -31,14 +31,14 @@ public class MesosClusterTest {
 
     @ClassRule
     public static final MesosCluster cluster = new MesosCluster(
-        MesosClusterConfig.builder()
-            .zkUrl("mesos")
-            .slaveResources(new String[]{
-                    "ports(*):[9201-9201, 9301-9301]; cpus(*):0.2; mem(*):256; disk(*):200",
-                    "ports(*):[9202-9202, 9302-9302]; cpus(*):0.2; mem(*):256; disk(*):200",
-                    "ports(*):[9203-9203, 9303-9303]; cpus(*):0.2; mem(*):256; disk(*):200"
-            })
-            .build()
+            MesosClusterConfig.builder()
+                    .zkUrl("mesos")
+                    .slaveResources(new String[]{
+                            "ports(*):[9201-9201, 9301-9301]; cpus(*):0.2; mem(*):256; disk(*):200",
+                            "ports(*):[9202-9202, 9302-9302]; cpus(*):0.2; mem(*):256; disk(*):200",
+                            "ports(*):[9203-9203, 9303-9303]; cpus(*):0.2; mem(*):256; disk(*):200"
+                    })
+                    .build()
     );
 
     @After

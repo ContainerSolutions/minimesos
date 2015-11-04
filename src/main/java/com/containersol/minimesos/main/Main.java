@@ -4,7 +4,8 @@ import com.beust.jcommander.JCommander;
 import com.containersol.minimesos.MesosCluster;
 import com.containersol.minimesos.mesos.MesosClusterConfig;
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,8 +16,7 @@ import java.nio.file.Paths;
  * Main method for interacting with minimesos.
  */
 public class Main {
-
-    private static Logger LOGGER = Logger.getLogger(Main.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     private static CommandUp commandUp;
 
@@ -41,7 +41,8 @@ public class Main {
 
         if (jc.getParsedCommand() == null) {
             if (clusterId != null) {
-                MesosCluster.printMasterIp(clusterId);
+                MesosCluster.printServiceUrl(clusterId, "master", commandUp.isExposedHostPorts());
+                MesosCluster.printServiceUrl(clusterId, "marathon", commandUp.isExposedHostPorts());
             } else {
                 jc.usage();
             }
@@ -65,17 +66,15 @@ public class Main {
 
     private static void doUp() {
         String clusterId = MesosCluster.readClusterId();
-        if (clusterId != null) {
-            MesosCluster.printMasterIp(clusterId);
-        } else {
+        if (clusterId == null) {
             MesosCluster cluster = new MesosCluster(
                     MesosClusterConfig.builder()
                             .slaveResources(new String[]{"ports(*):[9200-9200,9300-9300]"})
                             .mesosImageTag(commandUp.getMesosImageTag())
+                            .exposedHostPorts(commandUp.isExposedHostPorts())
                             .build()
             );
             cluster.start();
-
             File miniMesosDir = new File(System.getProperty("minimesos.dir"));
             try {
                 FileUtils.forceMkdir(miniMesosDir);
@@ -85,6 +84,9 @@ public class Main {
                 throw new RuntimeException(ie);
             }
         }
+        clusterId = MesosCluster.readClusterId();
+        MesosCluster.printServiceUrl(clusterId, "master", commandUp.isExposedHostPorts());
+        MesosCluster.printServiceUrl(clusterId, "marathon", commandUp.isExposedHostPorts());
     }
 
     private static void printInfo() {

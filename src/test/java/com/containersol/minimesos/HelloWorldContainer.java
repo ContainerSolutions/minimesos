@@ -27,5 +27,4 @@ class HelloWorldContainer extends AbstractContainer {
                 .withName("helloworld-" + getRandomId());
     }
 
-
 }

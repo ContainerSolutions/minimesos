@@ -77,7 +77,7 @@ public class MesosCluster extends ExternalResource {
         addAndStartContainer(this.zkContainer);
 
         this.zkUrl = "zk://" + this.zkContainer.getIpAddress() + ":2181/" + this.config.zkUrl;
-        this.mesosMasterContainer = new MesosMaster(this.config.dockerClient, this.zkUrl, this.config.mesosMasterImage, this.config.mesosImageTag, clusterId, this.config.extraEnvironmentVariables);
+        this.mesosMasterContainer = new MesosMaster(this.config.dockerClient, this.zkUrl, this.config.mesosMasterImage, this.config.mesosImageTag, clusterId, this.config.extraEnvironmentVariables, this.config.exposedHostPorts);
         addAndStartContainer(this.mesosMasterContainer);
 
         try {
@@ -92,10 +92,8 @@ public class MesosCluster extends ExternalResource {
             LOGGER.error("Error during startup", e);
         }
 
-        Marathon marathon = new Marathon(this.config.dockerClient, clusterId, this.zkContainer);
+        Marathon marathon = new Marathon(this.config.dockerClient, clusterId, this.zkContainer, this.config.exposedHostPorts);
         addAndStartContainer(marathon);
-
-        LOGGER.info("http://" + this.mesosMasterContainer.getIpAddress() + ":5050");
     }
 
     /**
@@ -172,9 +170,8 @@ public class MesosCluster extends ExternalResource {
         return containers;
     }
 
-    public MesosSlave[] getSlaves()
-    {
-           return mesosSlaves;
+    public MesosSlave[] getSlaves() {
+        return mesosSlaves;
     }
 
     @Override
@@ -253,10 +250,12 @@ public class MesosCluster extends ExternalResource {
 
     public static void destroy() {
         String clusterId = readClusterId();
+
         String marathonIp = getContainerIp(clusterId, "marathon");
         if (marathonIp != null) {
             MarathonClient.killAllApps(marathonIp);
         }
+
         if (clusterId != null) {
             destroyContainers(clusterId);
             miniMesosFile.deleteOnExit();
@@ -283,13 +282,31 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
-    public static void printMasterIp(String clusterId) {
+    public static void printServiceUrl(String clusterId, String serviceName, boolean exposedHostPorts) {
+        String dockerHostIp = System.getenv("DOCKER_HOST_IP");
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
             for (String name : container.getNames()) {
-                if (name.contains("minimesos-master-" + clusterId) ) {
-                    String ipAddress = dockerClient.inspectContainerCmd(container.getId()).exec().getNetworkSettings().getIpAddress();
-                    LOGGER.info("http://" + ipAddress + ":5050");
+                if (name.contains("minimesos-" + serviceName + "-" + clusterId)) {
+                    String uri, ip;
+                    if (!exposedHostPorts || dockerHostIp.isEmpty()) {
+                        InspectContainerResponse.NetworkSettings containerNetworkSettings;
+                        containerNetworkSettings = dockerClient.inspectContainerCmd(container.getId()).exec().getNetworkSettings();
+                        ip = containerNetworkSettings.getIpAddress();
+                    } else {
+                        ip = dockerHostIp;
+                    }
+                    switch (serviceName) {
+                        case "master":
+                            uri = "Master http://" + ip + ":" + MesosMaster.MESOS_MASTER_PORT;
+                            break;
+                        case "marathon":
+                            uri = "Marathon http://" + ip + ":" + Marathon.MARATHON_PORT;
+                            break;
+                        default:
+                            uri = "Unknown service type '" + serviceName + "'";
+                    }
+                    LOGGER.info(uri);
                     return;
                 }
             }
