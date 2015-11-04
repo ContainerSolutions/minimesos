@@ -93,7 +93,6 @@ public class Main {
         String clusterId = MesosCluster.readClusterId();
         if (clusterId != null) {
             LOGGER.info("Minimesos cluster is running");
-            MesosCluster.printMasterIp(clusterId);
             LOGGER.info("Mesos version: " + MesosClusterConfig.MESOS_IMAGE_TAG.substring(0, MesosClusterConfig.MESOS_IMAGE_TAG.indexOf("-")));
         } else {
             LOGGER.info("Minimesos cluster is not running");
