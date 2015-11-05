@@ -102,10 +102,11 @@ task executableJar(type: Jar) {
     exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
 }
 
-task installMinimesosScript(type: Copy) {
-    from        "bin/minimesos"
-    into        "/usr/local/bin"
-}
+// Commented out so it can build on jitpack
+//task installMinimesosScript(type: Copy) {
+//    from        "bin/minimesos"
+//    into        "/usr/local/bin"
+//}
 
 task copyExecutableJar(type: Copy) {
     dependsOn 'executableJar'
@@ -186,4 +187,4 @@ afterEvaluate { project ->
 }
 
 assemble.dependsOn copyExecutableJar
-install.dependsOn installMinimesosScript
+//install.dependsOn installMinimesosScript
