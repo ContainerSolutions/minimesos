@@ -75,7 +75,7 @@ public class MesosCluster extends ExternalResource {
                     builder.withSlave();
                 }
 
-                builder.withContainer(zooKeeper -> new Marathon(dockerClient, clusterId, zooKeeper));
+                builder.withContainer(zooKeeper -> new Marathon(dockerClient, clusterId, (ZooKeeper) zooKeeper), MesosContainers.Filter.zooKeeper());
 
                 this.mesosArchitecture = builder.build();
             } catch (Throwable e) {
@@ -182,7 +182,7 @@ public class MesosCluster extends ExternalResource {
     }
 
     public String getZkUrl() {
-        return MesosMaster.getFormattedZKAddress(getZkContainer());
+        return MesosContainer.getFormattedZKAddress(getZkContainer());
     }
 
     public ZooKeeper getZkContainer() {

@@ -30,12 +30,12 @@ public class MesosContainers {
         return containers;
     }
 
-    public Optional<AbstractContainer> getOne(Predicate<AbstractContainer> filter) {
-        return getContainers().stream().filter(filter).findAny();
+    public <T extends AbstractContainer> Optional<T> getOne(Predicate<AbstractContainer> filter) {
+        return (Optional<T>) getContainers().stream().filter(filter).findAny();
     }
 
     public Boolean isPresent(Predicate<AbstractContainer> filter) {
-        return getContainers().stream().filter(filter).findAny().isPresent();
+        return getOne(filter).isPresent();
     }
 
     public static class Filter {

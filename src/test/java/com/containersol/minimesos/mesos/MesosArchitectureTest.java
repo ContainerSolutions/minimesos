@@ -3,8 +3,9 @@ package com.containersol.minimesos.mesos;
 import com.containersol.minimesos.container.AbstractContainer;
 import org.junit.Test;
 
-import static com.containersol.minimesos.mesos.MesosContainers.*;
-import static org.junit.Assert.*;
+import static com.containersol.minimesos.mesos.MesosContainers.Filter;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -66,9 +67,14 @@ public class MesosArchitectureTest {
 
     @Test
     public void shouldBeAbleToAddContainer() {
-        AbstractContainer mock = mock(AbstractContainer.class);
-        MesosArchitecture.Builder builder = new MesosArchitecture.Builder().withContainer(mock);
+        MesosArchitecture.Builder builder = new MesosArchitecture.Builder().withContainer(mock(AbstractContainer.class));
         assertEquals(minimumViableClusterSize() + 1, builder.build().getMesosContainers().getContainers().size());
+    }
+
+    @Test
+    public void plainContainerOrderingShouldNotMatter() {
+        MesosArchitecture.Builder builder = new MesosArchitecture.Builder().withContainer(mock(AbstractContainer.class)).withZooKeeper().withContainer(mock(AbstractContainer.class)).withMaster();
+        assertEquals(minimumViableClusterSize() + 2, builder.build().getMesosContainers().getContainers().size());
     }
 
     private int minimumViableClusterSize() {

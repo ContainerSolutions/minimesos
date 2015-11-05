@@ -45,7 +45,7 @@ public class FlagsTest {
 
         @Override
         protected String[] createMesosLocalEnvironment() {
-            TreeMap<String, String> envs = getMesosEnvVars();
+            TreeMap<String, String> envs = getDefaultEnvVars();
             envs.put("MESOS_AUTHENTICATE", "true");
             envs.put("MESOS_ACLS", aclExampleJson);
 

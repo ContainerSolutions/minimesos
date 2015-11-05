@@ -4,6 +4,7 @@ import com.containersol.minimesos.container.AbstractContainer;
 import com.github.dockerjava.api.DockerClient;
 import org.apache.log4j.Logger;
 
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -71,7 +72,10 @@ public class MesosArchitecture {
         }
 
         public Builder withMaster(Function<ZooKeeper, MesosMaster> master) {
-            return withContainer(master::apply);
+            if (!isPresent(Filter.zooKeeper())) {
+                throw new MesosArchitectureException("ZooKeeper is required by Mesos. You cannot add a Mesos node until you have created a ZooKeeper node. Please add a ZooKeeper node first.");
+            }
+            return withContainer(master::apply, Filter.zooKeeper());
         }
 
         public Builder withSlave() {
@@ -79,23 +83,24 @@ public class MesosArchitecture {
         }
 
         public Builder withSlave(Function<ZooKeeper, MesosSlave> slave) {
-            return withContainer(slave::apply);
-        }
-
-        public Builder withContainer(Function<ZooKeeper, AbstractContainer> container) {
-            return withContainer(container.apply(getZooKeeperContainer()));
-        }
-
-        public Builder withContainer(AbstractContainer container) {
-            mesosArchitecture.getMesosContainers().add(container); // A simple container may not need zookeeper. But is available if required.
-            return this;
-        }
-
-        private ZooKeeper getZooKeeperContainer() {
             if (!isPresent(Filter.zooKeeper())) {
                 throw new MesosArchitectureException("ZooKeeper is required by Mesos. You cannot add a Mesos node until you have created a ZooKeeper node. Please add a ZooKeeper node first.");
             }
-            return (ZooKeeper) mesosArchitecture.getMesosContainers().getOne(Filter.zooKeeper()).get();
+            return withContainer(slave::apply, Filter.zooKeeper());
+        }
+
+        public Builder withContainer(Function<ZooKeeper, AbstractContainer> container, Predicate<AbstractContainer> filter) {
+            // Dev note: It is not possible to use generics to find the requested type due to generic type erasure. This is why we are explicitly passing a user provided filter.
+            Optional<ZooKeeper> foundContainer = mesosArchitecture.getMesosContainers().getOne(filter);
+            if (!foundContainer.isPresent()) {
+                throw new MesosArchitectureException("Could not find a container of that type when trying to inject.");
+            }
+            return withContainer(container.apply(foundContainer.get()));
+        }
+
+        public Builder withContainer(AbstractContainer container) {
+            mesosArchitecture.getMesosContainers().add(container); // A simple container may not need any injection. But is available if required.
+            return this;
         }
     }
 
