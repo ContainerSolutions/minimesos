@@ -83,7 +83,7 @@ When VM is ready you can either *build latest version* of minimesos or *install 
 
 ### Building latest version of minimesos
 
-In CLI
+In CLI:
 
 ```
 $ ./gradlew clean build --info --stacktrace
@@ -159,7 +159,7 @@ The table below is an attempt to summarize mappings, which enable execution of m
 ## Caveats
 
 `minimesos up` command supports `--mesosImageTag` parameter, which can be used to override the version of Mesos to be used. 
-When running an older version of Mesos, you may encounter [compatibility issues between Mesos 0.22 and Docker 1.8](https://issues.apache.org/jira/browse/INFRA-10621).
+When running an older version of Mesos, you may encounter [compatibility issues between Mesos 0.22 and Docker v. greater than 1.7](https://issues.apache.org/jira/browse/INFRA-10621).
 
 Since version 0.3.0 minimesos uses 'flat' container structure, which means that all containers (agents, master, zookeeper) as well as all Docker executor tasks are run in the same Docker context - host machine.
 This has following benefits:
