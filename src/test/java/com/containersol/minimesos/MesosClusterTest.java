@@ -1,6 +1,7 @@
 package com.containersol.minimesos;
 
 import com.containersol.minimesos.docker.DockerContainersUtil;
+import com.containersol.minimesos.mesos.DockerClientFactory;
 import com.containersol.minimesos.mesos.MesosSlave;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -29,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 
 public class MesosClusterTest {
+
+    private DockerClient dockerClient = DockerClientFactory.build();
 
     @ClassRule
     public static final MesosCluster cluster = new MesosCluster(
@@ -117,7 +120,6 @@ public class MesosClusterTest {
                 "ports(*):[9204-9204, 9304-9304]; cpus(*):0.2; mem(*):256; disk(*):200",
                 "5051",
                 cluster.getZkContainer(),
-                cluster.getMesosMasterContainer(),
                 "containersol/mesos-agent",
                 "0.25.0-0.2.70.ubuntu1404", MesosCluster.getClusterId()) {
 

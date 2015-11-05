@@ -42,7 +42,7 @@ public class MesosMasterExtended extends MesosMaster {
         TreeMap<String,String> envs = getDefaultEnvVars();
 
         envs.putAll(this.extraEnvironmentVariables);
-
+        envs.putAll(getSharedEnvVars());
         return envs.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
     }
 

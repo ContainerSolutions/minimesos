@@ -109,7 +109,6 @@ public class NewMesosClusterTest {
                 "ports(*):[9204-9204, 9304-9304]; cpus(*):0.2; mem(*):256; disk(*):200",
                 "5051",
                 cluster.getZkContainer(),
-                cluster.getMesosMasterContainer(),
                 "containersol/mesos-agent",
                 "0.25.0-0.2.70.ubuntu1404", MesosCluster.getClusterId()) {
 

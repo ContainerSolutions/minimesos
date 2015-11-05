@@ -53,11 +53,12 @@ public class MesosCluster extends ExternalResource {
     @Deprecated
     public MesosCluster(MesosClusterConfig config) {
         this.config = config;
-        this.clusterId = Integer.toUnsignedString(new SecureRandom().nextInt());
+        clusterId = Integer.toUnsignedString(new SecureRandom().nextInt());
     }
 
     public MesosCluster(ClusterArchitecture clusterArchitecture) {
         this.clusterArchitecture = clusterArchitecture;
+        clusterId = Integer.toUnsignedString(new SecureRandom().nextInt());
     }
 
     /**
@@ -67,12 +68,18 @@ public class MesosCluster extends ExternalResource {
         if (config == null && clusterArchitecture == null) {
             throw new ClusterArchitecture.MesosArchitectureException("No cluster architecture specified");
         }
+        // If the user is still using the old configuration method, then retain their old options. This should prevent the CLI API from breaking.
         if (config != null) {
             ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder();
-            builder.withZooKeeper().withMaster();
+            builder.withZooKeeper().withMaster( zkContainer ->
+                    new MesosMasterExtended(this.config.dockerClient, zkContainer, this.config.mesosMasterImage, this.config.mesosImageTag, clusterId, this.config.extraEnvironmentVariables)
+            );
             try {
                 for (int i = 0; i < this.config.getNumberOfSlaves(); i++) {
-                    builder.withSlave();
+                    final String slaveResource = config.slaveResources[i];
+                    builder.withSlave( zkContainer ->
+                            new MesosSlaveExtended(this.config.dockerClient, slaveResource, "5051", zkContainer, this.config.mesosSlaveImage, this.config.mesosImageTag, clusterId)
+                    );
                 }
 
                 builder.withContainer(zooKeeper -> new Marathon(dockerClient, clusterId, (ZooKeeper) zooKeeper), ClusterContainers.Filter.zooKeeper());

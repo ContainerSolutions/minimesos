@@ -27,12 +27,10 @@ public class MesosSlaveExtended extends MesosSlave {
     protected final String portNumber;
 
 
-    private final MesosMaster mesosMaster;
     private final String clusterId;
 
-    public MesosSlaveExtended(DockerClient dockerClient, String resources, String portNumber, ZooKeeper zooKeeperContainer, MesosMaster mesosMaster, String mesosLocalImage, String registryTag, String clusterId) {
+    public MesosSlaveExtended(DockerClient dockerClient, String resources, String portNumber, ZooKeeper zooKeeperContainer, String mesosLocalImage, String registryTag, String clusterId) {
         super(dockerClient, zooKeeperContainer);
-        this.mesosMaster = mesosMaster;
         this.clusterId = clusterId;
         this.resources = resources;
         this.portNumber = portNumber;
@@ -62,7 +60,6 @@ public class MesosSlaveExtended extends MesosSlave {
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
                 .withPid("host")
-                .withLinks(new Link(this.mesosMaster.getContainerId(), "minimesos-master"))
                 .withBinds(
                         Bind.parse("/var/lib/docker:/var/lib/docker"),
                         Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),
@@ -99,6 +96,7 @@ public class MesosSlaveExtended extends MesosSlave {
 
     public String[] createMesosLocalEnvironment() {
         TreeMap<String, String> envs = getDefaultEnvVars();
+        envs.putAll(getSharedEnvVars());
         envs.put("MESOS_RESOURCES", this.resources);
 
         return envs.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
