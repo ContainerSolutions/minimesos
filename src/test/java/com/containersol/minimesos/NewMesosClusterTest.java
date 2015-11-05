@@ -33,7 +33,7 @@ public class NewMesosClusterTest {
     private DockerClient dockerClient = DockerClientFactory.build();
 
     @ClassRule
-    public static final MesosCluster cluster = new MesosCluster(new MesosArchitecture.Builder().build());
+    public static final MesosCluster cluster = new MesosCluster(new ClusterArchitecture.Builder().build());
 
     @After
     public void after() {

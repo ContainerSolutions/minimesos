@@ -8,22 +8,22 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static com.containersol.minimesos.mesos.MesosContainers.*;
+import static com.containersol.minimesos.mesos.ClusterContainers.*;
 
 /**
  *
  */
-public class MesosArchitecture {
+public class ClusterArchitecture {
 
-    private final MesosContainers mesosContainers = new MesosContainers();
+    private final ClusterContainers clusterContainers = new ClusterContainers();
 
-    public MesosContainers getMesosContainers() {
-        return mesosContainers;
+    public ClusterContainers getClusterContainers() {
+        return clusterContainers;
     }
 
     public static class Builder {
-        private static final Logger LOGGER = Logger.getLogger(MesosArchitecture.class);
-        private final MesosArchitecture mesosArchitecture = new MesosArchitecture();
+        private static final Logger LOGGER = Logger.getLogger(ClusterArchitecture.class);
+        private final ClusterArchitecture clusterArchitecture = new ClusterArchitecture();
         private final DockerClient dockerClient;
 
         public Builder() {
@@ -34,9 +34,9 @@ public class MesosArchitecture {
             this.dockerClient = dockerClient;
         }
 
-        public MesosArchitecture build() {
+        public ClusterArchitecture build() {
             checkMinimumViableCluster();
-            return mesosArchitecture;
+            return clusterArchitecture;
         }
 
         private void checkMinimumViableCluster() {
@@ -55,7 +55,7 @@ public class MesosArchitecture {
         }
 
         private Boolean isPresent(Predicate<AbstractContainer> filter) {
-            return mesosArchitecture.getMesosContainers().isPresent(filter);
+            return clusterArchitecture.getClusterContainers().isPresent(filter);
         }
 
         public Builder withZooKeeper() {
@@ -63,7 +63,7 @@ public class MesosArchitecture {
         }
 
         public Builder withZooKeeper(ZooKeeper zooKeeper) {
-            mesosArchitecture.getMesosContainers().add(zooKeeper); // You don't need a zookeeper container to add a zookeeper container
+            clusterArchitecture.getClusterContainers().add(zooKeeper); // You don't need a zookeeper container to add a zookeeper container
             return this;
         }
 
@@ -91,7 +91,7 @@ public class MesosArchitecture {
 
         public Builder withContainer(Function<ZooKeeper, AbstractContainer> container, Predicate<AbstractContainer> filter) {
             // Dev note: It is not possible to use generics to find the requested type due to generic type erasure. This is why we are explicitly passing a user provided filter.
-            Optional<ZooKeeper> foundContainer = mesosArchitecture.getMesosContainers().getOne(filter);
+            Optional<ZooKeeper> foundContainer = clusterArchitecture.getClusterContainers().getOne(filter);
             if (!foundContainer.isPresent()) {
                 throw new MesosArchitectureException("Could not find a container of that type when trying to inject.");
             }
@@ -99,7 +99,7 @@ public class MesosArchitecture {
         }
 
         public Builder withContainer(AbstractContainer container) {
-            mesosArchitecture.getMesosContainers().add(container); // A simple container may not need any injection. But is available if required.
+            clusterArchitecture.getClusterContainers().add(container); // A simple container may not need any injection. But is available if required.
             return this;
         }
     }

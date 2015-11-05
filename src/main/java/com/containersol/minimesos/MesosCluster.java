@@ -46,7 +46,7 @@ public class MesosCluster extends ExternalResource {
     private final List<AbstractContainer> containers = Collections.synchronizedList(new ArrayList<>());
 
     private MesosClusterConfig config;
-    private MesosArchitecture mesosArchitecture;
+    private ClusterArchitecture clusterArchitecture;
 
     private static String clusterId;
 
@@ -56,34 +56,34 @@ public class MesosCluster extends ExternalResource {
         this.clusterId = Integer.toUnsignedString(new SecureRandom().nextInt());
     }
 
-    public MesosCluster(MesosArchitecture mesosArchitecture) {
-        this.mesosArchitecture = mesosArchitecture;
+    public MesosCluster(ClusterArchitecture clusterArchitecture) {
+        this.clusterArchitecture = clusterArchitecture;
     }
 
     /**
      * Starts the Mesos cluster and its containers
      */
     public void start() {
-        if (config == null && mesosArchitecture == null) {
-            throw new MesosArchitecture.MesosArchitectureException("No cluster architecture specified");
+        if (config == null && clusterArchitecture == null) {
+            throw new ClusterArchitecture.MesosArchitectureException("No cluster architecture specified");
         }
         if (config != null) {
-            MesosArchitecture.Builder builder = new MesosArchitecture.Builder();
+            ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder();
             builder.withZooKeeper().withMaster();
             try {
                 for (int i = 0; i < this.config.getNumberOfSlaves(); i++) {
                     builder.withSlave();
                 }
 
-                builder.withContainer(zooKeeper -> new Marathon(dockerClient, clusterId, (ZooKeeper) zooKeeper), MesosContainers.Filter.zooKeeper());
+                builder.withContainer(zooKeeper -> new Marathon(dockerClient, clusterId, (ZooKeeper) zooKeeper), ClusterContainers.Filter.zooKeeper());
 
-                this.mesosArchitecture = builder.build();
+                this.clusterArchitecture = builder.build();
             } catch (Throwable e) {
                 LOGGER.error("Error during startup", e);
             }
         }
 
-        mesosArchitecture.getMesosContainers().getContainers().forEach(this::addAndStartContainer);
+        clusterArchitecture.getClusterContainers().getContainers().forEach(this::addAndStartContainer);
         // wait until the given number of slaves are registered
         new MesosClusterStateResponse(getMesosMasterContainer().getIpAddress() + ":" + MesosMaster.MESOS_PORT, getSlaves().length).waitFor();
         LOGGER.info("http://" + getMesosMasterContainer().getIpAddress() + ":" + MesosMaster.MESOS_PORT);
@@ -160,11 +160,11 @@ public class MesosCluster extends ExternalResource {
     }
 
     public List<AbstractContainer> getContainers() {
-        return mesosArchitecture.getMesosContainers().getContainers();
+        return clusterArchitecture.getClusterContainers().getContainers();
     }
 
     public MesosSlave[] getSlaves() {
-           return mesosArchitecture.getMesosContainers().getContainers().stream().filter(MesosContainers.Filter.mesosSlave()).collect(Collectors.toList()).toArray(new MesosSlave[0]);
+           return clusterArchitecture.getClusterContainers().getContainers().stream().filter(ClusterContainers.Filter.mesosSlave()).collect(Collectors.toList()).toArray(new MesosSlave[0]);
     }
 
     @Override
@@ -178,7 +178,7 @@ public class MesosCluster extends ExternalResource {
     }
 
     public MesosMaster getMesosMasterContainer() {
-        return (MesosMaster) mesosArchitecture.getMesosContainers().getOne(MesosContainers.Filter.mesosMaster()).get();
+        return (MesosMaster) clusterArchitecture.getClusterContainers().getOne(ClusterContainers.Filter.mesosMaster()).get();
     }
 
     public String getZkUrl() {
@@ -186,7 +186,7 @@ public class MesosCluster extends ExternalResource {
     }
 
     public ZooKeeper getZkContainer() {
-        return (ZooKeeper) mesosArchitecture.getMesosContainers().getOne(MesosContainers.Filter.zooKeeper()).get();
+        return (ZooKeeper) clusterArchitecture.getClusterContainers().getOne(ClusterContainers.Filter.zooKeeper()).get();
     }
 
     public void waitForState(final Predicate<State> predicate, int seconds) {

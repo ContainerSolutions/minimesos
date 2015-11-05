@@ -10,18 +10,18 @@ import java.util.function.Predicate;
 /**
  * Holds the containers and helper methods for the Mesos cluster
  */
-public class MesosContainers {
+public class ClusterContainers {
     private final List<AbstractContainer> containers;
 
-    public MesosContainers() {
+    public ClusterContainers() {
         containers = new ArrayList<>();
     }
 
-    public MesosContainers(List<AbstractContainer> containers) {
+    public ClusterContainers(List<AbstractContainer> containers) {
         this.containers = containers;
     }
 
-    public MesosContainers add(AbstractContainer container) {
+    public ClusterContainers add(AbstractContainer container) {
         containers.add(container);
         return this;
     }

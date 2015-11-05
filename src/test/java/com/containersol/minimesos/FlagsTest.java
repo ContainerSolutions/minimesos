@@ -1,7 +1,7 @@
 package com.containersol.minimesos;
 
 import com.containersol.minimesos.mesos.DockerClientFactory;
-import com.containersol.minimesos.mesos.MesosArchitecture;
+import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersol.minimesos.mesos.MesosMaster;
 import com.containersol.minimesos.mesos.ZooKeeper;
 import com.github.dockerjava.api.DockerClient;
@@ -21,7 +21,7 @@ public class FlagsTest {
 
     @ClassRule
     public static final MesosCluster cluster = new MesosCluster(
-            new MesosArchitecture.Builder()
+            new ClusterArchitecture.Builder()
                     .withZooKeeper()
                     .withMaster(zooKeeper -> new MesosMasterEnvVars(DockerClientFactory.build(), zooKeeper)).build()
     );
