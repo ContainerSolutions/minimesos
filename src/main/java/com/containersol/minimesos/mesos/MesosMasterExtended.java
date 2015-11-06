@@ -8,7 +8,6 @@ import com.github.dockerjava.api.model.Ports;
 import java.util.Map;
 import java.util.TreeMap;
 
-@Deprecated
 public class MesosMasterExtended extends MesosMaster {
 
     private static final int DOCKER_PORT = 2376;

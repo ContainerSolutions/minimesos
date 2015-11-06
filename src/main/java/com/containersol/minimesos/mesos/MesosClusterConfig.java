@@ -5,6 +5,9 @@ import com.github.dockerjava.api.DockerClient;
 import java.util.Map;
 import java.util.TreeMap;
 
+/**
+ * Old method of producing a cluster configuration. For a better way, see {@link ClusterArchitecture}
+ */
 @Deprecated
 public class MesosClusterConfig {
 

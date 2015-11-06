@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.TreeMap;
 
-@Deprecated
 public class MesosSlaveExtended extends MesosSlave {
 
     private static Logger LOGGER = Logger.getLogger(MesosSlaveExtended.class);
