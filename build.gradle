@@ -33,7 +33,6 @@ tasks.withType(JavaCompile) {
 }
 
 repositories {
-    jcenter()
     mavenLocal()
     mavenCentral()
     maven {

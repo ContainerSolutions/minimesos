@@ -50,12 +50,20 @@ public class MesosCluster extends ExternalResource {
 
     private static String clusterId;
 
+    /**
+     * Old configuration instantiation.
+     * @deprecated use {@link #MesosCluster(ClusterArchitecture)} instead.
+     */
     @Deprecated
     public MesosCluster(MesosClusterConfig config) {
         this.config = config;
         clusterId = Integer.toUnsignedString(new SecureRandom().nextInt());
     }
 
+    /**
+     * Create a new cluster with a specified cluster architecture.
+     * @param clusterArchitecture Represents the layout of the cluster. See {@link ClusterArchitecture} and {@link ClusterUtil}
+     */
     public MesosCluster(ClusterArchitecture clusterArchitecture) {
         this.clusterArchitecture = clusterArchitecture;
         clusterId = Integer.toUnsignedString(new SecureRandom().nextInt());
