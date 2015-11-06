@@ -71,7 +71,6 @@ dependencies {
     compile 'com.beust:jcommander:1.48'
 
     compile 'com.mashape.unirest:unirest-java:1.4.5'
-    testCompile "org.mockito:mockito-core:1.+"
 }
 
 mainClassName = "com.containersol.minimesos.main.Main"
@@ -101,11 +100,10 @@ task executableJar(type: Jar) {
     exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
 }
 
-// Commented out so it can build on jitpack
-//task installMinimesosScript(type: Copy) {
-//    from        "bin/minimesos"
-//    into        "/usr/local/bin"
-//}
+task installMinimesosScript(type: Copy) {
+    from        "bin/minimesos"
+    into        "/usr/local/bin"
+}
 
 task copyExecutableJar(type: Copy) {
     dependsOn 'executableJar'
@@ -186,4 +184,4 @@ afterEvaluate { project ->
 }
 
 assemble.dependsOn copyExecutableJar
-//install.dependsOn installMinimesosScript
+//TODO: install.dependsOn installMinimesosScript

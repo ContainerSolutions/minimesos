@@ -4,6 +4,8 @@ import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.mesos.ZooKeeper;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.Ports;
 import org.apache.log4j.Logger;
 
 /**
@@ -15,15 +17,19 @@ public class Marathon extends AbstractContainer {
 
     private static final String MARATHON_IMAGE = "mesosphere/marathon";
     public static final String REGISTRY_TAG = "v0.8.1";
+    public static final int MARATHON_PORT = 8080;
 
     private String clusterId;
 
     private ZooKeeper zooKeeper;
 
-    public Marathon(DockerClient dockerClient, String clusterId, ZooKeeper zooKeeper) {
+    private Boolean exposedHostPort;
+
+    public Marathon(DockerClient dockerClient, String clusterId, ZooKeeper zooKeeper, Boolean exposedHostPort) {
         super(dockerClient);
         this.clusterId = clusterId;
         this.zooKeeper = zooKeeper;
+        this.exposedHostPort = exposedHostPort;
     }
 
     @Override
@@ -33,10 +39,17 @@ public class Marathon extends AbstractContainer {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
+        ExposedPort exposedPort = ExposedPort.tcp(MARATHON_PORT);
+        Ports portBindings = new Ports();
+        if (exposedHostPort) {
+            portBindings.bind(exposedPort, Ports.Binding(MARATHON_PORT));
+        }
         return dockerClient.createContainerCmd(MARATHON_IMAGE + ":" + REGISTRY_TAG)
                 .withName("minimesos-marathon-" + clusterId + "-" + getRandomId())
                 .withExtraHosts("minimesos-zookeeper:" + this.zooKeeper.getIpAddress())
-                .withCmd("--master", "zk://minimesos-zookeeper:2181/mesos", "--zk", "zk://minimesos-zookeeper:2181/marathon");
+                .withCmd("--master", "zk://minimesos-zookeeper:2181/mesos", "--zk", "zk://minimesos-zookeeper:2181/marathon")
+                .withExposedPorts(exposedPort)
+                .withPortBindings(portBindings);
     }
 
 }

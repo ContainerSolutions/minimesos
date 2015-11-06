@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.InternalServerErrorException;
 import com.github.dockerjava.api.NotFoundException;
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Container;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -237,6 +238,26 @@ public class MesosCluster extends ExternalResource {
         return null;
     }
 
+    /**
+     * Check existence of a running minimesos master container
+     * @param clusterId String
+     * @return boolean
+     */
+    public static boolean isUp(String clusterId) {
+        if (clusterId != null) {
+            DockerClient dockerClient = DockerClientFactory.build();
+            List<Container> containers = dockerClient.listContainersCmd().exec();
+            for (Container container : containers) {
+                for (String name : container.getNames()) {
+                    if (name.contains("minimesos-master-" + clusterId)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     public static void destroy() {
         String clusterId = readClusterId();
 
@@ -248,6 +269,8 @@ public class MesosCluster extends ExternalResource {
         if (clusterId != null) {
             destroyContainers(clusterId);
             miniMesosFile.deleteOnExit();
+        } else {
+            LOGGER.info("Minimesos cluster is not running");
         }
     }
 
@@ -259,13 +282,41 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
-    public static void printMasterIp(String clusterId) {
+    public static void checkStateFile(String clusterId) {
+        if (clusterId != null && !isUp(clusterId)) {
+            if (miniMesosFile.delete()) {
+                LOGGER.info("Invalid state file removed");
+            } else {
+                LOGGER.info("Cannot remove invalid state file " + miniMesosFile.getAbsolutePath());
+            }
+        }
+    }
+
+    public static void printServiceUrl(String clusterId, String serviceName, boolean exposedHostPorts) {
+        String dockerHostIp = System.getenv("DOCKER_HOST_IP");
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
             for (String name : container.getNames()) {
-                if (name.contains("minimesos-master-" + clusterId) ) {
-                    String ipAddress = dockerClient.inspectContainerCmd(container.getId()).exec().getNetworkSettings().getIpAddress();
-                    LOGGER.info("http://" + ipAddress + ":5050");
+                if (name.contains("minimesos-" + serviceName + "-" + clusterId)) {
+                    String uri, ip;
+                    if (!exposedHostPorts || dockerHostIp.isEmpty()) {
+                        InspectContainerResponse.NetworkSettings containerNetworkSettings;
+                        containerNetworkSettings = dockerClient.inspectContainerCmd(container.getId()).exec().getNetworkSettings();
+                        ip = containerNetworkSettings.getIpAddress();
+                    } else {
+                        ip = dockerHostIp;
+                    }
+                    switch (serviceName) {
+                        case "master":
+                            uri = "Master http://" + ip + ":" + MesosMaster.MESOS_MASTER_PORT;
+                            break;
+                        case "marathon":
+                            uri = "Marathon http://" + ip + ":" + Marathon.MARATHON_PORT;
+                            break;
+                        default:
+                            uri = "Unknown service type '" + serviceName + "'";
+                    }
+                    LOGGER.info(uri);
                     return;
                 }
             }

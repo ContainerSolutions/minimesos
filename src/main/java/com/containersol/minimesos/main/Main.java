@@ -4,7 +4,8 @@ import com.beust.jcommander.JCommander;
 import com.containersol.minimesos.MesosCluster;
 import com.containersol.minimesos.mesos.MesosClusterConfig;
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,8 +16,7 @@ import java.nio.file.Paths;
  * Main method for interacting with minimesos.
  */
 public class Main {
-
-    private static Logger LOGGER = Logger.getLogger(Main.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     private static CommandUp commandUp;
 
@@ -27,16 +27,22 @@ public class Main {
         commandUp = new CommandUp();
         CommandDestroy commandDestroy = new CommandDestroy();
         CommandHelp commandHelp = new CommandHelp();
+        CommandInfo commandInfo = new CommandInfo();
 
         jc.addCommand("up", commandUp);
         jc.addCommand("destroy", commandDestroy);
         jc.addCommand("help", commandHelp);
+        jc.addCommand("info", commandInfo);
         jc.parseWithoutValidation(args);
 
+        String clusterId = MesosCluster.readClusterId();
+        MesosCluster.checkStateFile(clusterId);
+        clusterId = MesosCluster.readClusterId();
+
         if (jc.getParsedCommand() == null) {
-            String clusterId = MesosCluster.readClusterId();
             if (clusterId != null) {
-                MesosCluster.printMasterIp(clusterId);
+                MesosCluster.printServiceUrl(clusterId, "master", commandUp.isExposedHostPorts());
+                MesosCluster.printServiceUrl(clusterId, "marathon", commandUp.isExposedHostPorts());
             } else {
                 jc.usage();
             }
@@ -46,6 +52,9 @@ public class Main {
         switch (jc.getParsedCommand()) {
             case "up":
                 doUp();
+                break;
+            case "info":
+                printInfo();
                 break;
             case "destroy":
                 MesosCluster.destroy();
@@ -57,17 +66,15 @@ public class Main {
 
     private static void doUp() {
         String clusterId = MesosCluster.readClusterId();
-        if (clusterId != null) {
-            MesosCluster.printMasterIp(clusterId);
-        } else {
+        if (clusterId == null) {
             MesosCluster cluster = new MesosCluster(
                     MesosClusterConfig.builder()
                             .slaveResources(new String[]{"ports(*):[9200-9200,9300-9300]"})
                             .mesosImageTag(commandUp.getMesosImageTag())
+                            .exposedHostPorts(commandUp.isExposedHostPorts())
                             .build()
             );
             cluster.start();
-
             File miniMesosDir = new File(System.getProperty("minimesos.dir"));
             try {
                 FileUtils.forceMkdir(miniMesosDir);
@@ -76,6 +83,19 @@ public class Main {
                 LOGGER.error("Could not write .minimesos folder", ie);
                 throw new RuntimeException(ie);
             }
+        }
+        clusterId = MesosCluster.readClusterId();
+        MesosCluster.printServiceUrl(clusterId, "master", commandUp.isExposedHostPorts());
+        MesosCluster.printServiceUrl(clusterId, "marathon", commandUp.isExposedHostPorts());
+    }
+
+    private static void printInfo() {
+        String clusterId = MesosCluster.readClusterId();
+        if (clusterId != null) {
+            LOGGER.info("Minimesos cluster is running");
+            LOGGER.info("Mesos version: " + MesosClusterConfig.MESOS_IMAGE_TAG.substring(0, MesosClusterConfig.MESOS_IMAGE_TAG.indexOf("-")));
+        } else {
+            LOGGER.info("Minimesos cluster is not running");
         }
     }
 
