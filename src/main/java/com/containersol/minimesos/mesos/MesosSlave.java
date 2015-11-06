@@ -1,12 +1,11 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.MesosCluster;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.Link;
 import org.apache.log4j.Logger;
-import com.containersol.minimesos.container.AbstractContainer;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -14,57 +13,37 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.TreeMap;
 
-public class MesosSlave extends AbstractContainer {
+/**
+ * Base MesosSlave class
+ */
+public class MesosSlave extends MesosContainer {
+    private static final Logger LOGGER = Logger.getLogger(MesosSlave.class);
+    public static final String MESOS_SLAVE_IMAGE = "containersol/mesos-agent";
+    public static final int MESOS_SLAVE_PORT = 5051;
+    public static final String DEFAULT_PORT_RESOURCES = "ports(*):[31000-32000]";
+    public static final String DEFAULT_RESOURCES = DEFAULT_PORT_RESOURCES + "; cpus(*):0.2; mem(*):256; disk(*):200";
 
-    private static Logger LOGGER = Logger.getLogger(MesosSlave.class);
-
-    public final String mesosLocalImage;
-    public final String registryTag;
-
-    protected final String resources;
-
-    protected final String portNumber;
-
-    protected final String zkUrl;
-
-    protected final String master;
-
-    private final String clusterId;
-
-    public MesosSlave(DockerClient dockerClient, String resources, String portNumber, String zkUrl, String master, String mesosLocalImage, String registryTag, String clusterId) {
-        super(dockerClient);
-        this.clusterId = clusterId;
-        this.zkUrl = zkUrl;
-        this.resources = resources;
-        this.portNumber = portNumber;
-        this.master = master;
-        this.mesosLocalImage = mesosLocalImage;
-        this.registryTag = registryTag;
+    protected MesosSlave(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
+        super(dockerClient, zooKeeperContainer);
     }
 
     @Override
-    public void start() {
-        super.start();
+    public String getMesosImageName() {
+        return MESOS_SLAVE_IMAGE;
     }
 
-    String[] createMesosLocalEnvironment() {
-        TreeMap<String,String> envs = new TreeMap<>();
-
-        envs.put("MESOS_PORT", this.portNumber);
-        envs.put("MESOS_MASTER", this.zkUrl);
-        envs.put("GLOG_v", "1");
-        envs.put("MESOS_EXECUTOR_REGISTRATION_TIMEOUT", "5mins");
-        envs.put("MESOS_CONTAINERIZERS", "docker,mesos");
-        envs.put("MESOS_ISOLATOR", "cgroups/cpu,cgroups/mem");
-        envs.put("MESOS_LOG_DIR", "/var/log");
-        envs.put("MESOS_LOGGING_LEVEL", "INFO");
-        envs.put("MESOS_SWITCH_USER", "false");
-        envs.put("MESOS_RESOURCES", this.resources);
-
-        return envs.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
-    }
-
-    public CreateContainerCmd getBaseCommand() {
+    @Override
+    protected CreateContainerCmd dockerCommand() {
+        ArrayList<ExposedPort> exposedPorts= new ArrayList<>();
+        exposedPorts.add(new ExposedPort(MESOS_SLAVE_PORT));
+        try {
+            ArrayList<Integer> resourcePorts = parsePortsFromResource(DEFAULT_PORT_RESOURCES);
+            for (Integer port : resourcePorts) {
+                exposedPorts.add(new ExposedPort(port));
+            }
+        } catch (Exception e) {
+            LOGGER.error("Port binding is incorrect: " + e.getMessage());
+        }
 
         String dockerBin = "/usr/bin/docker";
         File dockerBinFile = new File(dockerBin);
@@ -76,47 +55,21 @@ public class MesosSlave extends AbstractContainer {
             }
         }
 
-        return dockerClient.createContainerCmd(mesosLocalImage + ":" + registryTag)
-                .withName("minimesos-agent-" + clusterId + "-" + getRandomId())
+        return dockerClient.createContainerCmd(MESOS_SLAVE_IMAGE + ":" + MesosMaster.MESOS_IMAGE_TAG)
+                .withName("minimesos-agent-" + MesosCluster.getClusterId() + "-" + getRandomId())
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
                 .withPid("host")
-                .withLinks(new Link(this.master, "minimesos-master"))
                 .withBinds(
                         Bind.parse("/var/lib/docker:/var/lib/docker"),
                         Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),
                         Bind.parse(String.format("%s:/usr/bin/docker", dockerBin)),
                         Bind.parse("/var/run/docker.sock:/var/run/docker.sock")
-                );
+                )
+                .withExposedPorts(exposedPorts.toArray(new ExposedPort[exposedPorts.size()]));
     }
 
-    @Override
-    protected void pullImage() {
-        pullImage(mesosLocalImage, registryTag);
-    }
-
-    @Override
-    protected CreateContainerCmd dockerCommand() {
-        ArrayList<ExposedPort> exposedPorts= new ArrayList<>();
-        exposedPorts.add(new ExposedPort(Integer.parseInt(this.portNumber)));
-        try {
-            ArrayList<Integer> resourcePorts = this.parsePortsFromResource(this.resources);
-            for (Integer port : resourcePorts) {
-                exposedPorts.add(new ExposedPort(port));
-            }
-        } catch (Exception e) {
-            LOGGER.error("Port binding is incorrect: " + e.getMessage());
-        }
-
-        CreateContainerCmd cmd = this.getBaseCommand();
-        return cmd.withExposedPorts(exposedPorts.toArray(new ExposedPort[exposedPorts.size()]));
-    }
-
-    public String getResources() {
-        return resources;
-    }
-
-    public ArrayList<Integer> parsePortsFromResource(String resources) throws Exception {
+    public static ArrayList<Integer> parsePortsFromResource(String resources) throws Exception {
         String port = resources.replaceAll(".*ports\\(.+\\):\\[(.*)\\].*", "$1");
         ArrayList<String> ports = new ArrayList<>(Arrays.asList(port.split(",")));
         ArrayList<Integer> returnList = new ArrayList<>();
@@ -130,4 +83,13 @@ public class MesosSlave extends AbstractContainer {
         return returnList;
     }
 
+    @Override
+    public TreeMap<String, String> getDefaultEnvVars() {
+        TreeMap<String,String> envs = new TreeMap<>();
+        envs.put("MESOS_RESOURCES", DEFAULT_RESOURCES);
+        envs.put("MESOS_PORT", String.valueOf(MESOS_SLAVE_PORT));
+        envs.put("MESOS_MASTER", getFormattedZKAddress());
+        envs.put("MESOS_SWITCH_USER", "false");
+        return envs;
+    }
 }

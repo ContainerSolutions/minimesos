@@ -1,102 +1,43 @@
 package com.containersol.minimesos.mesos;
 
-import com.containersol.minimesos.container.AbstractContainer;
+import com.containersol.minimesos.MesosCluster;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.Ports;
-import org.apache.log4j.Logger;
 
-import java.util.Map;
 import java.util.TreeMap;
 
-public class MesosMaster extends AbstractContainer {
-
-    private static final int DOCKER_PORT = 2376;
-
+/**
+ * Base, unmolested Mesos master class
+ */
+public class MesosMaster extends MesosContainer {
+    public static final String MESOS_MASTER_IMAGE = "containersol/mesos-master";
     public static final int MESOS_MASTER_PORT = 5050;
 
-    private static Logger LOGGER = Logger.getLogger(MesosMaster.class);
 
-    private final String mesosMasterImage;
-
-    public final String mesosImageTag;
-
-    private final String zkUrl;
-
-    private final String clusterId;
-
-    private final Map<String, String> extraEnvironmentVariables;
-
-    private final Boolean exposedHostPort;
-
-    public MesosMaster(DockerClient dockerClient, String zkPath, String mesosMasterImage, String mesosImageTag, String clusterId, Map<String, String> extraEnvironmentVariables, Boolean exposedHostPort) {
-        super(dockerClient);
-        this.clusterId = clusterId;
-        this.zkUrl = zkPath;
-        this.mesosMasterImage = mesosMasterImage;
-        this.mesosImageTag = mesosImageTag;
-        this.extraEnvironmentVariables = extraEnvironmentVariables;
-        this.exposedHostPort = exposedHostPort;
+    public MesosMaster(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
+        super(dockerClient, zooKeeperContainer);
     }
 
     @Override
-    public void start() {
-        super.start();
+    public String getMesosImageName() {
+        return MESOS_MASTER_IMAGE;
     }
 
-    String[] createMesosLocalEnvironment() {
-        TreeMap<String, String> envs = new TreeMap<>();
-
+    @Override
+    public TreeMap<String, String> getDefaultEnvVars() {
+        TreeMap<String,String> envs = new TreeMap<>();
         envs.put("MESOS_QUORUM", "1");
-        envs.put("MESOS_ZK", zkUrl);
-        envs.put("MESOS_EXECUTOR_REGISTRATION_TIMEOUT", "5mins");
-        envs.put("MESOS_CONTAINERIZERS", "docker,mesos");
-        envs.put("MESOS_ISOLATOR", "cgroups/cpu,cgroups/mem");
-        envs.put("MESOS_LOG_DIR", "/var/log");
-        envs.put("MESOS_WORK_DIR", "/tmp/mesos");
-
-        envs.putAll(this.extraEnvironmentVariables);
-
-        return envs.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
-    }
-
-    @Override
-    protected void pullImage() {
-        pullImage(mesosMasterImage, mesosImageTag);
+        envs.put("MESOS_ZK", getFormattedZKAddress());
+        return envs;
     }
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        ExposedPort exposedPort = ExposedPort.tcp(MESOS_MASTER_PORT);
-        Ports portBindings = new Ports();
-        if (exposedHostPort) {
-            portBindings.bind(exposedPort, Ports.Binding(MESOS_MASTER_PORT));
-        }
-        return dockerClient.createContainerCmd(mesosMasterImage + ":" + mesosImageTag)
-                .withName("minimesos-master-" + clusterId + "-" + getRandomId())
-                .withExposedPorts(exposedPort)
-                .withEnv(createMesosLocalEnvironment())
-                .withPortBindings(portBindings);
-    }
 
-    public int getDockerPort() {
-        return DOCKER_PORT;
-    }
-
-    public DockerClient getOuterDockerClient() {
-        return dockerClient;
-    }
-
-    public String getMesosMasterImage() {
-        return mesosMasterImage;
-    }
-
-    public String getMesosImageTag() {
-        return mesosImageTag;
-    }
-
-    public Map<String, String> getExtraEnvironmentVariables() {
-        return this.extraEnvironmentVariables;
+        return dockerClient.createContainerCmd(MESOS_MASTER_IMAGE + ":" + MESOS_IMAGE_TAG)
+                .withName("minimesos-master-" + MesosCluster.getClusterId() + "-" + getRandomId())
+                .withExposedPorts(new ExposedPort(MESOS_MASTER_PORT))
+                .withEnv(createMesosLocalEnvironment());
     }
 }

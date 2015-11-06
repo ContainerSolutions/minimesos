@@ -1,8 +1,12 @@
 package com.containersol.minimesos;
 
+import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.marathon.MarathonClient;
-import com.containersol.minimesos.mesos.DockerClientFactory;
+import com.containersol.minimesos.mesos.*;
+import com.containersol.minimesos.state.State;
+import com.containersol.minimesos.util.MesosClusterStateResponse;
+import com.containersol.minimesos.util.Predicate;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.dockerjava.api.DockerClient;
@@ -14,14 +18,6 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import com.containersol.minimesos.container.AbstractContainer;
-import com.containersol.minimesos.mesos.MesosClusterConfig;
-import com.containersol.minimesos.mesos.MesosMaster;
-import com.containersol.minimesos.mesos.MesosSlave;
-import com.containersol.minimesos.mesos.ZooKeeper;
-import com.containersol.minimesos.state.State;
-import com.containersol.minimesos.util.MesosClusterStateResponse;
-import com.containersol.minimesos.util.Predicate;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
@@ -29,13 +25,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.jayway.awaitility.Awaitility.await;
 
@@ -53,48 +46,63 @@ public class MesosCluster extends ExternalResource {
 
     private final List<AbstractContainer> containers = Collections.synchronizedList(new ArrayList<>());
 
-    private final MesosClusterConfig config;
+    private MesosClusterConfig config;
+    private ClusterArchitecture clusterArchitecture;
 
-    private MesosSlave[] mesosSlaves;
+    private static String clusterId;
 
-    protected MesosMaster mesosMasterContainer;
-
-    protected String zkUrl;
-
-    protected ZooKeeper zkContainer;
-
-    private String clusterId;
-
+    /**
+     * Old configuration instantiation.
+     * @deprecated use {@link #MesosCluster(ClusterArchitecture)} instead.
+     */
+    @Deprecated
     public MesosCluster(MesosClusterConfig config) {
         this.config = config;
-        this.clusterId = Integer.toUnsignedString(new SecureRandom().nextInt());
+        clusterId = Integer.toUnsignedString(new SecureRandom().nextInt());
+    }
+
+    /**
+     * Create a new cluster with a specified cluster architecture.
+     * @param clusterArchitecture Represents the layout of the cluster. See {@link ClusterArchitecture} and {@link ClusterUtil}
+     */
+    public MesosCluster(ClusterArchitecture clusterArchitecture) {
+        this.clusterArchitecture = clusterArchitecture;
+        clusterId = Integer.toUnsignedString(new SecureRandom().nextInt());
     }
 
     /**
      * Starts the Mesos cluster and its containers
      */
     public void start() {
-        this.zkContainer = new ZooKeeper(this.config.dockerClient, clusterId);
-        addAndStartContainer(this.zkContainer);
+        if (config == null && clusterArchitecture == null) {
+            throw new ClusterArchitecture.MesosArchitectureException("No cluster architecture specified");
+        }
+        // If the user is still using the old configuration method, then retain their old options. This should prevent the CLI API from breaking.
+        if (config != null) {
+            ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder();
+            builder.withZooKeeper().withMaster( zkContainer ->
+                    new MesosMasterExtended(this.config.dockerClient, zkContainer, this.config.mesosMasterImage, this.config.mesosImageTag, clusterId, this.config.extraEnvironmentVariables, this.config.exposedHostPorts)
+            );
+            try {
+                for (int i = 0; i < this.config.getNumberOfSlaves(); i++) {
+                    final String slaveResource = config.slaveResources[i];
+                    builder.withSlave( zkContainer ->
+                            new MesosSlaveExtended(this.config.dockerClient, slaveResource, "5051", zkContainer, this.config.mesosSlaveImage, this.config.mesosImageTag, clusterId)
+                    );
+                }
 
-        this.zkUrl = "zk://" + this.zkContainer.getIpAddress() + ":2181/" + this.config.zkUrl;
-        this.mesosMasterContainer = new MesosMaster(this.config.dockerClient, this.zkUrl, this.config.mesosMasterImage, this.config.mesosImageTag, clusterId, this.config.extraEnvironmentVariables, this.config.exposedHostPorts);
-        addAndStartContainer(this.mesosMasterContainer);
+                builder.withContainer(zooKeeper -> new Marathon(dockerClient, clusterId, (ZooKeeper) zooKeeper, this.config.exposedHostPorts), ClusterContainers.Filter.zooKeeper());
 
-        try {
-            mesosSlaves = new MesosSlave[config.getNumberOfSlaves()];
-            for (int i = 0; i < this.config.getNumberOfSlaves(); i++) {
-                mesosSlaves[i] = new MesosSlave(this.config.dockerClient, config.slaveResources[i], "5051", this.zkUrl, mesosMasterContainer.getContainerId(), this.config.mesosSlaveImage, this.config.mesosImageTag, clusterId);
-                addAndStartContainer(mesosSlaves[i]);
+                this.clusterArchitecture = builder.build();
+            } catch (Throwable e) {
+                LOGGER.error("Error during startup", e);
             }
-            // wait until the given number of slaves are registered
-            new MesosClusterStateResponse(this.mesosMasterContainer.getIpAddress() + ":5050", config.numberOfSlaves).waitFor();
-        } catch (Throwable e) {
-            LOGGER.error("Error during startup", e);
         }
 
-        Marathon marathon = new Marathon(this.config.dockerClient, clusterId, this.zkContainer, this.config.exposedHostPorts);
-        addAndStartContainer(marathon);
+        clusterArchitecture.getClusterContainers().getContainers().forEach(this::addAndStartContainer);
+        // wait until the given number of slaves are registered
+        new MesosClusterStateResponse(getMesosMasterContainer().getIpAddress() + ":" + MesosMaster.MESOS_MASTER_PORT, getSlaves().length).waitFor();
+        LOGGER.info("http://" + getMesosMasterContainer().getIpAddress() + ":" + MesosMaster.MESOS_MASTER_PORT);
     }
 
     /**
@@ -168,11 +176,11 @@ public class MesosCluster extends ExternalResource {
     }
 
     public List<AbstractContainer> getContainers() {
-        return containers;
+        return clusterArchitecture.getClusterContainers().getContainers();
     }
 
     public MesosSlave[] getSlaves() {
-        return mesosSlaves;
+           return clusterArchitecture.getClusterContainers().getContainers().stream().filter(ClusterContainers.Filter.mesosSlave()).collect(Collectors.toList()).toArray(new MesosSlave[0]);
     }
 
     @Override
@@ -180,20 +188,21 @@ public class MesosCluster extends ExternalResource {
         stop();
     }
 
+    @Deprecated
     public MesosClusterConfig getConfig() {
         return config;
     }
 
     public MesosMaster getMesosMasterContainer() {
-        return mesosMasterContainer;
+        return (MesosMaster) clusterArchitecture.getClusterContainers().getOne(ClusterContainers.Filter.mesosMaster()).get();
     }
 
     public String getZkUrl() {
-        return zkUrl;
+        return MesosContainer.getFormattedZKAddress(getZkContainer());
     }
 
     public ZooKeeper getZkContainer() {
-        return zkContainer;
+        return (ZooKeeper) clusterArchitecture.getClusterContainers().getOne(ClusterContainers.Filter.zooKeeper()).get();
     }
 
     public void waitForState(final Predicate<State> predicate, int seconds) {
@@ -215,7 +224,7 @@ public class MesosCluster extends ExternalResource {
         waitForState(predicate, 20);
     }
 
-    public String getClusterId() {
+    public static String getClusterId() {
         return clusterId;
     }
 
