@@ -12,7 +12,7 @@ import java.util.TreeMap;
  */
 public class MesosMaster extends MesosContainer {
     public static final String MESOS_MASTER_IMAGE = "containersol/mesos-master";
-    public static final int MESOS_PORT = 5050;
+    public static final int MESOS_MASTER_PORT = 5050;
 
 
     public MesosMaster(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
@@ -37,7 +37,7 @@ public class MesosMaster extends MesosContainer {
 
         return dockerClient.createContainerCmd(MESOS_MASTER_IMAGE + ":" + MESOS_IMAGE_TAG)
                 .withName("minimesos-master-" + MesosCluster.getClusterId() + "-" + getRandomId())
-                .withExposedPorts(new ExposedPort(MESOS_PORT))
+                .withExposedPorts(new ExposedPort(MESOS_MASTER_PORT))
                 .withEnv(createMesosLocalEnvironment());
     }
 }

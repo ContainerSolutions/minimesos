@@ -81,7 +81,7 @@ public class MesosCluster extends ExternalResource {
         if (config != null) {
             ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder();
             builder.withZooKeeper().withMaster( zkContainer ->
-                    new MesosMasterExtended(this.config.dockerClient, zkContainer, this.config.mesosMasterImage, this.config.mesosImageTag, clusterId, this.config.extraEnvironmentVariables)
+                    new MesosMasterExtended(this.config.dockerClient, zkContainer, this.config.mesosMasterImage, this.config.mesosImageTag, clusterId, this.config.extraEnvironmentVariables, this.config.exposedHostPorts)
             );
             try {
                 for (int i = 0; i < this.config.getNumberOfSlaves(); i++) {
@@ -91,7 +91,7 @@ public class MesosCluster extends ExternalResource {
                     );
                 }
 
-                builder.withContainer(zooKeeper -> new Marathon(dockerClient, clusterId, (ZooKeeper) zooKeeper), ClusterContainers.Filter.zooKeeper());
+                builder.withContainer(zooKeeper -> new Marathon(dockerClient, clusterId, (ZooKeeper) zooKeeper, this.config.exposedHostPorts), ClusterContainers.Filter.zooKeeper());
 
                 this.clusterArchitecture = builder.build();
             } catch (Throwable e) {
@@ -101,8 +101,8 @@ public class MesosCluster extends ExternalResource {
 
         clusterArchitecture.getClusterContainers().getContainers().forEach(this::addAndStartContainer);
         // wait until the given number of slaves are registered
-        new MesosClusterStateResponse(getMesosMasterContainer().getIpAddress() + ":" + MesosMaster.MESOS_PORT, getSlaves().length).waitFor();
-        LOGGER.info("http://" + getMesosMasterContainer().getIpAddress() + ":" + MesosMaster.MESOS_PORT);
+        new MesosClusterStateResponse(getMesosMasterContainer().getIpAddress() + ":" + MesosMaster.MESOS_MASTER_PORT, getSlaves().length).waitFor();
+        LOGGER.info("http://" + getMesosMasterContainer().getIpAddress() + ":" + MesosMaster.MESOS_MASTER_PORT);
     }
 
     /**
