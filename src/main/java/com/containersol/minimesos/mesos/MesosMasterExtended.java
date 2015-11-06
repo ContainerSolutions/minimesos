@@ -52,15 +52,16 @@ public class MesosMasterExtended extends MesosMaster {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
+        CreateContainerCmd createContainerCmd = super.dockerCommand();
         ExposedPort exposedPort = ExposedPort.tcp(MESOS_MASTER_PORT);
         Ports portBindings = new Ports();
         if (exposedHostPort) {
             portBindings.bind(exposedPort, Ports.Binding(MESOS_MASTER_PORT));
         }
-        return dockerClient.createContainerCmd(mesosMasterImage + ":" + mesosImageTag)
-                .withName("minimesos-master-" + clusterId + "-" + getRandomId())
+        createContainerCmd
                 .withEnv(createMesosLocalEnvironment())
                 .withPortBindings(portBindings);
+        return createContainerCmd;
     }
 
     public int getDockerPort() {
