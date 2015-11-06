@@ -93,6 +93,14 @@ public class ClusterArchitecture {
         }
 
         /**
+         * Return the containers currently in the cluster. Note that this method is not checked. If you want to start containers, use {@see Builder.build()}
+         * @return List of containers wrapped in a {@link ClusterContainers} object
+         */
+        public ClusterContainers getContainers() {
+            return clusterArchitecture.getClusterContainers();
+        }
+
+        /**
          * Includes the default {@link ZooKeeper} instance in the cluster
          */
         public Builder withZooKeeper() {
@@ -104,7 +112,7 @@ public class ClusterArchitecture {
          * @param zooKeeper must extend from {@link ZooKeeper}
          */
         public Builder withZooKeeper(ZooKeeper zooKeeper) {
-            clusterArchitecture.getClusterContainers().add(zooKeeper); // You don't need a zookeeper container to add a zookeeper container
+            getContainers().add(zooKeeper); // You don't need a zookeeper container to add a zookeeper container
             return this;
         }
 
@@ -149,7 +157,7 @@ public class ClusterArchitecture {
          * @param container must extend from {@link AbstractContainer}
          */
         public Builder withContainer(AbstractContainer container) {
-            clusterArchitecture.getClusterContainers().add(container); // A simple container may not need any injection. But is available if required.
+            getContainers().add(container); // A simple container may not need any injection. But is available if required.
             return this;
         }
 
@@ -161,7 +169,7 @@ public class ClusterArchitecture {
          */
         public Builder withContainer(Function<ZooKeeper, AbstractContainer> container, Predicate<AbstractContainer> filter) {
             // Dev note: It is not possible to use generics to find the requested type due to generic type erasure. This is why we are explicitly passing a user provided filter.
-            Optional<ZooKeeper> foundContainer = clusterArchitecture.getClusterContainers().getOne(filter);
+            Optional<ZooKeeper> foundContainer = getContainers().getOne(filter);
             if (!foundContainer.isPresent()) {
                 throw new MesosArchitectureException("Could not find a container of that type when trying to inject.");
             }
@@ -184,7 +192,7 @@ public class ClusterArchitecture {
         }
 
         private Boolean isPresent(Predicate<AbstractContainer> filter) {
-            return clusterArchitecture.getClusterContainers().isPresent(filter);
+            return getContainers().isPresent(filter);
         }
     }
 
