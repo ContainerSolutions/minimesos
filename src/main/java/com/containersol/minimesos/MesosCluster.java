@@ -102,7 +102,6 @@ public class MesosCluster extends ExternalResource {
         clusterArchitecture.getClusterContainers().getContainers().forEach(this::addAndStartContainer);
         // wait until the given number of slaves are registered
         new MesosClusterStateResponse(getMesosMasterContainer().getIpAddress() + ":" + MesosMaster.MESOS_MASTER_PORT, getSlaves().length).waitFor();
-        LOGGER.info("http://" + getMesosMasterContainer().getIpAddress() + ":" + MesosMaster.MESOS_MASTER_PORT);
     }
 
     /**
