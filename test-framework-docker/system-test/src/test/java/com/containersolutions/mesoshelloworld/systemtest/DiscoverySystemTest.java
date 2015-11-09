@@ -1,5 +1,6 @@
 package com.containersolutions.mesoshelloworld.systemtest;
 
+import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersolutions.mesoshelloworld.scheduler.Configuration;
 import org.apache.log4j.Logger;
 import com.containersol.minimesos.MesosCluster;

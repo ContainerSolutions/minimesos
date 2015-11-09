@@ -22,7 +22,7 @@ dependencies {
 jar {
     baseName = "mesos-hello-world-scheduler"
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } } // Include dependencies
-    from { project(":framework-docker:executor").getTasksByName("copyJar", false)[0].outputs.files[0] } // Include executor, just in case
+    from { project(":test-framework-docker:executor").getTasksByName("copyJar", false)[0].outputs.files[0] } // Include executor, just in case
     manifest {
         attributes(
                 'Main-Class': mainClassName,
