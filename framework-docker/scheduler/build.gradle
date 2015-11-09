@@ -1,0 +1,49 @@
+apply plugin: 'application'
+
+mainClassName = "com.containersolutions.mesoshelloworld.scheduler.Main"
+ext {
+    imageName = imagePrefix + '/mesos-hello-world-scheduler'
+}
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+}
+repositories {
+    maven {
+        url "https://jitpack.io"
+    }
+}
+dependencies {
+    compile "com.beust:jcommander:1.48"
+}
+
+jar {
+    baseName = "mesos-hello-world-scheduler"
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } } // Include dependencies
+    from { project(":framework-docker:executor").getTasksByName("copyJar", false)[0].outputs.files[0] } // Include executor, just in case
+    manifest {
+        attributes(
+                'Main-Class': mainClassName,
+                'Implementation-Version': project.version
+        )
+    }
+}
+
+task taskCopyFilesForDocker(type: Copy) {
+    dependsOn "copyShellScript", "copyJar"
+}
+
+task copyJar(type: Copy) {
+    from "build/libs/mesos-hello-world-scheduler-${project.version}.jar"
+    into 'build/docker'
+    rename { String fileName ->
+        fileName.replace("-${project.version}", "")
+    }
+}
+
+task copyShellScript(type: Copy) {
+    from "start-scheduler.sh"
+    into 'build/docker'
+}

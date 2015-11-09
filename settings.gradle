@@ -1,1 +1,5 @@
-rootProject.name = 'minimesos'
+rootProject.name = 'minimesos-project'
+include "minimesos"
+include "framework-docker:scheduler"
+include "framework-docker:executor"
+include "framework-docker:system-test"

@@ -1,12 +1,24 @@
-import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
 
-version = '0.1.0-SNAPSHOT'
+import com.github.zafarkhaja.semver.UnexpectedCharacterException
+
+import com.github.zafarkhaja.semver.Version
+import org.ajoberstar.grgit.Grgit
+import org.ajoberstar.grgit.Tag
 
 ext {
+    mesosVer = "0.22.1"
     imagePrefix = 'containersol'
-    imageName = imagePrefix + '/minimesos'
+}
+
+allprojects {
+    apply plugin: 'idea'
+}
+
+idea {
+    project {
+        languageLevel = '1.8'
+        vcs = 'Git'
+    }
 }
 
 buildscript {
@@ -20,169 +32,72 @@ buildscript {
         }
         mavenCentral()
         mavenLocal()
+        jcenter()
     }
+
     dependencies {
         classpath "com.bmuschko:gradle-docker-plugin:2.4.1"
         classpath "com.github.zafarkhaja:java-semver:0.9.0"
         classpath "de.gesellix:gradle-debian-plugin:16"
+        classpath "org.ajoberstar:grgit:1.3.0"
+        classpath "org.ajoberstar:semver-vcs-gradle-grgit:0.1.0-milestone.1"
+        classpath 'com.bmuschko:gradle-docker-plugin:2.4.1'
+    }
+
+}
+
+def grgit = Grgit.open(project.file('.'))
+def tags = grgit.tag.list()
+def versions = []
+
+tags.each { Tag t ->
+    try {
+        Version version = new Version.Builder(t.name).build()
+        versions << version
+    } catch (UnexpectedCharacterException e) {
+        // Skip, tag is invalid
     }
 }
 
-tasks.withType(JavaCompile) {
-    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-}
+Version currentVersion = new Version.Builder("0.0.0").build()
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-    maven {
-        url "https://jitpack.io"
+versions.each { Version v ->
+    if (v.greaterThan(currentVersion)) {
+        currentVersion = v
     }
 }
 
-apply plugin: 'java'
-apply plugin: 'maven'
-apply plugin: 'application'
-apply plugin: 'com.bmuschko.docker-remote-api'
+println "Current version: " + currentVersion
+project.version = currentVersion
 
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
-version = rootProject.version.toString()
-
-[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
-
-group = "com.containersol.minimesos"
-
-dependencies {
-    compile 'com.github.docker-java:docker-java:4f094c112'
-    compile 'junit:junit:4.11'
-    compile 'com.jayway.awaitility:awaitility:1.6.3'
-    compile 'com.mashape.unirest:unirest-java:1.4.5'
-
-    compile 'org.slf4j:jcl-over-slf4j:1.7.12'
-    compile 'org.slf4j:log4j-over-slf4j:1.7.12'
-    compile 'org.slf4j:jul-to-slf4j:1.7.12'
-
-    compile 'org.slf4j:slf4j-api:1.7.12'
-
-    compile 'ch.qos.logback:logback-core:1.1.3'
-    compile 'ch.qos.logback:logback-classic:1.1.3'
-
-    compile 'com.beust:jcommander:1.48'
-
-    compile 'com.mashape.unirest:unirest-java:1.4.5'
-    testCompile "org.mockito:mockito-core:1.+"
-}
-
-mainClassName = "com.containersol.minimesos.main.Main"
-
-jar {
-    baseName = "minimesos"
-    manifest {
-        attributes(
-                'Main-Class'                : mainClassName,
-                'Implementation-Version'    : project.version
-        )
-    }
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
-}
-
-task executableJar(type: Jar) {
-    baseName = "minimesos"
-    classifier = "all"
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-    manifest {
-        attributes(
-                'Main-Class'                : mainClassName,
-                'Implementation-Version'    : project.version
-        )
-    }
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
-}
-
-task installMinimesosScript(type: Copy) {
-    from        "bin/minimesos"
-    into        "/usr/local/bin"
-}
-
-task copyExecutableJar(type: Copy) {
-    dependsOn 'executableJar'
-    rename { String fileName ->
-        fileName.replace("-${project.version}-all", "")
-    }
-    from        "build/libs/minimesos-${project.version}-all.jar"
-    into        'build/libs'
-}
-
-task copyFilesForDocker(type: Copy) {
-    dependsOn   'copyExecutableJar'
-    from        "build/libs/minimesos.jar"
-    into        'build/docker'
-    rename { String fileName ->
-        fileName.replace("-${project.version}", "")
-    }
-}
-
-task copyDockerfile(type: Copy) {
-    dependsOn   'copyFilesForDocker'
-    from        "Dockerfile"
-    into        'build/docker'
-}
-
-artifacts {
-    archives executableJar
-}
-
-afterEvaluate { project ->
-    if (new File(project.projectDir, 'Dockerfile').exists()) {
-        if (!project.hasProperty('imageName')) {
-            throw new GradleException('Root directory of ' + project.name
-                    + ' contains Dockerfile, but it does not define project.ext.imageName value')
-        }
-        docker.url = 'unix:///var/run/docker.sock'
-        if(!System.properties['os.name'].equals('Mac OS X')) {
-            docker.certPath = null
-        }
-        if (System.env.DOCKER_HOST) {
-            docker.url = "$System.env.DOCKER_HOST".replace("tcp","https")
-            if (System.env.DOCKER_CERT_PATH) {
-                docker.certPath = new File(System.env.DOCKER_CERT_PATH)
+task incrementVersion {
+    if (gradle.startParameter.taskNames.contains('release')) {
+        if (project.hasProperty('releaseType')) {
+            if (releaseType == "major") {
+                project.version = currentVersion.incrementMajorVersion()
+            } else if (releaseType == "minor") {
+                project.version = currentVersion.incrementMinorVersion()
+            } else if (releaseType == "patch") {
+                project.version = currentVersion.incrementPatchVersion()
             }
+        } else {
+            throw new GradleException('releaseType was not provided. Specify -PreleaseType={major,minor,patch}')
         }
-        task buildDockerImage(type: DockerBuildImage, dependsOn: [copyDockerfile], description: 'build Docker image') {
-            inputDir = new File("build/docker")
-            tag = project.imageName
-        }
-        project.build.dependsOn buildDockerImage
-        [ 'snapshot', 'version' ].each { aTag ->
-            String uppercasedName = aTag.capitalize()
-            task "tagDockerImageWith$uppercasedName"(type: DockerTagImage, description: 'tag Docker image') {
-                imageId = project.imageName
-                tag = ( 'version'.equals(aTag) ) ? project.version : aTag
-                repository = project.imageName
-                force = true
-            }
-            task "publishDockerImageWith$uppercasedName"(type: DockerPushImage, dependsOn: ["tagDockerImageWith$uppercasedName"],
-                    description: 'publish Docker image') {
-                imageName = project.imageName
-                tag = ( 'version'.equals(aTag) ) ? project.version : aTag
-                doFirst {
-                    ['dockerHubUsername', 'dockerHubPassword', 'dockerHubEmail'].each {
-                        assert project.hasProperty(it) : 'Undefined "' + it + '" property'
-                    }
-                    docker {
-                        registryCredentials {
-                            username = project.property('dockerHubUsername')
-                            password = project.property('dockerHubPassword')
-                            email = project.property('dockerHubEmail')
-                        }
-                    }
-                }
-            }
+        println "Next version: " + project.version
+        subprojects { project ->
+            project.version = rootProject.version.toString()
         }
     }
 }
 
-assemble.dependsOn copyExecutableJar
-//TODO: install.dependsOn installMinimesosScript
+task release(dependsOn: [incrementVersion]) << {
+    if (!project.hasProperty('userName')) {
+        throw new GradleException('userName was not provided. Specify -PuserName=<user>')
+    }
+    grgit.tag.add(name: project.version, annotate: true, message: "RELEASE $project.version - by $userName")
+    grgit.push(tags: true)
+}
+
+afterEvaluate {
+    release.dependsOn getTasksByName('publish', true)
+}

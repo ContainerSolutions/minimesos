@@ -4,14 +4,10 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.Link;
 import org.apache.log4j.Logger;
-import com.containersol.minimesos.container.AbstractContainer;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
 import java.util.TreeMap;
 
 public class MesosSlaveExtended extends MesosSlave {
