@@ -1,6 +1,7 @@
 package com.containersol.minimesos;
 
 import com.containersol.minimesos.mesos.MesosClusterConfig;
+import com.containersol.minimesos.mesos.MesosContainer;
 import com.containersol.minimesos.mesos.MesosSlave;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.mesos.MesosSlaveExtended;
@@ -134,7 +135,7 @@ public class MesosClusterTest {
                 "5051",
                 cluster.getZkContainer(),
                 "containersol/mesos-agent",
-                "0.25.0-0.2.70.ubuntu1404",
+                MesosContainer.MESOS_IMAGE_TAG,
                 MesosCluster.getClusterId()) {
 
             @Override

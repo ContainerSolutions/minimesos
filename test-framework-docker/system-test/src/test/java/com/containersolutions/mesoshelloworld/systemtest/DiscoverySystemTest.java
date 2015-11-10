@@ -3,6 +3,7 @@ package com.containersolutions.mesoshelloworld.systemtest;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersolutions.mesoshelloworld.scheduler.Configuration;
+import com.jayway.awaitility.Awaitility;
 import org.apache.log4j.Logger;
 import com.containersol.minimesos.MesosCluster;
 import org.junit.AfterClass;
@@ -11,9 +12,10 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -26,8 +28,7 @@ public class DiscoverySystemTest {
     protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder()
             .withZooKeeper()
             .withMaster()
-            // TODO: configuration of the first slave should result in the test failure, but it does not
-            .withSlave("ports(*):[8081-8083]")
+            .withSlave("ports(*):[8080-8082]")
             .withSlave("ports(*):[8080-8082]")
             .withSlave("ports(*):[8080-8082]")
             .build();
@@ -51,13 +52,20 @@ public class DiscoverySystemTest {
     @Test
     public void testNodeDiscoveryRest() {
 
-        DockerContainersUtil util = new DockerContainersUtil(CONFIG.dockerClient);
-        Set<String> ipAddresses = util.getContainers(false).filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE).getIpAddresses();
-        // assertEquals( "Problem with running tasks count", 9, ipAddresses.size());
-
         long timeout = 120;
+        DockerContainersUtil util = new DockerContainersUtil(CONFIG.dockerClient);
+
+        final Set<String> ipAddresses = new HashSet<>();
+        Awaitility.await("9 expected executors did not come up").atMost(timeout, TimeUnit.SECONDS).until(() -> {
+            ipAddresses.clear();
+            ipAddresses.addAll(util.getContainers(false).filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE).getIpAddresses());
+            LOGGER.info( String.format("%d executors are found", ipAddresses.size()) );
+            return ipAddresses.size() == 9;
+        });
+
         HelloWorldResponse helloWorldResponse = new HelloWorldResponse( ipAddresses, Arrays.asList(8080, 8081, 8082), timeout );
-        assertTrue("Elasticsearch nodes did not discover each other within " + timeout + " seconds", helloWorldResponse.isDiscoverySuccessful());
+        assertTrue("Executors did not come up within " + timeout + " seconds", helloWorldResponse.isDiscoverySuccessful());
+
     }
 
     @AfterClass

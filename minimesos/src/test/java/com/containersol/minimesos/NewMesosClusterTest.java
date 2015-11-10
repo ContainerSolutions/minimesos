@@ -110,7 +110,8 @@ public class NewMesosClusterTest {
                 "5051",
                 cluster.getZkContainer(),
                 "containersol/mesos-agent",
-                "0.25.0-0.2.70.ubuntu1404", MesosCluster.getClusterId()) {
+                MesosContainer.MESOS_IMAGE_TAG,
+                MesosCluster.getClusterId()) {
 
             @Override
             protected CreateContainerCmd dockerCommand() {

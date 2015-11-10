@@ -3,6 +3,7 @@ package com.containersol.minimesos.main;
 import com.beust.jcommander.JCommander;
 import com.containersol.minimesos.MesosCluster;
 import com.containersol.minimesos.mesos.MesosClusterConfig;
+import com.containersol.minimesos.mesos.MesosContainer;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,7 +94,7 @@ public class Main {
         String clusterId = MesosCluster.readClusterId();
         if (clusterId != null) {
             LOGGER.info("Minimesos cluster is running");
-            LOGGER.info("Mesos version: " + MesosClusterConfig.MESOS_IMAGE_TAG.substring(0, MesosClusterConfig.MESOS_IMAGE_TAG.indexOf("-")));
+            LOGGER.info("Mesos version: " + MesosContainer.MESOS_IMAGE_TAG.substring(0, MesosContainer.MESOS_IMAGE_TAG.indexOf("-")));
         } else {
             LOGGER.info("Minimesos cluster is not running");
         }

@@ -1,4 +1,4 @@
-FROM mesosphere/mesos:0.22.1-1.0.ubuntu1404
+FROM mesosphere/mesos:0.25.0-0.2.70.ubuntu1404
 
 RUN apt-get update && apt-get install -y software-properties-common
 

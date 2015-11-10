@@ -15,7 +15,10 @@ public class Scheduler implements org.apache.mesos.Scheduler {
     public static final double CPUS_PER_TASK = 0.1;
     public static final double MEM_PER_TASK = 128;
 
+    public static final int MAX_OFFERS = 10;
+
     private final Configuration configuration;
+    private int acceptedOffers = 0;
 
     public Scheduler(Configuration configuration) {
         this.configuration = configuration;
@@ -28,7 +31,7 @@ public class Scheduler implements org.apache.mesos.Scheduler {
         for (Offer offer : offers) {
 
             ResourceOffer currentOffer = new ResourceOffer(offer.getResourcesList());
-            if( currentOffer.isAcceptable() ) {
+            if( currentOffer.isAcceptable() && (acceptedOffers < MAX_OFFERS) ) {
 
                 System.out.println(
                         "Received offer " + offer.getId().getValue() + " with cpus: " + currentOffer.offerCpus +
@@ -45,6 +48,9 @@ public class Scheduler implements org.apache.mesos.Scheduler {
 
                 Status status = driver.launchTasks(Collections.singletonList(offer.getId()), newTaskList);
                 System.out.println(String.format("Launched %d tasks. Status is %s", newTaskList.size(), status.toString()));
+
+                acceptedOffers++;
+
             }
 
         }
@@ -74,7 +80,7 @@ public class Scheduler implements org.apache.mesos.Scheduler {
                     status.getSource().getValueDescriptor().getName() + "'" +
                     " with message '" + status.getMessage() + "'");
 
-            driver.stop();
+            // driver.stop();
 
         }
 

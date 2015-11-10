@@ -13,7 +13,6 @@ public class MesosClusterConfig {
 
     public static final String MESOS_MASTER_IMAGE = "containersol/mesos-master";
     public static final String MESOS_SLAVE_IMAGE = "containersol/mesos-agent";
-    public static final String MESOS_IMAGE_TAG = "0.25.0-0.2.70.ubuntu1404";
 
     public final DockerClient dockerClient;
     public final int numberOfSlaves;
@@ -66,7 +65,7 @@ public class MesosClusterConfig {
         Map<String, String> extraEnvironmentVariables = new TreeMap<>();
         String mesosMasterImage = MESOS_MASTER_IMAGE;
         String mesosSlaveImage = MESOS_SLAVE_IMAGE;
-        String mesosImageTag = MESOS_IMAGE_TAG;
+        String mesosImageTag = MesosContainer.MESOS_IMAGE_TAG;
         Boolean exposedHostPorts = false;
 
         private Builder() {
