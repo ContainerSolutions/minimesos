@@ -1,0 +1,49 @@
+apply plugin: 'application'
+
+mainClassName = "com.containersolutions.mesoshelloworld.executor.Executor"
+ext {
+    imageName = imagePrefix + '/mesos-hello-world-executor'
+}
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+}
+
+repositories {
+    maven {
+        url "https://jitpack.io"
+    }
+}
+
+jar {
+    baseName = "mesos-hello-world-executor"
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } } // Include dependencies
+    manifest {
+        attributes(
+                'Main-Class': mainClassName,
+                'Implementation-Version': project.version
+        )
+    }
+}
+
+dependencies {
+}
+
+task taskCopyFilesForDocker(type: Copy) {
+    dependsOn "copyShellScript", "copyJar"
+}
+
+task copyJar(type: Copy) {
+    from "build/libs/mesos-hello-world-executor-${project.version}.jar"
+    into 'build/docker'
+    rename { String fileName ->
+        fileName.replace("-${project.version}", "")
+    }
+}
+
+task copyShellScript(type: Copy) {
+    from "start-executor.sh"
+    into 'build/docker'
+}
