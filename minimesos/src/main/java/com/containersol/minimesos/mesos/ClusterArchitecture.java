@@ -5,6 +5,7 @@ import com.github.dockerjava.api.DockerClient;
 import org.apache.log4j.Logger;
 
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -55,6 +56,11 @@ import static com.containersol.minimesos.mesos.ClusterContainers.*;
 public class ClusterArchitecture {
 
     private final ClusterContainers clusterContainers = new ClusterContainers();
+    public final DockerClient dockerClient;
+
+    public ClusterArchitecture(DockerClient dockerClient) {
+        this.dockerClient = dockerClient;
+    }
 
     public ClusterContainers getClusterContainers() {
         return clusterContainers;
@@ -65,7 +71,7 @@ public class ClusterArchitecture {
      */
     public static class Builder {
         private static final Logger LOGGER = Logger.getLogger(ClusterArchitecture.class);
-        private final ClusterArchitecture clusterArchitecture = new ClusterArchitecture();
+        private final ClusterArchitecture clusterArchitecture;
         private final DockerClient dockerClient;
 
         /**
@@ -77,10 +83,10 @@ public class ClusterArchitecture {
 
         /**
          * Create a new builder with the provided docker client
-         * @param dockerClient
          */
         public Builder(DockerClient dockerClient) {
             this.dockerClient = dockerClient;
+            this.clusterArchitecture = new ClusterArchitecture(dockerClient);
         }
 
         /**
@@ -142,6 +148,21 @@ public class ClusterArchitecture {
         }
 
         /**
+         * All default instance, but with defined resources
+         * @param resources definition of resources
+         */
+        public Builder withSlave(String resources) {
+            return withSlave(zooKeeper -> new MesosSlave(dockerClient, zooKeeper) {
+                @Override
+                public TreeMap<String, String> getDefaultEnvVars() {
+                    TreeMap<String, String> envVars = super.getDefaultEnvVars();
+                    envVars.put("MESOS_RESOURCES", resources);
+                    return envVars;
+                }
+            });
+        }
+
+        /**
          * Provide a custom implementation of the {@link MesosSlave} container.
          * @param slave must extend from {@link MesosSlave}. Functional, to allow you to inject a reference to the {@link ZooKeeper} container.
          */
@@ -165,7 +186,6 @@ public class ClusterArchitecture {
          * Includes your own container in the cluster with a reference to another container of type T
          * @param container container must extend from {@link AbstractContainer}. Functional, to allow you to inject a reference to another {@link AbstractContainer}.
          * @param filter A predicate that returns true if the {@link AbstractContainer} is of type T
-         * @return
          */
         public Builder withContainer(Function<ZooKeeper, AbstractContainer> container, Predicate<AbstractContainer> filter) {
             // Dev note: It is not possible to use generics to find the requested type due to generic type erasure. This is why we are explicitly passing a user provided filter.
@@ -194,6 +214,7 @@ public class ClusterArchitecture {
         private Boolean isPresent(Predicate<AbstractContainer> filter) {
             return getContainers().isPresent(filter);
         }
+
     }
 
     /**
