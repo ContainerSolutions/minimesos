@@ -30,9 +30,13 @@ In this snippet we're configuring the Mesos cluster to start 3 slaves with diffe
 ```
 public class MesosClusterTest {
     @ClassRule
-    public static MesosCluster cluster = new MesosCluster(MesosClusterConfig.builder()
-            .slaveResources(new String[]{"ports(*):[9200-9200,9300-9300]","ports(*):[9201-9201,9301-9301]","ports(*):[9202-9202,9302-9302]"})
-            .build());
+    public static MesosCluster cluster = new MesosCluster(new ClusterArchitecture.Builder()
+        .withZooKeeper()
+        .withMaster()
+        .withSlave("ports(*):[9200-9200,9300-9300]")
+        .withSlave("ports(*):[9201-9201,9301-9301]")
+        .withSlave("ports(*):[9202-9202,9302-9302]")
+        .build());
             
     @Test
     public void mesosClusterCanBeStarted() throws Exception {
