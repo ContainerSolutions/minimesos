@@ -70,7 +70,7 @@ public class Main {
             MesosCluster cluster = new MesosCluster(
                     MesosClusterConfig.builder()
                             .slaveResources(new String[] {
-                                            "ports(*):[9200-9200,9300-9300]", "ports(*):[9201-9201,9301-9301]", "ports(*):[9202-9202,9302-9302]"
+                                            "ports(*):[9200-9200,9300-9300,9400-9400]", "ports(*):[9201-9201,9301-9301,9401-9401]", "ports(*):[9202-9202,9302-9302,9402-9402]"
                                     }
                             )
                             .mesosImageTag("0.22.1-1.0.ubuntu1404")
