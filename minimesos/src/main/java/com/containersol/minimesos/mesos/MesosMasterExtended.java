@@ -32,8 +32,8 @@ public class MesosMasterExtended extends MesosMaster {
     }
 
     @Override
-    public void start() {
-        super.start();
+    public void start(int timeout) {
+        super.start(timeout);
     }
 
     @Override

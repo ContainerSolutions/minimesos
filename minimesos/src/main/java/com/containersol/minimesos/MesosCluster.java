@@ -73,7 +73,7 @@ public class MesosCluster extends ExternalResource {
     /**
      * Starts the Mesos cluster and its containers
      */
-    public void start() {
+    public void start(int timeout) {
         if (config == null && clusterArchitecture == null) {
             throw new ClusterArchitecture.MesosArchitectureException("No cluster architecture specified");
         }
@@ -99,7 +99,7 @@ public class MesosCluster extends ExternalResource {
             }
         }
 
-        clusterArchitecture.getClusterContainers().getContainers().forEach(this::addAndStartContainer);
+        clusterArchitecture.getClusterContainers().getContainers().forEach((container) -> addAndStartContainer(container, timeout));
         // wait until the given number of slaves are registered
         new MesosClusterStateResponse(getMesosMasterContainer().getIpAddress() + ":" + MesosMaster.MESOS_MASTER_PORT, getSlaves().length).waitFor();
     }
@@ -125,8 +125,8 @@ public class MesosCluster extends ExternalResource {
      * @param container container to be started
      * @return container ID
      */
-    public String addAndStartContainer(AbstractContainer container) {
-        container.start();
+    public String addAndStartContainer(AbstractContainer container, int timeout) {
+        container.start(timeout);
         containers.add(container);
         return container.getContainerId();
     }
@@ -154,7 +154,6 @@ public class MesosCluster extends ExternalResource {
 
     @Override
     protected void before() throws Throwable {
-        start();
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {

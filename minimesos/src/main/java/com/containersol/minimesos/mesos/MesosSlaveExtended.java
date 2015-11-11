@@ -34,8 +34,8 @@ public class MesosSlaveExtended extends MesosSlave {
     }
 
     @Override
-    public void start() {
-        super.start();
+    public void start(int timeout) {
+        super.start(timeout);
     }
 
     public CreateContainerCmd getBaseCommand() {

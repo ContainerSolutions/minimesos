@@ -52,7 +52,7 @@ public class Main {
 
         switch (jc.getParsedCommand()) {
             case "up":
-                doUp();
+                doUp(commandUp.getTimeout());
                 break;
             case "info":
                 printInfo();
@@ -65,7 +65,7 @@ public class Main {
         }
     }
 
-    private static void doUp() {
+    private static void doUp(int timeout) {
         String clusterId = MesosCluster.readClusterId();
         if (clusterId == null) {
             MesosCluster cluster = new MesosCluster(
@@ -75,7 +75,7 @@ public class Main {
                             .exposedHostPorts(commandUp.isExposedHostPorts())
                             .build()
             );
-            cluster.start();
+            cluster.start(timeout);
             File miniMesosDir = new File(System.getProperty("minimesos.dir"));
             try {
                 FileUtils.forceMkdir(miniMesosDir);
