@@ -28,7 +28,7 @@ public class Main {
     private static boolean help;
 
     public static void main(String[] args)  {
-        JCommander jc = new JCommander();
+        JCommander jc = new JCommander(new Main());
         jc.setProgramName("minimesos");
 
         commandUp = new CommandUp();
