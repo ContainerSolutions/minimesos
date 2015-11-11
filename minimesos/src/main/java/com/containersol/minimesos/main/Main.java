@@ -24,7 +24,7 @@ public class Main {
 
     private static CommandUp commandUp;
 
-    @Parameter(names = "--help", help = true)
+    @Parameter(names = {"--help", "-help", "-?", "-h"}, help = true)
     private static boolean help;
 
     public static void main(String[] args)  {
