@@ -4,6 +4,7 @@ import com.beust.jcommander.JCommander;
 import com.containersol.minimesos.MesosCluster;
 import com.containersol.minimesos.mesos.MesosClusterConfig;
 import com.containersol.minimesos.mesos.MesosContainer;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,21 +20,27 @@ import java.nio.file.Paths;
 public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
+    private static CommandDestroy commandDestroy;
+    private static CommandHelp commandHelp;
+    private static CommandInfo commandInfo;
+    private static CommandState commandState;
     private static CommandUp commandUp;
 
     public static void main(String[] args)  {
         JCommander jc = new JCommander();
         jc.setProgramName("minimesos");
 
+        commandDestroy = new CommandDestroy();
+        commandHelp = new CommandHelp();
+        commandInfo = new CommandInfo();
+        commandState = new CommandState();
         commandUp = new CommandUp();
-        CommandDestroy commandDestroy = new CommandDestroy();
-        CommandHelp commandHelp = new CommandHelp();
-        CommandInfo commandInfo = new CommandInfo();
 
-        jc.addCommand("up", commandUp);
         jc.addCommand("destroy", commandDestroy);
         jc.addCommand("help", commandHelp);
         jc.addCommand("info", commandInfo);
+        jc.addCommand("state", commandState);
+        jc.addCommand("up", commandUp);
         jc.parseWithoutValidation(args);
 
         String clusterId = MesosCluster.readClusterId();
@@ -51,17 +58,21 @@ public class Main {
         }
 
         switch (jc.getParsedCommand()) {
-            case "up":
-                doUp();
-                break;
-            case "info":
-                printInfo();
-                break;
             case "destroy":
                 MesosCluster.destroy();
                 break;
             case "help":
                 jc.usage();
+                break;
+            case "info":
+                printInfo();
+                break;
+            case "state":
+                printState(commandState.getAgent());
+                break;
+            case "up":
+                doUp();
+                break;
         }
     }
 
@@ -97,6 +108,17 @@ public class Main {
             LOGGER.info("Mesos version: " + MesosContainer.MESOS_IMAGE_TAG.substring(0, MesosContainer.MESOS_IMAGE_TAG.indexOf("-")));
         } else {
             LOGGER.info("Minimesos cluster is not running");
+        }
+    }
+
+    private static void printState(String agent) {
+        String clusterId = MesosCluster.readClusterId();
+        try {
+            LOGGER.info(MesosCluster.getStateInfo(clusterId, agent));
+        } catch (UnirestException e) {
+            LOGGER.error("Cannot access the cluster.\nPlease verify the cluster is running using `minimesos info` command.");
+        } catch (RuntimeException e) {
+            LOGGER.error(e.getMessage());
         }
     }
 

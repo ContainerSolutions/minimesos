@@ -14,6 +14,8 @@ import com.github.dockerjava.api.InternalServerErrorException;
 import com.github.dockerjava.api.NotFoundException;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Container;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.IOUtils;
@@ -131,14 +133,26 @@ public class MesosCluster extends ExternalResource {
         return container.getContainerId();
     }
 
-    public State getStateInfo() throws UnirestException, JsonParseException, JsonMappingException {
-        String json = Unirest.get("http://" + this.getMesosMasterContainer().getIpAddress() + ":5050" +"/state.json").asString().getBody();
-
+    public State getStateInfo() throws UnirestException, JsonParseException, JsonMappingException, RuntimeException {
+        String json = getStateInfo(readClusterId(), null);
         return State.fromJSON(json);
     }
 
+    public static String getStateInfo(String clusterId, String agent) throws UnirestException, RuntimeException {
+        String ip = agent.isEmpty() ? getContainerIp(clusterId, "master", null) : getContainerIp(clusterId, "agent", agent);
+        int port = agent.isEmpty() ? MesosMaster.MESOS_MASTER_PORT : MesosSlave.MESOS_SLAVE_PORT;
+        if (ip != null) {
+            String url =  "http://" + ip + ":" + port + "/state.json";
+            HttpResponse<JsonNode> request = Unirest.get(url).asJson();
+            return request.getBody().toString();
+        } else {
+            throw new RuntimeException("Cannot find container.\n" +
+                    "Please verify the cluster is running using `minimesos info` command.");
+        }
+    }
+
     public JSONObject getStateInfoJSON() throws UnirestException {
-        return Unirest.get("http://" + this.getMesosMasterContainer().getIpAddress() + ":5050" + "/state.json").asJson().getBody().getObject();
+        return Unirest.get("http://" + this.getMesosMasterContainer().getIpAddress() + ":" + MesosMaster.MESOS_MASTER_PORT + "/state.json").asJson().getBody().getObject();
     }
 
     public Map<String, String> getFlags() throws UnirestException {
@@ -227,11 +241,13 @@ public class MesosCluster extends ExternalResource {
         return clusterId;
     }
 
-    public static String getContainerIp(String clusterId, String role) {
+    public static String getContainerIp(String clusterId, String role, String containerId) {
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
             if (container.getNames()[0].contains("minimesos-" + role) && container.getNames()[0].contains(clusterId + "-")) {
-                return dockerClient.inspectContainerCmd(container.getId()).exec().getNetworkSettings().getIpAddress();
+                if (containerId == null || container.getId().startsWith(containerId)) {
+                    return dockerClient.inspectContainerCmd(container.getId()).exec().getNetworkSettings().getIpAddress();
+                }
             }
         }
         return null;
@@ -260,7 +276,7 @@ public class MesosCluster extends ExternalResource {
     public static void destroy() {
         String clusterId = readClusterId();
 
-        String marathonIp = getContainerIp(clusterId, "marathon");
+        String marathonIp = getContainerIp(clusterId, "marathon", null);
         if (marathonIp != null) {
             MarathonClient.killAllApps(marathonIp);
         }
