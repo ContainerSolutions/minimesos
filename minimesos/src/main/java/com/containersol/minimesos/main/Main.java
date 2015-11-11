@@ -1,6 +1,7 @@
 package com.containersol.minimesos.main;
 
 import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
 import com.containersol.minimesos.MesosCluster;
 import com.containersol.minimesos.mesos.MesosClusterConfig;
 import com.containersol.minimesos.mesos.MesosContainer;
@@ -21,6 +22,9 @@ public class Main {
 
     private static CommandUp commandUp;
 
+    @Parameter(names = "--help", help = true)
+    private static boolean help;
+
     public static void main(String[] args)  {
         JCommander jc = new JCommander();
         jc.setProgramName("minimesos");
@@ -40,6 +44,11 @@ public class Main {
         MesosCluster.checkStateFile(clusterId);
         clusterId = MesosCluster.readClusterId();
 
+        if(help) {
+            jc.usage();
+            return;
+        }
+        
         if (jc.getParsedCommand() == null) {
             if (clusterId != null) {
                 MesosCluster.printServiceUrl(clusterId, "master", commandUp.isExposedHostPorts());
