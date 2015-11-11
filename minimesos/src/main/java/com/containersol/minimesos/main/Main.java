@@ -70,7 +70,7 @@ public class Main {
         if (clusterId == null) {
             MesosCluster cluster = new MesosCluster(
                     MesosClusterConfig.builder()
-                            .slaveResources(new String[]{"ports(*):[9200-9200,9300-9300]"})
+                            .slaveResources(new String[]{"ports(*):[33000-34000]"})
                             .mesosImageTag(commandUp.getMesosImageTag())
                             .exposedHostPorts(commandUp.isExposedHostPorts())
                             .build()
