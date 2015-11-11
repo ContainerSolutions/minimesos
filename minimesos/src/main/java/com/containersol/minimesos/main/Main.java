@@ -2,6 +2,7 @@ package com.containersol.minimesos.main;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MesosCluster;
 import com.containersol.minimesos.mesos.MesosClusterConfig;
 import com.containersol.minimesos.mesos.MesosContainer;
@@ -17,6 +18,7 @@ import java.nio.file.Paths;
 /**
  * Main method for interacting with minimesos.
  */
+@Parameters(separators = "=", commandDescription = "Global options")
 public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
@@ -48,7 +50,7 @@ public class Main {
             jc.usage();
             return;
         }
-        
+
         if (jc.getParsedCommand() == null) {
             if (clusterId != null) {
                 MesosCluster.printServiceUrl(clusterId, "master", commandUp.isExposedHostPorts());
