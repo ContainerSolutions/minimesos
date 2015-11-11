@@ -64,7 +64,7 @@ public abstract class AbstractContainer {
         try {
             await().atMost(timeout, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new ContainerIsRunning<Boolean>(containerId));
         } catch (ConditionTimeoutException cte) {
-            LOGGER.error(String.format("Container did not start within %d seconds", timeout));
+            LOGGER.error(String.format("Container [" + createCommand.getName() + "] did not start within %d seconds", timeout));
 //            InputStream logs = dockerClient.logContainerCmd(containerId).exec();
 
         }
