@@ -16,7 +16,7 @@ public class Marathon extends AbstractContainer {
     private static Logger LOGGER = Logger.getLogger(Marathon.class);
 
     private static final String MARATHON_IMAGE = "mesosphere/marathon";
-    public static final String REGISTRY_TAG = "v0.8.1";
+    public static final String REGISTRY_TAG = "v0.11.1";
     public static final int MARATHON_PORT = 8080;
 
     private String clusterId;
