@@ -16,7 +16,7 @@ public class CommandUp {
     @Parameter(names = "--exposedHostPorts", description = "Expose the Mesos and Marathon UI ports on the host level (we recommend to enable this on Mac (e.g. when using docker-machine) and disable on Linux).")
     private boolean exposedHostPorts = false;
 
-    @Parameter(names = "--timeout", description = "Time in seconds within which a container should become responsive.")
+    @Parameter(names = "--timeout", description = "Time to wait for a container to get responsive, in seconds.")
     private int timeout = MesosContainer.DEFAULT_TIMEOUT_SEC;
 
     public String getMesosImageTag() {

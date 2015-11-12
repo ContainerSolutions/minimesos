@@ -154,6 +154,7 @@ public class MesosCluster extends ExternalResource {
 
     @Override
     protected void before() throws Throwable {
+        start(MesosContainer.DEFAULT_TIMEOUT_SEC);
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
