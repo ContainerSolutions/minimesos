@@ -65,7 +65,7 @@ A possible testing scenario could be:
 ### Install DockerToolbox (including docker-machine)
 
 Download package from <https://www.docker.com/docker-toolbox> and install it. 
-Tested with <https://github.com/docker/toolbox/releases/download/v1.9.0d/DockerToolbox-1.9.0d.pkg>
+Tested with [DockerToolbox-1.9.0d.pkg](https://github.com/docker/toolbox/releases/download/v1.9.0d/DockerToolbox-1.9.0d.pkg)
 
 ### Creating VM for minimesos
 
