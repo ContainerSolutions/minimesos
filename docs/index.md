@@ -62,17 +62,10 @@ A possible testing scenario could be:
 
 ## Building and running on MAC with docker-machine
 
-### Installing docker-machine on MAC
+### Install DockerToolbox (including docker-machine)
 
-If Homebrew is not installed on your machine yet
-
-```
-# Install Command Line Tools.
-$ xcode-select --install
-# Install Homebrew.
-$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-$ brew install docker-machine
-```
+Download package from https://www.docker.com/docker-toolbox and install it. 
+Tested with https://github.com/docker/toolbox/releases/download/v1.9.0d/DockerToolbox-1.9.0d.pkg
 
 ### Creating VM for minimesos
 
@@ -87,9 +80,11 @@ When VM is ready you can either *build latest version* of minimesos or *install 
 
 ### Building latest version of minimesos
 
-In CLI:
+In CLI
 
 ```
+# changing route is required to let Java process on host to find minimesos in virtual machine.
+$ sudo route delete 172.17.0.0/16; sudo route -n add 172.17.0.0/16 $(docker-machine ip ${DOCKER_MACHINE_NAME})
 $ ./gradlew clean build --info --stacktrace
 ```
 
