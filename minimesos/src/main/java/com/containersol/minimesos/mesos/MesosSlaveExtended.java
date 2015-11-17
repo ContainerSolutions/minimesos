@@ -15,7 +15,7 @@ public class MesosSlaveExtended extends MesosSlave {
     private static Logger LOGGER = Logger.getLogger(MesosSlaveExtended.class);
 
     public final String mesosLocalImage;
-    public final String registryTag;
+    public final String mesosImageTag;
 
     protected final String resources;
 
@@ -24,13 +24,13 @@ public class MesosSlaveExtended extends MesosSlave {
 
     private final String clusterId;
 
-    public MesosSlaveExtended(DockerClient dockerClient, String resources, String portNumber, ZooKeeper zooKeeperContainer, String mesosLocalImage, String registryTag, String clusterId) {
+    public MesosSlaveExtended(DockerClient dockerClient, String resources, String portNumber, ZooKeeper zooKeeperContainer, String mesosLocalImage, String mesosImageTag, String clusterId) {
         super(dockerClient, zooKeeperContainer);
         this.clusterId = clusterId;
         this.resources = resources;
         this.portNumber = portNumber;
         this.mesosLocalImage = mesosLocalImage;
-        this.registryTag = registryTag;
+        this.mesosImageTag = mesosImageTag;
     }
 
     @Override
@@ -50,7 +50,7 @@ public class MesosSlaveExtended extends MesosSlave {
             }
         }
 
-        return dockerClient.createContainerCmd(mesosLocalImage + ":" + registryTag)
+        return dockerClient.createContainerCmd(mesosLocalImage + ":" + mesosImageTag)
                 .withName("minimesos-agent-" + clusterId + "-" + getRandomId())
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
@@ -65,7 +65,7 @@ public class MesosSlaveExtended extends MesosSlave {
 
     @Override
     protected void pullImage() {
-        pullImage(mesosLocalImage, registryTag);
+        pullImage(mesosLocalImage, mesosImageTag);
     }
 
     @Override

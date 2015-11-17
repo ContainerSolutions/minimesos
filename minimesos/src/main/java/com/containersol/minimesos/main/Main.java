@@ -71,7 +71,9 @@ public class Main {
             MesosCluster cluster = new MesosCluster(
                     MesosClusterConfig.builder()
                             .slaveResources(new String[]{"ports(*):[33000-34000]"})
+                            .marathonImageTag(commandUp.getMarathonImageTag())
                             .mesosImageTag(commandUp.getMesosImageTag())
+                            .zooKeeperImageTag(commandUp.getZooKeeperImageTag())
                             .exposedHostPorts(commandUp.isExposedHostPorts())
                             .build()
             );
