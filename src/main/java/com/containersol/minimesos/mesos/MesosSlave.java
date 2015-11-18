@@ -79,8 +79,11 @@ public class MesosSlave extends AbstractContainer {
             }
         }
 
+        String randomId = getRandomId();
+
         return dockerClient.createContainerCmd(mesosLocalImage + ":" + registryTag)
-                .withName("minimesos-agent-" + clusterId + "-" + getRandomId())
+                .withName("minimesos-agent-" + clusterId + "-" + randomId)
+                .withHostName("agent-" + randomId)
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
                 .withPid("host")
