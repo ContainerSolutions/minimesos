@@ -16,6 +16,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Container;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
@@ -24,6 +25,8 @@ import org.junit.rules.ExternalResource;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -38,9 +41,13 @@ import static com.jayway.awaitility.Awaitility.await;
  * destroyed.
  */
 public class MesosCluster extends ExternalResource {
+
+    public static final String MINIMESOS_DIR_PROPERTY = "minimesos.dir";
+    public static final String MINIMESOS_FILE_PROPERTY = "minimesos.cluster";
+
     private static Logger LOGGER = Logger.getLogger(MesosCluster.class);
 
-    private static File miniMesosFile = new File(System.getProperty("minimesos.dir"), "minimesos.cluster");
+    private static File minimesosFile = null;
 
     private static DockerClient dockerClient = DockerClientFactory.build();
 
@@ -143,7 +150,7 @@ public class MesosCluster extends ExternalResource {
 
     public Map<String, String> getFlags() throws UnirestException {
         JSONObject flagsJson = this.getStateInfoJSON().getJSONObject("flags");
-        Map<String, String> flags = new TreeMap<String, String>();
+        Map<String, String> flags = new TreeMap<>();
         for (Object key : flagsJson.keySet()) {
             String keyString = (String) key;
             String value = flagsJson.getString(keyString);
@@ -267,7 +274,9 @@ public class MesosCluster extends ExternalResource {
 
         if (clusterId != null) {
             destroyContainers(clusterId);
-            miniMesosFile.deleteOnExit();
+            if( minimesosFile != null ) {
+                minimesosFile.deleteOnExit();
+            }
         } else {
             LOGGER.info("Minimesos cluster is not running");
         }
@@ -275,18 +284,45 @@ public class MesosCluster extends ExternalResource {
 
     public static String readClusterId() {
         try {
-            return IOUtils.toString(new FileReader(miniMesosFile));
+            return IOUtils.toString(new FileReader(getMinimesosFile()));
         } catch (IOException e) {
             return null;
         }
     }
 
+    /**
+     * @return never null
+     */
+    private static File getMinimesosFile() {
+        return new File( getMinimesosDir(), MINIMESOS_FILE_PROPERTY);
+    }
+
+    private static File getMinimesosDir() {
+        String sp = System.getProperty(MINIMESOS_DIR_PROPERTY);
+        if( sp == null ) {
+            sp = System.getProperty("user.dir") + "/.minimesos";
+        }
+        return new File( sp );
+    }
+
+    public void writeClusterId() {
+        File minimesosDir = getMinimesosDir();
+        try {
+            FileUtils.forceMkdir(minimesosDir);
+            Files.write(Paths.get(minimesosDir.getAbsolutePath() + "/" + MINIMESOS_FILE_PROPERTY), MesosCluster.getClusterId().getBytes());
+        } catch (IOException ie) {
+            LOGGER.error("Could not write .minimesos folder", ie);
+            throw new RuntimeException(ie);
+        }
+    }
+
     public static void checkStateFile(String clusterId) {
         if (clusterId != null && !isUp(clusterId)) {
-            if (miniMesosFile.delete()) {
+            File minimesosFile = getMinimesosFile();
+            if (minimesosFile.delete()) {
                 LOGGER.info("Invalid state file removed");
             } else {
-                LOGGER.info("Cannot remove invalid state file " + miniMesosFile.getAbsolutePath());
+                LOGGER.info("Cannot remove invalid state file " + minimesosFile.getAbsolutePath());
             }
         }
     }

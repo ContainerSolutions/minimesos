@@ -68,6 +68,7 @@ public class Main {
     private static void doUp() {
         String clusterId = MesosCluster.readClusterId();
         if (clusterId == null) {
+
             MesosCluster cluster = new MesosCluster(
                     MesosClusterConfig.builder()
                             .slaveResources(new String[]{"ports(*):[33000-34000]"})
@@ -75,15 +76,10 @@ public class Main {
                             .exposedHostPorts(commandUp.isExposedHostPorts())
                             .build()
             );
+
             cluster.start();
-            File miniMesosDir = new File(System.getProperty("minimesos.dir"));
-            try {
-                FileUtils.forceMkdir(miniMesosDir);
-                Files.write(Paths.get(miniMesosDir.getAbsolutePath() + "/minimesos.cluster"), MesosCluster.getClusterId().getBytes());
-            } catch (IOException ie) {
-                LOGGER.error("Could not write .minimesos folder", ie);
-                throw new RuntimeException(ie);
-            }
+            cluster.writeClusterId();
+
         }
         clusterId = MesosCluster.readClusterId();
         MesosCluster.printServiceUrl(clusterId, "master", commandUp.isExposedHostPorts());
