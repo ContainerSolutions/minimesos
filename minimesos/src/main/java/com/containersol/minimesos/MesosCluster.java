@@ -47,8 +47,6 @@ public class MesosCluster extends ExternalResource {
 
     private static Logger LOGGER = Logger.getLogger(MesosCluster.class);
 
-    private static File minimesosFile = null;
-
     private static DockerClient dockerClient = DockerClientFactory.build();
 
     private final List<AbstractContainer> containers = Collections.synchronizedList(new ArrayList<>());
@@ -274,7 +272,8 @@ public class MesosCluster extends ExternalResource {
 
         if (clusterId != null) {
             destroyContainers(clusterId);
-            if( minimesosFile != null ) {
+            File minimesosFile = getMinimesosFile();
+            if( minimesosFile.exists() ) {
                 minimesosFile.deleteOnExit();
             }
         } else {
