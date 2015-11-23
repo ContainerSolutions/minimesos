@@ -1,5 +1,6 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.marathon.Marathon;
 import com.github.dockerjava.api.DockerClient;
 
 import java.util.Map;
@@ -21,7 +22,9 @@ public class MesosClusterConfig {
     public final String zkUrl;
     public final String mesosMasterImage;
     public final String mesosSlaveImage;
+    public final String marathonImageTag;
     public final String mesosImageTag;
+    public final String zookeeperImageTag;
     public final Boolean exposedHostPorts;
 
     public final Map<String, String> extraEnvironmentVariables;
@@ -36,7 +39,9 @@ public class MesosClusterConfig {
             String zkUrl,
             String mesosMasterImage,
             String mesosSlaveImage,
+            String marathonImageTag,
             String mesosImageTag,
+            String zookeeperImageTag,
             Boolean exposedHostPorts
     ) {
         this.dockerClient = dockerClient;
@@ -47,7 +52,9 @@ public class MesosClusterConfig {
         this.zkUrl = zkUrl;
         this.mesosMasterImage = mesosMasterImage;
         this.mesosSlaveImage = mesosSlaveImage;
+        this.marathonImageTag = marathonImageTag;
         this.mesosImageTag = mesosImageTag;
+        this.zookeeperImageTag = zookeeperImageTag;
         this.exposedHostPorts = exposedHostPorts;
     }
 
@@ -65,7 +72,9 @@ public class MesosClusterConfig {
         Map<String, String> extraEnvironmentVariables = new TreeMap<>();
         String mesosMasterImage = MESOS_MASTER_IMAGE;
         String mesosSlaveImage = MESOS_SLAVE_IMAGE;
+        String marathonImageTag = Marathon.MARATHON_IMAGE_TAG;
         String mesosImageTag = MesosContainer.MESOS_IMAGE_TAG;
+        String zkImageTag = ZooKeeper.ZOOKEEPER_IMAGE_TAG;
         Boolean exposedHostPorts = false;
 
         private Builder() {
@@ -107,8 +116,18 @@ public class MesosClusterConfig {
             return this;
         }
 
+        public Builder marathonImageTag(String marathonImageTag) {
+            this.marathonImageTag = marathonImageTag;
+            return this;
+        }
+
         public Builder mesosImageTag(String mesosImageTag) {
             this.mesosImageTag = mesosImageTag;
+            return this;
+        }
+
+        public Builder zooKeeperImageTag(String zkImageTag) {
+            this.zkImageTag = zkImageTag;
             return this;
         }
 
@@ -135,7 +154,7 @@ public class MesosClusterConfig {
                 zkUrl = "mesos";
             }
 
-            return new MesosClusterConfig(dockerClient, slaveResources.length, slaveResources, mesosMasterPort, extraEnvironmentVariables, zkUrl, mesosMasterImage, mesosSlaveImage, mesosImageTag, exposedHostPorts);
+            return new MesosClusterConfig(dockerClient, slaveResources.length, slaveResources, mesosMasterPort, extraEnvironmentVariables, zkUrl, mesosMasterImage, mesosSlaveImage, marathonImageTag, mesosImageTag, zkImageTag, exposedHostPorts);
         }
     }
 

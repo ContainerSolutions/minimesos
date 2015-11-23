@@ -87,8 +87,10 @@ public class MesosCluster extends ExternalResource {
         // If the user is still using the old configuration method, then retain their old options. This should prevent the CLI API from breaking.
         if (config != null) {
             ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder();
-            builder.withZooKeeper().withMaster( zkContainer ->
-                    new MesosMasterExtended(this.config.dockerClient, zkContainer, this.config.mesosMasterImage, this.config.mesosImageTag, clusterId, this.config.extraEnvironmentVariables, this.config.exposedHostPorts)
+            builder.withZooKeeper(
+                    new ZooKeeperExtended(this.config.dockerClient, this.config.zookeeperImageTag)
+            ).withMaster(zkContainer ->
+                            new MesosMasterExtended(this.config.dockerClient, zkContainer, this.config.mesosMasterImage, this.config.mesosImageTag, clusterId, this.config.extraEnvironmentVariables, this.config.exposedHostPorts)
             );
             try {
                 for (int i = 0; i < this.config.getNumberOfSlaves(); i++) {
@@ -98,7 +100,7 @@ public class MesosCluster extends ExternalResource {
                     );
                 }
 
-                builder.withContainer(zooKeeper -> new Marathon(dockerClient, clusterId, (ZooKeeper) zooKeeper, this.config.exposedHostPorts), ClusterContainers.Filter.zooKeeper());
+                builder.withContainer(zooKeeper -> new Marathon(dockerClient, this.config.marathonImageTag, clusterId, (ZooKeeper) zooKeeper, this.config.exposedHostPorts), ClusterContainers.Filter.zooKeeper());
 
                 this.clusterArchitecture = builder.build();
             } catch (Throwable e) {

@@ -16,8 +16,10 @@ public class Marathon extends AbstractContainer {
     private static Logger LOGGER = Logger.getLogger(Marathon.class);
 
     private static final String MARATHON_IMAGE = "mesosphere/marathon";
-    public static final String REGISTRY_TAG = "v0.8.1";
+    public static final String MARATHON_IMAGE_TAG = "v0.8.1";
     public static final int MARATHON_PORT = 8080;
+
+    private String marathonImageTag;
 
     private String clusterId;
 
@@ -25,8 +27,9 @@ public class Marathon extends AbstractContainer {
 
     private Boolean exposedHostPort;
 
-    public Marathon(DockerClient dockerClient, String clusterId, ZooKeeper zooKeeper, Boolean exposedHostPort) {
+    public Marathon(DockerClient dockerClient, String marathonImageTag, String clusterId, ZooKeeper zooKeeper, Boolean exposedHostPort) {
         super(dockerClient);
+        this.marathonImageTag = marathonImageTag;
         this.clusterId = clusterId;
         this.zooKeeper = zooKeeper;
         this.exposedHostPort = exposedHostPort;
@@ -34,7 +37,7 @@ public class Marathon extends AbstractContainer {
 
     @Override
     protected void pullImage() {
-        pullImage(MARATHON_IMAGE, REGISTRY_TAG);
+        pullImage(MARATHON_IMAGE, marathonImageTag);
     }
 
     @Override
@@ -44,7 +47,7 @@ public class Marathon extends AbstractContainer {
         if (exposedHostPort) {
             portBindings.bind(exposedPort, Ports.Binding(MARATHON_PORT));
         }
-        return dockerClient.createContainerCmd(MARATHON_IMAGE + ":" + REGISTRY_TAG)
+        return dockerClient.createContainerCmd(MARATHON_IMAGE + ":" + marathonImageTag)
                 .withName("minimesos-marathon-" + clusterId + "-" + getRandomId())
                 .withExtraHosts("minimesos-zookeeper:" + this.zooKeeper.getIpAddress())
                 .withCmd("--master", "zk://minimesos-zookeeper:2181/mesos", "--zk", "zk://minimesos-zookeeper:2181/marathon")
