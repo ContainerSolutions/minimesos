@@ -2,11 +2,9 @@ package com.containersol.minimesos.mesos;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
 import org.apache.log4j.Logger;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
@@ -29,31 +27,6 @@ public class MesosSlaveExtended extends MesosSlave {
     @Override
     public void start() {
         super.start();
-    }
-
-    public CreateContainerCmd getBaseCommand() {
-
-        String dockerBin = "/usr/bin/docker";
-        File dockerBinFile = new File(dockerBin);
-        if (!(dockerBinFile.exists() && dockerBinFile.canExecute())) {
-            dockerBin = "/usr/local/bin/docker";
-            dockerBinFile = new File(dockerBin);
-            if (!(dockerBinFile.exists() && dockerBinFile.canExecute() )) {
-                LOGGER.error("Docker binary not found in /usr/local/bin or /usr/bin. Creating containers will most likely fail.");
-            }
-        }
-
-        return dockerClient.createContainerCmd( getMesosImageName() + ":" + getMesosImageTag() )
-                .withName("minimesos-agent-" + getClusterId() + "-" + getRandomId())
-                .withPrivileged(true)
-                .withEnv(createMesosLocalEnvironment())
-                .withPid("host")
-                .withBinds(
-                        Bind.parse("/var/lib/docker:/var/lib/docker"),
-                        Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),
-                        Bind.parse(String.format("%s:/usr/bin/docker", dockerBin)),
-                        Bind.parse("/var/run/docker.sock:/var/run/docker.sock")
-                );
     }
 
     @Override

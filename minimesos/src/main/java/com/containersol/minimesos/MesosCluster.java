@@ -102,9 +102,20 @@ public class MesosCluster extends ExternalResource {
      * @return container ID
      */
     public String addAndStartContainer(AbstractContainer container) {
-        container.setClusterId( clusterId );
-        container.start();
-        containers.add(container);
+
+        container.setClusterId(clusterId);
+        LOGGER.debug( String.format("Starting %s (%s) container", container.getName(), container.getContainerId()) );
+
+        try {
+            container.start();
+            containers.add(container);
+        } catch (Exception exc ) {
+            String msg = String.format("Failed to start %s (%s) container", container.getName(), container.getContainerId());
+            LOGGER.error( msg, exc );
+            throw new MinimesosException( msg, exc );
+        }
+
+
         return container.getContainerId();
     }
 
