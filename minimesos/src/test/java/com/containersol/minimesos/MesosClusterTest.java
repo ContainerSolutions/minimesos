@@ -71,23 +71,20 @@ public class MesosClusterTest {
     }
 
     @Test
-    public void dockerExposeResourcesPorts() {
+    public void dockerExposeResourcesPorts() throws Exception {
+
         DockerClient docker = CONFIG.dockerClient;
         List<MesosSlave> containers = Arrays.asList(CLUSTER.getSlaves());
-        ArrayList<Integer> ports = new ArrayList<>();
+
         for (MesosSlave container : containers) {
-            try {
-                ports = MesosSlave.parsePortsFromResource(((MesosSlaveExtended)container).getResources());
-            } catch (Exception e) {
-                // TODO: no printing to System.err. Either handle or throw
-                e.printStackTrace();
-            }
+            ArrayList<Integer> ports = MesosSlave.parsePortsFromResource(((MesosSlaveExtended)container).getResources());
             InspectContainerResponse response = docker.inspectContainerCmd(container.getContainerId()).exec();
             Map bindings = response.getNetworkSettings().getPorts().getBindings();
             for (Integer port : ports) {
                 Assert.assertTrue(bindings.containsKey(new ExposedPort(port)));
             }
         }
+
     }
 
     @Test
