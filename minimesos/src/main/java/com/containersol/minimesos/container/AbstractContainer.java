@@ -31,6 +31,7 @@ public abstract class AbstractContainer {
     private boolean removed;
 
     protected DockerClient dockerClient;
+    private String clusterId;
 
     protected AbstractContainer(DockerClient dockerClient) {
         this.dockerClient = dockerClient;
@@ -155,12 +156,17 @@ public abstract class AbstractContainer {
         };
 
         dockerClient.pullImageCmd(imageName).withTag(registryTag).exec(callback);
-        await().atMost(Duration.FIVE_MINUTES).until(new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return imageExists(imageName, registryTag);
-            }
+        await().atMost(Duration.FIVE_MINUTES).until(() -> {
+            return imageExists(imageName, registryTag);
         });
+    }
+
+    public void setClusterId(String clusterId) {
+        this.clusterId = clusterId;
+    }
+
+    public String getClusterId() {
+        return clusterId;
     }
 
     private class ContainerIsRunning<T> implements Callable<Boolean> {

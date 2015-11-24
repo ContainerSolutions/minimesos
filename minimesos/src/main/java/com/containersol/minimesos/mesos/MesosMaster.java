@@ -11,9 +11,12 @@ import java.util.TreeMap;
  * Base, unmolested Mesos master class
  */
 public class MesosMaster extends MesosContainer {
+
     public static final String MESOS_MASTER_IMAGE = "containersol/mesos-master";
     public static final int MESOS_MASTER_PORT = 5050;
 
+    private String mesosImageName = MESOS_MASTER_IMAGE;
+    private boolean exposedHostPort;
 
     public MesosMaster(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
         super(dockerClient, zooKeeperContainer);
@@ -21,7 +24,18 @@ public class MesosMaster extends MesosContainer {
 
     @Override
     public String getMesosImageName() {
-        return MESOS_MASTER_IMAGE;
+        return mesosImageName;
+    }
+
+    public void setMesosImageName( String mesosImageName ) {
+        this.mesosImageName = mesosImageName;
+    }
+
+    public boolean isExposedHostPort() {
+        return exposedHostPort;
+    }
+    public void setExposedHostPort(boolean exposedHostPort) {
+        this.exposedHostPort = exposedHostPort;
     }
 
     @Override

@@ -33,6 +33,8 @@ public class DiscoverySystemTest {
             .withSlave("ports(*):[8080-8082]")
             .build();
 
+    private static SchedulerContainer scheduler = null;
+
     @ClassRule
     public static final MesosCluster CLUSTER = new MesosCluster(CONFIG);
 
@@ -41,7 +43,7 @@ public class DiscoverySystemTest {
 
         LOGGER.info("Starting Scheduler");
         String ipAddress = CLUSTER.getMesosMasterContainer().getIpAddress();
-        SchedulerContainer scheduler = new SchedulerContainer(CONFIG.dockerClient, ipAddress);
+        scheduler = new SchedulerContainer(CONFIG.dockerClient, ipAddress);
 
         // Cluster now has responsibility to shut down container
         CLUSTER.addAndStartContainer(scheduler);
@@ -70,8 +72,14 @@ public class DiscoverySystemTest {
 
     @AfterClass
     public static void removeExecutors() {
+
+        // stop container, otherwise it keeps on scheduling new executors as soon as they are stopped
+        CONFIG.dockerClient.killContainerCmd( scheduler.getContainerId() ).exec();
+
         DockerContainersUtil util = new DockerContainersUtil(CONFIG.dockerClient);
-        util.getContainers(false).filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE).kill().remove();
+        util = util.getContainers(false).filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE);
+        LOGGER.info( String.format("Found %d containers to stop and remove", util.size()) );
+        util.kill().remove();
     }
 
 }

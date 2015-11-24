@@ -51,20 +51,10 @@ public class MesosCluster extends ExternalResource {
 
     private final List<AbstractContainer> containers = Collections.synchronizedList(new ArrayList<>());
 
-    private MesosClusterConfig config;
     private ClusterArchitecture clusterArchitecture;
 
     private static String clusterId;
 
-    /**
-     * Old configuration instantiation.
-     * @deprecated use {@link #MesosCluster(ClusterArchitecture)} instead.
-     */
-    @Deprecated
-    public MesosCluster(MesosClusterConfig config) {
-        this.config = config;
-        clusterId = Integer.toUnsignedString(new SecureRandom().nextInt());
-    }
 
     /**
      * Create a new cluster with a specified cluster architecture.
@@ -79,34 +69,15 @@ public class MesosCluster extends ExternalResource {
      * Starts the Mesos cluster and its containers
      */
     public void start() {
-        if (config == null && clusterArchitecture == null) {
+
+        if (clusterArchitecture == null) {
             throw new ClusterArchitecture.MesosArchitectureException("No cluster architecture specified");
-        }
-        // If the user is still using the old configuration method, then retain their old options. This should prevent the CLI API from breaking.
-        if (config != null) {
-            ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder();
-            builder.withZooKeeper().withMaster( zkContainer ->
-                    new MesosMasterExtended(this.config.dockerClient, zkContainer, this.config.mesosMasterImage, this.config.mesosImageTag, clusterId, this.config.extraEnvironmentVariables, this.config.exposedHostPorts)
-            );
-            try {
-                for (int i = 0; i < this.config.getNumberOfSlaves(); i++) {
-                    final String slaveResource = config.slaveResources[i];
-                    builder.withSlave( zkContainer ->
-                            new MesosSlaveExtended(this.config.dockerClient, slaveResource, "5051", zkContainer, this.config.mesosSlaveImage, this.config.mesosImageTag, clusterId)
-                    );
-                }
-
-                builder.withContainer(zooKeeper -> new Marathon(dockerClient, clusterId, (ZooKeeper) zooKeeper, this.config.exposedHostPorts), ClusterContainers.Filter.zooKeeper());
-
-                this.clusterArchitecture = builder.build();
-            } catch (Throwable e) {
-                LOGGER.error("Error during startup", e);
-            }
         }
 
         clusterArchitecture.getClusterContainers().getContainers().forEach(this::addAndStartContainer);
         // wait until the given number of slaves are registered
         new MesosClusterStateResponse(getMesosMasterContainer().getIpAddress() + ":" + MesosMaster.MESOS_MASTER_PORT, getSlaves().length).waitFor();
+
     }
 
     /**
@@ -131,6 +102,7 @@ public class MesosCluster extends ExternalResource {
      * @return container ID
      */
     public String addAndStartContainer(AbstractContainer container) {
+        container.setClusterId( clusterId );
         container.start();
         containers.add(container);
         return container.getContainerId();
@@ -192,11 +164,6 @@ public class MesosCluster extends ExternalResource {
         stop();
     }
 
-    @Deprecated
-    public MesosClusterConfig getConfig() {
-        return config;
-    }
-
     public MesosMaster getMesosMasterContainer() {
         return (MesosMaster) clusterArchitecture.getClusterContainers().getOne(ClusterContainers.Filter.mesosMaster()).get();
     }
@@ -210,16 +177,13 @@ public class MesosCluster extends ExternalResource {
     }
 
     public void waitForState(final Predicate<State> predicate, int seconds) {
-        await().atMost(seconds, TimeUnit.SECONDS).until(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                try {
-                    return predicate.test(MesosCluster.this.getStateInfo());
-                } catch (InternalServerErrorException e) {
-                    LOGGER.error(e);
-                    // This probably means that the mesos cluster isn't ready yet..
-                    return false;
-                }
+        await().atMost(seconds, TimeUnit.SECONDS).until(() -> {
+            try {
+                return predicate.test(MesosCluster.this.getStateInfo());
+            } catch (InternalServerErrorException e) {
+                LOGGER.error(e);
+                // This probably means that the mesos cluster isn't ready yet..
+                return false;
             }
         });
     }

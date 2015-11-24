@@ -28,12 +28,14 @@ import java.util.Map;
 
 public class MesosClusterTest {
 
-    protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder()
+    protected static final String resources = MesosSlave.DEFAULT_PORT_RESOURCES + "; cpus(*):0.2; mem(*):256; disk(*):200";
+    protected static final DockerClient dockerClient = DockerClientFactory.build();
+    protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder(dockerClient)
             .withZooKeeper()
             .withMaster()
-            .withSlave( MesosSlave.DEFAULT_PORT_RESOURCES + "; cpus(*):0.2; mem(*):256; disk(*):200" )
-            .withSlave( MesosSlave.DEFAULT_PORT_RESOURCES + "; cpus(*):0.2; mem(*):256; disk(*):200" )
-            .withSlave( MesosSlave.DEFAULT_PORT_RESOURCES + "; cpus(*):0.2; mem(*):256; disk(*):200" )
+            .withSlave(zooKeeper -> new MesosSlaveExtended(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
+            .withSlave(zooKeeper -> new MesosSlaveExtended(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
+            .withSlave(zooKeeper -> new MesosSlaveExtended(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
             .build();
 
     @ClassRule
@@ -77,6 +79,7 @@ public class MesosClusterTest {
             try {
                 ports = MesosSlave.parsePortsFromResource(((MesosSlaveExtended)container).getResources());
             } catch (Exception e) {
+                // TODO: no printing to System.err. Either handle or throw
                 e.printStackTrace();
             }
             InspectContainerResponse response = docker.inspectContainerCmd(container.getContainerId()).exec();
@@ -131,8 +134,7 @@ public class MesosClusterTest {
                 "5051",
                 CLUSTER.getZkContainer(),
                 "containersol/mesos-agent",
-                MesosContainer.MESOS_IMAGE_TAG,
-                MesosCluster.getClusterId()) {
+                MesosContainer.MESOS_IMAGE_TAG) {
 
             @Override
             protected CreateContainerCmd dockerCommand() {

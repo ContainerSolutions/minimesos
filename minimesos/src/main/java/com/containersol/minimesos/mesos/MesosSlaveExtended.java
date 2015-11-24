@@ -14,23 +14,16 @@ public class MesosSlaveExtended extends MesosSlave {
 
     private static Logger LOGGER = Logger.getLogger(MesosSlaveExtended.class);
 
-    public final String mesosLocalImage;
-    public final String registryTag;
-
     protected final String resources;
 
     protected final String portNumber;
 
-
-    private final String clusterId;
-
-    public MesosSlaveExtended(DockerClient dockerClient, String resources, String portNumber, ZooKeeper zooKeeperContainer, String mesosLocalImage, String registryTag, String clusterId) {
+    public MesosSlaveExtended(DockerClient dockerClient, String resources, String portNumber, ZooKeeper zooKeeperContainer, String mesosLocalImage, String registryTag) {
         super(dockerClient, zooKeeperContainer);
-        this.clusterId = clusterId;
         this.resources = resources;
         this.portNumber = portNumber;
-        this.mesosLocalImage = mesosLocalImage;
-        this.registryTag = registryTag;
+        setMesosImageName( mesosLocalImage );
+        setMesosImageTag( registryTag );
     }
 
     @Override
@@ -50,8 +43,8 @@ public class MesosSlaveExtended extends MesosSlave {
             }
         }
 
-        return dockerClient.createContainerCmd(mesosLocalImage + ":" + registryTag)
-                .withName("minimesos-agent-" + clusterId + "-" + getRandomId())
+        return dockerClient.createContainerCmd( getMesosImageName() + ":" + getMesosImageTag() )
+                .withName("minimesos-agent-" + getClusterId() + "-" + getRandomId())
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
                 .withPid("host")
@@ -61,11 +54,6 @@ public class MesosSlaveExtended extends MesosSlave {
                         Bind.parse(String.format("%s:/usr/bin/docker", dockerBin)),
                         Bind.parse("/var/run/docker.sock:/var/run/docker.sock")
                 );
-    }
-
-    @Override
-    protected void pullImage() {
-        pullImage(mesosLocalImage, registryTag);
     }
 
     @Override

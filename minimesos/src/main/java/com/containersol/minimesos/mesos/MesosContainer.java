@@ -9,8 +9,11 @@ import java.util.TreeMap;
  * Superclass for Mesos images
  */
 public abstract class MesosContainer extends AbstractContainer {
+
     public static final String MESOS_IMAGE_TAG = "0.25.0-0.2.70.ubuntu1404";
     public static final String DEFAULT_MESOS_ZK_PATH = "/mesos";
+
+    private String mesosImageTag = MESOS_IMAGE_TAG;
 
     private final ZooKeeper zooKeeperContainer;
 
@@ -25,7 +28,15 @@ public abstract class MesosContainer extends AbstractContainer {
 
     @Override
     protected void pullImage() {
-        pullImage(getMesosImageName(), MesosMaster.MESOS_IMAGE_TAG);
+        pullImage(getMesosImageName(), getMesosImageTag());
+    }
+
+    public String getMesosImageTag() {
+        return mesosImageTag;
+    }
+
+    public void setMesosImageTag(String mesosImageTag) {
+        this.mesosImageTag = mesosImageTag;
     }
 
     protected String[] createMesosLocalEnvironment() {

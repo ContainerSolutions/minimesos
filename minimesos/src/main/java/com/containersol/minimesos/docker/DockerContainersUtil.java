@@ -35,6 +35,10 @@ public class DockerContainersUtil {
         return new DockerContainersUtil( dockerClient, containers );
     }
 
+    public int size() {
+        return (containers != null) ? containers.size() : 0;
+    }
+
     /**
      * Filters the set based on the constainer name
      * @param pattern regular expression pattern of the container name

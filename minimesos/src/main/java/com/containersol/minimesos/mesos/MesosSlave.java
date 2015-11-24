@@ -17,19 +17,28 @@ import java.util.TreeMap;
  * Base MesosSlave class
  */
 public class MesosSlave extends MesosContainer {
+
     private static final Logger LOGGER = Logger.getLogger(MesosSlave.class);
+
     public static final String MESOS_SLAVE_IMAGE = "containersol/mesos-agent";
     public static final int MESOS_SLAVE_PORT = 5051;
+
     public static final String DEFAULT_PORT_RESOURCES = "ports(*):[31000-32000]";
     public static final String DEFAULT_RESOURCES = DEFAULT_PORT_RESOURCES + "; cpus(*):0.2; mem(*):256; disk(*):200";
 
-    protected MesosSlave(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
+    private String mesosImageName = MESOS_SLAVE_IMAGE;
+
+    public MesosSlave(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
         super(dockerClient, zooKeeperContainer);
     }
 
     @Override
     public String getMesosImageName() {
-        return MESOS_SLAVE_IMAGE;
+        return mesosImageName;
+    }
+
+    public void setMesosImageName( String mesosImageName ) {
+        this.mesosImageName = mesosImageName;
     }
 
     @Override

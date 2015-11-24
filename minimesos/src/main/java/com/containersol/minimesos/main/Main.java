@@ -2,16 +2,13 @@ package com.containersol.minimesos.main;
 
 import com.beust.jcommander.JCommander;
 import com.containersol.minimesos.MesosCluster;
-import com.containersol.minimesos.mesos.MesosClusterConfig;
-import com.containersol.minimesos.mesos.MesosContainer;
-import org.apache.commons.io.FileUtils;
+import com.containersol.minimesos.marathon.Marathon;
+import com.containersol.minimesos.mesos.*;
+import com.github.dockerjava.api.DockerClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.TreeMap;
 
 /**
  * Main method for interacting with minimesos.
@@ -66,24 +63,34 @@ public class Main {
     }
 
     private static void doUp() {
+
         String clusterId = MesosCluster.readClusterId();
+
+        boolean exposedHostPorts = commandUp.isExposedHostPorts();
+        String mesosImageTag = commandUp.getMesosImageTag();
+
         if (clusterId == null) {
 
-            MesosCluster cluster = new MesosCluster(
-                    MesosClusterConfig.builder()
-                            .slaveResources(new String[]{"ports(*):[33000-34000]"})
-                            .mesosImageTag(commandUp.getMesosImageTag())
-                            .exposedHostPorts(commandUp.isExposedHostPorts())
-                            .build()
-            );
+            DockerClient dockerClient = DockerClientFactory.build();
+
+            ClusterArchitecture config = new ClusterArchitecture.Builder(dockerClient)
+                    .withZooKeeper()
+                    .withMaster(zooKeeper -> new MesosMasterExtended( dockerClient, zooKeeper, MesosMaster.MESOS_MASTER_IMAGE, mesosImageTag, new TreeMap<>(), exposedHostPorts))
+                    .withSlave(zooKeeper -> new MesosSlaveExtended( dockerClient, "ports(*):[33000-34000]", "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, mesosImageTag))
+                    .withContainer( zooKeeper -> new Marathon(dockerClient, zooKeeper, exposedHostPorts), ClusterContainers.Filter.zooKeeper() )
+                    .build();
+
+            MesosCluster cluster = new MesosCluster( config );
 
             cluster.start();
             cluster.writeClusterId();
 
         }
+
         clusterId = MesosCluster.readClusterId();
-        MesosCluster.printServiceUrl(clusterId, "master", commandUp.isExposedHostPorts());
-        MesosCluster.printServiceUrl(clusterId, "marathon", commandUp.isExposedHostPorts());
+        MesosCluster.printServiceUrl(clusterId, "master", exposedHostPorts);
+        MesosCluster.printServiceUrl(clusterId, "marathon", exposedHostPorts);
+
     }
 
     private static void printInfo() {
