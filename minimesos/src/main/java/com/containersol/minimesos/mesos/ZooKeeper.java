@@ -11,7 +11,7 @@ import com.github.dockerjava.api.model.ExposedPort;
  */
 public class ZooKeeper extends AbstractContainer {
     public static final String MESOS_LOCAL_IMAGE = "jplock/zookeeper";
-    public static final String REGISTRY_TAG = "latest";
+    public static final String REGISTRY_TAG = "3.4.6";
     public static final int DEFAULT_ZOOKEEPER_PORT = 2181;
 
     protected ZooKeeper(DockerClient dockerClient) {
