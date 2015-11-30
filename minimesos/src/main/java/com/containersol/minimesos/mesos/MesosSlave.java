@@ -46,7 +46,8 @@ public class MesosSlave extends MesosContainer {
                 .withEnv(createMesosLocalEnvironment())
                 .withPid("host")
                 .withBinds(
-                        Bind.parse("/var/run/docker.sock:/var/run/docker.sock")
+                        Bind.parse("/var/run/docker.sock:/var/run/docker.sock"),
+                        Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup")
                 );
     }
 
