@@ -165,4 +165,4 @@ afterEvaluate { project ->
 }
 
 assemble.dependsOn copyExecutableJar
-install.dependsOn installMinimesosScript
+// install.dependsOn installMinimesosScript

@@ -1,8 +1,6 @@
 FROM ubuntu:14.04
 MAINTAINER Container Solutions BV <info@container-solutions.com>
 
-ENV VERSION "feature/docker-machine"
-
 # Let's start with some basic stuff.
 RUN apt-get update -qq && apt-get install -qqy \
     apt-transport-https \
