@@ -15,7 +15,7 @@ RUN echo "deb http://ppa.launchpad.net/openjdk-r/ppa/ubuntu trusty main" > /etc/
     apt-key adv --keyserver pgp.mit.edu --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9 && \
     apt-get update && \
     apt-get -y --no-install-recommends install curl openjdk-8-jre-headless && \
-    apt-get install -y lxc-docker-1.7.1 && \
+    apt-get install -y lxc-docker-1.9.1 && \
     rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /usr/local/share/minimesos

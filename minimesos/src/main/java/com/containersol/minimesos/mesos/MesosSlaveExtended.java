@@ -25,11 +25,6 @@ public class MesosSlaveExtended extends MesosSlave {
     }
 
     @Override
-    public void start() {
-        super.start();
-    }
-
-    @Override
     protected CreateContainerCmd dockerCommand() {
         ArrayList<ExposedPort> exposedPorts= new ArrayList<>();
         exposedPorts.add(new ExposedPort(Integer.parseInt(this.portNumber)));
