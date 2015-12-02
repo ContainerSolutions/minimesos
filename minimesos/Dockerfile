@@ -10,13 +10,16 @@ RUN apt-get update -qq && apt-get install -qqy \
     iptables
 
 RUN echo "deb http://ppa.launchpad.net/openjdk-r/ppa/ubuntu trusty main" > /etc/apt/sources.list.d/openjdk.list && \
-    echo "deb http://get.docker.com/ubuntu docker main" > /etc/apt/sources.list.d/docker.list && \
     apt-key adv --keyserver keyserver.ubuntu.com --recv 86F44E2A && \
-    apt-key adv --keyserver pgp.mit.edu --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9 && \
     apt-get update && \
     apt-get -y --no-install-recommends install curl openjdk-8-jre-headless && \
-    apt-get install -y lxc-docker-1.7.1 && \
     rm -rf /var/lib/apt/lists/*
+
+ENV DOCKER_VERSION=1.7.1
+ENV DOCKER_SHA1=386f6e91114dc252a13b266fe2ac3a27e83bd0f7
+RUN curl -s --continue-at - -SL "https://get.docker.com/builds/Linux/x86_64/docker-${DOCKER_VERSION}" > /usr/bin/docker && \
+    chmod a+x /usr/bin/docker && \
+    echo "${DOCKER_SHA1}  /usr/bin/docker" | sha1sum -c -
 
 RUN mkdir -p /usr/local/share/minimesos
 
