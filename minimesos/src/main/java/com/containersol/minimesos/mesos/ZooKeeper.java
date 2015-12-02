@@ -11,23 +11,34 @@ import com.github.dockerjava.api.model.ExposedPort;
  */
 public class ZooKeeper extends AbstractContainer {
     public static final String MESOS_LOCAL_IMAGE = "jplock/zookeeper";
-    public static final String REGISTRY_TAG = "3.4.6";
+    public static final String ZOOKEEPER_IMAGE_TAG = "3.4.6";
     public static final int DEFAULT_ZOOKEEPER_PORT = 2181;
 
-    protected ZooKeeper(DockerClient dockerClient) {
+    private String zooKeeperImageTag = ZOOKEEPER_IMAGE_TAG;
+
+    protected ZooKeeper(DockerClient dockerClient, String zooKeeperImageTag) {
         super(dockerClient);
+        this.zooKeeperImageTag = zooKeeperImageTag;
     }
 
     @Override
     protected void pullImage() {
-        pullImage(MESOS_LOCAL_IMAGE, REGISTRY_TAG);
+        pullImage(MESOS_LOCAL_IMAGE, zooKeeperImageTag);
     }
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE + ":" + REGISTRY_TAG)
+        return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE + ":" + zooKeeperImageTag)
                 .withName("minimesos-zookeeper-" + MesosCluster.getClusterId() + "-" + getRandomId())
                 .withExposedPorts(new ExposedPort(DEFAULT_ZOOKEEPER_PORT), new ExposedPort(2888), new ExposedPort(3888));
+    }
+
+    public String getZooKeeperImageTag() {
+        return zooKeeperImageTag;
+    }
+
+    public void setZooKeeperImageTag(String zooKeeperImageTag) {
+        this.zooKeeperImageTag = zooKeeperImageTag;
     }
 
     public static String formatZKAddress(String ipAddress) {

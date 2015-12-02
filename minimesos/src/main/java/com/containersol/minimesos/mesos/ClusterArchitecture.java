@@ -110,7 +110,14 @@ public class ClusterArchitecture {
          * Includes the default {@link ZooKeeper} instance in the cluster
          */
         public Builder withZooKeeper() {
-            return withZooKeeper(new ZooKeeper(dockerClient));
+            return withZooKeeper(ZooKeeper.ZOOKEEPER_IMAGE_TAG);
+        }
+
+        /**
+         * Be explicit about the version of the image to use.
+         */
+        public Builder withZooKeeper(String zooKeeperImageTag) {
+            return withZooKeeper(new ZooKeeper(dockerClient, zooKeeperImageTag));
         }
 
         /**
