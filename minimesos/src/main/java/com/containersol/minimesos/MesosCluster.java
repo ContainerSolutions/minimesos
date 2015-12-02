@@ -167,7 +167,8 @@ public class MesosCluster extends ExternalResource {
     }
 
     public MesosSlave[] getSlaves() {
-           return clusterArchitecture.getClusterContainers().getContainers().stream().filter(ClusterContainers.Filter.mesosSlave()).collect(Collectors.toList()).toArray(new MesosSlave[0]);
+        List<AbstractContainer> containers = clusterArchitecture.getClusterContainers().getContainers();
+        return containers.stream().filter(ClusterContainers.Filter.mesosSlave()).collect(Collectors.toList()).toArray(new MesosSlave[0]);
     }
 
     @Override

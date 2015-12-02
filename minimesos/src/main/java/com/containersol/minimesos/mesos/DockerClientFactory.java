@@ -11,7 +11,9 @@ import org.apache.commons.lang.StringUtils;
 public class DockerClientFactory {
 
     public static DockerClient build() {
+
         DockerClientConfig.DockerClientConfigBuilder builder = DockerClientConfig.createDefaultConfigBuilder();
+        builder.withVersion("");
 
         String dockerHostEnv = System.getenv("DOCKER_HOST");
         if (StringUtils.isBlank(dockerHostEnv)) {
