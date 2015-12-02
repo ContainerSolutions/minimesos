@@ -1,13 +1,11 @@
 package com.containersol.minimesos.mesos;
 
-import com.containersol.minimesos.MesosCluster;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
 import org.apache.log4j.Logger;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
@@ -41,6 +39,18 @@ public class MesosSlave extends MesosContainer {
         this.mesosImageName = mesosImageName;
     }
 
+    public CreateContainerCmd getBaseCommand() {
+        return dockerClient.createContainerCmd( getMesosImageName() + ":" + getMesosImageTag() )
+                .withName("minimesos-agent-" + getClusterId() + "-" + getRandomId())
+                .withPrivileged(true)
+                .withEnv(createMesosLocalEnvironment())
+                .withPid("host")
+                .withBinds(
+                        Bind.parse("/var/run/docker.sock:/var/run/docker.sock"),
+                        Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup")
+                );
+    }
+
     @Override
     protected CreateContainerCmd dockerCommand() {
         ArrayList<ExposedPort> exposedPorts= new ArrayList<>();
@@ -54,28 +64,9 @@ public class MesosSlave extends MesosContainer {
             LOGGER.error("Port binding is incorrect: " + e.getMessage());
         }
 
-        String dockerBin = "/usr/bin/docker";
-        File dockerBinFile = new File(dockerBin);
-        if (!(dockerBinFile.exists() && dockerBinFile.canExecute())) {
-            dockerBin = "/usr/local/bin/docker";
-            dockerBinFile = new File(dockerBin);
-            if (!(dockerBinFile.exists() && dockerBinFile.canExecute() )) {
-                LOGGER.error("Docker binary not found in /usr/local/bin or /usr/bin. Creating containers will most likely fail.");
-            }
-        }
-
-        return dockerClient.createContainerCmd(MESOS_SLAVE_IMAGE + ":" + MesosMaster.MESOS_IMAGE_TAG)
-                .withName("minimesos-agent-" + MesosCluster.getClusterId() + "-" + getRandomId())
-                .withPrivileged(true)
-                .withEnv(createMesosLocalEnvironment())
-                .withPid("host")
-                .withBinds(
-                        Bind.parse("/var/lib/docker:/var/lib/docker"),
-                        Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),
-                        Bind.parse(String.format("%s:/usr/bin/docker", dockerBin)),
-                        Bind.parse("/var/run/docker.sock:/var/run/docker.sock")
-                )
+        return getBaseCommand()
                 .withExposedPorts(exposedPorts.toArray(new ExposedPort[exposedPorts.size()]));
+
     }
 
     public static ArrayList<Integer> parsePortsFromResource(String resources) throws Exception {

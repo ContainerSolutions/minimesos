@@ -82,7 +82,7 @@ task executableJar(type: Jar) {
 }
 
 task installMinimesosScript(type: Copy) {
-    from        "bin/minimesos"
+    from        "$rootDir/bin/minimesos"
     into        "/usr/local/bin"
 }
 
@@ -165,4 +165,4 @@ afterEvaluate { project ->
 }
 
 assemble.dependsOn copyExecutableJar
-//TODO: install.dependsOn installMinimesosScript
+// install.dependsOn installMinimesosScript

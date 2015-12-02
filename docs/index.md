@@ -10,6 +10,13 @@ $ curl https://raw.githubusercontent.com/ContainerSolutions/minimesos/master/bin
 
 This installs the minimesos jar into ``/usr/local/share/minimesos`` and the minimesos script in ``/usr/local/bin``
 
+## System Requirements
+
+```minimesos``` runs docker containers with 0.25.0-0.2.70.ubuntu1404 version of ```mesos```, which comes with installation of Docker 1.8.3. The
+docker clients in mesos contains should be able to talk to docker server on your host machine. Therefore the host is expected to run 1.8 or higher 
+version of Docker or Docker Machine. See Docker [API compatibility](https://docs.docker.com/engine/reference/api/docker_remote_api/) table. 
+
+
 ## Command line interface
 
 ```
