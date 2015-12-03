@@ -1,5 +1,6 @@
 package com.containersol.minimesos;
 
+import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.mesos.*;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -38,6 +39,7 @@ public class MesosClusterTest {
             .withSlave(zooKeeper -> new MesosSlaveExtended(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
             .withSlave(zooKeeper -> new MesosSlaveExtended(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
             .withSlave(zooKeeper -> new MesosSlaveExtended(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
+            .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper, true ))
             .build();
 
     @ClassRule
