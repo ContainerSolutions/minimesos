@@ -1,6 +1,6 @@
 #!/bin/sh
 
-MINIMESOS_TAG="latest"
+MINIMESOS_TAG="0.5.0"
 MESOS_TAG="0.25.0-0.2.70.ubuntu1404"
 
 PARAMS="$@"
