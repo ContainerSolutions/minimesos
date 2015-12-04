@@ -144,9 +144,4 @@ public class NewMesosClusterTest {
 
     }
 
-//    @Test
-//    public void testMesosIntstall() {
-//        cluster.install("src/test/resources/marathon.json");
-//    }
-
 }

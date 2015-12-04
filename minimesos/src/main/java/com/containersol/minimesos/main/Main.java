@@ -33,6 +33,7 @@ public class Main {
         jc.addCommand("destroy", commandDestroy);
         jc.addCommand("help", commandHelp);
         jc.addCommand("info", commandInfo);
+        jc.addCommand("install", commandInstall );
         jc.parseWithoutValidation(args);
 
         String clusterId = MesosCluster.readClusterId();
@@ -62,6 +63,7 @@ public class Main {
             case "install":
                 String marathonFile = commandInstall.getMarathonFile();
                 String marathonIp = MesosCluster.getContainerIp(MesosCluster.readClusterId(), "marathon");
+                System.out.println(String.format("Installing %s on maraphon %s", marathonFile, marathonIp));
                 MarathonClient.deployFramework(marathonIp, marathonFile);
                 break;
             case "help":

@@ -4,6 +4,7 @@ import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.mesos.ZooKeeper;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports;
 import org.apache.log4j.Logger;

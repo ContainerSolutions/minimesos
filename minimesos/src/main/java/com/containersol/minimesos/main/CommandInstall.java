@@ -14,6 +14,9 @@ public class CommandInstall {
     @Parameter
     List<String> marathonFiles;
 
+    @Parameter(names = "--exposedHostPorts", description = "Expose the Mesos and Marathon UI ports on the host level (we recommend to enable this on Mac (e.g. when using docker-machine) and disable on Linux).")
+    private boolean exposedHostPorts = false;
+
     public String getMarathonFile() {
         String marathonFile = marathonFiles.get(0);
         if (marathonFile != null) {
@@ -21,6 +24,10 @@ public class CommandInstall {
         } else {
             return null;
         }
+    }
+
+    public boolean isExposedHostPorts() {
+        return exposedHostPorts;
     }
 
 }

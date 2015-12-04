@@ -1,5 +1,6 @@
 package com.containersol.minimesos.marathon;
 
+import com.containersol.minimesos.MinimesosException;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.IOUtils;
@@ -87,14 +88,15 @@ public class MarathonClient {
     }
 
     public static void deployFramework(String marathonIp, String marathonFile) {
-        String marathonEndpoint = "http://" + marathonIp + ":8080";
+        String marathonEndpoint = "http://" + marathonIp + ":" + Marathon.MARATHON_PORT;
         JSONObject deployResponse;
         try (FileInputStream fis = new FileInputStream(marathonFile)) {
             deployResponse = Unirest.post(marathonEndpoint + "/v2/apps").header("accept", "application/json").body(IOUtils.toByteArray(fis)).asJson().getBody().getObject();
             LOGGER.info(deployResponse);
         } catch (UnirestException | IOException e) {
-            LOGGER.error("Could not deploy framework on Marathon at " + marathonEndpoint);
-            System.exit(1);
+            String msg = "Could not deploy framework on Marathon at " + marathonEndpoint + " => " + e.getMessage();
+            LOGGER.error( msg );
+            throw new MinimesosException( msg, e );
         }
     }
 }
