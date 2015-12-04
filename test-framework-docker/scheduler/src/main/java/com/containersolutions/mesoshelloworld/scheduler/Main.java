@@ -43,11 +43,12 @@ public class Main {
                     mesosMaster
                 );
 
-        int status = driver.run() == Protos.Status.DRIVER_STOPPED ? 0 : 1;
-
         // Ensure that the driver process terminates.
         driver.stop();
 
-        System.exit(status);
+        if( driver.run() != Protos.Status.DRIVER_STOPPED ) {
+            throw new RuntimeException("Mesos Scheduler Driver is not stopped");
+        }
+
     }
 }

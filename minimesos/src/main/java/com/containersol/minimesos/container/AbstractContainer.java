@@ -145,8 +145,9 @@ public abstract class AbstractContainer {
             @Override
             public void onNext(PullResponseItem item) {
                 if (item.getStatus() == null) {
-                    LOGGER.info("Error pulling image or image not found in registry: " + imageName + ":" + registryTag);
-                    System.exit(1);
+                    String msg = "Error pulling image or image not found in registry: " + imageName + ":" + registryTag;
+                    LOGGER.error( msg );
+                    throw new RuntimeException(msg);
                 }
                 if (!item.getStatus().contains("Downloading") &&
                         !item.getStatus().contains("Extracting")) {
