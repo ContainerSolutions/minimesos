@@ -24,8 +24,6 @@ public class Main {
         org.apache.mesos.Scheduler scheduler = new Scheduler(configuration);
 
         Protos.FrameworkInfo frameworkInfo = frameworkBuilder.build();
-        System.out.println("Framework Info is prepared");
-
         String mesosMaster = configuration.getMesosMaster();
 
         MesosSchedulerDriver driver =
@@ -45,13 +43,12 @@ public class Main {
                     mesosMaster
                 );
 
-        System.out.println("Mesos Scheduler Driver is prepared. Running it...");
-
-        int status = driver.run() == Protos.Status.DRIVER_STOPPED ? 0 : 1;
-
         // Ensure that the driver process terminates.
         driver.stop();
 
-        System.exit(status);
+        if( driver.run() != Protos.Status.DRIVER_STOPPED ) {
+            throw new RuntimeException("Mesos Scheduler Driver is not stopped");
+        }
+
     }
 }

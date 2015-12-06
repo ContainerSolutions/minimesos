@@ -1,5 +1,6 @@
 package com.containersolutions.mesoshelloworld.executor;
 
+import com.sun.media.jfxmedia.MediaException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -19,7 +20,9 @@ public class Executor implements org.apache.mesos.Executor {
 
     public static void main(String[] args) throws Exception {
         MesosExecutorDriver driver = new MesosExecutorDriver(new Executor());
-        System.exit(driver.run() == Status.DRIVER_STOPPED ? 0 : 1);
+        if( driver.run() != Status.DRIVER_STOPPED ) {
+            throw new MediaException("Mesos Executor Driver is not stopped");
+        }
     }
 
     @Override
