@@ -29,7 +29,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -42,7 +41,7 @@ import static com.jayway.awaitility.Awaitility.await;
  */
 public class MesosCluster extends ExternalResource {
 
-    public static final String MINIMESOS_DIR_PROPERTY = "minimesos.dir";
+    public static final String MINIMESOS_HOST_DIR_PROPERTY = "minimesos.host.dir";
     public static final String MINIMESOS_FILE_PROPERTY = "minimesos.cluster";
 
     private static Logger LOGGER = Logger.getLogger(MesosCluster.class);
@@ -169,7 +168,9 @@ public class MesosCluster extends ExternalResource {
 
     public MesosSlave[] getSlaves() {
         List<AbstractContainer> containers = clusterArchitecture.getClusterContainers().getContainers();
-        return containers.stream().filter(ClusterContainers.Filter.mesosSlave()).collect(Collectors.toList()).toArray(new MesosSlave[0]);
+        List<AbstractContainer> slaves = containers.stream().filter(ClusterContainers.Filter.mesosSlave()).collect(Collectors.toList());
+        MesosSlave[] array = new MesosSlave[slaves.size()];
+        return slaves.toArray(array);
     }
 
     @Override
@@ -277,10 +278,23 @@ public class MesosCluster extends ExternalResource {
         return new File( getMinimesosDir(), MINIMESOS_FILE_PROPERTY);
     }
 
-    private static File getMinimesosDir() {
-        String sp = System.getProperty(MINIMESOS_DIR_PROPERTY);
+    public static File getMinimesosDir() {
+
+        File hostDir = getMinimesosHostDir();
+        File minimesosDir = new File( hostDir, ".minimesos");
+        if( !minimesosDir.exists() ) {
+            if( !minimesosDir.mkdirs() ) {
+                throw new MinimesosException( "Failed to create " + minimesosDir.getAbsolutePath() + " directory" );
+            }
+        }
+
+        return minimesosDir;
+    }
+
+    public static File getMinimesosHostDir() {
+        String sp = System.getProperty(MINIMESOS_HOST_DIR_PROPERTY);
         if( sp == null ) {
-            sp = System.getProperty("user.dir") + "/.minimesos";
+            sp = System.getProperty("user.dir");
         }
         return new File( sp );
     }

@@ -1,5 +1,6 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.MesosCluster;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
@@ -41,6 +42,9 @@ public class MesosSlave extends MesosContainer {
     }
 
     public CreateContainerCmd getBaseCommand() {
+
+        String hostDir = MesosCluster.getMinimesosHostDir().getAbsolutePath();
+
         return dockerClient.createContainerCmd( getMesosImageName() + ":" + getMesosImageTag() )
                 .withName("minimesos-agent-" + getClusterId() + "-" + getRandomId())
                 .withPrivileged(true)
@@ -49,7 +53,8 @@ public class MesosSlave extends MesosContainer {
                 .withLinks(new Link(getZooKeeperContainer().getContainerId(), "minimesos-zookeeper"))
                 .withBinds(
                         Bind.parse("/var/run/docker.sock:/var/run/docker.sock"),
-                        Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup")
+                        Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),
+                        Bind.parse(hostDir + ":" + hostDir)
                 );
     }
 

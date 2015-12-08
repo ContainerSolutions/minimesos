@@ -1,5 +1,6 @@
 package com.containersol.minimesos.marathon;
 
+import com.containersol.minimesos.MesosCluster;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.mesos.ZooKeeper;
 import com.github.dockerjava.api.DockerClient;
@@ -15,7 +16,7 @@ import org.apache.log4j.Logger;
 public class Marathon extends AbstractContainer {
 
     private static final String MARATHON_IMAGE = "mesosphere/marathon";
-    public static final String REGISTRY_TAG = "v0.11.1";
+    public static final String REGISTRY_TAG = "v0.13.0";
     public static final int MARATHON_PORT = 8080;
 
     private ZooKeeper zooKeeper;
