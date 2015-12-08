@@ -19,13 +19,14 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONObject;
 import org.junit.*;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 public class InstallCommandTest {
 
@@ -49,7 +50,11 @@ public class InstallCommandTest {
     @Test
     @Ignore
     public void testMesosIntstall() {
-        CLUSTER.install("/Users/vik/projects/cs/devbox/sources/mini-mesos/minimesos/src/test/resources/marathon.json");
+        File taskInfo = new File( "src/test/resources/test-framework-docker.json" );
+        if( !taskInfo.exists() ) {
+            fail( "Failed to find task info file " + taskInfo.getAbsolutePath() );
+        }
+        MesosCluster.install( taskInfo );
     }
 
 }

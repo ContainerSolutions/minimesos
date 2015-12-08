@@ -6,9 +6,11 @@ import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.marathon.MarathonClient;
 import com.containersol.minimesos.mesos.*;
 import com.github.dockerjava.api.DockerClient;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.TreeMap;
 
 /**
@@ -61,10 +63,13 @@ public class Main {
                 MesosCluster.destroy();
                 break;
             case "install":
-                String marathonFile = commandInstall.getMarathonFile();
-                String marathonIp = MesosCluster.getContainerIp(MesosCluster.readClusterId(), "marathon");
-                System.out.println(String.format("Installing %s on maraphon %s", marathonFile, marathonIp));
-                MarathonClient.deployFramework(marathonIp, marathonFile);
+                String marathonFilePath = commandInstall.getMarathonFile();
+                if(StringUtils.isBlank(marathonFilePath) ) {
+                    jc.usage();
+                } else {
+                    File marathonFile = new File( marathonFilePath );
+                    MesosCluster.install( marathonFile );
+                }
                 break;
             case "help":
                 jc.usage();

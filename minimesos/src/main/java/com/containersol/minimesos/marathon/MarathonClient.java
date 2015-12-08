@@ -21,40 +21,6 @@ public class MarathonClient {
 
     private static Logger LOGGER = Logger.getLogger(MarathonClient.class);
 
-    public static void main(String[] args) {
-        if (args.length < 2) {
-            System.out.printf("Usage MarathonClient killall <ip> | deploy <ip> <marathon.json>");
-        } else {
-            switch(args[0]) {
-                case "killall":
-                    try {
-                        String marathonIp = getMarathonIp(args[1]);
-                        killAllApps(marathonIp);
-                    } catch (UnknownHostException e) {
-                        LOGGER.error("Not an ip address! Usage: MarathonClient killall <ip>");
-                        System.exit(1);
-                    }
-                    break;
-                case "deploy":
-                    if (args.length != 3) {
-                        LOGGER.error("Usage: MarathonClient deploy <ip> <marathon.json>");
-                    }
-                    try {
-                        String marathonIp = getMarathonIp(args[1]);
-                        File marathonFile = new File(args[2]);
-                        if (!marathonFile.exists()) {
-                            System.out.println("No such file " + args[2] + ". Usage: MarathonClient deploy <ip> <marathon.json>");
-                        }
-                        MarathonClient.deployFramework(marathonIp, args[2]);
-                    } catch (UnknownHostException e) {
-                        System.out.println("Not an ip address! Usage: MarathonClient killall <ip>");
-                        System.exit(1);
-                    }
-                    break;
-            }
-        }
-    }
-
     private static String getMarathonIp(String arg) throws UnknownHostException {
         return InetAddress.getByName(arg).getHostAddress();
     }
@@ -87,7 +53,7 @@ public class MarathonClient {
         }
     }
 
-    public static void deployFramework(String marathonIp, String marathonFile) {
+    public static void deployFramework(String marathonIp, File marathonFile) {
         String marathonEndpoint = "http://" + marathonIp + ":" + Marathon.MARATHON_PORT;
         JSONObject deployResponse;
         try (FileInputStream fis = new FileInputStream(marathonFile)) {

@@ -352,8 +352,9 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
-    public void install(String marathonFile) {
-        String marathonIp = getMarathonContainer().getIpAddress();
+    public static void install(File marathonFile) {
+        String marathonIp = getContainerIp(MesosCluster.readClusterId(), "marathon");
+        LOGGER.info(String.format("Installing %s on maraphon %s", marathonFile, marathonIp));
         MarathonClient.deployFramework(marathonIp, marathonFile);
     }
 
