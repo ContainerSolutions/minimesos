@@ -51,7 +51,11 @@ dependencies {
     compile 'com.beust:jcommander:1.48'
 
     compile 'com.mashape.unirest:unirest-java:1.4.5'
+
     testCompile "org.mockito:mockito-core:1.+"
+    testCompile project(':test-framework-docker:scheduler')
+    testCompile project(':test-framework-docker:executor')
+
 }
 
 mainClassName = "com.containersol.minimesos.main.Main"

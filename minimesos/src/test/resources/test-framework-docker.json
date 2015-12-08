@@ -1,0 +1,10 @@
+{
+  "id": "hello-world-scheduler",
+  "cmd": "docker run containersol/mesos-hello-world-scheduler --mesosMaster 172.17.0.4:5050",
+  "cpus": 0.2,
+  "mem": 512.0,
+  "env": {
+    "JAVA_OPTS": "-Xms128m -Xmx256m"
+  },
+  "instances": 1
+}

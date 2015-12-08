@@ -29,12 +29,11 @@ import static org.junit.Assert.assertNotNull;
 
 public class InstallCommandTest {
 
-    protected static final String resources = MesosSlave.DEFAULT_PORT_RESOURCES + "; cpus(*):0.2; mem(*):256; disk(*):200";
     protected static final DockerClient dockerClient = DockerClientFactory.build();
     protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder(dockerClient)
             .withZooKeeper()
             .withMaster()
-            .withSlave(zooKeeper -> new MesosSlaveExtended(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
+            .withSlave("ports(*):[8080-8082]")
             .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper, true ))
             .build();
 
