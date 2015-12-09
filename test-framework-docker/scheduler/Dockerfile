@@ -12,4 +12,6 @@ RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true 
 ADD ./build/docker/mesos-hello-world-scheduler.jar /tmp/mesos-hello-world-scheduler.jar
 ADD ./build/docker/start-scheduler.sh /tmp/start-scheduler.sh
 
+RUN chmod +x /tmp/start-scheduler.sh
+
 ENTRYPOINT ["/tmp/start-scheduler.sh"]
