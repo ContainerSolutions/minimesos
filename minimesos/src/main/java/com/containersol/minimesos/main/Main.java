@@ -3,7 +3,6 @@ package com.containersol.minimesos.main;
 import com.beust.jcommander.JCommander;
 import com.containersol.minimesos.MesosCluster;
 import com.containersol.minimesos.marathon.Marathon;
-import com.containersol.minimesos.marathon.MarathonClient;
 import com.containersol.minimesos.mesos.*;
 import com.github.dockerjava.api.DockerClient;
 import org.apache.commons.lang.StringUtils;

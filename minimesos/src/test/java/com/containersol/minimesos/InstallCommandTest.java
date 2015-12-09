@@ -2,6 +2,7 @@ package com.containersol.minimesos;
 
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.marathon.Marathon;
+import com.containersol.minimesos.marathon.MarathonClient;
 import com.containersol.minimesos.mesos.*;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -16,6 +17,7 @@ import com.jayway.awaitility.Awaitility;
 import com.jayway.awaitility.Duration;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.junit.*;
 
@@ -24,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -48,12 +51,17 @@ public class InstallCommandTest {
     }
 
     @Test
-    @Ignore
-    public void testMesosIntstall() {
+    public void testMesosInstall() {
+
         File taskInfo = new File( "src/test/resources/test-framework-docker.json" );
         if( !taskInfo.exists() ) {
             fail( "Failed to find task info file " + taskInfo.getAbsolutePath() );
         }
+
+        // wait for Marathon to start
+        MarathonClient marathon = new MarathonClient( CLUSTER.getMarathonContainer().getIpAddress() );
+        Awaitility.await("Marathon did not start responding").atMost(60, TimeUnit.SECONDS).until(marathon::isReady);
+
         CLUSTER.install( taskInfo );
     }
 

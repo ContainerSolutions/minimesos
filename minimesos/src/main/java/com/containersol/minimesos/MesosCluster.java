@@ -246,10 +246,8 @@ public class MesosCluster extends ExternalResource {
     public static void destroy() {
         String clusterId = readClusterId();
 
-        String marathonIp = getContainerIp(clusterId, "marathon");
-        if (marathonIp != null) {
-            MarathonClient.killAllApps(marathonIp);
-        }
+        MarathonClient marathon = new MarathonClient( getContainerIp(clusterId, "marathon") );
+        marathon.killAllApps();
 
         if (clusterId != null) {
             destroyContainers(clusterId);
@@ -352,21 +350,27 @@ public class MesosCluster extends ExternalResource {
     }
 
     public static void install(String clusterId, File marathonFile) {
+
         String marathonIp = getContainerIp(clusterId, "marathon");
         if( marathonIp == null ) {
             throw new MinimesosException("Marathon container is not found in cluster " + MesosCluster.readClusterId() );
         }
+
+        MarathonClient marathonClient = new MarathonClient( marathonIp );
         LOGGER.info(String.format("Installing %s on maraphon %s", marathonFile, marathonIp));
-        MarathonClient.deployFramework(marathonIp, marathonFile);
+        marathonClient.deployFramework(marathonFile);
     }
 
     public void install(File marathonFile) {
+
         String marathonIp = getMarathonContainer().getIpAddress();
         if( marathonIp == null ) {
             throw new MinimesosException("Marathon container is not found in cluster " + clusterId );
         }
+
+        MarathonClient marathonClient = new MarathonClient( marathonIp );
         LOGGER.info(String.format("Installing %s on maraphon %s", marathonFile, marathonIp));
-        MarathonClient.deployFramework(marathonIp, marathonFile);
+        marathonClient.deployFramework(marathonFile);
     }
 
     public String getStateUrl() {
