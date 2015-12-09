@@ -52,8 +52,7 @@ public class MesosCluster extends ExternalResource {
 
     private ClusterArchitecture clusterArchitecture;
 
-    private static String clusterId;
-
+    private final String clusterId;
 
 
     /**
@@ -210,7 +209,7 @@ public class MesosCluster extends ExternalResource {
         waitForState(predicate, 20);
     }
 
-    public static String getClusterId() {
+    public String getClusterId() {
         return clusterId;
     }
 
@@ -303,7 +302,7 @@ public class MesosCluster extends ExternalResource {
         File minimesosDir = getMinimesosDir();
         try {
             FileUtils.forceMkdir(minimesosDir);
-            Files.write(Paths.get(minimesosDir.getAbsolutePath() + "/" + MINIMESOS_FILE_PROPERTY), MesosCluster.getClusterId().getBytes());
+            Files.write(Paths.get(minimesosDir.getAbsolutePath() + "/" + MINIMESOS_FILE_PROPERTY), getClusterId().getBytes());
         } catch (IOException ie) {
             LOGGER.error("Could not write .minimesos folder", ie);
             throw new RuntimeException(ie);
@@ -352,8 +351,20 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
-    public static void install(File marathonFile) {
-        String marathonIp = getContainerIp(MesosCluster.readClusterId(), "marathon");
+    public static void install(String clusterId, File marathonFile) {
+        String marathonIp = getContainerIp(clusterId, "marathon");
+        if( marathonIp == null ) {
+            throw new MinimesosException("Marathon container is not found in cluster " + MesosCluster.readClusterId() );
+        }
+        LOGGER.info(String.format("Installing %s on maraphon %s", marathonFile, marathonIp));
+        MarathonClient.deployFramework(marathonIp, marathonFile);
+    }
+
+    public void install(File marathonFile) {
+        String marathonIp = getMarathonContainer().getIpAddress();
+        if( marathonIp == null ) {
+            throw new MinimesosException("Marathon container is not found in cluster " + clusterId );
+        }
         LOGGER.info(String.format("Installing %s on maraphon %s", marathonFile, marathonIp));
         MarathonClient.deployFramework(marathonIp, marathonFile);
     }

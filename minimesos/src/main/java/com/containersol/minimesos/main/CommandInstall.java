@@ -18,7 +18,10 @@ public class CommandInstall {
     private boolean exposedHostPorts = false;
 
     public String getMarathonFile() {
-        String marathonFile = marathonFiles.get(0);
+        String marathonFile = null;
+        if( marathonFiles != null && marathonFiles.size() > 0 ) {
+            marathonFile = marathonFiles.get(0);
+        }
         if (marathonFile != null) {
             return marathonFile;
         } else {

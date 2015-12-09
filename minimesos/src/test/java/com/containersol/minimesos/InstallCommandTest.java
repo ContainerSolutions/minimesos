@@ -54,7 +54,7 @@ public class InstallCommandTest {
         if( !taskInfo.exists() ) {
             fail( "Failed to find task info file " + taskInfo.getAbsolutePath() );
         }
-        MesosCluster.install( taskInfo );
+        CLUSTER.install( taskInfo );
     }
 
 }
