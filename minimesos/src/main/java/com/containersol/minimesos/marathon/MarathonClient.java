@@ -1,9 +1,12 @@
 package com.containersol.minimesos.marathon;
 
 import com.containersol.minimesos.MinimesosException;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
+import org.apache.http.HttpStatus;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -64,11 +67,19 @@ public class MarathonClient {
         }
 
         String marathonEndpoint = getMarathonEndpoint();
-        JSONObject deployResponse;
         try {
+
             byte[] task = taskJson.getBytes(Charset.forName("UTF-8"));
-            deployResponse = Unirest.post(marathonEndpoint + "/v2/apps").header("accept", "application/json").body(task).asJson().getBody().getObject();
-            LOGGER.info(deployResponse);
+
+            HttpResponse<JsonNode> response = Unirest.post(marathonEndpoint + "/v2/apps").header("accept", "application/json").body(task).asJson();
+            JSONObject deployResponse = response.getBody().getObject();
+
+            if( response.getStatus() == HttpStatus.SC_CREATED ) {
+                LOGGER.info(deployResponse);
+            } else {
+                throw new MinimesosException("Marathon did not accept the task: " + deployResponse);
+            }
+
         } catch (UnirestException e) {
             String msg = "Could not deploy framework on Marathon at " + marathonEndpoint + " => " + e.getMessage();
             LOGGER.error( msg );
