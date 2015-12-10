@@ -15,6 +15,8 @@ import java.net.InetSocketAddress;
  * Adapted from https://github.com/apache/mesos/blob/0.22.1/src/examples/java/TestExecutor.java
  */
 public class Executor implements org.apache.mesos.Executor {
+
+    public static final String RESPONSE_STRING = "Hello world";
     private Thread thread;
 
     public static void main(String[] args) throws Exception {
@@ -99,10 +101,10 @@ public class Executor implements org.apache.mesos.Executor {
     private class MyHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange t) throws IOException {
-            String response = "Hello world";
-            t.sendResponseHeaders(200, response.length());
+
+            t.sendResponseHeaders(200, RESPONSE_STRING.length());
             OutputStream os = t.getResponseBody();
-            os.write(response.getBytes());
+            os.write(RESPONSE_STRING.getBytes());
             os.close();
         }
     }

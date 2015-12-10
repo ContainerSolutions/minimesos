@@ -67,7 +67,7 @@ public class Main {
                     jc.usage();
                 } else {
                     File marathonFile = new File( marathonFilePath );
-                    MesosCluster.install( clusterId, marathonFile );
+                    MesosCluster.executeMarathonTask( clusterId, marathonFile );
                 }
                 break;
             case "help":

@@ -3,14 +3,12 @@ package com.containersol.minimesos.marathon;
 import com.containersol.minimesos.MinimesosException;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import org.apache.commons.io.IOUtils;
+
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.nio.charset.Charset;
 
 /**
  * Client to talk to Marathon's API
@@ -59,7 +57,7 @@ public class MarathonClient {
         return "http://" + marathonIp + ":" + Marathon.MARATHON_PORT;
     }
 
-    public boolean deployFramework(File marathonFile) {
+    public boolean deployTask(String taskJson) {
 
         if( marathonIp == null ) {
             return false;
@@ -67,10 +65,11 @@ public class MarathonClient {
 
         String marathonEndpoint = getMarathonEndpoint();
         JSONObject deployResponse;
-        try (FileInputStream fis = new FileInputStream(marathonFile)) {
-            deployResponse = Unirest.post(marathonEndpoint + "/v2/apps").header("accept", "application/json").body(IOUtils.toByteArray(fis)).asJson().getBody().getObject();
+        try {
+            byte[] task = taskJson.getBytes(Charset.forName("UTF-8"));
+            deployResponse = Unirest.post(marathonEndpoint + "/v2/apps").header("accept", "application/json").body(task).asJson().getBody().getObject();
             LOGGER.info(deployResponse);
-        } catch (UnirestException | IOException e) {
+        } catch (UnirestException e) {
             String msg = "Could not deploy framework on Marathon at " + marathonEndpoint + " => " + e.getMessage();
             LOGGER.error( msg );
             throw new MinimesosException( msg, e );

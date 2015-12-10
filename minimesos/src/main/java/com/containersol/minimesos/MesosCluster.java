@@ -23,6 +23,7 @@ import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -349,7 +350,7 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
-    public static void install(String clusterId, File marathonFile) {
+    public static void executeMarathonTask(String clusterId, File marathonFile) {
 
         String marathonIp = getContainerIp(clusterId, "marathon");
         if( marathonIp == null ) {
@@ -358,10 +359,17 @@ public class MesosCluster extends ExternalResource {
 
         MarathonClient marathonClient = new MarathonClient( marathonIp );
         LOGGER.info(String.format("Installing %s on maraphon %s", marathonFile, marathonIp));
-        marathonClient.deployFramework(marathonFile);
+
+        try (FileInputStream fis = new FileInputStream(marathonFile)) {
+            String taskJson = IOUtils.toString(fis);
+            marathonClient.deployTask(taskJson);
+        } catch (IOException e) {
+            throw new MinimesosException( "Failed to open " + marathonFile.getAbsolutePath(), e );
+        }
+
     }
 
-    public void install(File marathonFile) {
+    public void executeMarathonTask(String taskJson) {
 
         String marathonIp = getMarathonContainer().getIpAddress();
         if( marathonIp == null ) {
@@ -369,8 +377,9 @@ public class MesosCluster extends ExternalResource {
         }
 
         MarathonClient marathonClient = new MarathonClient( marathonIp );
-        LOGGER.info(String.format("Installing %s on maraphon %s", marathonFile, marathonIp));
-        marathonClient.deployFramework(marathonFile);
+        LOGGER.info(String.format("Installing a task on marathon %s", marathonIp));
+        marathonClient.deployTask(taskJson);
+
     }
 
     public String getStateUrl() {
