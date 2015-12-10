@@ -52,7 +52,7 @@ public class Scheduler implements org.apache.mesos.Scheduler {
 
             } else if (!currentOffer.isAcceptable()) {
                 System.out.println(
-                        "Received not acceptable offer " + offer.getId().getValue() + " with cpus: " + currentOffer.offerCpus +
+                        "Received unacceptable offer " + offer.getId().getValue() + " with cpus: " + currentOffer.offerCpus +
                                 " and mem: " + currentOffer.offerMem + " with ports: " + currentOffer.offerPorts);
             }
 
