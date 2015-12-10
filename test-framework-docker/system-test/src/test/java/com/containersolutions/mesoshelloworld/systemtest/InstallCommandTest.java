@@ -45,8 +45,8 @@ public class InstallCommandTest {
     public void testMesosInstall() throws IOException {
 
         File taskFile = new File( "src/test/resources/test-framework-docker.json" );
-        if( !taskFile.exists() ) {
-            fail( "Failed to find task info file " + taskFile.getAbsolutePath() );
+        if (!taskFile.exists()) {
+            fail("Failed to find task info file " + taskFile.getAbsolutePath());
         }
 
         // wait for Marathon to start

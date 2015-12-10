@@ -270,7 +270,7 @@ public class MesosCluster extends ExternalResource {
             destroyContainers(clusterId);
 
             File minimesosFile = getMinimesosFile();
-            if( minimesosFile.exists() ) {
+            if (minimesosFile.exists()) {
                 minimesosFile.deleteOnExit();
             }
 

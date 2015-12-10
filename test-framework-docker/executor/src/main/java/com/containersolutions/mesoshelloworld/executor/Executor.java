@@ -21,7 +21,7 @@ public class Executor implements org.apache.mesos.Executor {
 
     public static void main(String[] args) throws Exception {
         MesosExecutorDriver driver = new MesosExecutorDriver(new Executor());
-        if( driver.run() != Status.DRIVER_STOPPED ) {
+        if (driver.run() != Status.DRIVER_STOPPED) {
             throw new RuntimeException("Mesos Executor Driver is not stopped");
         }
     }

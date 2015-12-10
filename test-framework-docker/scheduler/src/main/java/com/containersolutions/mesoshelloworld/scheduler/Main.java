@@ -17,7 +17,7 @@ public class Main {
                 .setCheckpoint(true);
 
         String principal = configuration.getFrameworkPrincipal();
-        if( principal != null ) {
+        if (principal != null) {
             frameworkBuilder.setPrincipal(principal);
         }
 
@@ -46,7 +46,7 @@ public class Main {
         // Ensure that the driver process terminates.
         driver.stop();
 
-        if( driver.run() != Protos.Status.DRIVER_STOPPED ) {
+        if (driver.run() != Protos.Status.DRIVER_STOPPED) {
             throw new RuntimeException("Mesos Scheduler Driver is not stopped");
         }
 

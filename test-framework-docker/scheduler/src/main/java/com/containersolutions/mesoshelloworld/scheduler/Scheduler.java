@@ -30,7 +30,7 @@ public class Scheduler implements org.apache.mesos.Scheduler {
         for (Offer offer : offers) {
 
             ResourceOffer currentOffer = new ResourceOffer(offer.getResourcesList());
-            if( currentOffer.isAcceptable() && (acceptedOffers < MAX_OFFERS) ) {
+            if (currentOffer.isAcceptable() && (acceptedOffers < MAX_OFFERS)) {
 
                 System.out.println(
                         "Received acceptable offer " + offer.getId().getValue() + " with cpus: " + currentOffer.offerCpus +
@@ -50,7 +50,7 @@ public class Scheduler implements org.apache.mesos.Scheduler {
 
                 acceptedOffers++;
 
-            } else if(!currentOffer.isAcceptable()) {
+            } else if (!currentOffer.isAcceptable()) {
                 System.out.println(
                         "Received not acceptable offer " + offer.getId().getValue() + " with cpus: " + currentOffer.offerCpus +
                                 " and mem: " + currentOffer.offerMem + " with ports: " + currentOffer.offerPorts);
