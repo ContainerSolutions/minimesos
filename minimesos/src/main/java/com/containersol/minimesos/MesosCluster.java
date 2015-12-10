@@ -214,12 +214,26 @@ public class MesosCluster extends ExternalResource {
         return clusterId;
     }
 
-    public static String getContainerIp(String clusterId, String role) {
+    /**
+     * Type safe retrieval of container object (based on naming convention)
+     * @param clusterId ID of the cluster to search for containers
+     * @param role container role in the cluster
+     * @return object of clazz type, which represent the container
+     */
+    public static Container getContainer(String clusterId, String role) {
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
             if (container.getNames()[0].contains("minimesos-" + role) && container.getNames()[0].contains(clusterId + "-")) {
-                return dockerClient.inspectContainerCmd(container.getId()).exec().getNetworkSettings().getIpAddress();
+                return container;
             }
+        }
+        return null;
+    }
+
+    public static String getContainerIp(String clusterId, String role) {
+        Container container = getContainer(clusterId, role);
+        if ( container != null ) {
+            return dockerClient.inspectContainerCmd(container.getId()).exec().getNetworkSettings().getIpAddress();
         }
         return null;
     }
@@ -245,17 +259,21 @@ public class MesosCluster extends ExternalResource {
     }
 
     public static void destroy() {
+
         String clusterId = readClusterId();
 
-        MarathonClient marathon = new MarathonClient( getContainerIp(clusterId, "marathon") );
-        marathon.killAllApps();
-
         if (clusterId != null) {
+
+            MarathonClient marathon = new MarathonClient( getContainerIp(clusterId, "marathon") );
+            marathon.killAllApps();
+
             destroyContainers(clusterId);
+
             File minimesosFile = getMinimesosFile();
             if( minimesosFile.exists() ) {
                 minimesosFile.deleteOnExit();
             }
+
         } else {
             LOGGER.info("Minimesos cluster is not running");
         }

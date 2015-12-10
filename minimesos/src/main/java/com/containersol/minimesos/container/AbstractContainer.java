@@ -32,6 +32,7 @@ public abstract class AbstractContainer {
 
     protected DockerClient dockerClient;
     private String clusterId;
+    private String ipAddress = null;
 
     protected AbstractContainer(DockerClient dockerClient) {
         this.dockerClient = dockerClient;
@@ -66,8 +67,6 @@ public abstract class AbstractContainer {
             await().atMost(60, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new ContainerIsRunning<Boolean>(containerId));
         } catch (ConditionTimeoutException cte) {
             LOGGER.error("Container did not start within 60 seconds");
-//            InputStream logs = dockerClient.logContainerCmd(containerId).exec();
-
         }
 
         LOGGER.debug("Container is up and running");
@@ -95,11 +94,18 @@ public abstract class AbstractContainer {
      * @return the IP address of the container
      */
     public String getIpAddress() {
+        if( ipAddress == null ) {
+            retrieveIpAddress();
+        }
+        return ipAddress;
+    }
+
+    private synchronized void retrieveIpAddress() {
         String res = "";
         if (!getContainerId().isEmpty()) {
             res = dockerClient.inspectContainerCmd(containerId).exec().getNetworkSettings().getIpAddress();
         }
-        return res;
+        this.ipAddress = res;
     }
 
     public String getName() {
