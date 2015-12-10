@@ -67,17 +67,19 @@ public class Main {
         String clusterId = MesosCluster.readClusterId();
 
         boolean exposedHostPorts = commandUp.isExposedHostPorts();
+        String marathonImageTag = commandUp.getMarathonImageTag();
         String mesosImageTag = commandUp.getMesosImageTag();
+        String zooKeeperImageTag = commandUp.getZooKeeperImageTag();
 
         if (clusterId == null) {
 
             DockerClient dockerClient = DockerClientFactory.build();
 
             ClusterArchitecture config = new ClusterArchitecture.Builder(dockerClient)
-                    .withZooKeeper()
+                    .withZooKeeper(zooKeeperImageTag)
                     .withMaster(zooKeeper -> new MesosMasterExtended( dockerClient, zooKeeper, MesosMaster.MESOS_MASTER_IMAGE, mesosImageTag, new TreeMap<>(), exposedHostPorts))
                     .withSlave(zooKeeper -> new MesosSlaveExtended( dockerClient, "ports(*):[33000-34000]", "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, mesosImageTag))
-                    .withContainer( zooKeeper -> new Marathon(dockerClient, zooKeeper, exposedHostPorts), ClusterContainers.Filter.zooKeeper() )
+                    .withContainer( zooKeeper -> new Marathon(dockerClient, zooKeeper, marathonImageTag, exposedHostPorts), ClusterContainers.Filter.zooKeeper() )
                     .build();
 
             MesosCluster cluster = new MesosCluster( config );
