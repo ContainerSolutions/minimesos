@@ -36,16 +36,6 @@ public class MesosClusterStateResponse implements Callable<Boolean> {
             return false;
         }
 
-//        try {
-//            Unirest.get(mesosCluster.getMarathonContainer().getEndpoint() + "apps").asJson().getBody();
-//        } catch (UnirestException e) {
-//            LOGGER.debug("Polling Marathon endpoint at: \"" + mesosCluster.getMarathonContainer().getEndpoint() + "\"...");
-//            return false;
-//        } catch (Exception e) {
-//            LOGGER.error("An error occured while polling Marathon", e);
-//            return false;
-//        }
-
         return true;
     }
 

@@ -1,14 +1,11 @@
 package com.containersol.minimesos.marathon;
 
-import com.containersol.minimesos.MesosCluster;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.mesos.ZooKeeper;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports;
-import org.apache.log4j.Logger;
 
 /**
  * Marathon container
@@ -49,7 +46,4 @@ public class Marathon extends AbstractContainer {
                 .withPortBindings(portBindings);
     }
 
-    public String getEndpoint() {
-        return "http://" + getIpAddress() + ":8080/v2/";
-    }
 }
