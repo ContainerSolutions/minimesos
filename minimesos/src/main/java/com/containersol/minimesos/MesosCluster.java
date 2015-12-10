@@ -368,11 +368,20 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
-    public static void executeMarathonTask(String clusterId, File marathonFile) {
+    public static void executeMarathonTask(String clusterId, String marathonFilePath) {
 
         String marathonIp = getContainerIp(clusterId, "marathon");
         if( marathonIp == null ) {
             throw new MinimesosException("Marathon container is not found in cluster " + MesosCluster.readClusterId() );
+        }
+
+        File marathonFile = new File( marathonFilePath );
+        if( !marathonFile.exists() ) {
+            marathonFile = new File( getMinimesosHostDir(), marathonFilePath );
+            if( !marathonFile.exists() ) {
+                String msg = String.format("Neither %s nor %s exist", new File( marathonFilePath ).getAbsolutePath(), marathonFile.getAbsolutePath() );
+                throw new MinimesosException( msg );
+            }
         }
 
         MarathonClient marathonClient = new MarathonClient( marathonIp );

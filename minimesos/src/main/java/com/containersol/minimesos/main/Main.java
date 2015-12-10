@@ -9,7 +9,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.util.TreeMap;
 
 /**
@@ -66,8 +65,7 @@ public class Main {
                 if(StringUtils.isBlank(marathonFilePath) ) {
                     jc.usage();
                 } else {
-                    File marathonFile = new File( marathonFilePath );
-                    MesosCluster.executeMarathonTask( clusterId, marathonFile );
+                    MesosCluster.executeMarathonTask( clusterId, marathonFilePath );
                 }
                 break;
             case "help":
