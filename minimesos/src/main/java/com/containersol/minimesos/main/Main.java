@@ -27,6 +27,7 @@ public class Main {
     private static boolean help = false;
 
     public static void main(String[] args)  {
+
         JCommander jc = new JCommander(new Main());
         jc.setProgramName("minimesos");
 
@@ -43,7 +44,14 @@ public class Main {
         jc.addCommand("info", commandInfo);
         jc.addCommand("install", commandInstall );
         jc.addCommand("state", commandState);
-        jc.parseWithoutValidation(args);
+
+        try {
+            jc.parseWithoutValidation(args);
+        } catch (Exception e) {
+            LOGGER.error("Failed to parse parameters. " + e.getMessage() + "\n" );
+            jc.usage();
+            System.exit(1);
+        }
 
         String clusterId = MesosCluster.readClusterId();
         MesosCluster.checkStateFile(clusterId);
@@ -147,13 +155,13 @@ public class Main {
 
     private static void printState(String agent) {
         String clusterId = MesosCluster.readClusterId();
-        try {
-            LOGGER.info(MesosCluster.getStateInfo(clusterId, agent));
-        } catch (UnirestException e) {
-            LOGGER.error("Cannot access the cluster.\nPlease verify the cluster is running using `minimesos info` command.");
-        } catch (RuntimeException e) {
-            LOGGER.error(e.getMessage());
+        String stateInfo = (StringUtils.isEmpty(agent)) ? MesosCluster.getClusterStateInfo(clusterId) : MesosCluster.getContainerStateInfo(clusterId);
+        if( stateInfo != null ) {
+            LOGGER.info(stateInfo);
+        } else {
+            throw new MinimesosException("Did not find the cluster or requested container");
         }
+
     }
 
 }

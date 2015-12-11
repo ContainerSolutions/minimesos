@@ -23,8 +23,9 @@ public class MesosClusterStateResponse implements Callable<Boolean> {
     @Override
     public Boolean call() throws Exception {
         try {
-            int activated_slaves = Unirest.get(mesosCluster.getStateUrl()).asJson().getBody().getObject().getInt("activated_slaves");
-            if (!(activated_slaves == mesosCluster.getSlaves().length)) {
+            String stateUrl = mesosCluster.getStateUrl();
+            int activated_slaves = Unirest.get(stateUrl).asJson().getBody().getObject().getInt("activated_slaves");
+            if (activated_slaves != mesosCluster.getSlaves().length) {
                 LOGGER.debug("Waiting for " + mesosCluster.getSlaves().length + " activated slaves - current number of activated slaves: " + activated_slaves);
                 return false;
             }

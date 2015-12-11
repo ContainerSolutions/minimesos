@@ -5,7 +5,8 @@ import com.beust.jcommander.Parameters;
 
 /**
  * Parameters for the 'state' command
- * @todo add --pretty
+ *
+ * TODO: add --pretty
  */
 @Parameters(separators = "=", commandDescription = "Display state.json file of a master or an agent")
 public class CommandState {

@@ -1,5 +1,6 @@
 package com.containersol.minimesos.container;
 
+import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Container;
@@ -105,7 +106,7 @@ public abstract class AbstractContainer {
     private synchronized void retrieveIpAddress() {
         String res = "";
         if (!getContainerId().isEmpty()) {
-            res = dockerClient.inspectContainerCmd(containerId).exec().getNetworkSettings().getIpAddress();
+            res = DockerContainersUtil.getIpAddress(dockerClient, getContainerId());
         }
         this.ipAddress = res;
     }

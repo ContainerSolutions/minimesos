@@ -4,8 +4,10 @@ package com.containersol.minimesos.docker;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.api.model.Filters;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -113,13 +115,36 @@ public class DockerContainersUtil {
      */
     public Set<String> getIpAddresses() {
         Set<String> ips = new HashSet<>();
-        if( containers != null ) {
+        if (containers != null) {
             for (Container container : containers) {
-                InspectContainerResponse response = dockerClient.inspectContainerCmd(container.getId()).exec();
-                ips.add(response.getNetworkSettings().getIpAddress());
+                ips.add(getIpAddress(dockerClient, container.getId()));
             }
         }
         return ips;
+    }
+
+    /**
+     * @param dockerClient docker client to use
+     * @param containerId  id of the container to inspect
+     * @return IP Address of the container
+     */
+    public static String getIpAddress(DockerClient dockerClient, String containerId) {
+        InspectContainerResponse response = dockerClient.inspectContainerCmd(containerId).exec();
+        return response.getNetworkSettings().getIpAddress();
+    }
+
+    /**
+     * @param dockerClient docker client to use
+     * @param containerId id of the container to retrieve
+     * @return container or null
+     */
+    public static Container getContainer(DockerClient dockerClient, String containerId) {
+        List<Container> containers = dockerClient.listContainersCmd().withFilters( new Filters().withFilter("id", containerId)).exec();
+        if( containers != null && containers.size() == 1) {
+            return containers.get(0);
+        } else {
+            return null;
+        }
     }
 
 }
