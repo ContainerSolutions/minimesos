@@ -27,6 +27,7 @@ public class Main {
     private static boolean help = false;
 
     public static void main(String[] args)  {
+
         JCommander jc = new JCommander(new Main());
         jc.setProgramName("minimesos");
 
@@ -35,13 +36,22 @@ public class Main {
         CommandHelp commandHelp = new CommandHelp();
         CommandInfo commandInfo = new CommandInfo();
         CommandInstall commandInstall = new CommandInstall();
+        CommandState commandState = new CommandState();
 
         jc.addCommand("up", commandUp);
         jc.addCommand("destroy", commandDestroy);
         jc.addCommand("help", commandHelp);
         jc.addCommand("info", commandInfo);
         jc.addCommand("install", commandInstall );
-        jc.parseWithoutValidation(args);
+        jc.addCommand("state", commandState);
+
+        try {
+            jc.parseWithoutValidation(args);
+        } catch (Exception e) {
+            LOGGER.error("Failed to parse parameters. " + e.getMessage() + "\n" );
+            jc.usage();
+            System.exit(1);
+        }
 
         String clusterId = MesosCluster.readClusterId();
         MesosCluster.checkStateFile(clusterId);
@@ -80,6 +90,9 @@ public class Main {
                     } else {
                         MesosCluster.executeMarathonTask( clusterId, marathonFilePath );
                     }
+                    break;
+                case "state":
+                    printState(commandState.getAgent());
                     break;
                 case "help":
                     jc.usage();
@@ -138,6 +151,17 @@ public class Main {
         } else {
             LOGGER.info("Minimesos cluster is not running");
         }
+    }
+
+    private static void printState(String agent) {
+        String clusterId = MesosCluster.readClusterId();
+        String stateInfo = (StringUtils.isEmpty(agent)) ? MesosCluster.getClusterStateInfo(clusterId) : MesosCluster.getContainerStateInfo(clusterId);
+        if( stateInfo != null ) {
+            LOGGER.info(stateInfo);
+        } else {
+            throw new MinimesosException("Did not find the cluster or requested container");
+        }
+
     }
 
 }

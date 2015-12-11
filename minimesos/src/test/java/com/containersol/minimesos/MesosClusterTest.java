@@ -53,7 +53,14 @@ public class MesosClusterTest {
 
     @Test
     public void mesosClusterStateInfoJSONMatchesSchema() throws UnirestException, JsonParseException, JsonMappingException {
-        CLUSTER.getStateInfo();
+        assertNotNull( CLUSTER.getClusterStateInfo() );
+    }
+
+    @Test
+    public void mesosAgentStateInfoJSONMatchesSchema() throws UnirestException, JsonParseException, JsonMappingException {
+        String slaveId = CLUSTER.getSlaves()[0].getContainerId();
+        String state = MesosCluster.getContainerStateInfo(slaveId);
+        assertNotNull( state );
     }
 
     @Test
@@ -93,7 +100,7 @@ public class MesosClusterTest {
     public void testPullAndStartContainer() throws UnirestException {
         HelloWorldContainer container = new HelloWorldContainer(CONFIG.dockerClient);
         String containerId = CLUSTER.addAndStartContainer(container, MesosContainer.DEFAULT_TIMEOUT_SEC);
-        String ipAddress = CONFIG.dockerClient.inspectContainerCmd(containerId).exec().getNetworkSettings().getIpAddress();
+        String ipAddress = DockerContainersUtil.getIpAddress(CONFIG.dockerClient, containerId);
         String url = "http://" + ipAddress + ":80";
         Assert.assertEquals(200, Unirest.get(url).asString().getStatus());
     }

@@ -1,19 +1,16 @@
 package com.containersol.minimesos;
 
 import com.containersol.minimesos.container.AbstractContainer;
+import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.marathon.MarathonClient;
 import com.containersol.minimesos.mesos.*;
-import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.MesosClusterStateResponse;
-import com.containersol.minimesos.util.Predicate;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.InternalServerErrorException;
 import com.github.dockerjava.api.NotFoundException;
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Container;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.FileUtils;
@@ -30,10 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import static com.jayway.awaitility.Awaitility.await;
 
 /**
  * Starts the mesos cluster. Responsible for setting up a private docker registry. Once started, users can add
@@ -123,14 +117,71 @@ public class MesosCluster extends ExternalResource {
         return container.getContainerId();
     }
 
-    public State getStateInfo() throws UnirestException, JsonParseException, JsonMappingException {
-        String json = Unirest.get("http://" + this.getMesosMasterContainer().getIpAddress() + ":5050" +"/state.json").asString().getBody();
 
-        return State.fromJSON(json);
+    /**
+     * Retrieves JSON with Mesos Cluster master state
+     *
+     * @param clusterId id of the cluster
+     * @return stage JSON
+     */
+    public static String getClusterStateInfo(String clusterId) {
+        Container container = getContainer(clusterId, "master");
+        return getContainerStateInfo(container);
     }
 
+    /**
+     * Retrieves JSON with Mesos Cluster master state
+     *
+     * @return stage JSON
+     */
+    public String getClusterStateInfo() {
+        return getClusterStateInfo( clusterId );
+    }
+
+    /**
+     * Retrieves JSON with Mesos state of the given container
+     *
+     * @param containerId ID of the container to get state from
+     * @return stage JSON
+     */
+    public static String getContainerStateInfo(String containerId) {
+        Container container = DockerContainersUtil.getContainer(dockerClient, containerId);
+        return getContainerStateInfo(container);
+    }
+
+    private static String getContainerStateInfo(Container container) {
+
+        String info = null;
+
+        if (container != null) {
+
+            String containerId = container.getId();
+            String ip = DockerContainersUtil.getIpAddress(dockerClient, containerId);
+
+            if (ip != null) {
+
+                int port = container.getNames()[0].contains("minimesos-agent-") ? MesosSlave.MESOS_SLAVE_PORT : MesosMaster.MESOS_MASTER_PORT;
+                String url = "http://" + ip + ":" + port + "/state.json";
+
+                try {
+                    HttpResponse<JsonNode> request = Unirest.get(url).asJson();
+                    info = request.getBody().toString();
+                } catch (UnirestException e) {
+                    throw new MinimesosException("Failed to retrieve state from " + url, e);
+                }
+
+            } else {
+                throw new MinimesosException("Cannot find container. Please verify the cluster is running using `minimesos info` command.");
+            }
+        }
+
+        return info;
+
+    }
+
+
     public JSONObject getStateInfoJSON() throws UnirestException {
-        return Unirest.get("http://" + this.getMesosMasterContainer().getIpAddress() + ":5050" + "/state.json").asJson().getBody().getObject();
+        return Unirest.get("http://" + this.getMesosMasterContainer().getIpAddress() + ":" + MesosMaster.MESOS_MASTER_PORT + "/state.json").asJson().getBody().getObject();
     }
 
     public Map<String, String> getFlags() throws UnirestException {
@@ -198,22 +249,6 @@ public class MesosCluster extends ExternalResource {
         return (Marathon) clusterArchitecture.getClusterContainers().getOne(ClusterContainers.Filter.marathon()).get();
     }
 
-    public void waitForState(final Predicate<State> predicate, int seconds) {
-        await().atMost(seconds, TimeUnit.SECONDS).until(() -> {
-            try {
-                return predicate.test(MesosCluster.this.getStateInfo());
-            } catch (InternalServerErrorException e) {
-                LOGGER.error(e);
-                // This probably means that the mesos cluster isn't ready yet..
-                return false;
-            }
-        });
-    }
-
-    public void waitForState(Predicate<State> predicate) {
-        waitForState(predicate, 20);
-    }
-
     public String getClusterId() {
         return clusterId;
     }
@@ -237,7 +272,7 @@ public class MesosCluster extends ExternalResource {
     public static String getContainerIp(String clusterId, String role) {
         Container container = getContainer(clusterId, role);
         if ( container != null ) {
-            return dockerClient.inspectContainerCmd(container.getId()).exec().getNetworkSettings().getIpAddress();
+            return DockerContainersUtil.getIpAddress( dockerClient, container.getId() );
         }
         return null;
     }
@@ -349,9 +384,7 @@ public class MesosCluster extends ExternalResource {
                 if (name.contains("minimesos-" + serviceName + "-" + clusterId)) {
                     String uri, ip;
                     if (!exposedHostPorts || dockerHostIp.isEmpty()) {
-                        InspectContainerResponse.NetworkSettings containerNetworkSettings;
-                        containerNetworkSettings = dockerClient.inspectContainerCmd(container.getId()).exec().getNetworkSettings();
-                        ip = containerNetworkSettings.getIpAddress();
+                        ip = DockerContainersUtil.getIpAddress( dockerClient, container.getId() );
                     } else {
                         ip = dockerHostIp;
                     }
