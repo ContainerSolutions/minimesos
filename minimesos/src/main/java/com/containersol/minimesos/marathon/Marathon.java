@@ -21,9 +21,13 @@ public class Marathon extends AbstractContainer {
     private Boolean exposedHostPort;
 
     public Marathon(DockerClient dockerClient, ZooKeeper zooKeeper, String marathonImageTag, Boolean exposedHostPort) {
+        this( dockerClient, zooKeeper, exposedHostPort);
+        this.marathonImageTag = marathonImageTag;
+    }
+
+    public Marathon(DockerClient dockerClient, ZooKeeper zooKeeper, Boolean exposedHostPort) {
         super(dockerClient);
         this.zooKeeper = zooKeeper;
-        this.marathonImageTag = marathonImageTag;
         this.exposedHostPort = exposedHostPort;
     }
 
@@ -47,11 +51,4 @@ public class Marathon extends AbstractContainer {
                 .withPortBindings(portBindings);
     }
 
-    public String getMarathonImageTag() {
-        return marathonImageTag;
-    }
-
-    public void setMarathonImageTag(String marathonImageTag) {
-        this.marathonImageTag = marathonImageTag;
-    }
 }
