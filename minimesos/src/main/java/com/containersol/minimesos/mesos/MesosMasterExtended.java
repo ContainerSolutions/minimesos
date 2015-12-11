@@ -21,11 +21,6 @@ public class MesosMasterExtended extends MesosMaster {
     }
 
     @Override
-    public void start(int timeout) {
-        super.start(timeout);
-    }
-
-    @Override
     protected String[] createMesosLocalEnvironment() {
         TreeMap<String,String> envs = getDefaultEnvVars();
 

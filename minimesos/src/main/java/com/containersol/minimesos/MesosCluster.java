@@ -67,6 +67,8 @@ public class MesosCluster extends ExternalResource {
 
     /**
      * Starts the Mesos cluster and its containers
+     *
+     * @param timeout in seconds
      */
     public void start(int timeout) {
 
@@ -99,6 +101,8 @@ public class MesosCluster extends ExternalResource {
      * Start a container. This container will be removed when the Mesos cluster is shut down.
      *
      * @param container container to be started
+     * @param timeout in seconds
+     *
      * @return container ID
      */
     public String addAndStartContainer(AbstractContainer container, int timeout) {

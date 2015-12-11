@@ -92,7 +92,7 @@ public class MesosClusterTest {
     @Test
     public void testPullAndStartContainer() throws UnirestException {
         HelloWorldContainer container = new HelloWorldContainer(CONFIG.dockerClient);
-        String containerId = CLUSTER.addAndStartContainer(container);
+        String containerId = CLUSTER.addAndStartContainer(container, MesosContainer.DEFAULT_TIMEOUT_SEC);
         String ipAddress = CONFIG.dockerClient.inspectContainerCmd(containerId).exec().getNetworkSettings().getIpAddress();
         String url = "http://" + ipAddress + ":80";
         Assert.assertEquals(200, Unirest.get(url).asString().getStatus());
@@ -153,7 +153,7 @@ public class MesosClusterTest {
             }
         };
 
-        CLUSTER.addAndStartContainer(mesosSlave);
+        CLUSTER.addAndStartContainer(mesosSlave, MesosContainer.DEFAULT_TIMEOUT_SEC);
         LogContainerTestCallback cb = new LogContainerTestCallback();
         CONFIG.dockerClient.logContainerCmd(mesosSlave.getContainerId()).withStdOut().exec(cb);
         cb.awaitCompletion();

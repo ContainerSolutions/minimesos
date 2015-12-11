@@ -24,7 +24,7 @@ public class Main {
     private static CommandUp commandUp;
 
     @Parameter(names = {"--help", "-help", "-?", "-h"}, help = true)
-    private static boolean help;
+    private static boolean help = false;
 
     public static void main(String[] args)  {
         JCommander jc = new JCommander(new Main());
@@ -94,6 +94,9 @@ public class Main {
 
     }
 
+    /**
+     * @param timeout in seconds
+     */
     private static void doUp(int timeout) {
 
         String clusterId = MesosCluster.readClusterId();

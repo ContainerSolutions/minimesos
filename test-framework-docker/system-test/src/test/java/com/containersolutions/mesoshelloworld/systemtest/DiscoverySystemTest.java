@@ -2,6 +2,7 @@ package com.containersolutions.mesoshelloworld.systemtest;
 
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
+import com.containersol.minimesos.mesos.MesosContainer;
 import com.containersolutions.mesoshelloworld.scheduler.Configuration;
 import com.jayway.awaitility.Awaitility;
 import org.apache.log4j.Logger;
@@ -47,7 +48,7 @@ public class DiscoverySystemTest {
         scheduler = new SchedulerContainer(CONFIG.dockerClient, ipAddress);
 
         // Cluster now has responsibility to shut down container
-        CLUSTER.addAndStartContainer(scheduler);
+        CLUSTER.addAndStartContainer(scheduler, MesosContainer.DEFAULT_TIMEOUT_SEC);
 
         LOGGER.info("Started Scheduler on " + scheduler.getIpAddress());
     }
