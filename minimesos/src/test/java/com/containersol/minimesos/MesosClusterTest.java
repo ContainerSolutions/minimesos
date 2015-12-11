@@ -1,5 +1,6 @@
 package com.containersol.minimesos;
 
+import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.mesos.*;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -26,6 +27,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.*;
+
 public class MesosClusterTest {
 
     protected static final String resources = MesosSlave.DEFAULT_PORT_RESOURCES + "; cpus(*):0.2; mem(*):256; disk(*):200";
@@ -36,6 +39,7 @@ public class MesosClusterTest {
             .withSlave(zooKeeper -> new MesosSlaveExtended(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
             .withSlave(zooKeeper -> new MesosSlaveExtended(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
             .withSlave(zooKeeper -> new MesosSlaveExtended(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
+            .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper, true ))
             .build();
 
     @ClassRule
@@ -99,10 +103,13 @@ public class MesosClusterTest {
         List<MesosSlave> containers = Arrays.asList(CLUSTER.getSlaves());
         for (MesosSlave container : containers) {
             InspectContainerResponse exec = CONFIG.dockerClient.inspectContainerCmd(container.getContainerId()).exec();
+
             List<Link> links = Arrays.asList(exec.getHostConfig().getLinks());
-            for (Link link : links) {
-                Assert.assertEquals("minimesos-master", link.getAlias());
-            }
+
+            assertNotNull( links );
+            assertEquals( "link to zookeeper is expected", 1, links.size() );
+            assertEquals( "minimesos-zookeeper", links.get(0).getAlias() );
+
         }
     }
 

@@ -29,7 +29,7 @@ public class ZooKeeper extends AbstractContainer {
     @Override
     protected CreateContainerCmd dockerCommand() {
         return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE + ":" + zooKeeperImageTag)
-                .withName("minimesos-zookeeper-" + MesosCluster.getClusterId() + "-" + getRandomId())
+                .withName("minimesos-zookeeper-" + getClusterId() + "-" + getRandomId())
                 .withExposedPorts(new ExposedPort(DEFAULT_ZOOKEEPER_PORT), new ExposedPort(2888), new ExposedPort(3888));
     }
 

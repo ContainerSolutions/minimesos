@@ -9,6 +9,7 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Frame;
+
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.jayway.awaitility.Awaitility;
 import com.jayway.awaitility.Duration;
@@ -25,6 +26,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * Replicates MesosClusterTest with new API
  */
@@ -37,10 +40,8 @@ public class NewMesosClusterTest {
 
     @After
     public void after() {
-        if( cluster != null ) {
-            DockerContainersUtil util = new DockerContainersUtil(dockerClient);
-            util.getContainers(true).filterByName("^mesos-[0-9a-f\\-]*S\\d*\\.[0-9a-f\\-]*$").remove();
-        }
+        DockerContainersUtil util = new DockerContainersUtil(dockerClient);
+        util.getContainers(true).filterByName("^mesos-[0-9a-f\\-]*S\\d*\\.[0-9a-f\\-]*$").remove();
     }
 
     @Test
@@ -52,15 +53,15 @@ public class NewMesosClusterTest {
     public void mesosClusterCanBeStarted() throws Exception {
         JSONObject stateInfo = cluster.getStateInfoJSON();
 
-        Assert.assertEquals(1, stateInfo.getInt("activated_slaves")); // Only one slave is actually _required_ to have a cluster
+        assertEquals(1, stateInfo.getInt("activated_slaves")); // Only one slave is actually _required_ to have a cluster
     }
 
     @Test
     public void mesosResourcesCorrect() throws Exception {
         JSONObject stateInfo = cluster.getStateInfoJSON();
         for (int i = 0; i < 3; i++) {
-            Assert.assertEquals((long) 0.2, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getLong("cpus"));
-            Assert.assertEquals(256, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getInt("mem"));
+            assertEquals((long) 0.2, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getLong("cpus"));
+            assertEquals(256, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getInt("mem"));
         }
     }
 
@@ -84,7 +85,7 @@ public class NewMesosClusterTest {
         String containerId = cluster.addAndStartContainer(container);
         String ipAddress = dockerClient.inspectContainerCmd(containerId).exec().getNetworkSettings().getIpAddress();
         String url = "http://" + ipAddress + ":80";
-        Assert.assertEquals(200, Unirest.get(url).asString().getStatus());
+        assertEquals(200, Unirest.get(url).asString().getStatus());
     }
 
     public static class LogContainerTestCallback extends LogContainerResultCallback {

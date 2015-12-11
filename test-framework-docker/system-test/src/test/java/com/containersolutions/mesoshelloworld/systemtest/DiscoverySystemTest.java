@@ -41,8 +41,9 @@ public class DiscoverySystemTest {
     @BeforeClass
     public static void startScheduler() throws Exception {
 
-        LOGGER.info("Starting Scheduler");
         String ipAddress = CLUSTER.getMesosMasterContainer().getIpAddress();
+
+        LOGGER.info("Starting Scheduler, connected to " + ipAddress);
         scheduler = new SchedulerContainer(CONFIG.dockerClient, ipAddress);
 
         // Cluster now has responsibility to shut down container

@@ -41,14 +41,14 @@ public class HelloWorldResponse {
 
             ipAddresses.forEach(ip -> {
 
-                if( !goodHosts.contains(ip) ) {
+                if (!goodHosts.contains(ip)) {
                     ports.forEach(p -> {
 
                         if (!goodHosts.contains(ip)) {
                             String url = "http://" + ip + ":" + p;
                             try {
-                                System.out.println( goodHosts.size() + ". " + url + " => " + Unirest.get(url).asString().getBody());
-                                goodHosts.add( ip );
+                                System.out.println(goodHosts.size() + ". " + url + " => " + Unirest.get(url).asString().getBody());
+                                goodHosts.add(ip);
                             } catch (UnirestException e) {
                                 // do nothing
                             }

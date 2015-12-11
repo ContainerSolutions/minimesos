@@ -6,7 +6,6 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports;
-import org.apache.log4j.Logger;
 
 /**
  * Marathon container
@@ -14,7 +13,7 @@ import org.apache.log4j.Logger;
 public class Marathon extends AbstractContainer {
 
     private static final String MARATHON_IMAGE = "mesosphere/marathon";
-    public static final String MARATHON_IMAGE_TAG = "v0.11.1";
+    public static final String MARATHON_IMAGE_TAG = "v0.13.0";
     public static final int MARATHON_PORT = 8080;
 
     private ZooKeeper zooKeeper;

@@ -2,9 +2,11 @@ package com.containersol.minimesos.main;
 
 import com.beust.jcommander.JCommander;
 import com.containersol.minimesos.MesosCluster;
+import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.mesos.*;
 import com.github.dockerjava.api.DockerClient;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,11 +28,13 @@ public class Main {
         CommandDestroy commandDestroy = new CommandDestroy();
         CommandHelp commandHelp = new CommandHelp();
         CommandInfo commandInfo = new CommandInfo();
+        CommandInstall commandInstall = new CommandInstall();
 
         jc.addCommand("up", commandUp);
         jc.addCommand("destroy", commandDestroy);
         jc.addCommand("help", commandHelp);
         jc.addCommand("info", commandInfo);
+        jc.addCommand("install", commandInstall );
         jc.parseWithoutValidation(args);
 
         String clusterId = MesosCluster.readClusterId();
@@ -47,19 +51,36 @@ public class Main {
             return;
         }
 
-        switch (jc.getParsedCommand()) {
-            case "up":
-                doUp();
-                break;
-            case "info":
-                printInfo();
-                break;
-            case "destroy":
-                MesosCluster.destroy();
-                break;
-            case "help":
-                jc.usage();
+        try {
+            switch (jc.getParsedCommand()) {
+                case "up":
+                    doUp();
+                    break;
+                case "info":
+                    printInfo();
+                    break;
+                case "destroy":
+                    MesosCluster.destroy();
+                    break;
+                case "install":
+                    String marathonFilePath = commandInstall.getMarathonFile();
+                    if(StringUtils.isBlank(marathonFilePath) ) {
+                        jc.usage();
+                    } else {
+                        MesosCluster.executeMarathonTask( clusterId, marathonFilePath );
+                    }
+                    break;
+                case "help":
+                    jc.usage();
+            }
+        } catch (MinimesosException mme) {
+            LOGGER.error("ERROR: " + mme.getMessage());
+            System.exit(1);
+        } catch (Exception e) {
+            LOGGER.error("ERROR: " + e.toString() );
+            System.exit(1);
         }
+
     }
 
     private static void doUp() {
@@ -82,7 +103,7 @@ public class Main {
                     .withContainer( zooKeeper -> new Marathon(dockerClient, zooKeeper, marathonImageTag, exposedHostPorts), ClusterContainers.Filter.zooKeeper() )
                     .build();
 
-            MesosCluster cluster = new MesosCluster( config );
+            MesosCluster cluster = new MesosCluster(config);
 
             cluster.start();
             cluster.writeClusterId();

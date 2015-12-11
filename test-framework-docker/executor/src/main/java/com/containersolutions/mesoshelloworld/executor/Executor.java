@@ -1,6 +1,5 @@
 package com.containersolutions.mesoshelloworld.executor;
 
-import com.sun.media.jfxmedia.MediaException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -16,12 +15,14 @@ import java.net.InetSocketAddress;
  * Adapted from https://github.com/apache/mesos/blob/0.22.1/src/examples/java/TestExecutor.java
  */
 public class Executor implements org.apache.mesos.Executor {
+
+    public static final String RESPONSE_STRING = "Hello world";
     private Thread thread;
 
     public static void main(String[] args) throws Exception {
         MesosExecutorDriver driver = new MesosExecutorDriver(new Executor());
-        if( driver.run() != Status.DRIVER_STOPPED ) {
-            throw new MediaException("Mesos Executor Driver is not stopped");
+        if (driver.run() != Status.DRIVER_STOPPED) {
+            throw new RuntimeException("Mesos Executor Driver is not stopped");
         }
     }
 
@@ -100,10 +101,10 @@ public class Executor implements org.apache.mesos.Executor {
     private class MyHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange t) throws IOException {
-            String response = "Hello world";
-            t.sendResponseHeaders(200, response.length());
+
+            t.sendResponseHeaders(200, RESPONSE_STRING.length());
             OutputStream os = t.getResponseBody();
-            os.write(response.getBytes());
+            os.write(RESPONSE_STRING.getBytes());
             os.close();
         }
     }

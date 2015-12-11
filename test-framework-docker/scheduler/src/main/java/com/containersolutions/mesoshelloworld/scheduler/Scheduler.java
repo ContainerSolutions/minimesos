@@ -25,16 +25,15 @@ public class Scheduler implements org.apache.mesos.Scheduler {
     }
 
     @Override
-    public void resourceOffers(SchedulerDriver driver,
-                               List<Offer> offers) {
+    public void resourceOffers(SchedulerDriver driver, List<Offer> offers) {
 
         for (Offer offer : offers) {
 
             ResourceOffer currentOffer = new ResourceOffer(offer.getResourcesList());
-            if( currentOffer.isAcceptable() && (acceptedOffers < MAX_OFFERS) ) {
+            if (currentOffer.isAcceptable() && (acceptedOffers < MAX_OFFERS)) {
 
                 System.out.println(
-                        "Received offer " + offer.getId().getValue() + " with cpus: " + currentOffer.offerCpus +
+                        "Received acceptable offer " + offer.getId().getValue() + " with cpus: " + currentOffer.offerCpus +
                                 " and mem: " + currentOffer.offerMem + " with ports: " + currentOffer.offerPorts);
 
                 List<TaskInfo> newTaskList = new ArrayList<>();
@@ -51,6 +50,10 @@ public class Scheduler implements org.apache.mesos.Scheduler {
 
                 acceptedOffers++;
 
+            } else if (!currentOffer.isAcceptable()) {
+                System.out.println(
+                        "Received unacceptable offer " + offer.getId().getValue() + " with cpus: " + currentOffer.offerCpus +
+                                " and mem: " + currentOffer.offerMem + " with ports: " + currentOffer.offerPorts);
             }
 
         }

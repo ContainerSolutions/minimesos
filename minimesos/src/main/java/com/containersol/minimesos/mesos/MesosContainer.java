@@ -10,7 +10,7 @@ import java.util.TreeMap;
  */
 public abstract class MesosContainer extends AbstractContainer {
 
-    public static final String MESOS_IMAGE_TAG = "0.25.0-0.2.70.ubuntu1404";
+    public static final String MESOS_IMAGE_TAG = "0.25.0-0.2.70.ubuntu1404.b1";
     public static final String DEFAULT_MESOS_ZK_PATH = "/mesos";
 
     private String mesosImageTag = MESOS_IMAGE_TAG;
@@ -55,6 +55,10 @@ public abstract class MesosContainer extends AbstractContainer {
         envs.put("MESOS_LOGGING_LEVEL", "INFO");
         envs.put("MESOS_WORK_DIR", "/tmp/mesos");
         return envs;
+    }
+
+    public ZooKeeper getZooKeeperContainer() {
+        return zooKeeperContainer;
     }
 
     public String getFormattedZKAddress() {
