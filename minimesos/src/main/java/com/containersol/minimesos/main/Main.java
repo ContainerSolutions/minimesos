@@ -46,7 +46,7 @@ public class Main {
         jc.addCommand("state", commandState);
 
         try {
-            jc.parseWithoutValidation(args);
+            jc.parse(args);
         } catch (Exception e) {
             LOGGER.error("Failed to parse parameters. " + e.getMessage() + "\n" );
             jc.usage();
