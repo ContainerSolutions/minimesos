@@ -45,11 +45,6 @@ public class NewMesosClusterTest {
     }
 
     @Test
-    public void mesosClusterStateInfoJSONMatchesSchema() throws UnirestException, JsonParseException, JsonMappingException {
-        cluster.getStateInfo();
-    }
-
-    @Test
     public void mesosClusterCanBeStarted() throws Exception {
         JSONObject stateInfo = cluster.getStateInfoJSON();
 

@@ -35,12 +35,14 @@ public class Main {
         CommandHelp commandHelp = new CommandHelp();
         CommandInfo commandInfo = new CommandInfo();
         CommandInstall commandInstall = new CommandInstall();
+        CommandState commandState = new CommandState();
 
         jc.addCommand("up", commandUp);
         jc.addCommand("destroy", commandDestroy);
         jc.addCommand("help", commandHelp);
         jc.addCommand("info", commandInfo);
         jc.addCommand("install", commandInstall );
+        jc.addCommand("state", commandState);
         jc.parseWithoutValidation(args);
 
         String clusterId = MesosCluster.readClusterId();
@@ -80,6 +82,9 @@ public class Main {
                     } else {
                         MesosCluster.executeMarathonTask( clusterId, marathonFilePath );
                     }
+                    break;
+                case "state":
+                    printState(commandState.getAgent());
                     break;
                 case "help":
                     jc.usage();
@@ -137,6 +142,17 @@ public class Main {
             LOGGER.info("Mesos version: " + MesosContainer.MESOS_IMAGE_TAG.substring(0, MesosContainer.MESOS_IMAGE_TAG.indexOf("-")));
         } else {
             LOGGER.info("Minimesos cluster is not running");
+        }
+    }
+
+    private static void printState(String agent) {
+        String clusterId = MesosCluster.readClusterId();
+        try {
+            LOGGER.info(MesosCluster.getStateInfo(clusterId, agent));
+        } catch (UnirestException e) {
+            LOGGER.error("Cannot access the cluster.\nPlease verify the cluster is running using `minimesos info` command.");
+        } catch (RuntimeException e) {
+            LOGGER.error(e.getMessage());
         }
     }
 
