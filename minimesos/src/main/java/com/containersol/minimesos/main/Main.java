@@ -2,6 +2,7 @@ package com.containersol.minimesos.main;
 
 import com.beust.jcommander.JCommander;
 import com.containersol.minimesos.MesosCluster;
+import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.mesos.*;
 import com.github.dockerjava.api.DockerClient;
@@ -50,27 +51,36 @@ public class Main {
             return;
         }
 
-        switch (jc.getParsedCommand()) {
-            case "up":
-                doUp();
-                break;
-            case "info":
-                printInfo();
-                break;
-            case "destroy":
-                MesosCluster.destroy();
-                break;
-            case "install":
-                String marathonFilePath = commandInstall.getMarathonFile();
-                if(StringUtils.isBlank(marathonFilePath) ) {
+        try {
+            switch (jc.getParsedCommand()) {
+                case "up":
+                    doUp();
+                    break;
+                case "info":
+                    printInfo();
+                    break;
+                case "destroy":
+                    MesosCluster.destroy();
+                    break;
+                case "install":
+                    String marathonFilePath = commandInstall.getMarathonFile();
+                    if(StringUtils.isBlank(marathonFilePath) ) {
+                        jc.usage();
+                    } else {
+                        MesosCluster.executeMarathonTask( clusterId, marathonFilePath );
+                    }
+                    break;
+                case "help":
                     jc.usage();
-                } else {
-                    MesosCluster.executeMarathonTask( clusterId, marathonFilePath );
-                }
-                break;
-            case "help":
-                jc.usage();
+            }
+        } catch (MinimesosException mme) {
+            LOGGER.error("ERROR: " + mme.getMessage());
+            System.exit(1);
+        } catch (Exception e) {
+            LOGGER.error("ERROR: " + e.toString() );
+            System.exit(1);
         }
+
     }
 
     private static void doUp() {
@@ -87,7 +97,6 @@ public class Main {
             ClusterArchitecture config = new ClusterArchitecture.Builder(dockerClient)
                     .withZooKeeper()
                     .withMaster(zooKeeper -> new MesosMasterExtended( dockerClient, zooKeeper, MesosMaster.MESOS_MASTER_IMAGE, mesosImageTag, new TreeMap<>(), exposedHostPorts))
-                    .withSlave(zooKeeper -> new MesosSlaveExtended( dockerClient, "ports(*):[33000-34000]", "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, mesosImageTag))
                     .withSlave(zooKeeper -> new MesosSlaveExtended( dockerClient, "ports(*):[33000-34000]", "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, mesosImageTag))
                     .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper, exposedHostPorts))
                     .build();
