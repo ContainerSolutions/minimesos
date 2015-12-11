@@ -10,6 +10,7 @@ import com.github.dockerjava.api.model.ExposedPort;
  * Base zookeeper class
  */
 public class ZooKeeper extends AbstractContainer {
+
     public static final String MESOS_LOCAL_IMAGE = "jplock/zookeeper";
     public static final String ZOOKEEPER_IMAGE_TAG = "3.4.6";
     public static final int DEFAULT_ZOOKEEPER_PORT = 2181;
@@ -31,14 +32,6 @@ public class ZooKeeper extends AbstractContainer {
         return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE + ":" + zooKeeperImageTag)
                 .withName("minimesos-zookeeper-" + getClusterId() + "-" + getRandomId())
                 .withExposedPorts(new ExposedPort(DEFAULT_ZOOKEEPER_PORT), new ExposedPort(2888), new ExposedPort(3888));
-    }
-
-    public String getZooKeeperImageTag() {
-        return zooKeeperImageTag;
-    }
-
-    public void setZooKeeperImageTag(String zooKeeperImageTag) {
-        this.zooKeeperImageTag = zooKeeperImageTag;
     }
 
     public static String formatZKAddress(String ipAddress) {

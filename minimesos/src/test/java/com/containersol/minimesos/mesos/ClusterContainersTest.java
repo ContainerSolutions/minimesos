@@ -5,6 +5,8 @@ import org.junit.Test;
 
 import static com.containersol.minimesos.mesos.ClusterContainers.*;
 import static org.mockito.Mockito.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -20,7 +22,7 @@ public class ClusterContainersTest {
 
     @Test
     public void shouldAllowInjection() {
-        List dummyList = mock(List.class);
+        List<AbstractContainer> dummyList = new ArrayList<>();
         assertEquals(dummyList, new ClusterContainers(dummyList).getContainers());
     }
 
