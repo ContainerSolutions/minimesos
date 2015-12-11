@@ -54,7 +54,7 @@ public abstract class AbstractContainer {
     /**
      * Starts the container and waits until is started
      */
-    public void start() {
+    public void start(int timeout) {
         pullImage();
 
         CreateContainerCmd createCommand = dockerCommand();
@@ -64,9 +64,10 @@ public abstract class AbstractContainer {
         dockerClient.startContainerCmd(containerId).exec();
 
         try {
-            await().atMost(60, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new ContainerIsRunning<Boolean>(containerId));
+            await().atMost(timeout, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new ContainerIsRunning<Boolean>(containerId));
         } catch (ConditionTimeoutException cte) {
             LOGGER.error("Container did not start within 60 seconds");
+            LOGGER.error(String.format("Container [" + createCommand.getName() + "] did not start within %d seconds.", timeout));
         }
 
         LOGGER.debug("Container is up and running");

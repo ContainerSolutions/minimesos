@@ -1,6 +1,8 @@
 package com.containersol.minimesos.main;
 
 import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MesosCluster;
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.marathon.Marathon;
@@ -15,13 +17,17 @@ import java.util.TreeMap;
 /**
  * Main method for interacting with minimesos.
  */
+@Parameters(separators = "=", commandDescription = "Global options")
 public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     private static CommandUp commandUp;
 
+    @Parameter(names = {"--help", "-help", "-?", "-h"}, help = true)
+    private static boolean help;
+
     public static void main(String[] args)  {
-        JCommander jc = new JCommander();
+        JCommander jc = new JCommander(new Main());
         jc.setProgramName("minimesos");
 
         commandUp = new CommandUp();
@@ -41,6 +47,11 @@ public class Main {
         MesosCluster.checkStateFile(clusterId);
         clusterId = MesosCluster.readClusterId();
 
+        if(help) {
+            jc.usage();
+            return;
+        }
+
         if (jc.getParsedCommand() == null) {
             if (clusterId != null) {
                 MesosCluster.printServiceUrl(clusterId, "master", commandUp.isExposedHostPorts());
@@ -54,7 +65,7 @@ public class Main {
         try {
             switch (jc.getParsedCommand()) {
                 case "up":
-                    doUp();
+                    doUp(commandUp.getTimeout());
                     break;
                 case "info":
                     printInfo();
@@ -83,7 +94,7 @@ public class Main {
 
     }
 
-    private static void doUp() {
+    private static void doUp(int timeout) {
 
         String clusterId = MesosCluster.readClusterId();
 
@@ -105,7 +116,7 @@ public class Main {
 
             MesosCluster cluster = new MesosCluster(config);
 
-            cluster.start();
+            cluster.start(timeout);
             cluster.writeClusterId();
 
         }

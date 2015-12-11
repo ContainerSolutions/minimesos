@@ -28,6 +28,9 @@ public class CommandUp {
         return marathonImageTag;
     }
 
+    @Parameter(names = "--timeout", description = "Time to wait for a container to get responsive, in seconds.")
+    private int timeout = MesosContainer.DEFAULT_TIMEOUT_SEC;
+
     public String getMesosImageTag() {
         return mesosImageTag;
     }
@@ -38,5 +41,9 @@ public class CommandUp {
 
     public boolean isExposedHostPorts() {
         return exposedHostPorts;
+    }
+
+    public int getTimeout() {
+        return timeout;
     }
 }

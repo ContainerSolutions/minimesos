@@ -68,13 +68,13 @@ public class MesosCluster extends ExternalResource {
     /**
      * Starts the Mesos cluster and its containers
      */
-    public void start() {
+    public void start(int timeout) {
 
         if (clusterArchitecture == null) {
             throw new ClusterArchitecture.MesosArchitectureException("No cluster architecture specified");
         }
 
-        clusterArchitecture.getClusterContainers().getContainers().forEach(this::addAndStartContainer);
+        clusterArchitecture.getClusterContainers().getContainers().forEach((container) -> addAndStartContainer(container, timeout));
         // wait until the given number of slaves are registered
         new MesosClusterStateResponse(this).waitFor();
 
@@ -101,13 +101,13 @@ public class MesosCluster extends ExternalResource {
      * @param container container to be started
      * @return container ID
      */
-    public String addAndStartContainer(AbstractContainer container) {
+    public String addAndStartContainer(AbstractContainer container, int timeout) {
 
         container.setClusterId(clusterId);
         LOGGER.debug( String.format("Starting %s (%s) container", container.getName(), container.getContainerId()) );
 
         try {
-            container.start();
+            container.start(timeout);
             containers.add(container);
         } catch (Exception exc ) {
             String msg = String.format("Failed to start %s (%s) container", container.getName(), container.getContainerId());
@@ -142,7 +142,7 @@ public class MesosCluster extends ExternalResource {
 
     @Override
     protected void before() throws Throwable {
-        start();
+        start(MesosContainer.DEFAULT_TIMEOUT_SEC);
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
