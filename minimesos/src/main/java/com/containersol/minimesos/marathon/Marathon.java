@@ -13,22 +13,23 @@ import com.github.dockerjava.api.model.Ports;
 public class Marathon extends AbstractContainer {
 
     private static final String MARATHON_IMAGE = "mesosphere/marathon";
-    public static final String REGISTRY_TAG = "v0.13.0";
+    public static final String MARATHON_IMAGE_TAG = "v0.13.0";
     public static final int MARATHON_PORT = 8080;
 
     private ZooKeeper zooKeeper;
-
+    private String marathonImageTag = MARATHON_IMAGE_TAG;
     private Boolean exposedHostPort;
 
-    public Marathon(DockerClient dockerClient, ZooKeeper zooKeeper, Boolean exposedHostPort) {
+    public Marathon(DockerClient dockerClient, ZooKeeper zooKeeper, String marathonImageTag, Boolean exposedHostPort) {
         super(dockerClient);
         this.zooKeeper = zooKeeper;
+        this.marathonImageTag = marathonImageTag;
         this.exposedHostPort = exposedHostPort;
     }
 
     @Override
     protected void pullImage() {
-        pullImage(MARATHON_IMAGE, REGISTRY_TAG);
+        pullImage(MARATHON_IMAGE, marathonImageTag);
     }
 
     @Override
@@ -38,7 +39,7 @@ public class Marathon extends AbstractContainer {
         if (exposedHostPort) {
             portBindings.bind(exposedPort, Ports.Binding(MARATHON_PORT));
         }
-        return dockerClient.createContainerCmd(MARATHON_IMAGE + ":" + REGISTRY_TAG)
+        return dockerClient.createContainerCmd(MARATHON_IMAGE + ":" + marathonImageTag)
                 .withName("minimesos-marathon-" + getClusterId() + "-" + getRandomId())
                 .withExtraHosts("minimesos-zookeeper:" + this.zooKeeper.getIpAddress())
                 .withCmd("--master", "zk://minimesos-zookeeper:2181/mesos", "--zk", "zk://minimesos-zookeeper:2181/marathon")
@@ -46,4 +47,11 @@ public class Marathon extends AbstractContainer {
                 .withPortBindings(portBindings);
     }
 
+    public String getMarathonImageTag() {
+        return marathonImageTag;
+    }
+
+    public void setMarathonImageTag(String marathonImageTag) {
+        this.marathonImageTag = marathonImageTag;
+    }
 }
