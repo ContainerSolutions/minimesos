@@ -422,7 +422,7 @@ public class MesosCluster extends ExternalResource {
         }
 
         MarathonClient marathonClient = new MarathonClient( marathonIp );
-        LOGGER.info(String.format("Installing %s on maraphon %s", marathonFile, marathonIp));
+        LOGGER.info(String.format("Installing %s on marathon %s", marathonFile, marathonIp));
 
         try (FileInputStream fis = new FileInputStream(marathonFile)) {
             String taskJson = IOUtils.toString(fis);

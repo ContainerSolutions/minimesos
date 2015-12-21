@@ -34,10 +34,10 @@ public class DiscoverySystemTest {
             .withSlave("ports(*):[8080-8082]")
             .build();
 
-    private static SchedulerContainer scheduler = null;
-
     @ClassRule
     public static final MesosCluster CLUSTER = new MesosCluster(CONFIG);
+
+    private static SchedulerContainer scheduler = null;
 
     @BeforeClass
     public static void startScheduler() throws Exception {

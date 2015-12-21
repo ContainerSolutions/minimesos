@@ -52,7 +52,7 @@ public class TaskInfoFactory {
         return task;
     }
 
-    DiscoveryInfo.Builder newDiscoveryInfo(Integer port) {
+    private DiscoveryInfo.Builder newDiscoveryInfo(Integer port) {
         DiscoveryInfo.Builder discovery = DiscoveryInfo.newBuilder();
         Ports.Builder discoveryPorts = Ports.newBuilder();
         discoveryPorts.addPorts(0, Port.newBuilder().setNumber(port).setName("port"));
@@ -61,7 +61,7 @@ public class TaskInfoFactory {
         return discovery;
     }
 
-    ExecutorInfo.Builder newExecutorInfo(Configuration configuration) {
+    private ExecutorInfo.Builder newExecutorInfo(Configuration configuration) {
 
         ContainerInfo.DockerInfo.Builder dockerBuilder = ContainerInfo.DockerInfo.newBuilder()
                 .setNetwork(ContainerInfo.DockerInfo.Network.BRIDGE)
@@ -78,7 +78,7 @@ public class TaskInfoFactory {
                         .build());
     }
 
-    CommandInfo.Builder newCommandInfo(Configuration configuration) {
+    private CommandInfo.Builder newCommandInfo(Configuration configuration) {
         return CommandInfo.newBuilder()
                 .setShell(false)
                 .setContainer(CommandInfo.ContainerInfo.newBuilder().setImage(configuration.getExecutorImage()).build());
