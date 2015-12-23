@@ -127,6 +127,8 @@ public class Main {
                     .withZooKeeper(zooKeeperImageTag)
                     .withMaster(zooKeeper -> new MesosMasterExtended( dockerClient, zooKeeper, MesosMaster.MESOS_MASTER_IMAGE, mesosImageTag, new TreeMap<>(), exposedHostPorts))
                     .withSlave(zooKeeper -> new MesosSlaveExtended( dockerClient, "ports(*):[33000-34000]", "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, mesosImageTag))
+                    .withSlave(zooKeeper -> new MesosSlaveExtended( dockerClient, "ports(*):[33000-34000]", "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, mesosImageTag))
+                    .withSlave(zooKeeper -> new MesosSlaveExtended( dockerClient, "ports(*):[33000-34000]", "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, mesosImageTag))
                     .withContainer( zooKeeper -> new Marathon(dockerClient, zooKeeper, marathonImageTag, exposedHostPorts), ClusterContainers.Filter.zooKeeper() )
                     .build();
 
@@ -148,6 +150,8 @@ public class Main {
         if (clusterId != null) {
             LOGGER.info("Minimesos cluster is running");
             LOGGER.info("Mesos version: " + MesosContainer.MESOS_IMAGE_TAG.substring(0, MesosContainer.MESOS_IMAGE_TAG.indexOf("-")));
+            MesosCluster.printServiceUrl(clusterId, "master", true);
+            MesosCluster.printServiceUrl(clusterId, "marathon", true);
         } else {
             LOGGER.info("Minimesos cluster is not running");
         }
