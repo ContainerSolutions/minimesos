@@ -12,7 +12,7 @@ import java.util.TreeMap;
  */
 public class Consul extends AbstractContainer {
 
-    public static final String CONSUL_IMAGE_NAME = "containersol/consul-agent";
+    public static final String CONSUL_IMAGE_NAME = "containersol/consul-server";
     public static final String CONSUL_TAG_NAME = "0.6";
 
     private int exposedHostPort = 8300;
