@@ -125,11 +125,13 @@ public class Main {
 
             ClusterArchitecture.Builder configBuilder = new ClusterArchitecture.Builder(dockerClient)
                     .withZooKeeper(zooKeeperImageTag)
-                    .withConsul()
-                    .withMaster(zooKeeper -> new MesosMasterExtended( dockerClient, zooKeeper, MesosMaster.MESOS_MASTER_IMAGE, mesosImageTag, new TreeMap<>(), exposedHostPorts))
-                    .withContainer( zooKeeper -> new Marathon(dockerClient, zooKeeper, marathonImageTag, exposedHostPorts), ClusterContainers.Filter.zooKeeper() );
+                    .withMaster(zooKeeper -> new MesosMasterExtended(dockerClient, zooKeeper, MesosMaster.MESOS_MASTER_IMAGE, mesosImageTag, new TreeMap<>(), exposedHostPorts))
+                    .withContainer(zooKeeper -> new Marathon(dockerClient, zooKeeper, marathonImageTag, exposedHostPorts), ClusterContainers.Filter.zooKeeper());
             for (int i = 0; i < commandUp.getNumAgents(); i++) {
                 configBuilder.withSlave(zooKeeper -> new MesosSlaveExtended( dockerClient, "ports(*):[33000-34000]", "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, mesosImageTag));
+            }
+            if (commandUp.getStartConsul()) {
+                configBuilder.withConsul();
             }
             MesosCluster cluster = new MesosCluster(configBuilder.build());
 

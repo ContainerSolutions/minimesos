@@ -34,6 +34,9 @@ public class CommandUp {
     @Parameter(names = "--num-agents", description = "Number of agents to start")
     private int numAgents = 1;
 
+    @Parameter(names = "--consul", description = "Start consul container")
+    private boolean startConsul = false;
+
     public String getMesosImageTag() {
         return mesosImageTag;
     }
@@ -53,4 +56,9 @@ public class CommandUp {
     public int getNumAgents() {
         return numAgents;
     }
+
+    public boolean getStartConsul() {
+        return startConsul;
+    }
+
 }
