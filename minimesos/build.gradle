@@ -133,7 +133,7 @@ afterEvaluate { project ->
             }
         }
         task buildDockerImage(type: DockerBuildImage, dependsOn: [copyDockerfile], description: 'build Docker image') {
-            inputDir = new File( buildDir.toString() + "/docker")
+            inputDir = new File( "${buildDir}/docker")
             tag = project.imageName
         }
         project.build.dependsOn buildDockerImage
