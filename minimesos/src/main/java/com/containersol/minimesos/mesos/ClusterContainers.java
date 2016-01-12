@@ -51,6 +51,7 @@ public class ClusterContainers {
      * @param <T> A container of type T that extends {@link AbstractContainer}
      * @return the first container it comes across.
      */
+    @SuppressWarnings("unchecked")
     public <T extends AbstractContainer> Optional<T> getOne(Predicate<AbstractContainer> filter) {
         return (Optional<T>) getContainers().stream().filter(filter).findFirst();
     }
@@ -73,8 +74,8 @@ public class ClusterContainers {
             return abstractContainer -> abstractContainer instanceof MesosMaster;
         }
 
-        public static Predicate<AbstractContainer> mesosSlave() {
-            return abstractContainer -> abstractContainer instanceof MesosSlave;
+        public static Predicate<AbstractContainer> mesosAgent() {
+            return abstractContainer -> abstractContainer instanceof MesosAgent;
         }
 
         public static Predicate<AbstractContainer> marathon() {

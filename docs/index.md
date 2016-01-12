@@ -32,7 +32,7 @@ Destroyed minimesos cluster 3878417609
 
 ## Java API
 
-In this snippet we're configuring the Mesos cluster to start 3 slaves with different resources. 
+In this snippet we're configuring the Mesos cluster to start 3 agents with different resources.
 
 ```
 public class MesosClusterTest {
@@ -40,9 +40,9 @@ public class MesosClusterTest {
     public static MesosCluster cluster = new MesosCluster(new ClusterArchitecture.Builder()
         .withZooKeeper()
         .withMaster()
-        .withSlave("ports(*):[9200-9200,9300-9300]")
-        .withSlave("ports(*):[9201-9201,9301-9301]")
-        .withSlave("ports(*):[9202-9202,9302-9302]")
+        .withAgent("ports(*):[9200-9200,9300-9300]")
+        .withAgent("ports(*):[9201-9201,9301-9301]")
+        .withAgent("ports(*):[9202-9202,9302-9302]")
         .build());
             
     @Test
@@ -59,7 +59,7 @@ A possible testing scenario could be:
  
  1. In the test setup  launch the Mesos cluster container
  2. Call the scheduler directly from your test and point to zookeeper to detect the master or passing the master URL directly.
- 3. The scheduler launches a task on a suitable slave.
+ 3. The scheduler launches a task on a suitable agents.
  4. Poll the state of the Mesos cluster to verify that you framework is running
  5. The test utilities take care of stopping and removing the Mesos cluster
 

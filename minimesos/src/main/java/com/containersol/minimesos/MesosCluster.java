@@ -71,7 +71,7 @@ public class MesosCluster extends ExternalResource {
         }
 
         clusterArchitecture.getClusterContainers().getContainers().forEach((container) -> addAndStartContainer(container, timeout));
-        // wait until the given number of slaves are registered
+        // wait until the given number of agents are registered
         new MesosClusterStateResponse(this).waitFor();
 
     }
@@ -160,7 +160,7 @@ public class MesosCluster extends ExternalResource {
 
             if (ip != null) {
 
-                int port = container.getNames()[0].contains("minimesos-agent-") ? MesosSlave.MESOS_SLAVE_PORT : MesosMaster.MESOS_MASTER_PORT;
+                int port = container.getNames()[0].contains("minimesos-agent-") ? MesosAgent.MESOS_AGENT_PORT : MesosMaster.MESOS_MASTER_PORT;
                 String url = "http://" + ip + ":" + port + "/state.json";
 
                 try {
@@ -221,11 +221,11 @@ public class MesosCluster extends ExternalResource {
         return clusterArchitecture.getClusterContainers().getContainers();
     }
 
-    public MesosSlave[] getSlaves() {
+    public MesosAgent[] getAgents() {
         List<AbstractContainer> containers = clusterArchitecture.getClusterContainers().getContainers();
-        List<AbstractContainer> slaves = containers.stream().filter(ClusterContainers.Filter.mesosSlave()).collect(Collectors.toList());
-        MesosSlave[] array = new MesosSlave[slaves.size()];
-        return slaves.toArray(array);
+        List<AbstractContainer> agents = containers.stream().filter(ClusterContainers.Filter.mesosAgent()).collect(Collectors.toList());
+        MesosAgent[] array = new MesosAgent[agents.size()];
+        return agents.toArray(array);
     }
 
     @Override

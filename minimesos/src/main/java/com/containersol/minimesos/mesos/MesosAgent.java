@@ -14,21 +14,21 @@ import java.util.Objects;
 import java.util.TreeMap;
 
 /**
- * Base MesosSlave class
+ * Base MesosAgent class
  */
-public class MesosSlave extends MesosContainer {
+public class MesosAgent extends MesosContainer {
 
-    private static final Logger LOGGER = Logger.getLogger(MesosSlave.class);
+    private static final Logger LOGGER = Logger.getLogger(MesosAgent.class);
 
-    public static final String MESOS_SLAVE_IMAGE = "containersol/mesos-agent";
-    public static final int MESOS_SLAVE_PORT = 5051;
+    public static final String MESOS_AGENT_IMAGE = "containersol/mesos-agent";
+    public static final int MESOS_AGENT_PORT = 5051;
 
     public static final String DEFAULT_PORT_RESOURCES = "ports(*):[31000-32000]";
     public static final String DEFAULT_RESOURCES = DEFAULT_PORT_RESOURCES + "; cpus(*):0.2; mem(*):256; disk(*):200";
 
-    private String mesosImageName = MESOS_SLAVE_IMAGE;
+    private String mesosImageName = MESOS_AGENT_IMAGE;
 
-    public MesosSlave(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
+    public MesosAgent(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
         super(dockerClient, zooKeeperContainer);
     }
 
@@ -61,7 +61,7 @@ public class MesosSlave extends MesosContainer {
     @Override
     protected CreateContainerCmd dockerCommand() {
         ArrayList<ExposedPort> exposedPorts= new ArrayList<>();
-        exposedPorts.add(new ExposedPort(MESOS_SLAVE_PORT));
+        exposedPorts.add(new ExposedPort(MESOS_AGENT_PORT));
         try {
             ArrayList<Integer> resourcePorts = parsePortsFromResource(DEFAULT_PORT_RESOURCES);
             for (Integer port : resourcePorts) {
@@ -94,7 +94,7 @@ public class MesosSlave extends MesosContainer {
     public TreeMap<String, String> getDefaultEnvVars() {
         TreeMap<String,String> envs = new TreeMap<>();
         envs.put("MESOS_RESOURCES", DEFAULT_RESOURCES);
-        envs.put("MESOS_PORT", String.valueOf(MESOS_SLAVE_PORT));
+        envs.put("MESOS_PORT", String.valueOf(MESOS_AGENT_PORT));
         envs.put("MESOS_MASTER", getFormattedZKAddress());
         envs.put("MESOS_SWITCH_USER", "false");
         return envs;

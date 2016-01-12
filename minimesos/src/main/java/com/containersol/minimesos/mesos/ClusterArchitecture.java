@@ -21,7 +21,7 @@ import static com.containersol.minimesos.mesos.ClusterContainers.*;
  *     new ClusterArchitecture.Builder().build();
  * </code>
  * <p>
- * Which would create a cluster comprising of ZooKeeper, a Mesos Master and a single Mesos slave. This is the minimum viable cluster.
+ * Which would create a cluster comprising of ZooKeeper, a Mesos Master and a single Mesos agent. This is the minimum viable cluster.
  * These three items are always added if they are not present, because they are required by Mesos. You can add your own simple containers
  * like this (where MyContainer extends from {@link AbstractContainer}):
  * <p><p>
@@ -29,16 +29,16 @@ import static com.containersol.minimesos.mesos.ClusterContainers.*;
  *     new ClusterArchitecture.Builder().withContainer(new MyContainer(...)).build();
  * </code>
  * <p><p>
- * To add more zookeepers, masters or slaves, you can simply use (note that when adding masters or slaves, zookeeper must be added first, since Mesos requires a link to the ZooKeeper container.):
+ * To add more zookeepers, masters or agent, you can simply use (note that when adding masters or agents, zookeeper must be added first, since Mesos requires a link to the ZooKeeper container.):
  * <p>
  * <code>
- *     new ClusterArchitecture.Builder().withZooKeeper().withZooKeeper().withSlave().withSlave().withSlave().build();
+ *     new ClusterArchitecture.Builder().withZooKeeper().withZooKeeper().withAgent().withAgent().withAgent().build();
  * </code>
  * <p><p>
- * If you need to provide a custom Mesos(Slave/Master) you can provide your own. This will inject a reference to the zooKeeper container, so the Mesos can generate the zkUrl to ZooKeeper.
+ * If you need to provide a custom Mesos(Agent/Master) you can provide your own. This will inject a reference to the zooKeeper container, so the Mesos can generate the zkUrl to ZooKeeper.
  * <p>
  * <code>
- *     new ClusterArchitecture.Builder().withZooKeeper().withSlave(zooKeeper -> new MySlave(..., zooKeeper)).build();
+ *     new ClusterArchitecture.Builder().withZooKeeper().withAgent(zooKeeper -> new MyAgent(..., zooKeeper)).build();
  * </code>
  * <p><p>
  * If you want to provide a completely custom container, you can inject an instance of any other container using a filter.
@@ -149,18 +149,18 @@ public class ClusterArchitecture {
         }
 
         /**
-         * Includes the default {@link MesosSlave} instance in the cluster
+         * Includes the default {@link MesosAgent} instance in the cluster
          */
-        public Builder withSlave() {
-            return withSlave(zooKeeper -> new MesosSlave(dockerClient, zooKeeper));
+        public Builder withAgent() {
+            return withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper));
         }
 
         /**
          * All default instance, but with defined resources
          * @param resources definition of resources
          */
-        public Builder withSlave(String resources) {
-            return withSlave(zooKeeper -> new MesosSlave(dockerClient, zooKeeper) {
+        public Builder withAgent(String resources) {
+            return withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper) {
                 @Override
                 public TreeMap<String, String> getDefaultEnvVars() {
                     TreeMap<String, String> envVars = super.getDefaultEnvVars();
@@ -171,14 +171,14 @@ public class ClusterArchitecture {
         }
 
         /**
-         * Provide a custom implementation of the {@link MesosSlave} container.
-         * @param slave must extend from {@link MesosSlave}. Functional, to allow you to inject a reference to the {@link ZooKeeper} container.
+         * Provide a custom implementation of the {@link MesosAgent} container.
+         * @param agent must extend from {@link MesosAgent}. Functional, to allow you to inject a reference to the {@link ZooKeeper} container.
          */
-        public Builder withSlave(Function<ZooKeeper, MesosSlave> slave) {
+        public Builder withAgent(Function<ZooKeeper, MesosAgent> agent) {
             if (!isPresent(Filter.zooKeeper())) {
                 throw new MesosArchitectureException("ZooKeeper is required by Mesos. You cannot add a Mesos node until you have created a ZooKeeper node. Please add a ZooKeeper node first.");
             }
-            return withContainer(slave::apply, Filter.zooKeeper());
+            return withContainer(agent::apply, Filter.zooKeeper());
         }
 
         public Builder withMarathon(Function<ZooKeeper, Marathon> marathon) {
@@ -220,9 +220,9 @@ public class ClusterArchitecture {
                 LOGGER.info("Instance of MesosMaster not found. Adding MesosMaster.");
                 withMaster();
             }
-            if (!isPresent(Filter.mesosSlave())) {
-                LOGGER.info("Instance of MesosSlave not found. Adding MesosSlave.");
-                withSlave();
+            if (!isPresent(Filter.mesosAgent())) {
+                LOGGER.info("Instance of MesosAgent not found. Adding MesosAgent.");
+                withAgent();
             }
         }
 

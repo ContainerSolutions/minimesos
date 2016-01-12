@@ -35,7 +35,7 @@ public class SchedulerContainer extends AbstractContainer {
                 .createContainerCmd(SCHEDULER_IMAGE)
                 .withName(SCHEDULER_NAME + "_" + new SecureRandom().nextInt())
                 .withEnv("JAVA_OPTS=-Xms128m -Xmx256m")
-                .withExtraHosts(IntStream.rangeClosed(1, 3).mapToObj(value -> "slave" + value + ":" + mesosIp).toArray(String[]::new))
+                .withExtraHosts(IntStream.rangeClosed(1, 3).mapToObj(value -> "agent" + value + ":" + mesosIp).toArray(String[]::new))
                 .withCmd(Configuration.MESOS_MASTER, getMesosUrl());
     }
 

@@ -34,7 +34,7 @@ public class InstallCommandTest {
     protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder(dockerClient)
             .withZooKeeper()
             .withMaster()
-            .withSlave("ports(*):[8081-8082]")
+            .withAgent("ports(*):[8081-8082]")
             .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper, true ))
             .build();
 

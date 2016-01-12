@@ -8,15 +8,15 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
-public class MesosSlaveExtended extends MesosSlave {
+public class MesosAgentExtended extends MesosAgent {
 
-    private static Logger LOGGER = Logger.getLogger(MesosSlaveExtended.class);
+    private static Logger LOGGER = Logger.getLogger(MesosAgentExtended.class);
 
     protected final String resources;
 
     protected final String portNumber;
 
-    public MesosSlaveExtended(DockerClient dockerClient, String resources, String portNumber, ZooKeeper zooKeeperContainer, String mesosLocalImage, String registryTag) {
+    public MesosAgentExtended(DockerClient dockerClient, String resources, String portNumber, ZooKeeper zooKeeperContainer, String mesosLocalImage, String registryTag) {
         super(dockerClient, zooKeeperContainer);
         this.resources = resources;
         this.portNumber = portNumber;

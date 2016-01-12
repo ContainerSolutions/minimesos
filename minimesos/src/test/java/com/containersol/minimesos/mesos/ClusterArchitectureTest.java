@@ -19,7 +19,7 @@ public class ClusterArchitectureTest {
         assertTrue(clusterArchitecture.getClusterContainers().getContainers().size() > 0);
         assertTrue(clusterArchitecture.getClusterContainers().getContainers().stream().filter(Filter.zooKeeper()).findFirst().isPresent());
         assertTrue(clusterArchitecture.getClusterContainers().getContainers().stream().filter(Filter.mesosMaster()).findFirst().isPresent());
-        assertTrue(clusterArchitecture.getClusterContainers().getContainers().stream().filter(Filter.mesosSlave()).findFirst().isPresent());
+        assertTrue(clusterArchitecture.getClusterContainers().getContainers().stream().filter(Filter.mesosAgent()).findFirst().isPresent());
     }
 
     @Test( expected = ClusterArchitecture.MesosArchitectureException.class)
@@ -28,8 +28,8 @@ public class ClusterArchitectureTest {
     }
 
     @Test( expected = ClusterArchitecture.MesosArchitectureException.class)
-    public void shouldErrorIfNoZooKeeperIsPresentAndSlaveAdded() {
-        new ClusterArchitecture.Builder().withSlave();
+    public void shouldErrorIfNoZooKeeperIsPresentAndAgentAdded() {
+        new ClusterArchitecture.Builder().withAgent();
     }
 
     @Test
@@ -53,15 +53,15 @@ public class ClusterArchitectureTest {
     }
 
     @Test
-    public void shouldBeAbleToAddSlave() {
-        ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder().withZooKeeper().withSlave();
+    public void shouldBeAbleToAddAgent() {
+        ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder().withZooKeeper().withAgent();
         assertEquals(minimumViableClusterSize(), builder.build().getClusterContainers().getContainers().size());
     }
 
     @Test
-    public void shouldBeAbleToAddCustomSlave() {
-        MesosSlave mock = mock(MesosSlave.class);
-        ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder().withZooKeeper().withSlave(zk -> mock);
+    public void shouldBeAbleToAddCustomAgent() {
+        MesosAgent mock = mock(MesosAgent.class);
+        ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder().withZooKeeper().withAgent(zk -> mock);
         assertEquals(minimumViableClusterSize(), builder.build().getClusterContainers().getContainers().size());
     }
 

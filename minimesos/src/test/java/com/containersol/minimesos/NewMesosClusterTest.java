@@ -2,8 +2,6 @@ package com.containersol.minimesos;
 
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.mesos.*;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
@@ -48,7 +46,7 @@ public class NewMesosClusterTest {
     public void mesosClusterCanBeStarted() throws Exception {
         JSONObject stateInfo = cluster.getStateInfoJSON();
 
-        assertEquals(1, stateInfo.getInt("activated_slaves")); // Only one slave is actually _required_ to have a cluster
+        assertEquals(1, stateInfo.getInt("activated_slaves")); // Only one agent is actually _required_ to have a cluster
     }
 
     @Test
@@ -62,10 +60,10 @@ public class NewMesosClusterTest {
 
     @Test
     public void dockerExposeResourcesPorts() throws Exception {
-        String resources = MesosSlave.DEFAULT_PORT_RESOURCES;
-        ArrayList<Integer> ports = MesosSlave.parsePortsFromResource(resources);
-        List<MesosSlave> containers = Arrays.asList(cluster.getSlaves());
-        for (MesosSlave container : containers) {
+        String resources = MesosAgent.DEFAULT_PORT_RESOURCES;
+        ArrayList<Integer> ports = MesosAgent.parsePortsFromResource(resources);
+        List<MesosAgent> containers = Arrays.asList(cluster.getAgents());
+        for (MesosAgent container : containers) {
             InspectContainerResponse response = dockerClient.inspectContainerCmd(container.getContainerId()).exec();
             Map bindings = response.getNetworkSettings().getPorts().getBindings();
             for (Integer port : ports) {
@@ -100,8 +98,7 @@ public class NewMesosClusterTest {
 
     @Test
     public void testMesosExecuteContainerSuccess() throws InterruptedException {
-
-        MesosSlaveExtended mesosSlave = new MesosSlaveExtended(
+        MesosAgentExtended mesosAgent = new MesosAgentExtended(
                 dockerClient,
                 "ports(*):[9204-9204, 9304-9304]; cpus(*):0.2; mem(*):256; disk(*):200",
                 "5051",
@@ -124,14 +121,14 @@ public class NewMesosClusterTest {
             }
         };
 
-        cluster.addAndStartContainer(mesosSlave, MesosContainer.DEFAULT_TIMEOUT_SEC);
+        cluster.addAndStartContainer(mesosAgent, MesosContainer.DEFAULT_TIMEOUT_SEC);
         LogContainerTestCallback cb = new LogContainerTestCallback();
-        dockerClient.logContainerCmd(mesosSlave.getContainerId()).withStdOut().exec(cb);
+        dockerClient.logContainerCmd(mesosAgent.getContainerId()).withStdOut().exec(cb);
         cb.awaitCompletion();
 
         Awaitility.await().atMost(Duration.ONE_MINUTE).until(() -> {
             LogContainerTestCallback cb1 = new LogContainerTestCallback();
-            dockerClient.logContainerCmd(mesosSlave.getContainerId()).withStdOut().exec(cb1);
+            dockerClient.logContainerCmd(mesosAgent.getContainerId()).withStdOut().exec(cb1);
             cb1.awaitCompletion();
             String log = cb1.toString();
             return log.contains("Received status update TASK_FINISHED for task test-cmd");

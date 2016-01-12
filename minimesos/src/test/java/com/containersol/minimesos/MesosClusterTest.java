@@ -31,14 +31,14 @@ import static org.junit.Assert.*;
 
 public class MesosClusterTest {
 
-    protected static final String resources = MesosSlave.DEFAULT_PORT_RESOURCES + "; cpus(*):0.2; mem(*):256; disk(*):200";
+    protected static final String resources = MesosAgent.DEFAULT_PORT_RESOURCES + "; cpus(*):0.2; mem(*):256; disk(*):200";
     protected static final DockerClient dockerClient = DockerClientFactory.build();
     protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder(dockerClient)
             .withZooKeeper()
             .withMaster()
-            .withSlave(zooKeeper -> new MesosSlaveExtended(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
-            .withSlave(zooKeeper -> new MesosSlaveExtended(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
-            .withSlave(zooKeeper -> new MesosSlaveExtended(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
+            .withAgent(zooKeeper -> new MesosAgentExtended(dockerClient, resources, "5051", zooKeeper, MesosAgent.MESOS_AGENT_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
+            .withAgent(zooKeeper -> new MesosAgentExtended(dockerClient, resources, "5051", zooKeeper, MesosAgent.MESOS_AGENT_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
+            .withAgent(zooKeeper -> new MesosAgentExtended(dockerClient, resources, "5051", zooKeeper, MesosAgent.MESOS_AGENT_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
             .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper, true ))
             .build();
 
@@ -58,7 +58,7 @@ public class MesosClusterTest {
 
     @Test
     public void mesosAgentStateInfoJSONMatchesSchema() throws UnirestException, JsonParseException, JsonMappingException {
-        String slaveId = CLUSTER.getSlaves()[0].getContainerId();
+        String slaveId = CLUSTER.getAgents()[0].getContainerId();
         String state = MesosCluster.getContainerStateInfo(slaveId);
         assertNotNull( state );
     }
@@ -83,10 +83,10 @@ public class MesosClusterTest {
     public void dockerExposeResourcesPorts() throws Exception {
 
         DockerClient docker = CONFIG.dockerClient;
-        List<MesosSlave> containers = Arrays.asList(CLUSTER.getSlaves());
+        List<MesosAgent> containers = Arrays.asList(CLUSTER.getAgents());
 
-        for (MesosSlave container : containers) {
-            ArrayList<Integer> ports = MesosSlave.parsePortsFromResource(((MesosSlaveExtended)container).getResources());
+        for (MesosAgent container : containers) {
+            ArrayList<Integer> ports = MesosAgent.parsePortsFromResource(((MesosAgentExtended)container).getResources());
             InspectContainerResponse response = docker.inspectContainerCmd(container.getContainerId()).exec();
             Map bindings = response.getNetworkSettings().getPorts().getBindings();
             for (Integer port : ports) {
@@ -106,9 +106,9 @@ public class MesosClusterTest {
     }
 
     @Test
-    public void testMasterLinkedToSlaves() throws UnirestException {
-        List<MesosSlave> containers = Arrays.asList(CLUSTER.getSlaves());
-        for (MesosSlave container : containers) {
+    public void testMasterLinkedToAgents() throws UnirestException {
+        List<MesosAgent> containers = Arrays.asList(CLUSTER.getAgents());
+        for (MesosAgent container : containers) {
             InspectContainerResponse exec = CONFIG.dockerClient.inspectContainerCmd(container.getContainerId()).exec();
 
             List<Link> links = Arrays.asList(exec.getHostConfig().getLinks());
@@ -137,7 +137,7 @@ public class MesosClusterTest {
 
     @Test
     public void testMesosExecuteContainerSuccess() throws InterruptedException {
-        MesosSlaveExtended mesosSlave = new MesosSlaveExtended(
+        MesosAgentExtended mesosAgent = new MesosAgentExtended(
                 CONFIG.dockerClient,
                 "ports(*):[9204-9204, 9304-9304]; cpus(*):0.2; mem(*):256; disk(*):200",
                 "5051",
@@ -160,14 +160,14 @@ public class MesosClusterTest {
             }
         };
 
-        CLUSTER.addAndStartContainer(mesosSlave, MesosContainer.DEFAULT_TIMEOUT_SEC);
+        CLUSTER.addAndStartContainer(mesosAgent, MesosContainer.DEFAULT_TIMEOUT_SEC);
         LogContainerTestCallback cb = new LogContainerTestCallback();
-        CONFIG.dockerClient.logContainerCmd(mesosSlave.getContainerId()).withStdOut().exec(cb);
+        CONFIG.dockerClient.logContainerCmd(mesosAgent.getContainerId()).withStdOut().exec(cb);
         cb.awaitCompletion();
 
         Awaitility.await().atMost(Duration.ONE_MINUTE).until(() -> {
             LogContainerTestCallback cb1 = new LogContainerTestCallback();
-            CONFIG.dockerClient.logContainerCmd(mesosSlave.getContainerId()).withStdOut().exec(cb1);
+            CONFIG.dockerClient.logContainerCmd(mesosAgent.getContainerId()).withStdOut().exec(cb1);
             cb1.awaitCompletion();
             String log = cb1.toString();
             return log.contains("Received status update TASK_FINISHED for task test-cmd");
