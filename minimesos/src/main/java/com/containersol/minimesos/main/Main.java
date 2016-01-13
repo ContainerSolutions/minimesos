@@ -134,7 +134,6 @@ public class Main {
                 configBuilder.withConsul();
             }
             MesosCluster cluster = new MesosCluster(configBuilder.build());
-
             cluster.start(timeout);
             cluster.writeClusterId();
 
@@ -143,7 +142,10 @@ public class Main {
         clusterId = MesosCluster.readClusterId();
         MesosCluster.printServiceUrl(clusterId, "master", exposedHostPorts);
         MesosCluster.printServiceUrl(clusterId, "marathon", exposedHostPorts);
-
+        MesosCluster.printServiceUrl(clusterId, "zookeeper", exposedHostPorts);
+        if (commandUp.getStartConsul()) {
+            MesosCluster.printServiceUrl(clusterId, "consul", exposedHostPorts);
+        }
     }
 
     private static void printInfo() {

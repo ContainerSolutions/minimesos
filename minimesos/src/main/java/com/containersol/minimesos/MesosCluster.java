@@ -390,10 +390,17 @@ public class MesosCluster extends ExternalResource {
                     }
                     switch (serviceName) {
                         case "master":
-                            uri = "Master http://" + ip + ":" + MesosMaster.MESOS_MASTER_PORT;
+                            uri = "export MINIMESOS_MASTER=http://" + ip + ":" + MesosMaster.MESOS_MASTER_PORT;
                             break;
                         case "marathon":
-                            uri = "Marathon http://" + ip + ":" + Marathon.MARATHON_PORT;
+                            uri = "export MINIMESOS_MARATHON=http://" + ip + ":" + Marathon.MARATHON_PORT;
+                            break;
+                        case "zookeeper":
+                            uri = "export MINIMESOS_ZOOKEEPER=" + ZooKeeper.formatZKAddress(ip);
+                            break;
+                        case "consul":
+                            uri = "export MINIMESOS_CONSUL_IP=" + ip + "; " +
+                                "export MINIMESOS_CONSUL=" + ip + ":" + Consul.DEFAULT_CONSUL_PORT;
                             break;
                         default:
                             uri = "Unknown service type '" + serviceName + "'";

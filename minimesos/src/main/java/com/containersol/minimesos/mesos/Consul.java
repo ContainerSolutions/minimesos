@@ -15,7 +15,7 @@ public class Consul extends AbstractContainer {
     public static final String CONSUL_IMAGE_NAME = "containersol/consul-server";
     public static final String CONSUL_TAG_NAME = "0.6";
 
-    private int exposedHostPort = 8600;
+    public static final int DEFAULT_CONSUL_PORT= 8500;
 
     public Consul(DockerClient dockerClient) {
         super(dockerClient);
@@ -35,6 +35,6 @@ public class Consul extends AbstractContainer {
     protected CreateContainerCmd dockerCommand() {
         return dockerClient.createContainerCmd(CONSUL_IMAGE_NAME + ":" + CONSUL_TAG_NAME)
                 .withName("minimesos-consul-" + getClusterId() + "-" + getRandomId())
-                .withExposedPorts(new ExposedPort(exposedHostPort));
+                .withExposedPorts(new ExposedPort(DEFAULT_CONSUL_PORT));
     }
 }
