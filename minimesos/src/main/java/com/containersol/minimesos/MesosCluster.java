@@ -412,32 +412,16 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
-    public static void executeMarathonTask(String clusterId, String marathonFilePath) {
-
+    public static void executeMarathonTask(String clusterId, String marathonJson) {
         String marathonIp = getContainerIp(clusterId, "marathon");
         if( marathonIp == null ) {
             throw new MinimesosException("Marathon container is not found in cluster " + MesosCluster.readClusterId() );
         }
 
-        File marathonFile = new File( marathonFilePath );
-        if( !marathonFile.exists() ) {
-            marathonFile = new File( getMinimesosHostDir(), marathonFilePath );
-            if( !marathonFile.exists() ) {
-                String msg = String.format("Neither %s nor %s exist", new File( marathonFilePath ).getAbsolutePath(), marathonFile.getAbsolutePath() );
-                throw new MinimesosException( msg );
-            }
-        }
-
         MarathonClient marathonClient = new MarathonClient( marathonIp );
-        LOGGER.info(String.format("Installing %s on marathon %s", marathonFile, marathonIp));
+        LOGGER.info(String.format("Installing %s on marathon %s", marathonJson, marathonIp));
 
-        try (FileInputStream fis = new FileInputStream(marathonFile)) {
-            String taskJson = IOUtils.toString(fis);
-            marathonClient.deployTask(taskJson);
-        } catch (IOException e) {
-            throw new MinimesosException( "Failed to open " + marathonFile.getAbsolutePath(), e );
-        }
-
+        marathonClient.deployTask(marathonJson);
     }
 
     public void executeMarathonTask(String taskJson) {

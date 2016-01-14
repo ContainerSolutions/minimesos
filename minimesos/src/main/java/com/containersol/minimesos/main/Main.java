@@ -84,11 +84,11 @@ public class Main {
                     MesosCluster.destroy();
                     break;
                 case "install":
-                    String marathonFilePath = commandInstall.getMarathonFile();
-                    if(StringUtils.isBlank(marathonFilePath) ) {
+                    String marathonJson = commandInstall.getMarathonJson();
+                    if(StringUtils.isBlank(marathonJson) ) {
                         jc.usage();
                     } else {
-                        MesosCluster.executeMarathonTask( clusterId, marathonFilePath );
+                        MesosCluster.executeMarathonTask( clusterId, marathonJson );
                     }
                     break;
                 case "state":
