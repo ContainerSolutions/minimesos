@@ -2,6 +2,7 @@ package com.containersol.minimesos;
 
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerContainersUtil;
+import com.containersol.minimesos.main.CommandUp;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.marathon.MarathonClient;
 import com.containersol.minimesos.mesos.*;
@@ -376,14 +377,14 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
-    public static void printServiceUrl(String clusterId, String serviceName, boolean exposedHostPorts) {
+    public static void printServiceUrl(String clusterId, String serviceName, CommandUp cmdUp) {
         String dockerHostIp = System.getenv("DOCKER_HOST_IP");
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
             for (String name : container.getNames()) {
                 if (name.contains("minimesos-" + serviceName + "-" + clusterId)) {
                     String uri, ip;
-                    if (!exposedHostPorts || dockerHostIp.isEmpty()) {
+                    if (!cmdUp.isExposedHostPorts() || dockerHostIp.isEmpty()) {
                         ip = DockerContainersUtil.getIpAddress( dockerClient, container.getId() );
                     } else {
                         ip = dockerHostIp;
@@ -399,8 +400,8 @@ public class MesosCluster extends ExternalResource {
                             uri = "export MINIMESOS_ZOOKEEPER=" + ZooKeeper.formatZKAddress(ip);
                             break;
                         case "consul":
-                            uri = "export MINIMESOS_CONSUL_IP=" + ip + "; " +
-                                "export MINIMESOS_CONSUL=" + ip + ":" + Consul.DEFAULT_CONSUL_PORT;
+                            uri = "export MINIMESOS_CONSUL=http://" + ip + ":" + Consul.DEFAULT_CONSUL_PORT + "\n" +
+                            "export MINIMESOS_CONSUL_IP=" + ip;
                             break;
                         default:
                             uri = "Unknown service type '" + serviceName + "'";
@@ -419,7 +420,7 @@ public class MesosCluster extends ExternalResource {
         }
 
         MarathonClient marathonClient = new MarathonClient( marathonIp );
-        LOGGER.info(String.format("Installing %s on marathon %s", marathonJson, marathonIp));
+        LOGGER.debug(String.format("Installing %s on marathon %s", marathonJson, marathonIp));
 
         marathonClient.deployTask(marathonJson);
     }

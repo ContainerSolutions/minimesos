@@ -5,14 +5,17 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MesosCluster;
 import com.containersol.minimesos.MinimesosException;
+import com.containersol.minimesos.cmdhooks.HookExecutor;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.mesos.*;
 import com.github.dockerjava.api.DockerClient;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import java.util.HashMap;
+import java.util.List;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
 
 /**
  * Main method for interacting with minimesos.
@@ -23,8 +26,16 @@ public class Main {
 
     private static CommandUp commandUp;
 
+    private static HashMap<String, List<Callable>> hooks;
+
+    private static String clusterId;
+
     @Parameter(names = {"--help", "-help", "-?", "-h"}, help = true)
     private static boolean help = false;
+
+    public static CommandUp getCommandUp() {
+        return commandUp;
+    }
 
     public static void main(String[] args)  {
 
@@ -64,8 +75,8 @@ public class Main {
 
         if (jc.getParsedCommand() == null) {
             if (clusterId != null) {
-                MesosCluster.printServiceUrl(clusterId, "master", commandUp.isExposedHostPorts());
-                MesosCluster.printServiceUrl(clusterId, "marathon", commandUp.isExposedHostPorts());
+                MesosCluster.printServiceUrl(clusterId, "master", commandUp);
+                MesosCluster.printServiceUrl(clusterId, "marathon", commandUp);
             } else {
                 jc.usage();
             }
@@ -76,6 +87,7 @@ public class Main {
             switch (jc.getParsedCommand()) {
                 case "up":
                     doUp(commandUp.getTimeout());
+                    HookExecutor.fireCallbacks("up", Main.clusterId);
                     break;
                 case "info":
                     printInfo();
@@ -139,13 +151,14 @@ public class Main {
 
         }
 
-        clusterId = MesosCluster.readClusterId();
-        MesosCluster.printServiceUrl(clusterId, "master", exposedHostPorts);
-        MesosCluster.printServiceUrl(clusterId, "marathon", exposedHostPorts);
-        MesosCluster.printServiceUrl(clusterId, "zookeeper", exposedHostPorts);
-        if (commandUp.getStartConsul()) {
-            MesosCluster.printServiceUrl(clusterId, "consul", exposedHostPorts);
-        }
+        Main.clusterId = MesosCluster.readClusterId();
+
+    }
+
+    public static void registerCallback(String hook, Callable cmd) {
+        List<Callable> currentHooks = hooks.get(hook);
+        currentHooks.add(cmd);
+        hooks.put(hook, currentHooks);
     }
 
     private static void printInfo() {

@@ -75,7 +75,7 @@ public class MarathonClient {
             JSONObject deployResponse = response.getBody().getObject();
 
             if( response.getStatus() == HttpStatus.SC_CREATED ) {
-                LOGGER.info(deployResponse);
+                LOGGER.debug(deployResponse);
             } else {
                 throw new MinimesosException("Marathon did not accept the task: " + deployResponse);
             }
