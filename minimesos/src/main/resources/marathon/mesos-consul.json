@@ -7,7 +7,7 @@
   "container": {
     "type": "DOCKER",
     "docker": {
-      "network": "HOST",
+      "network": "BRIDGE",
       "image": "ciscocloud/mesos-consul:latest"
     }
   },

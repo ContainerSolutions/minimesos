@@ -30,7 +30,7 @@ public class StartMesosConsul extends HookExecutor {
             mesosConsul = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream("marathon/mesos-consul.json"), "UTF-8");
             MesosCluster.executeMarathonTask(clusterId,
                     mesosConsul
-                            .replace("{{MINIMESOS_ZOOKEEPER}}", ZooKeeper.formatZKAddress(MesosCluster.getContainerIp(clusterId, "zookeeper")))
+                            .replace("{{MINIMESOS_ZOOKEEPER}}", ZooKeeper.formatZKAddress(MesosCluster.getContainerIp(clusterId, "zookeeper")) + "/mesos")
                             .replace("{{MINIMESOS_CONSUL_IP}}", MesosCluster.getContainerIp(clusterId, "consul")));
         } catch (Exception e) {
             LOGGER.error("Can't start marathon task: " + e.getMessage());
