@@ -26,8 +26,6 @@ public class Main {
 
     private static CommandUp commandUp;
 
-    private static HashMap<String, List<Callable>> hooks;
-
     private static String clusterId;
 
     @Parameter(names = {"--help", "-help", "-?", "-h"}, help = true)
@@ -153,12 +151,6 @@ public class Main {
 
         Main.clusterId = MesosCluster.readClusterId();
 
-    }
-
-    public static void registerCallback(String hook, Callable cmd) {
-        List<Callable> currentHooks = hooks.get(hook);
-        currentHooks.add(cmd);
-        hooks.put(hook, currentHooks);
     }
 
     private static void printInfo() {
