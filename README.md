@@ -10,6 +10,10 @@ For installation, use and building
 
 [http://minimesos.readthedocs.org/](http://minimesos.readthedocs.org/)
 
+## Questionnaire
+
+We would like to know what you think of minimesos and how you use it. Check out the [minimesos questionnaire](https://t.co/1NbdwBlFWI)
+
 ## Videos
 
 #### Introduction to Minimesos by Viktor Sadovnikov [@sadovnikov](https://twitter.com/sadovnikov)
