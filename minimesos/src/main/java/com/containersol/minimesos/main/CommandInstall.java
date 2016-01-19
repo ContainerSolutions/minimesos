@@ -17,9 +17,6 @@ import java.util.stream.Stream;
 public class CommandInstall {
     private static Logger LOGGER = Logger.getLogger(CommandInstall.class);
 
-    @Parameter
-    List<String> marathonJson;
-
     @Parameter(names = "--exposedHostPorts", description = "Expose the Mesos and Marathon UI ports on the host level (we recommend to enable this on Mac (e.g. when using docker-machine) and disable on Linux).")
     private boolean exposedHostPorts = false;
 
