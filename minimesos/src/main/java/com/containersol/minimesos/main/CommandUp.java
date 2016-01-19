@@ -18,7 +18,7 @@ import java.util.concurrent.Callable;
  * Parameters for the 'up' command
  */
 @Parameters(separators = "=", commandDescription = "Create a minimesos cluster")
-public class CommandUp {
+public class CommandUp implements CommandInterface {
     Logger LOGGER = LoggerFactory.getLogger(getClass());
     @Parameter(names = "--exposedHostPorts", description = "Expose the Mesos and Marathon UI ports on the host level (we recommend to enable this on Mac (e.g. when using docker-machine) and disable on Linux).")
     private boolean exposedHostPorts = false;

@@ -85,7 +85,7 @@ public class Main {
             switch (jc.getParsedCommand()) {
                 case "up":
                     doUp(commandUp.getTimeout());
-                    HookExecutor.fireCallbacks("up", Main.clusterId);
+                    HookExecutor.fireCallbacks("up", Main.clusterId, commandUp);
                     break;
                 case "info":
                     printInfo();

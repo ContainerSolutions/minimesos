@@ -2,6 +2,7 @@ package com.containersol.minimesos;
 
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerContainersUtil;
+import com.containersol.minimesos.main.CommandInterface;
 import com.containersol.minimesos.main.CommandUp;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.marathon.MarathonClient;
@@ -377,14 +378,14 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
-    public static void printServiceUrl(String clusterId, String serviceName, CommandUp cmdUp) {
+    public static void printServiceUrl(String clusterId, String serviceName, CommandInterface cmd) {
         String dockerHostIp = System.getenv("DOCKER_HOST_IP");
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
             for (String name : container.getNames()) {
                 if (name.contains("minimesos-" + serviceName + "-" + clusterId)) {
                     String uri, ip;
-                    if (!cmdUp.isExposedHostPorts() || dockerHostIp.isEmpty()) {
+                    if (!cmd.isExposedHostPorts() || dockerHostIp.isEmpty()) {
                         ip = DockerContainersUtil.getIpAddress( dockerClient, container.getId() );
                     } else {
                         ip = dockerHostIp;
