@@ -1,17 +1,17 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 MINIMESOS_TAG="latest"
 MESOS_TAG="0.25.0-0.2.70.ubuntu1404.b1"
-
+DOCKER_BIN="$(command -v docker)"
 PARAMS="$@"
 
 command_exists() {
-	command -v "$@" > /dev/null 2>&1
+    command -v "$@" > /dev/null 2>&1
 }
 
 if ! command_exists docker; then
-	echo "Please install docker to use minimesos"
-	exit 1
+    echo "Please install docker to use minimesos"
+    exit 1
 fi
 
 if command_exists docker-machine && [ "$DOCKER_MACHINE_NAME" != "" ]; then
@@ -22,10 +22,10 @@ else
     DOCKER_HOST_IP=""
 fi
 
-DOCKER_BIN=/usr/local/bin/docker
-if [ ! -f "${DOCKER_BIN}" ]; then
-    DOCKER_BIN=/usr/bin/docker
-fi
+# DOCKER_BIN=/usr/local/bin/docker
+# if [ ! -f "${DOCKER_BIN}" ]; then
+#     DOCKER_BIN=/usr/bin/docker
+# fi
 
 docker info > /dev/null 2>&1
 if [ "$?" -ne 0 ]; then
@@ -34,10 +34,10 @@ if [ "$?" -ne 0 ]; then
 fi
 
 pullImage() {
-  if [ "$(docker images $1 | grep $2 2> /dev/null)" = "" ]; then
-    echo "Pulling $1:$2"
-    docker pull "$1:$2"
-  fi
+    if [ "$(docker images $1 | grep $2 2> /dev/null)" = "" ]; then
+	echo "Pulling $1:$2"
+	docker pull "$1:$2"
+    fi
 }
 
 if [ "$#" -gt 0 -a "$1" = up ]; then
@@ -47,8 +47,8 @@ if [ "$#" -gt 0 -a "$1" = up ]; then
     pullImage "containersol/mesos-master" ${MESOS_TAG}
     echo "Finished pulling images."
     if [ "$(uname)" = "Darwin" ]; then
-        echo "You are running minimesos on OS X, enabling --exposedHostPorts"
-        PARAMS="${PARAMS} --exposedHostPorts"
+	echo "You are running minimesos on OS X, enabling --exposedHostPorts"
+	PARAMS="${PARAMS} --exposedHostPorts"
     fi
 fi
 
@@ -64,6 +64,7 @@ docker run \
        -v "${MINIMESOS_HOST_DIR}:${MINIMESOS_HOST_DIR}" \
        -v "/var/run/docker.sock:/var/run/docker.sock" \
        -v "/sys/fs/cgroup:/sys/fs/cgroup" \
+       -v "${DOCKER_BIN}:/usr/bin/docker" \
        -i \
        --env DOCKER_HOST_IP=$DOCKER_HOST_IP \
        --entrypoint java \
