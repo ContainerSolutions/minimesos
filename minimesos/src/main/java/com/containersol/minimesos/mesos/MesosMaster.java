@@ -1,6 +1,5 @@
 package com.containersol.minimesos.mesos;
 
-import com.containersol.minimesos.MesosCluster;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -49,7 +48,7 @@ public class MesosMaster extends MesosContainer {
     @Override
     protected CreateContainerCmd dockerCommand() {
 
-        return dockerClient.createContainerCmd(MESOS_MASTER_IMAGE + ":" + MESOS_IMAGE_TAG)
+        return dockerClient.createContainerCmd(getMesosImageName() + ":" + getMesosImageTag())
                 .withName("minimesos-master-" + getClusterId() + "-" + getRandomId())
                 .withExposedPorts(new ExposedPort(MESOS_MASTER_PORT))
                 .withEnv(createMesosLocalEnvironment());
