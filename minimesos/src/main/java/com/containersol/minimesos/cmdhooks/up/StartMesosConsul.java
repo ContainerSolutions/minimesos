@@ -1,8 +1,8 @@
 package com.containersol.minimesos.cmdhooks.up;
 
 import com.containersol.minimesos.MesosCluster;
-import com.containersol.minimesos.cmdhooks.HookExecutor;
-import com.containersol.minimesos.main.CommandInterface;
+import com.containersol.minimesos.cmdhooks.CliCommandHookExecutor;
+import com.containersol.minimesos.main.MinimesosCliCommand;
 import com.containersol.minimesos.mesos.ZooKeeper;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -12,11 +12,11 @@ import org.slf4j.LoggerFactory;
 /**
  * StartMesosConsul manages mesos-consul start-up in case --consul flag was passed
  */
-public class StartMesosConsul extends HookExecutor {
-    Logger LOGGER = LoggerFactory.getLogger(HookExecutor.class);
-    protected CommandInterface cmd;
+public class StartMesosConsul extends CliCommandHookExecutor {
+    Logger LOGGER = LoggerFactory.getLogger(CliCommandHookExecutor.class);
+    protected MinimesosCliCommand cmd;
 
-    public StartMesosConsul setCmd(CommandInterface cmd) {
+    public StartMesosConsul setCmd(MinimesosCliCommand cmd) {
         this.cmd = cmd;
         return this;
     }

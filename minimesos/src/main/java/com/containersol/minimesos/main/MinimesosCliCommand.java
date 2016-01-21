@@ -1,6 +1,6 @@
 package com.containersol.minimesos.main;
 
-public interface CommandInterface {
+public interface MinimesosCliCommand {
     boolean isExposedHostPorts();
     boolean getStartConsul();
 }

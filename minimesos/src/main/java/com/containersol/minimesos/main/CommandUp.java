@@ -2,23 +2,17 @@ package com.containersol.minimesos.main;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.containersol.minimesos.cmdhooks.up.PrintServiceInfo;
-import com.containersol.minimesos.cmdhooks.up.StartMesosConsul;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.mesos.MesosContainer;
 import com.containersol.minimesos.mesos.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.Callable;
-
 /**
  * Parameters for the 'up' command
  */
 @Parameters(separators = "=", commandDescription = "Create a minimesos cluster")
-public class CommandUp implements CommandInterface {
+public class CommandUp implements MinimesosCliCommand {
     Logger LOGGER = LoggerFactory.getLogger(getClass());
     @Parameter(names = "--exposedHostPorts", description = "Expose the Mesos and Marathon UI ports on the host level (we recommend to enable this on Mac (e.g. when using docker-machine) and disable on Linux).")
     private boolean exposedHostPorts = false;

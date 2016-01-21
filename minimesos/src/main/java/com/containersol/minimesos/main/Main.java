@@ -5,17 +5,15 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MesosCluster;
 import com.containersol.minimesos.MinimesosException;
-import com.containersol.minimesos.cmdhooks.HookExecutor;
+import com.containersol.minimesos.cmdhooks.CliCommandHookExecutor;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.mesos.*;
 import com.github.dockerjava.api.DockerClient;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.HashMap;
-import java.util.List;
+
 import java.util.TreeMap;
-import java.util.concurrent.Callable;
 
 /**
  * Main method for interacting with minimesos.
@@ -85,7 +83,7 @@ public class Main {
             switch (jc.getParsedCommand()) {
                 case "up":
                     doUp(commandUp.getTimeout());
-                    HookExecutor.fireCallbacks("up", Main.clusterId, commandUp);
+                    CliCommandHookExecutor.fireCallbacks("up", Main.clusterId, commandUp);
                     break;
                 case "info":
                     printInfo();
@@ -158,8 +156,7 @@ public class Main {
         if (clusterId != null) {
             LOGGER.info("Minimesos cluster is running");
             LOGGER.info("Mesos version: " + MesosContainer.MESOS_IMAGE_TAG.substring(0, MesosContainer.MESOS_IMAGE_TAG.indexOf("-")));
-            MesosCluster.printServiceUrl(clusterId, "master", true);
-            MesosCluster.printServiceUrl(clusterId, "marathon", true);
+            // todo: properly add service url printouts
         } else {
             LOGGER.info("Minimesos cluster is not running");
         }

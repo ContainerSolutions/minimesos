@@ -1,11 +1,11 @@
 package com.containersol.minimesos.cmdhooks.up;
 import com.containersol.minimesos.MesosCluster;
-import com.containersol.minimesos.cmdhooks.HookExecutor;
+import com.containersol.minimesos.cmdhooks.CliCommandHookExecutor;
 
 /**
  * Created by alg on 1/18/16.
  */
-public class PrintServiceInfo extends HookExecutor {
+public class PrintServiceInfo extends CliCommandHookExecutor {
 
     @Override
     public Object call() throws Exception {

@@ -2,8 +2,7 @@ package com.containersol.minimesos;
 
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.containersol.minimesos.main.CommandInterface;
-import com.containersol.minimesos.main.CommandUp;
+import com.containersol.minimesos.main.MinimesosCliCommand;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.marathon.MarathonClient;
 import com.containersol.minimesos.mesos.*;
@@ -22,7 +21,6 @@ import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -378,7 +376,7 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
-    public static void printServiceUrl(String clusterId, String serviceName, CommandInterface cmd) {
+    public static void printServiceUrl(String clusterId, String serviceName, MinimesosCliCommand cmd) {
         String dockerHostIp = System.getenv("DOCKER_HOST_IP");
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
