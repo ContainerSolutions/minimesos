@@ -3,9 +3,12 @@ package com.containersol.minimesos.container;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.PullResponseItem;
+import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.jayway.awaitility.Duration;
 import com.jayway.awaitility.core.ConditionTimeoutException;
@@ -68,8 +71,20 @@ public abstract class AbstractContainer {
         try {
             await().atMost(timeout, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new ContainerIsRunning(containerId));
         } catch (ConditionTimeoutException cte) {
-            LOGGER.error("Container did not start within 60 seconds");
             LOGGER.error(String.format("Container [" + createCommand.getName() + "] did not start within %d seconds.", timeout));
+
+            try {
+                LogContainerCmd logContainerCmd = dockerClient.logContainerCmd(containerId);
+                logContainerCmd.withStdOut().withStdErr();
+                logContainerCmd.exec(new LogContainerResultCallback() {
+                    @Override
+                    public void onNext(Frame item) {
+                        LOGGER.error(item.toString());
+                    }
+                }).awaitCompletion();
+            } catch (InterruptedException e) {
+                LOGGER.error("Could not print container logs");
+            }
         }
 
         LOGGER.debug("Container is up and running");

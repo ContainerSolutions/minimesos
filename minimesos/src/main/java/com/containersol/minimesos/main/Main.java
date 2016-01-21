@@ -158,6 +158,8 @@ public class Main {
         if (clusterId != null) {
             LOGGER.info("Minimesos cluster is running");
             LOGGER.info("Mesos version: " + MesosContainer.MESOS_IMAGE_TAG.substring(0, MesosContainer.MESOS_IMAGE_TAG.indexOf("-")));
+            MesosCluster.printServiceUrl(clusterId, "master", true);
+            MesosCluster.printServiceUrl(clusterId, "marathon", true);
         } else {
             LOGGER.info("Minimesos cluster is not running");
         }
