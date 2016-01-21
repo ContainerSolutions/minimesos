@@ -22,10 +22,6 @@ else
     DOCKER_HOST_IP=""
 fi
 
-# DOCKER_BIN=/usr/local/bin/docker
-# if [ ! -f "${DOCKER_BIN}" ]; then
-#     DOCKER_BIN=/usr/bin/docker
-# fi
 
 docker info > /dev/null 2>&1
 if [ "$?" -ne 0 ]; then
