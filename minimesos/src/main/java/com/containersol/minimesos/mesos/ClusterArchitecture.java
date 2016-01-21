@@ -131,6 +131,23 @@ public class ClusterArchitecture {
         }
 
         /**
+         * Provide consul
+         * @return
+         */
+        public Builder withConsul() {
+            return withConsul(new Consul(dockerClient));
+        }
+        /**
+         * Provide consul
+         * @param consul
+         * @return
+         */
+        public Builder withConsul(Consul consul) {
+            getContainers().add(consul);
+            return this;
+        }
+
+        /**
          * Includes the default {@link MesosMaster} instance in the cluster
          */
         public Builder withMaster() {

@@ -5,6 +5,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MesosCluster;
 import com.containersol.minimesos.MinimesosException;
+import com.containersol.minimesos.cmdhooks.CliCommandHookExecutor;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.mesos.*;
 import com.github.dockerjava.api.DockerClient;
@@ -23,8 +24,14 @@ public class Main {
 
     private static CommandUp commandUp;
 
+    private static String clusterId;
+
     @Parameter(names = {"--help", "-help", "-?", "-h"}, help = true)
     private static boolean help = false;
+
+    public static CommandUp getCommandUp() {
+        return commandUp;
+    }
 
     public static void main(String[] args)  {
 
@@ -64,8 +71,8 @@ public class Main {
 
         if (jc.getParsedCommand() == null) {
             if (clusterId != null) {
-                MesosCluster.printServiceUrl(clusterId, "master", commandUp.isExposedHostPorts());
-                MesosCluster.printServiceUrl(clusterId, "marathon", commandUp.isExposedHostPorts());
+                MesosCluster.printServiceUrl(clusterId, "master", commandUp);
+                MesosCluster.printServiceUrl(clusterId, "marathon", commandUp);
             } else {
                 jc.usage();
             }
@@ -76,6 +83,7 @@ public class Main {
             switch (jc.getParsedCommand()) {
                 case "up":
                     doUp(commandUp.getTimeout());
+                    CliCommandHookExecutor.fireCallbacks("up", Main.clusterId, commandUp);
                     break;
                 case "info":
                     printInfo();
@@ -84,11 +92,11 @@ public class Main {
                     MesosCluster.destroy();
                     break;
                 case "install":
-                    String marathonFilePath = commandInstall.getMarathonFile();
-                    if(StringUtils.isBlank(marathonFilePath) ) {
+                    String marathonJson = commandInstall.getMarathonJson();
+                    if(StringUtils.isBlank(marathonJson) ) {
                         jc.usage();
                     } else {
-                        MesosCluster.executeMarathonTask( clusterId, marathonFilePath );
+                        MesosCluster.executeMarathonTask( clusterId, marathonJson );
                     }
                     break;
                 case "state":
@@ -123,25 +131,23 @@ public class Main {
 
             DockerClient dockerClient = DockerClientFactory.build();
 
-            ClusterArchitecture config = new ClusterArchitecture.Builder(dockerClient)
+            ClusterArchitecture.Builder configBuilder = new ClusterArchitecture.Builder(dockerClient)
                     .withZooKeeper(zooKeeperImageTag)
-                    .withMaster(zooKeeper -> new MesosMasterExtended( dockerClient, zooKeeper, MesosMaster.MESOS_MASTER_IMAGE, mesosImageTag, new TreeMap<>(), exposedHostPorts))
-                    .withSlave(zooKeeper -> new MesosSlaveExtended( dockerClient, "ports(*):[33000-34000]", "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, mesosImageTag))
-                    .withSlave(zooKeeper -> new MesosSlaveExtended( dockerClient, "ports(*):[33000-34000]", "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, mesosImageTag))
-                    .withSlave(zooKeeper -> new MesosSlaveExtended( dockerClient, "ports(*):[33000-34000]", "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, mesosImageTag))
-                    .withContainer( zooKeeper -> new Marathon(dockerClient, zooKeeper, marathonImageTag, exposedHostPorts), ClusterContainers.Filter.zooKeeper() )
-                    .build();
-
-            MesosCluster cluster = new MesosCluster(config);
-
+                    .withMaster(zooKeeper -> new MesosMasterExtended(dockerClient, zooKeeper, MesosMaster.MESOS_MASTER_IMAGE, mesosImageTag, new TreeMap<>(), exposedHostPorts))
+                    .withContainer(zooKeeper -> new Marathon(dockerClient, zooKeeper, marathonImageTag, exposedHostPorts), ClusterContainers.Filter.zooKeeper());
+            for (int i = 0; i < commandUp.getNumAgents(); i++) {
+                configBuilder.withSlave(zooKeeper -> new MesosSlaveExtended( dockerClient, "ports(*):[33000-34000]", "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, mesosImageTag));
+            }
+            if (commandUp.getStartConsul()) {
+                configBuilder.withConsul();
+            }
+            MesosCluster cluster = new MesosCluster(configBuilder.build());
             cluster.start(timeout);
             cluster.writeClusterId();
 
         }
 
-        clusterId = MesosCluster.readClusterId();
-        MesosCluster.printServiceUrl(clusterId, "master", exposedHostPorts);
-        MesosCluster.printServiceUrl(clusterId, "marathon", exposedHostPorts);
+        Main.clusterId = MesosCluster.readClusterId();
 
     }
 
@@ -150,8 +156,7 @@ public class Main {
         if (clusterId != null) {
             LOGGER.info("Minimesos cluster is running");
             LOGGER.info("Mesos version: " + MesosContainer.MESOS_IMAGE_TAG.substring(0, MesosContainer.MESOS_IMAGE_TAG.indexOf("-")));
-            MesosCluster.printServiceUrl(clusterId, "master", true);
-            MesosCluster.printServiceUrl(clusterId, "marathon", true);
+            // todo: properly add service url printouts
         } else {
             LOGGER.info("Minimesos cluster is not running");
         }

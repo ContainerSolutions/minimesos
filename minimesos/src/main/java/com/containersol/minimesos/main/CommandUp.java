@@ -5,13 +5,15 @@ import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.mesos.MesosContainer;
 import com.containersol.minimesos.mesos.ZooKeeper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Parameters for the 'up' command
  */
 @Parameters(separators = "=", commandDescription = "Create a minimesos cluster")
-public class CommandUp {
-
+public class CommandUp implements MinimesosCliCommand {
+    Logger LOGGER = LoggerFactory.getLogger(getClass());
     @Parameter(names = "--exposedHostPorts", description = "Expose the Mesos and Marathon UI ports on the host level (we recommend to enable this on Mac (e.g. when using docker-machine) and disable on Linux).")
     private boolean exposedHostPorts = false;
 
@@ -31,6 +33,12 @@ public class CommandUp {
     @Parameter(names = "--timeout", description = "Time to wait for a container to get responsive, in seconds.")
     private int timeout = MesosContainer.DEFAULT_TIMEOUT_SEC;
 
+    @Parameter(names = "--num-agents", description = "Number of agents to start")
+    private int numAgents = 1;
+
+    @Parameter(names = "--consul", description = "Start consul container")
+    private boolean startConsul = false;
+
     public String getMesosImageTag() {
         return mesosImageTag;
     }
@@ -45,5 +53,13 @@ public class CommandUp {
 
     public int getTimeout() {
         return timeout;
+    }
+
+    public int getNumAgents() {
+        return numAgents;
+    }
+
+    public boolean getStartConsul() {
+        return startConsul;
     }
 }

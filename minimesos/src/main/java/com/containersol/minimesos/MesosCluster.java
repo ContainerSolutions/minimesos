@@ -2,6 +2,7 @@ package com.containersol.minimesos;
 
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerContainersUtil;
+import com.containersol.minimesos.main.MinimesosCliCommand;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.marathon.MarathonClient;
 import com.containersol.minimesos.mesos.*;
@@ -20,7 +21,6 @@ import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -376,24 +376,31 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
-    public static void printServiceUrl(String clusterId, String serviceName, boolean exposedHostPorts) {
+    public static void printServiceUrl(String clusterId, String serviceName, MinimesosCliCommand cmd) {
         String dockerHostIp = System.getenv("DOCKER_HOST_IP");
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
             for (String name : container.getNames()) {
                 if (name.contains("minimesos-" + serviceName + "-" + clusterId)) {
                     String uri, ip;
-                    if (!exposedHostPorts || dockerHostIp.isEmpty()) {
+                    if (!cmd.isExposedHostPorts() || dockerHostIp.isEmpty()) {
                         ip = DockerContainersUtil.getIpAddress( dockerClient, container.getId() );
                     } else {
                         ip = dockerHostIp;
                     }
                     switch (serviceName) {
                         case "master":
-                            uri = "Master http://" + ip + ":" + MesosMaster.MESOS_MASTER_PORT;
+                            uri = "export MINIMESOS_MASTER=http://" + ip + ":" + MesosMaster.MESOS_MASTER_PORT;
                             break;
                         case "marathon":
-                            uri = "Marathon http://" + ip + ":" + Marathon.MARATHON_PORT;
+                            uri = "export MINIMESOS_MARATHON=http://" + ip + ":" + Marathon.MARATHON_PORT;
+                            break;
+                        case "zookeeper":
+                            uri = "export MINIMESOS_ZOOKEEPER=" + ZooKeeper.formatZKAddress(ip);
+                            break;
+                        case "consul":
+                            uri = "export MINIMESOS_CONSUL=http://" + ip + ":" + Consul.DEFAULT_CONSUL_PORT + "\n" +
+                            "export MINIMESOS_CONSUL_IP=" + ip;
                             break;
                         default:
                             uri = "Unknown service type '" + serviceName + "'";
@@ -405,32 +412,16 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
-    public static void executeMarathonTask(String clusterId, String marathonFilePath) {
-
+    public static void executeMarathonTask(String clusterId, String marathonJson) {
         String marathonIp = getContainerIp(clusterId, "marathon");
         if( marathonIp == null ) {
             throw new MinimesosException("Marathon container is not found in cluster " + MesosCluster.readClusterId() );
         }
 
-        File marathonFile = new File( marathonFilePath );
-        if( !marathonFile.exists() ) {
-            marathonFile = new File( getMinimesosHostDir(), marathonFilePath );
-            if( !marathonFile.exists() ) {
-                String msg = String.format("Neither %s nor %s exist", new File( marathonFilePath ).getAbsolutePath(), marathonFile.getAbsolutePath() );
-                throw new MinimesosException( msg );
-            }
-        }
-
         MarathonClient marathonClient = new MarathonClient( marathonIp );
-        LOGGER.info(String.format("Installing %s on marathon %s", marathonFile, marathonIp));
+        LOGGER.debug(String.format("Installing %s on marathon %s", marathonJson, marathonIp));
 
-        try (FileInputStream fis = new FileInputStream(marathonFile)) {
-            String taskJson = IOUtils.toString(fis);
-            marathonClient.deployTask(taskJson);
-        } catch (IOException e) {
-            throw new MinimesosException( "Failed to open " + marathonFile.getAbsolutePath(), e );
-        }
-
+        marathonClient.deployTask(marathonJson);
     }
 
     public void executeMarathonTask(String taskJson) {
