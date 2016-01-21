@@ -8,7 +8,7 @@
     "type": "DOCKER",
     "docker": {
       "network": "BRIDGE",
-      "image": "ciscocloud/mesos-consul:latest"
+      "image": "containersol/mesos-consul:latest"
     }
   },
   "id": "mesos-consul",
