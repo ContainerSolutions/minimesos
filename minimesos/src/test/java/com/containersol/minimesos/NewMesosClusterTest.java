@@ -31,6 +31,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Replicates MesosClusterTest with new API
  */
+
 public class NewMesosClusterTest {
 
     private DockerClient dockerClient = DockerClientFactory.build();
@@ -41,7 +42,7 @@ public class NewMesosClusterTest {
     @After
     public void after() {
         DockerContainersUtil util = new DockerContainersUtil(dockerClient);
-        util.getContainers(true).filterByName("^mesos-[0-9a-f\\-]*S\\d*\\.[0-9a-f\\-]*$").remove();
+        util.getContainers(false).filterByName("^mesos-[0-9a-f\\-]*S\\d*\\.[0-9a-f\\-]*$").remove();
     }
 
     @Test
