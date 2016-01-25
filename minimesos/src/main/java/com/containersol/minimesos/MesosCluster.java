@@ -49,7 +49,6 @@ public class MesosCluster extends ExternalResource {
 
     private final String clusterId;
 
-
     /**
      * Create a new cluster with a specified cluster architecture.
      * @param clusterArchitecture Represents the layout of the cluster. See {@link ClusterArchitecture} and {@link ClusterUtil}
@@ -60,20 +59,25 @@ public class MesosCluster extends ExternalResource {
     }
 
     /**
-     * Starts the Mesos cluster and its containers
-     *
-     * @param timeout in seconds
+     * Starts the Mesos cluster and its containers with 60 second timeout.
      */
-    public void start(int timeout) {
+    public void start() {
+        start(60);
+    }
 
+    /**
+     * Starts the Mesos cluster and its containers with given timeout.
+     *
+     * @param timeoutSeconds seconds to wait until timeout
+     */
+    public void start(int timeoutSeconds) {
         if (clusterArchitecture == null) {
             throw new ClusterArchitecture.MesosArchitectureException("No cluster architecture specified");
         }
 
-        clusterArchitecture.getClusterContainers().getContainers().forEach((container) -> addAndStartContainer(container, timeout));
+        clusterArchitecture.getClusterContainers().getContainers().forEach((container) -> addAndStartContainer(container, timeoutSeconds));
         // wait until the given number of slaves are registered
         new MesosClusterStateResponse(this).waitFor();
-
     }
 
     /**
