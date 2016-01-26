@@ -10,7 +10,7 @@ import java.util.TreeMap;
  */
 public abstract class MesosContainer extends AbstractContainer {
 
-    public static final String MESOS_IMAGE_TAG = "0.25.0-0.2.70.ubuntu1404.b1";
+    public static final String MESOS_IMAGE_TAG = "0.25.0-0.2.70.ubuntu1404";
     public static final String DEFAULT_MESOS_ZK_PATH = "/mesos";
 
     public static final int DEFAULT_TIMEOUT_SEC = 60;
