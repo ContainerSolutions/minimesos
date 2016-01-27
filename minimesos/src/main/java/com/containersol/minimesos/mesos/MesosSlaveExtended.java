@@ -48,7 +48,9 @@ public class MesosSlaveExtended extends MesosSlave {
     public String[] createMesosLocalEnvironment() {
         TreeMap<String, String> envs = getDefaultEnvVars();
         envs.putAll(getSharedEnvVars());
-        envs.put("MESOS_RESOURCES", this.resources);
+        if (!this.resources.isEmpty()) {
+            envs.put("MESOS_RESOURCES", this.resources);
+        }
 
         return envs.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
     }

@@ -6,10 +6,14 @@ import com.containersol.minimesos.main.MinimesosCliCommand;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.marathon.MarathonClient;
 import com.containersol.minimesos.mesos.*;
+import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.MesosClusterStateResponse;
+import com.containersol.minimesos.util.Predicate;
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.InternalServerErrorException;
 import com.github.dockerjava.api.NotFoundException;
 import com.github.dockerjava.api.model.Container;
+import com.jayway.awaitility.Awaitility;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -27,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -367,6 +372,22 @@ public class MesosCluster extends ExternalResource {
             LOGGER.error("Could not write .minimesos folder", ie);
             throw new RuntimeException(ie);
         }
+    }
+
+    public void waitForState(final Predicate<State> predicate, int seconds) {
+        Awaitility.await().atMost(seconds, TimeUnit.SECONDS).until(() -> {
+            try {
+                return predicate.test(State.fromJSON(MesosCluster.this.getStateInfoJSON().toString()));
+            } catch (InternalServerErrorException e) {
+                LOGGER.error(e);
+                // This probably means that the mesos cluster isn't ready yet..
+                return false;
+            }
+        });
+    }
+
+    public void waitForState(Predicate<State> predicate) {
+        waitForState(predicate, 20);
     }
 
     public static void checkStateFile(String clusterId) {
