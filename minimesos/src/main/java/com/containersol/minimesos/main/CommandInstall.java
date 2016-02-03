@@ -2,6 +2,7 @@ package com.containersol.minimesos.main;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.containersol.minimesos.MinimesosException;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.log4j.Logger;
 
@@ -23,12 +24,27 @@ public class CommandInstall {
     @Parameter(names = "--marathonFile", description = "Marathon JSON app install file location")
     private String marathonFile = "";
 
-    public String getMarathonJson() {
+    /**
+     * Getting content of <code>marathonFile</code>, if provided, or standard input
+     * @param minimesosHostDir current directory on the host, which is mapped to the same directory in minimesos container
+     * @return content of the file or standard input
+     */
+    public String getMarathonJson( File minimesosHostDir ) {
         String fileContents = "";
         Scanner scanner;
         try {
             if (!marathonFile.isEmpty()) {
-                scanner = new Scanner(new FileReader(marathonFile));
+
+                File jsonFile = new File( marathonFile );
+                if( !jsonFile.exists() ) {
+                    jsonFile = new File( minimesosHostDir, marathonFile );
+                    if( !jsonFile.exists() ) {
+                        String msg = String.format("Neither %s nor %s exist", new File( marathonFile ).getAbsolutePath(), jsonFile.getAbsolutePath() );
+                        throw new MinimesosException( msg );
+                    }
+                }
+
+                scanner = new Scanner(new FileReader(jsonFile));
             } else {
                 scanner = new Scanner(new InputStreamReader(System.in));
             }

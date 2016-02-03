@@ -92,7 +92,7 @@ public class Main {
                     MesosCluster.destroy();
                     break;
                 case "install":
-                    String marathonJson = commandInstall.getMarathonJson();
+                    String marathonJson = commandInstall.getMarathonJson( MesosCluster.getMinimesosHostDir() );
                     if(StringUtils.isBlank(marathonJson) ) {
                         jc.usage();
                     } else {
