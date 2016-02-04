@@ -1,13 +1,20 @@
 package com.containersolutions.mesoshelloworld.scheduler;
 
 import com.google.protobuf.ByteString;
+import com.sun.net.httpserver.HttpServer;
 import org.apache.mesos.MesosSchedulerDriver;
 import org.apache.mesos.Protos;
+
+import java.net.InetSocketAddress;
 
 /**
  */
 public class Main {
     public static void main(String[] args) throws Exception {
+        HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
+        server.createContext("/exectutor", new ExecutorHandler());
+        server.setExecutor(null); // creates a default executor
+        server.start();
 
         Configuration configuration = new Configuration(args);
 
