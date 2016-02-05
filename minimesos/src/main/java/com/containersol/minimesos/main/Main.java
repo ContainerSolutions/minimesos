@@ -6,13 +6,16 @@ import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MesosCluster;
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cmdhooks.CliCommandHookExecutor;
+import com.containersol.minimesos.cmdhooks.up.PrintServiceInfo;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.mesos.*;
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.InfoCmd;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.TreeMap;
 
 /**
@@ -79,6 +82,7 @@ public class Main {
             return;
         }
 
+
         try {
             switch (jc.getParsedCommand()) {
                 case "up":
@@ -86,7 +90,7 @@ public class Main {
                     CliCommandHookExecutor.fireCallbacks("up", Main.clusterId, commandUp);
                     break;
                 case "info":
-                    printInfo();
+                    printInfo(commandInfo);
                     break;
                 case "destroy":
                     MesosCluster.destroy();
@@ -135,12 +139,24 @@ public class Main {
                     .withZooKeeper(zooKeeperImageTag)
                     .withMaster(zooKeeper -> new MesosMasterExtended(dockerClient, zooKeeper, MesosMaster.MESOS_MASTER_IMAGE, mesosImageTag, new TreeMap<>(), exposedHostPorts))
                     .withContainer(zooKeeper -> new Marathon(dockerClient, zooKeeper, marathonImageTag, exposedHostPorts), ClusterContainers.Filter.zooKeeper());
+
+            // TODO: replace this file by richer YAML configuration. See #185
+            List<String> agentResources = commandUp.loadAgentResources( MesosCluster.getMinimesosHostDir() );
+
             for (int i = 0; i < commandUp.getNumAgents(); i++) {
-                configBuilder.withSlave(zooKeeper -> new MesosSlaveExtended( dockerClient, "ports(*):[33000-34000]", "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, mesosImageTag));
+                String resources;
+                if (agentResources != null && agentResources.size() > i) {
+                    resources = agentResources.get(i);
+                } else {
+                    resources = MesosSlave.DEFAULT_RESOURCES;
+                }
+                configBuilder.withSlave(zooKeeper -> new MesosSlaveExtended(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, mesosImageTag));
             }
+
             if (commandUp.getStartConsul()) {
                 configBuilder.withConsul();
             }
+
             MesosCluster cluster = new MesosCluster(configBuilder.build());
             cluster.start(timeout);
             cluster.writeClusterId();
@@ -151,11 +167,15 @@ public class Main {
 
     }
 
-    private static void printInfo() {
+    private static void printInfo(CommandInfo cmd) throws Exception {
         String clusterId = MesosCluster.readClusterId();
         if (clusterId != null) {
+
             LOGGER.info("Minimesos cluster is running");
             LOGGER.info("Mesos version: " + MesosContainer.MESOS_IMAGE_TAG.substring(0, MesosContainer.MESOS_IMAGE_TAG.indexOf("-")));
+
+            new PrintServiceInfo().setCmd(cmd).setClusterId(clusterId).call();
+
             // todo: properly add service url printouts
         } else {
             LOGGER.info("Minimesos cluster is not running");
