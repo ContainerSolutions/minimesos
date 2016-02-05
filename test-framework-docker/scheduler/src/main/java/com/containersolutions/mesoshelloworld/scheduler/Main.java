@@ -5,18 +5,16 @@ import com.sun.net.httpserver.HttpServer;
 import org.apache.mesos.MesosSchedulerDriver;
 import org.apache.mesos.Protos;
 
-import java.net.InetSocketAddress;
-
 /**
  */
 public class Main {
     public static void main(String[] args) throws Exception {
-        HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
-        server.createContext("/executor", new ExecutorHandler());
+        Configuration configuration = new Configuration(args);
+
+        HttpServer server = HttpServer.create(configuration.getAddress(), 0);
+        server.createContext("/" + configuration.getExecutorJarName(), new ExecutorHandler());
         server.setExecutor(null); // creates a default executor
         server.start();
-
-        Configuration configuration = new Configuration(args);
 
         Protos.FrameworkInfo.Builder frameworkBuilder = Protos.FrameworkInfo.newBuilder()
                 .setUser("") // Have Mesos fill in the current user.
