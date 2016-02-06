@@ -126,7 +126,6 @@ public class MesosCluster extends ExternalResource {
         return container.getContainerId();
     }
 
-
     /**
      * Retrieves JSON with Mesos Cluster master state
      *
@@ -136,15 +135,6 @@ public class MesosCluster extends ExternalResource {
     public static String getClusterStateInfo(String clusterId) {
         Container container = getContainer(clusterId, "master");
         return getContainerStateInfo(container);
-    }
-
-    /**
-     * Retrieves JSON with Mesos Cluster master state
-     *
-     * @return stage JSON
-     */
-    public String getClusterStateInfo() {
-        return getClusterStateInfo( clusterId );
     }
 
     /**
