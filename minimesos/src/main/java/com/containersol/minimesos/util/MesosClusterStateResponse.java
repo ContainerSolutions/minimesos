@@ -22,15 +22,15 @@ public class MesosClusterStateResponse implements Callable<Boolean> {
 
     @Override
     public Boolean call() throws Exception {
+        String stateUrl = mesosCluster.getMesosMasterContainer().getStateUrl();
         try {
-            String stateUrl = mesosCluster.getStateUrl();
             int activated_slaves = Unirest.get(stateUrl).asJson().getBody().getObject().getInt("activated_slaves");
             if (activated_slaves != mesosCluster.getSlaves().length) {
                 LOGGER.debug("Waiting for " + mesosCluster.getSlaves().length + " activated slaves - current number of activated slaves: " + activated_slaves);
                 return false;
             }
         } catch (UnirestException e) {
-            LOGGER.debug("Polling Mesos Master state on host: \"" + mesosCluster.getStateUrl() + "\"...");
+            LOGGER.debug("Polling Mesos Master state on host: \"" + stateUrl + "\"...");
             return false;
         } catch (Exception e) {
             LOGGER.error("An error occured while polling Mesos master", e);

@@ -28,13 +28,13 @@ public class FlagsTest {
 
     @Test
     public void clusterHasZookeeperUrl() throws UnirestException {
-        Assert.assertEquals("zk://" + cluster.getZkContainer().getIpAddress() + ":2181/mesos", cluster.getFlags().get("zk"));
+        Assert.assertEquals("zk://" + cluster.getZkContainer().getIpAddress() + ":2181/mesos", cluster.getMesosMasterContainer().getFlags().get("zk"));
     }
 
     @Test
     public void extraEnvironmentVariablesPassedToMesosMaster() throws UnirestException {
-        Assert.assertEquals("true", cluster.getFlags().get("authenticate"));
-        Assert.assertEquals(aclExampleUnknownSyntaxUsedInStateJson, cluster.getFlags().get("acls"));
+        Assert.assertEquals("true", cluster.getMesosMasterContainer().getFlags().get("authenticate"));
+        Assert.assertEquals(aclExampleUnknownSyntaxUsedInStateJson, cluster.getMesosMasterContainer().getFlags().get("acls"));
     }
 
     public static class MesosMasterEnvVars extends MesosMaster {
