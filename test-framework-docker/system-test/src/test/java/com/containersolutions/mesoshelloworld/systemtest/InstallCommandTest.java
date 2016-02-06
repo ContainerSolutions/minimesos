@@ -56,9 +56,9 @@ public class InstallCommandTest {
         String masterIp = CLUSTER.getMesosMasterContainer().getIpAddress();
 
         try (FileInputStream fis = new FileInputStream(taskFile)) {
-            String taskJson = IOUtils.toString(fis);
-            taskJson = taskJson.replace( MESOS_MASTER_IP_TOKEN, masterIp );
-            CLUSTER.executeMarathonTask(taskJson);
+            String appJson = IOUtils.toString(fis);
+            appJson = appJson.replace(MESOS_MASTER_IP_TOKEN, masterIp);
+            CLUSTER.getMarathonContainer().deployApp(appJson);
         }
 
         DockerContainersUtil util = new DockerContainersUtil(CONFIG.dockerClient);

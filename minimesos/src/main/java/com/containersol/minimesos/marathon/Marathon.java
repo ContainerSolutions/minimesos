@@ -1,16 +1,20 @@
 package com.containersol.minimesos.marathon;
 
+import com.containersol.minimesos.MesosCluster;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.mesos.ZooKeeper;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports;
+import org.apache.log4j.Logger;
 
 /**
  * Marathon container
  */
 public class Marathon extends AbstractContainer {
+
+    private static Logger LOGGER = Logger.getLogger(MesosCluster.class);
 
     private static final String MARATHON_IMAGE = "mesosphere/marathon";
     public static final String MARATHON_IMAGE_TAG = "v0.13.0";
@@ -49,6 +53,12 @@ public class Marathon extends AbstractContainer {
                 .withCmd("--master", "zk://minimesos-zookeeper:2181/mesos", "--zk", "zk://minimesos-zookeeper:2181/marathon")
                 .withExposedPorts(exposedPort)
                 .withPortBindings(portBindings);
+    }
+
+    public void deployApp(String appJson) {
+        MarathonClient marathonClient = new MarathonClient(getIpAddress());
+        LOGGER.info(String.format("Installing an app on marathon %s", getIpAddress()));
+        marathonClient.deployApp(appJson);
     }
 
 }

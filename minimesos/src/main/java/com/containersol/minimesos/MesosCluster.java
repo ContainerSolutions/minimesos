@@ -436,29 +436,16 @@ public class MesosCluster extends ExternalResource {
         }
     }
 
-    public static void executeMarathonTask(String clusterId, String marathonJson) {
+    public static void deployMarathonApp(String clusterId, String marathonJson) {
         String marathonIp = getContainerIp(clusterId, "marathon");
-        if( marathonIp == null ) {
-            throw new MinimesosException("Marathon container is not found in cluster " + MesosCluster.readClusterId() );
+        if (marathonIp == null) {
+            throw new MinimesosException("Marathon container is not found in cluster " + MesosCluster.readClusterId());
         }
 
-        MarathonClient marathonClient = new MarathonClient( marathonIp );
-        LOGGER.debug(String.format("Installing %s on marathon %s", marathonJson, marathonIp));
+        MarathonClient marathonClient = new MarathonClient(marathonIp);
+        LOGGER.debug(String.format("Installing %s app on marathon %s", marathonJson, marathonIp));
 
-        marathonClient.deployTask(marathonJson);
-    }
-
-    public void executeMarathonTask(String taskJson) {
-
-        String marathonIp = getMarathonContainer().getIpAddress();
-        if( marathonIp == null ) {
-            throw new MinimesosException("Marathon container is not found in cluster " + clusterId );
-        }
-
-        MarathonClient marathonClient = new MarathonClient( marathonIp );
-        LOGGER.info(String.format("Installing a task on marathon %s", marathonIp));
-        marathonClient.deployTask(taskJson);
-
+        marathonClient.deployApp(marathonJson);
     }
 
     public String getStateUrl() {

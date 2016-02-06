@@ -96,7 +96,7 @@ public class Main {
                     if(StringUtils.isBlank(marathonJson) ) {
                         jc.usage();
                     } else {
-                        MesosCluster.executeMarathonTask( clusterId, marathonJson );
+                        MesosCluster.deployMarathonApp(clusterId, marathonJson);
                     }
                     break;
                 case "state":

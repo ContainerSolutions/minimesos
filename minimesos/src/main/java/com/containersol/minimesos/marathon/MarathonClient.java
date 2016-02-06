@@ -22,7 +22,7 @@ public class MarathonClient {
 
     private final String marathonIp;
 
-    public MarathonClient( String marathonIp ) {
+    public MarathonClient(String marathonIp) {
         this.marathonIp = marathonIp;
     }
 
@@ -60,38 +60,34 @@ public class MarathonClient {
         return "http://" + marathonIp + ":" + Marathon.MARATHON_PORT;
     }
 
-    public boolean deployTask(String taskJson) {
-
-        if( marathonIp == null ) {
+    public boolean deployApp(String appJson) {
+        if (marathonIp == null) {
             return false;
         }
 
         String marathonEndpoint = getMarathonEndpoint();
         try {
+            byte[] app = appJson.getBytes(Charset.forName("UTF-8"));
 
-            byte[] task = taskJson.getBytes(Charset.forName("UTF-8"));
-
-            HttpResponse<JsonNode> response = Unirest.post(marathonEndpoint + "/v2/apps").header("accept", "application/json").body(task).asJson();
+            HttpResponse<JsonNode> response = Unirest.post(marathonEndpoint + "/v2/apps").header("accept", "application/json").body(app).asJson();
             JSONObject deployResponse = response.getBody().getObject();
 
-            if( response.getStatus() == HttpStatus.SC_CREATED ) {
+            if (response.getStatus() == HttpStatus.SC_CREATED) {
                 LOGGER.debug(deployResponse);
             } else {
-                throw new MinimesosException("Marathon did not accept the task: " + deployResponse);
+                throw new MinimesosException("Marathon did not accept the app: " + deployResponse);
             }
 
         } catch (UnirestException e) {
-            String msg = "Could not deploy framework on Marathon at " + marathonEndpoint + " => " + e.getMessage();
+            String msg = "Could not deploy app on Marathon at " + marathonEndpoint + " => " + e.getMessage();
             LOGGER.error( msg );
             throw new MinimesosException( msg, e );
         }
 
         return true;
-
     }
 
     public boolean isReady() {
-
         JSONObject appsResponse;
         try {
             appsResponse = Unirest.get( getMarathonEndpoint() + "/v2/apps").header("accept", "application/json").asJson().getBody().getObject();
@@ -103,7 +99,6 @@ public class MarathonClient {
         }
 
         return true;
-
     }
 
 }
