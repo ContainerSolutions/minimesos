@@ -233,10 +233,6 @@ public class MesosCluster extends ExternalResource {
         return (MesosMaster) getOne(ClusterContainers.Filter.mesosMaster()).get();
     }
 
-    public String getZkUrl() {
-        return MesosContainer.getFormattedZKAddress(getZkContainer());
-    }
-
     public ZooKeeper getZkContainer() {
         return (ZooKeeper) getOne(ClusterContainers.Filter.zooKeeper()).get();
     }
