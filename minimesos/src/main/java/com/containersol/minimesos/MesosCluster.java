@@ -21,7 +21,6 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
 import java.io.File;
@@ -174,22 +173,6 @@ public class MesosCluster extends ExternalResource {
 
         return info;
 
-    }
-
-
-    public JSONObject getStateInfoJSON() throws UnirestException {
-        return Unirest.get("http://" + this.getMesosMasterContainer().getIpAddress() + ":" + MesosMaster.MESOS_MASTER_PORT + "/state.json").asJson().getBody().getObject();
-    }
-
-    public Map<String, String> getFlags() throws UnirestException {
-        JSONObject flagsJson = this.getStateInfoJSON().getJSONObject("flags");
-        Map<String, String> flags = new TreeMap<>();
-        for (Object key : flagsJson.keySet()) {
-            String keyString = (String) key;
-            String value = flagsJson.getString(keyString);
-            flags.put(keyString, value);
-        }
-        return flags;
     }
 
     @Override
@@ -372,7 +355,7 @@ public class MesosCluster extends ExternalResource {
     public void waitForState(final Predicate<State> predicate, int seconds) {
         Awaitility.await().atMost(seconds, TimeUnit.SECONDS).until(() -> {
             try {
-                return predicate.test(State.fromJSON(MesosCluster.this.getStateInfoJSON().toString()));
+                return predicate.test(State.fromJSON(getMesosMasterContainer().getStateInfoJSON().toString()));
             } catch (InternalServerErrorException e) {
                 LOGGER.error(e);
                 // This probably means that the mesos cluster isn't ready yet..
@@ -442,10 +425,6 @@ public class MesosCluster extends ExternalResource {
         LOGGER.debug(String.format("Installing %s app on marathon %s", marathonJson, marathonIp));
 
         marathonClient.deployApp(marathonJson);
-    }
-
-    public String getStateUrl() {
-        return "http://" + getMesosMasterContainer().getIpAddress() + ":5050/state.json";
     }
 
 }

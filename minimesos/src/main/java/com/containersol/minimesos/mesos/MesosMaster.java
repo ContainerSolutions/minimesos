@@ -3,7 +3,11 @@ package com.containersol.minimesos.mesos;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import org.json.JSONObject;
 
+import java.util.Map;
 import java.util.TreeMap;
 
 /**
@@ -53,4 +57,24 @@ public class MesosMaster extends MesosContainer {
                 .withExposedPorts(new ExposedPort(MESOS_MASTER_PORT))
                 .withEnv(createMesosLocalEnvironment());
     }
+
+    public String getStateUrl() {
+        return "http://" + getIpAddress() + ":" + MesosMaster.MESOS_MASTER_PORT + "/state.json";
+    }
+
+    public JSONObject getStateInfoJSON() throws UnirestException {
+        return Unirest.get(getStateUrl()).asJson().getBody().getObject();
+    }
+
+    public Map<String, String> getFlags() throws UnirestException {
+        JSONObject flagsJson = this.getStateInfoJSON().getJSONObject("flags");
+        Map<String, String> flags = new TreeMap<>();
+        for (Object key : flagsJson.keySet()) {
+            String keyString = (String) key;
+            String value = flagsJson.getString(keyString);
+            flags.put(keyString, value);
+        }
+        return flags;
+    }
+
 }
