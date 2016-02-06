@@ -48,18 +48,20 @@ public class MesosCluster extends ExternalResource {
 
     private static DockerClient dockerClient = DockerClientFactory.build();
 
-    private final List<AbstractContainer> containers = Collections.synchronizedList(new ArrayList<>());
-
-    private ClusterArchitecture clusterArchitecture;
-
     private final String clusterId;
+
+    private List<AbstractContainer> containers = Collections.synchronizedList(new ArrayList<>());
 
     /**
      * Create a new cluster with a specified cluster architecture.
      * @param clusterArchitecture Represents the layout of the cluster. See {@link ClusterArchitecture} and {@link ClusterUtil}
      */
     public MesosCluster(ClusterArchitecture clusterArchitecture) {
-        this.clusterArchitecture = clusterArchitecture;
+        if (clusterArchitecture == null) {
+            throw new ClusterArchitecture.MesosArchitectureException("No cluster architecture specified");
+        }
+
+        this.containers = clusterArchitecture.getClusterContainers().getContainers();
         clusterId = Integer.toUnsignedString(new SecureRandom().nextInt());
     }
 
@@ -76,11 +78,7 @@ public class MesosCluster extends ExternalResource {
      * @param timeoutSeconds seconds to wait until timeout
      */
     public void start(int timeoutSeconds) {
-        if (clusterArchitecture == null) {
-            throw new ClusterArchitecture.MesosArchitectureException("No cluster architecture specified");
-        }
-
-        clusterArchitecture.getClusterContainers().getContainers().forEach((container) -> addAndStartContainer(container, timeoutSeconds));
+        this.containers.forEach((container) -> container.start(timeoutSeconds));
         // wait until the given number of slaves are registered
         new MesosClusterStateResponse(this).waitFor();
     }
@@ -217,11 +215,10 @@ public class MesosCluster extends ExternalResource {
     }
 
     public List<AbstractContainer> getContainers() {
-        return clusterArchitecture.getClusterContainers().getContainers();
+        return containers;
     }
 
     public MesosSlave[] getSlaves() {
-        List<AbstractContainer> containers = clusterArchitecture.getClusterContainers().getContainers();
         List<AbstractContainer> slaves = containers.stream().filter(ClusterContainers.Filter.mesosSlave()).collect(Collectors.toList());
         MesosSlave[] array = new MesosSlave[slaves.size()];
         return slaves.toArray(array);
@@ -233,7 +230,7 @@ public class MesosCluster extends ExternalResource {
     }
 
     public MesosMaster getMesosMasterContainer() {
-        return (MesosMaster) clusterArchitecture.getClusterContainers().getOne(ClusterContainers.Filter.mesosMaster()).get();
+        return (MesosMaster) getOne(ClusterContainers.Filter.mesosMaster()).get();
     }
 
     public String getZkUrl() {
@@ -241,11 +238,23 @@ public class MesosCluster extends ExternalResource {
     }
 
     public ZooKeeper getZkContainer() {
-        return (ZooKeeper) clusterArchitecture.getClusterContainers().getOne(ClusterContainers.Filter.zooKeeper()).get();
+        return (ZooKeeper) getOne(ClusterContainers.Filter.zooKeeper()).get();
     }
 
     public Marathon getMarathonContainer() {
-        return (Marathon) clusterArchitecture.getClusterContainers().getOne(ClusterContainers.Filter.marathon()).get();
+        return (Marathon) getOne(ClusterContainers.Filter.marathon()).get();
+    }
+
+    /**
+     * Optionally get one of a certain type of type T. Note, this cast will always work because we are filtering on that type.
+     * If it doesn't find that type, the optional is empty so the cast doesn't need to be performed.
+     *
+     * @param filter A predicate that is true when an {@link AbstractContainer} in the list is of type T
+     * @param <T> A container of type T that extends {@link AbstractContainer}
+     * @return the first container it comes across.
+     */
+    private <T extends AbstractContainer> Optional<T> getOne(java.util.function.Predicate<AbstractContainer> filter) {
+        return (Optional<T>) getContainers().stream().filter(filter).findFirst();
     }
 
     public String getClusterId() {
