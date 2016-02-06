@@ -28,7 +28,7 @@ public class StartMesosConsul extends CliCommandHookExecutor {
         String mesosConsul = "";
         try {
             mesosConsul = IOUtils.toString(Thread.currentThread().getContextClassLoader().getResourceAsStream("marathon/mesos-consul.json"), "UTF-8");
-            MesosCluster.executeMarathonTask(clusterId,
+            MesosCluster.deployMarathonApp(clusterId,
                     mesosConsul
                             .replace("{{MINIMESOS_ZOOKEEPER}}", ZooKeeper.formatZKAddress(MesosCluster.getContainerIp(clusterId, "zookeeper")) + "/mesos")
                             .replace("{{MINIMESOS_CONSUL_IP}}", MesosCluster.getContainerIp(clusterId, "consul")));
