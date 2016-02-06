@@ -14,6 +14,10 @@ For installation, use and building
 
 We would like to know what you think of minimesos and how you use it. Check out the [minimesos questionnaire](https://t.co/1NbdwBlFWI)
 
+## Mailinglist
+
+Join the mailinglist at [https://groups.google.com/forum/#!forum/minimesos](https://groups.google.com/forum/#!forum/minimesos)
+
 ## Videos
 
 #### Introduction to Minimesos by Viktor Sadovnikov [@sadovnikov](https://twitter.com/sadovnikov)
