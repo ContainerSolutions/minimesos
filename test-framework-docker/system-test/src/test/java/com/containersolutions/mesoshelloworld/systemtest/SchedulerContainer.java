@@ -25,6 +25,11 @@ public class SchedulerContainer extends AbstractContainer {
     }
 
     @Override
+    protected String getRole() {
+        return "helloworld-scheduler";
+    }
+
+    @Override
     protected void pullImage() {
         dockerClient.pullImageCmd(SCHEDULER_IMAGE);
     }

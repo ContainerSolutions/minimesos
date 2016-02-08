@@ -5,17 +5,13 @@ import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.mesos.*;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Frame;
-import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.jayway.awaitility.Awaitility;
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -62,12 +58,17 @@ public class RunTaskTest {
                 dockerClient) {
 
             @Override
+            protected String getRole() {
+                return "slave";
+            }
+
+            @Override
             protected void pullImage() {}
 
             @Override
             protected CreateContainerCmd dockerCommand() {
                 return dockerClient.createContainerCmd( "containersol/mesos-agent:0.25.0-0.2.70.ubuntu1404" )
-                        .withName("minimesos-execute-" + getClusterId() + "-" + getRandomId())
+                        .withName("minimesos-execute-" + getClusterId() + "-" + getUuid())
                         .withEntrypoint(
                                 "mesos-execute",
                                 "--master=" + cluster.getMesosMasterContainer().getIpAddress() + ":5050",

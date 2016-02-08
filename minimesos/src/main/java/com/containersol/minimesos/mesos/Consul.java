@@ -5,8 +5,6 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 
-import java.util.TreeMap;
-
 /**
  * Base, unmolested Mesos master class
  */
@@ -22,6 +20,11 @@ public class Consul extends AbstractContainer {
     }
 
     @Override
+    protected String getRole() {
+        return "consul";
+    }
+
+    @Override
     protected void pullImage() {
         pullImage(CONSUL_IMAGE_NAME, CONSUL_TAG_NAME);
     }
@@ -34,7 +37,7 @@ public class Consul extends AbstractContainer {
     @Override
     protected CreateContainerCmd dockerCommand() {
         return dockerClient.createContainerCmd(CONSUL_IMAGE_NAME + ":" + CONSUL_TAG_NAME)
-                .withName("minimesos-consul-" + getClusterId() + "-" + getRandomId())
+                .withName("minimesos-consul-" + getClusterId() + "-" + getUuid())
                 .withExposedPorts(new ExposedPort(DEFAULT_CONSUL_PORT));
     }
 }

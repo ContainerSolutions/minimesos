@@ -28,8 +28,31 @@ public class MesosSlave extends MesosContainer {
 
     private String mesosImageName = MESOS_SLAVE_IMAGE;
 
+    protected String resources = DEFAULT_RESOURCES;
+
+    protected String portNumber = MESOS_SLAVE_IMAGE;
+
     public MesosSlave(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
         super(dockerClient, zooKeeperContainer);
+    }
+
+    public MesosSlave(DockerClient dockerClient, String clusterId, String uuid) {
+        super(dockerClient);
+        this.clusterId = clusterId;
+        this.uuid = uuid;
+        associateContainerId();
+    }
+
+    public MesosSlave(DockerClient dockerClient, String resources, String portNumber, ZooKeeper zooKeeperContainer, String mesosLocalImage, String registryTag) {
+        super(dockerClient, zooKeeperContainer);
+        this.resources = resources;
+        this.portNumber = portNumber;
+        setMesosImageName( mesosLocalImage );
+        setMesosImageTag(registryTag);
+    }
+
+    public String getResources() {
+        return resources;
     }
 
     @Override
@@ -46,7 +69,7 @@ public class MesosSlave extends MesosContainer {
         String hostDir = MesosCluster.getMinimesosHostDir().getAbsolutePath();
 
         return dockerClient.createContainerCmd( getMesosImageName() + ":" + getMesosImageTag() )
-                .withName("minimesos-agent-" + getClusterId() + "-" + getRandomId())
+                .withName("minimesos-agent-" + getClusterId() + "-" + getUuid())
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
                 .withPid("host")
@@ -59,11 +82,16 @@ public class MesosSlave extends MesosContainer {
     }
 
     @Override
+    protected String getRole() {
+        return "slave";
+    }
+
+    @Override
     protected CreateContainerCmd dockerCommand() {
         ArrayList<ExposedPort> exposedPorts= new ArrayList<>();
         exposedPorts.add(new ExposedPort(MESOS_SLAVE_PORT));
         try {
-            ArrayList<Integer> resourcePorts = parsePortsFromResource(DEFAULT_PORT_RESOURCES);
+            ArrayList<Integer> resourcePorts = parsePortsFromResource(resources);
             for (Integer port : resourcePorts) {
                 exposedPorts.add(new ExposedPort(port));
             }
@@ -93,7 +121,7 @@ public class MesosSlave extends MesosContainer {
     @Override
     public TreeMap<String, String> getDefaultEnvVars() {
         TreeMap<String,String> envs = new TreeMap<>();
-        envs.put("MESOS_RESOURCES", DEFAULT_RESOURCES);
+        envs.put("MESOS_RESOURCES", resources);
         envs.put("MESOS_PORT", String.valueOf(MESOS_SLAVE_PORT));
         envs.put("MESOS_MASTER", getFormattedZKAddress());
         envs.put("MESOS_SWITCH_USER", "false");

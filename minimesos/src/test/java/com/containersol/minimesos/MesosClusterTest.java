@@ -31,10 +31,10 @@ public class MesosClusterTest {
     protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder(dockerClient)
             .withZooKeeper()
             .withMaster()
-            .withSlave(zooKeeper -> new MesosSlaveExtended(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
-            .withSlave(zooKeeper -> new MesosSlaveExtended(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
-            .withSlave(zooKeeper -> new MesosSlaveExtended(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
-            .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper, true ))
+            .withSlave(zooKeeper -> new MesosSlave(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
+            .withSlave(zooKeeper -> new MesosSlave(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
+            .withSlave(zooKeeper -> new MesosSlave(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
+            .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper, true))
             .build();
 
     @ClassRule
@@ -47,9 +47,21 @@ public class MesosClusterTest {
     }
 
     @Test
+    public void testConstructor() {
+        String clusterId = CLUSTER.getClusterId();
+
+        MesosCluster cluster = new MesosCluster(clusterId);
+
+        assertArrayEquals(CLUSTER.getContainers().toArray(), cluster.getContainers().toArray());
+
+        assertEquals(CLUSTER.getZkContainer().getIpAddress(), cluster.getZkContainer().getIpAddress());
+        assertEquals(CLUSTER.getMesosMasterContainer().getStateUrl(), cluster.getMesosMasterContainer().getStateUrl());
+    }
+
+    @Test
     public void mesosAgentStateInfoJSONMatchesSchema() throws UnirestException, JsonParseException, JsonMappingException {
         String slaveId = CLUSTER.getSlaves()[0].getContainerId();
-        String state = MesosCluster.getContainerStateInfo(slaveId);
+        String state = CLUSTER.getContainerStateInfo(slaveId);
         assertNotNull( state );
     }
 
@@ -76,7 +88,7 @@ public class MesosClusterTest {
         List<MesosSlave> containers = Arrays.asList(CLUSTER.getSlaves());
 
         for (MesosSlave container : containers) {
-            ArrayList<Integer> ports = MesosSlave.parsePortsFromResource(((MesosSlaveExtended)container).getResources());
+            ArrayList<Integer> ports = MesosSlave.parsePortsFromResource(container.getResources());
             InspectContainerResponse response = docker.inspectContainerCmd(container.getContainerId()).exec();
             Map bindings = response.getNetworkSettings().getPorts().getBindings();
             for (Integer port : ports) {

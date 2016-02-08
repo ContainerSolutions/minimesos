@@ -1,6 +1,5 @@
 package com.containersol.minimesos.mesos;
 
-import com.containersol.minimesos.MesosCluster;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -22,6 +21,23 @@ public class ZooKeeper extends AbstractContainer {
         this.zooKeeperImageTag = zooKeeperImageTag;
     }
 
+    protected ZooKeeper(DockerClient dockerClient) {
+        super(dockerClient);
+        this.zooKeeperImageTag = ZOOKEEPER_IMAGE_TAG;
+    }
+
+    @Override
+    protected String getRole() {
+        return "zookeeper";
+    }
+
+    public ZooKeeper(DockerClient dockerClient, String clusterId, String uuid) {
+        super(dockerClient);
+        this.clusterId = clusterId;
+        this.uuid = uuid;
+        associateContainerId();
+    }
+
     @Override
     protected void pullImage() {
         pullImage(MESOS_LOCAL_IMAGE, zooKeeperImageTag);
@@ -30,7 +46,7 @@ public class ZooKeeper extends AbstractContainer {
     @Override
     protected CreateContainerCmd dockerCommand() {
         return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE + ":" + zooKeeperImageTag)
-                .withName("minimesos-zookeeper-" + getClusterId() + "-" + getRandomId())
+                .withName("minimesos-zookeeper-" + getClusterId() + "-" + getUuid())
                 .withExposedPorts(new ExposedPort(DEFAULT_ZOOKEEPER_PORT), new ExposedPort(2888), new ExposedPort(3888));
     }
 

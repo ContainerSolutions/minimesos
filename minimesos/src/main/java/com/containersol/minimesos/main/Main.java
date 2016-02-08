@@ -62,7 +62,7 @@ public class Main {
 
         String clusterId = MesosCluster.readClusterId();
         MesosCluster.checkStateFile(clusterId);
-        clusterId = MesosCluster.readClusterId();
+        MesosCluster cluster = new MesosCluster(clusterId);
 
         if(help) {
             jc.usage();
@@ -86,21 +86,21 @@ public class Main {
                     CliCommandHookExecutor.fireCallbacks("up", Main.clusterId, commandUp);
                     break;
                 case "info":
-                    printInfo();
+                    cluster.info();
                     break;
                 case "destroy":
-                    MesosCluster.destroy();
+                    cluster.destroy();
                     break;
                 case "install":
-                    String marathonJson = commandInstall.getMarathonJson( MesosCluster.getMinimesosHostDir() );
-                    if(StringUtils.isBlank(marathonJson) ) {
+                    String marathonJson = commandInstall.getMarathonJson(MesosCluster.getMinimesosHostDir());
+                    if (StringUtils.isBlank(marathonJson)) {
                         jc.usage();
                     } else {
-                        MesosCluster.deployMarathonApp(clusterId, marathonJson);
+                        cluster.getMarathonContainer().deployApp(marathonJson);
                     }
                     break;
                 case "state":
-                    printState(commandState.getAgent());
+                    cluster.state(commandState.getAgent());
                     break;
                 case "help":
                     jc.usage();
@@ -136,7 +136,7 @@ public class Main {
                     .withMaster(zooKeeper -> new MesosMasterExtended(dockerClient, zooKeeper, MesosMaster.MESOS_MASTER_IMAGE, mesosImageTag, new TreeMap<>(), exposedHostPorts))
                     .withContainer(zooKeeper -> new Marathon(dockerClient, zooKeeper, marathonImageTag, exposedHostPorts), ClusterContainers.Filter.zooKeeper());
             for (int i = 0; i < commandUp.getNumAgents(); i++) {
-                configBuilder.withSlave(zooKeeper -> new MesosSlaveExtended( dockerClient, "ports(*):[33000-34000]", "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, mesosImageTag));
+                configBuilder.withSlave(zooKeeper -> new MesosSlave(dockerClient, "ports(*):[33000-34000]", "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, mesosImageTag));
             }
             if (commandUp.getStartConsul()) {
                 configBuilder.withConsul();
@@ -151,26 +151,5 @@ public class Main {
 
     }
 
-    private static void printInfo() {
-        String clusterId = MesosCluster.readClusterId();
-        if (clusterId != null) {
-            LOGGER.info("Minimesos cluster is running");
-            LOGGER.info("Mesos version: " + MesosContainer.MESOS_IMAGE_TAG.substring(0, MesosContainer.MESOS_IMAGE_TAG.indexOf("-")));
-            // todo: properly add service url printouts
-        } else {
-            LOGGER.info("Minimesos cluster is not running");
-        }
-    }
-
-    private static void printState(String agent) {
-        String clusterId = MesosCluster.readClusterId();
-        String stateInfo = (StringUtils.isEmpty(agent)) ? MesosCluster.getClusterStateInfo(clusterId) : MesosCluster.getContainerStateInfo(clusterId);
-        if( stateInfo != null ) {
-            LOGGER.info(stateInfo);
-        } else {
-            throw new MinimesosException("Did not find the cluster or requested container");
-        }
-
-    }
 
 }

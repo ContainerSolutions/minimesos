@@ -17,6 +17,11 @@ class HelloWorldContainer extends AbstractContainer {
     }
 
     @Override
+    protected String getRole() {
+        return "helloworld";
+    }
+
+    @Override
     protected void pullImage() {
         pullImage(HELLO_WORLD_IMAGE, "latest");
     }
@@ -24,7 +29,7 @@ class HelloWorldContainer extends AbstractContainer {
     @Override
     protected CreateContainerCmd dockerCommand() {
         return dockerClient.createContainerCmd(HELLO_WORLD_IMAGE).withPrivileged(true)
-                .withName("helloworld-" + getRandomId());
+                .withName("helloworld-" + getUuid());
     }
 
 }

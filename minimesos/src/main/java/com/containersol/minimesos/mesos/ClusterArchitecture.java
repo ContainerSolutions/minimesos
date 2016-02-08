@@ -174,14 +174,14 @@ public class ClusterArchitecture {
 
         /**
          * All default instance, but with defined resources
-         * @param resources definition of resources
+         * @param newResources definition of resources
          */
-        public Builder withSlave(String resources) {
+        public Builder withSlave(String newResources) {
             return withSlave(zooKeeper -> new MesosSlave(dockerClient, zooKeeper) {
                 @Override
                 public TreeMap<String, String> getDefaultEnvVars() {
                     TreeMap<String, String> envVars = super.getDefaultEnvVars();
-                    envVars.put("MESOS_RESOURCES", resources);
+                    envVars.put("MESOS_RESOURCES", newResources);
                     return envVars;
                 }
             });
