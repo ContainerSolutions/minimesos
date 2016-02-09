@@ -28,11 +28,9 @@ public abstract class AbstractContainer {
 
     private static Logger LOGGER = Logger.getLogger(AbstractContainer.class);
 
-    protected String clusterId;
-
-    protected String uuid;
-
-    protected String containerId = "";
+    private String clusterId;
+    private String uuid;
+    private String containerId;
 
     private boolean removed;
 
@@ -45,17 +43,11 @@ public abstract class AbstractContainer {
         this.uuid = Integer.toUnsignedString(new SecureRandom().nextInt());
     }
 
-    protected void associateContainerId() {
-        List<Container> containers = dockerClient.listContainersCmd().exec();
-        for (Container container : containers) {
-            for (String name : container.getNames()) {
-                if (name.contains(clusterId) && name.contains(uuid)) {
-                    this.containerId = container.getId();
-                    return;
-                }
-            }
-        }
-        throw new RuntimeException("No container found with cluster ID " + clusterId + " and uuid " + uuid);
+    public AbstractContainer(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
+        this.dockerClient = dockerClient;
+        this.clusterId = clusterId;
+        this.uuid = uuid;
+        this.containerId = containerId;
     }
 
     protected abstract String getRole();
@@ -143,8 +135,12 @@ public abstract class AbstractContainer {
         this.ipAddress = res;
     }
 
-    public String getName() {
-        return dockerCommand().getName();
+    /**
+     * Builds container name following the naming convention
+     * @return container name
+     */
+    public String buildContainerName() {
+        return String.format("minimesos-%s-%s-%s", getRole(), getClusterId(), getUuid() );
     }
 
     /**

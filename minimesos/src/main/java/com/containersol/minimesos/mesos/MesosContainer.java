@@ -24,8 +24,8 @@ public abstract class MesosContainer extends AbstractContainer {
         this.zooKeeperContainer = zooKeeperContainer;
     }
 
-    protected MesosContainer(DockerClient dockerClient) {
-        super(dockerClient);
+    public MesosContainer(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
+        super(dockerClient, clusterId, uuid, containerId);
     }
 
     public abstract String getMesosImageName();

@@ -36,11 +36,8 @@ public class MesosSlave extends MesosContainer {
         super(dockerClient, zooKeeperContainer);
     }
 
-    public MesosSlave(DockerClient dockerClient, String clusterId, String uuid) {
-        super(dockerClient);
-        this.clusterId = clusterId;
-        this.uuid = uuid;
-        associateContainerId();
+    public MesosSlave(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
+        super(dockerClient, clusterId, uuid, containerId);
     }
 
     public MesosSlave(DockerClient dockerClient, String resources, String portNumber, ZooKeeper zooKeeperContainer, String mesosLocalImage, String registryTag) {
@@ -69,7 +66,7 @@ public class MesosSlave extends MesosContainer {
         String hostDir = MesosCluster.getMinimesosHostDir().getAbsolutePath();
 
         return dockerClient.createContainerCmd( getMesosImageName() + ":" + getMesosImageTag() )
-                .withName("minimesos-agent-" + getClusterId() + "-" + getUuid())
+                .withName( buildContainerName() )
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
                 .withPid("host")
@@ -83,7 +80,7 @@ public class MesosSlave extends MesosContainer {
 
     @Override
     protected String getRole() {
-        return "slave";
+        return "agent";
     }
 
     @Override

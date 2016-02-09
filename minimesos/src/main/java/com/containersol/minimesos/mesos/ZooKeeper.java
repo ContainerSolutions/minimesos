@@ -22,20 +22,16 @@ public class ZooKeeper extends AbstractContainer {
     }
 
     protected ZooKeeper(DockerClient dockerClient) {
-        super(dockerClient);
-        this.zooKeeperImageTag = ZOOKEEPER_IMAGE_TAG;
+        this(dockerClient, ZOOKEEPER_IMAGE_TAG);
+    }
+
+    public ZooKeeper(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
+        super(dockerClient, clusterId, uuid, containerId);
     }
 
     @Override
     protected String getRole() {
         return "zookeeper";
-    }
-
-    public ZooKeeper(DockerClient dockerClient, String clusterId, String uuid) {
-        super(dockerClient);
-        this.clusterId = clusterId;
-        this.uuid = uuid;
-        associateContainerId();
     }
 
     @Override
@@ -46,7 +42,7 @@ public class ZooKeeper extends AbstractContainer {
     @Override
     protected CreateContainerCmd dockerCommand() {
         return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE + ":" + zooKeeperImageTag)
-                .withName("minimesos-zookeeper-" + getClusterId() + "-" + getUuid())
+                .withName( buildContainerName() )
                 .withExposedPorts(new ExposedPort(DEFAULT_ZOOKEEPER_PORT), new ExposedPort(2888), new ExposedPort(3888));
     }
 

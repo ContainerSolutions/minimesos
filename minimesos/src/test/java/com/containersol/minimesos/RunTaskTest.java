@@ -59,7 +59,7 @@ public class RunTaskTest {
 
             @Override
             protected String getRole() {
-                return "slave";
+                return "test";
             }
 
             @Override
@@ -68,7 +68,7 @@ public class RunTaskTest {
             @Override
             protected CreateContainerCmd dockerCommand() {
                 return dockerClient.createContainerCmd( "containersol/mesos-agent:0.25.0-0.2.70.ubuntu1404" )
-                        .withName("minimesos-execute-" + getClusterId() + "-" + getUuid())
+                        .withName( buildContainerName() )
                         .withEntrypoint(
                                 "mesos-execute",
                                 "--master=" + cluster.getMesosMasterContainer().getIpAddress() + ":5050",

@@ -35,11 +35,8 @@ public class Marathon extends AbstractContainer {
         this.exposedHostPort = exposedHostPort;
     }
 
-    public Marathon(DockerClient dockerClient, String clusterId, String uuid) {
-        super(dockerClient);
-        this.clusterId = clusterId;
-        this.uuid = uuid;
-        associateContainerId();
+    public Marathon(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
+        super(dockerClient, clusterId, uuid, containerId);
     }
 
     @Override
@@ -64,7 +61,7 @@ public class Marathon extends AbstractContainer {
             portBindings.bind(exposedPort, Ports.Binding(MARATHON_PORT));
         }
         return dockerClient.createContainerCmd(MARATHON_IMAGE + ":" + marathonImageTag)
-                .withName("minimesos-marathon-" + getClusterId() + "-" + getUuid())
+                .withName( buildContainerName() )
                 .withExtraHosts("minimesos-zookeeper:" + this.zooKeeper.getIpAddress())
                 .withCmd("--master", "zk://minimesos-zookeeper:2181/mesos", "--zk", "zk://minimesos-zookeeper:2181/marathon")
                 .withExposedPorts(exposedPort)

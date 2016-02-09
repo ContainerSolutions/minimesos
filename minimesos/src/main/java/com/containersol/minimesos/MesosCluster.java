@@ -82,25 +82,27 @@ public class MesosCluster extends ExternalResource {
         for (Container container : containers) {
             for (String name : container.getNames()) {
                 if (name.matches("^/minimesos-.+-" + clusterId + "-\\d+$")) {
-                    String[] parts = name.split("-");
 
+                    String containerId = container.getId();
+                    String[] parts = name.split("-");
                     String role = parts[1];
                     String uuid = parts[3];
 
                     switch (role) {
                         case "zookeeper":
-                            this.containers.add(new ZooKeeper(dockerClient, clusterId, uuid));
+                            this.containers.add(new ZooKeeper(dockerClient, clusterId, uuid, containerId));
                             break;
                         case "agent":
-                            this.containers.add(new MesosSlave(dockerClient, clusterId, uuid));
+                            this.containers.add(new MesosSlave(dockerClient, clusterId, uuid, containerId));
                             break;
                         case "master":
-                            this.containers.add(new MesosMaster(dockerClient, clusterId, uuid));
+                            this.containers.add(new MesosMaster(dockerClient, clusterId, uuid, containerId));
                             break;
                         case "marathon":
-                            this.containers.add(new Marathon(dockerClient, clusterId, uuid));
+                            this.containers.add(new Marathon(dockerClient, clusterId, uuid, containerId));
+                            break;
                     }
-                    break;
+
                 }
             }
         }
@@ -221,12 +223,12 @@ public class MesosCluster extends ExternalResource {
     public String addAndStartContainer(AbstractContainer container, int timeout) {
 
         container.setClusterId(clusterId);
-        LOGGER.debug( String.format("Starting %s (%s) container", container.getName(), container.getContainerId()) );
+        LOGGER.debug( String.format("Starting %s (%s) container", container.buildContainerName(), container.getContainerId()) );
 
         try {
             container.start(timeout);
         } catch (Exception exc ) {
-            String msg = String.format("Failed to start %s (%s) container", container.getName(), container.getContainerId());
+            String msg = String.format("Failed to start %s (%s) container", container.buildContainerName(), container.getContainerId());
             LOGGER.error( msg, exc );
             throw new MinimesosException(msg, exc );
         }
@@ -310,7 +312,7 @@ public class MesosCluster extends ExternalResource {
     }
 
     public List<AbstractContainer> getContainers() {
-        return Collections.unmodifiableList(containers);
+        return containers;
     }
 
     public MesosSlave[] getSlaves() {

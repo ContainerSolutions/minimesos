@@ -37,7 +37,7 @@ public class Consul extends AbstractContainer {
     @Override
     protected CreateContainerCmd dockerCommand() {
         return dockerClient.createContainerCmd(CONSUL_IMAGE_NAME + ":" + CONSUL_TAG_NAME)
-                .withName("minimesos-consul-" + getClusterId() + "-" + getUuid())
+                .withName( buildContainerName() )
                 .withExposedPorts(new ExposedPort(DEFAULT_CONSUL_PORT));
     }
 }
