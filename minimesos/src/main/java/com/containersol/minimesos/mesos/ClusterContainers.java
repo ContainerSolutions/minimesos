@@ -51,6 +51,7 @@ public class ClusterContainers {
      * @param <T> A container of type T that extends {@link AbstractContainer}
      * @return the first container it comes across.
      */
+    @SuppressWarnings("unchecked")
     public <T extends AbstractContainer> Optional<T> getOne(Predicate<AbstractContainer> filter) {
         return (Optional<T>) getContainers().stream().filter(filter).findFirst();
     }
