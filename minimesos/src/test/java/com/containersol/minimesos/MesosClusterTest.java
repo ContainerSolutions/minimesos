@@ -43,7 +43,7 @@ public class MesosClusterTest {
     @After
     public void after() {
         DockerContainersUtil util = new DockerContainersUtil(CONFIG.dockerClient);
-        util.getContainers(false).filterByName("^mesos-[0-9a-f\\-]*S\\d*\\.[0-9a-f\\-]*$").remove();
+        util.getContainers(false).filterByName( HelloWorldContainer.CONTAINER_NAME_PATTERN ).kill().remove();
     }
 
     @Test
@@ -61,7 +61,7 @@ public class MesosClusterTest {
     @Test
     public void mesosAgentStateInfoJSONMatchesSchema() throws UnirestException, JsonParseException, JsonMappingException {
         String slaveId = CLUSTER.getSlaves()[0].getContainerId();
-        String state = CLUSTER.getContainerStateInfo(slaveId);
+        String state = MesosCluster.getContainerStateInfo(slaveId);
         assertNotNull( state );
     }
 

@@ -35,7 +35,7 @@ public class NewMesosClusterTest {
     @After
     public void after() {
         DockerContainersUtil util = new DockerContainersUtil(dockerClient);
-        util.getContainers(false).filterByName("^mesos-[0-9a-f\\-]*S\\d*\\.[0-9a-f\\-]*$").remove();
+        util.getContainers(false).filterByName( HelloWorldContainer.CONTAINER_NAME_PATTERN ).kill().remove();
     }
 
     @Test

@@ -11,6 +11,7 @@ class HelloWorldContainer extends AbstractContainer {
 
     public static final String HELLO_WORLD_IMAGE = "tutum/hello-world";
     public static final int PORT = 80;
+    public static final String CONTAINER_NAME_PATTERN = "^helloworld-[0-9a-f\\-]*$";
 
     protected HelloWorldContainer(DockerClient dockerClient) {
         super(dockerClient);
