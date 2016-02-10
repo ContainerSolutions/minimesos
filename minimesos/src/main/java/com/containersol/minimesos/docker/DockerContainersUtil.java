@@ -93,7 +93,7 @@ public class DockerContainersUtil {
     public void remove() {
         if( containers != null ) {
             for (Container container : containers) {
-                dockerClient.removeContainerCmd(container.getId()).exec();
+                dockerClient.removeContainerCmd(container.getId()).withForce(true).withRemoveVolumes(true).exec();
             }
         }
     }

@@ -4,16 +4,8 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MesosCluster;
-import com.containersol.minimesos.MinimesosException;
-import com.containersol.minimesos.cmdhooks.CliCommandHookExecutor;
-import com.containersol.minimesos.marathon.Marathon;
-import com.containersol.minimesos.mesos.*;
-import com.github.dockerjava.api.DockerClient;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.TreeMap;
 
 /**
  * Main method for interacting with minimesos.
@@ -22,134 +14,112 @@ import java.util.TreeMap;
 public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
-    private static CommandUp commandUp;
-
-    private static String clusterId;
-
-    @Parameter(names = {"--help", "-help", "-?", "-h"}, help = true)
+    @Parameter(names = {"--help", "-help", "-?", "-h"}, description = "Show help")
     private static boolean help = false;
 
-    public static CommandUp getCommandUp() {
-        return commandUp;
+    private final JCommander jc;
+
+    private CommandUp commandUp;
+    private CommandDestroy commandDestroy;
+    private CommandHelp commandHelp;
+    private CommandInfo commandInfo;
+    private CommandInstall commandInstall;
+    private CommandState commandState;
+
+    public static void main(String[] args) {
+        Main main = new Main();
+        main.setCommandUp(new CommandUp());
+        main.setCommandDestroy(new CommandDestroy());
+        main.setCommandHelp(new CommandHelp());
+        main.setCommandInstall(new CommandInstall());
+        main.setCommandState(new CommandState());
+        main.setCommandInfo(new CommandInfo());
+        main.run(args);
     }
 
-    public static void main(String[] args)  {
-
-        JCommander jc = new JCommander(new Main());
+    public Main() {
+        jc = new JCommander(this);
         jc.setProgramName("minimesos");
+    }
 
-        commandUp = new CommandUp();
-        CommandDestroy commandDestroy = new CommandDestroy();
-        CommandHelp commandHelp = new CommandHelp();
-        CommandInfo commandInfo = new CommandInfo();
-        CommandInstall commandInstall = new CommandInstall();
-        CommandState commandState = new CommandState();
-
-        jc.addCommand("up", commandUp);
-        jc.addCommand("destroy", commandDestroy);
-        jc.addCommand("help", commandHelp);
-        jc.addCommand("info", commandInfo);
-        jc.addCommand("install", commandInstall );
-        jc.addCommand("state", commandState);
+    public void run(String[] args) {
+        jc.addCommand(CommandUp.CLINAME, commandUp);
+        jc.addCommand(CommandDestroy.CLINAME, commandDestroy);
+        jc.addCommand(CommandHelp.CLINAME, commandHelp);
+        jc.addCommand(CommandInfo.CLINAME, commandInfo);
+        jc.addCommand(CommandInstall.CLINAME, commandInstall);
+        jc.addCommand(CommandState.CLINAME, commandState);
 
         try {
             jc.parse(args);
         } catch (Exception e) {
             LOGGER.error("Failed to parse parameters. " + e.getMessage() + "\n" );
             jc.usage();
-            System.exit(1);
+            return;
         }
 
-        String clusterId = MesosCluster.readClusterId();
-        MesosCluster.checkStateFile(clusterId);
-        MesosCluster cluster = MesosCluster.loadCluster(clusterId);
-
-        if(help) {
+        if (jc.getParameters().get(0).isAssigned()) {
             jc.usage();
             return;
         }
 
         if (jc.getParsedCommand() == null) {
-            if (clusterId != null) {
-                MesosCluster.printServiceUrl(clusterId, "master", commandUp);
-                MesosCluster.printServiceUrl(clusterId, "marathon", commandUp);
+            MesosCluster cluster = ClusterRepository.loadCluster();
+            if (cluster != null) {
+                MesosCluster.printServiceUrl(cluster.getClusterId(), "master", commandUp);
+                MesosCluster.printServiceUrl(cluster.getClusterId(), "marathon", commandUp);
             } else {
                 jc.usage();
             }
             return;
         }
 
-        try {
-            switch (jc.getParsedCommand()) {
-                case "up":
-                    doUp(commandUp.getTimeout());
-                    CliCommandHookExecutor.fireCallbacks("up", Main.clusterId, commandUp);
-                    break;
-                case "info":
-                    cluster.info();
-                    break;
-                case "destroy":
-                    cluster.destroy();
-                    break;
-                case "install":
-                    String marathonJson = commandInstall.getMarathonJson(MesosCluster.getMinimesosHostDir());
-                    if (StringUtils.isBlank(marathonJson)) {
-                        jc.usage();
-                    } else {
-                        cluster.getMarathonContainer().deployApp(marathonJson);
-                    }
-                    break;
-                case "state":
-                    cluster.state(commandState.getAgent());
-                    break;
-                case "help":
-                    jc.usage();
-            }
-        } catch (MinimesosException mme) {
-            LOGGER.error("ERROR: " + mme.getMessage());
-            System.exit(1);
-        } catch (Exception e) {
-            LOGGER.error("ERROR: " + e.toString() );
-            System.exit(1);
+        switch (jc.getParsedCommand()) {
+            case CommandHelp.CLINAME:
+                jc.usage();
+                break;
+            case CommandUp.CLINAME:
+                commandUp.execute();
+                break;
+            case CommandDestroy.CLINAME:
+                commandDestroy.execute();
+                break;
+            case CommandInfo.CLINAME:
+                commandInfo.execute();
+                break;
+            case CommandInstall.CLINAME:
+                commandInstall.execute();
+                break;
+            case CommandState.CLINAME:
+                commandState.execute();
+                break;
         }
 
+        LOGGER.error("No such command: " + jc.getParsedCommand());
     }
 
-    /**
-     * @param timeout in seconds
-     */
-    private static void doUp(int timeout) {
-
-        String clusterId = MesosCluster.readClusterId();
-
-        boolean exposedHostPorts = commandUp.isExposedHostPorts();
-        String marathonImageTag = commandUp.getMarathonImageTag();
-        String mesosImageTag = commandUp.getMesosImageTag();
-        String zooKeeperImageTag = commandUp.getZooKeeperImageTag();
-
-        if (clusterId == null) {
-
-            DockerClient dockerClient = DockerClientFactory.build();
-
-            ClusterArchitecture.Builder configBuilder = new ClusterArchitecture.Builder(dockerClient)
-                    .withZooKeeper(zooKeeperImageTag)
-                    .withMaster(zooKeeper -> new MesosMasterExtended(dockerClient, zooKeeper, MesosMaster.MESOS_MASTER_IMAGE, mesosImageTag, new TreeMap<>(), exposedHostPorts))
-                    .withContainer(zooKeeper -> new Marathon(dockerClient, zooKeeper, marathonImageTag, exposedHostPorts), ClusterContainers.Filter.zooKeeper());
-            for (int i = 0; i < commandUp.getNumAgents(); i++) {
-                configBuilder.withSlave(zooKeeper -> new MesosSlave(dockerClient, "ports(*):[33000-34000]", 5051, zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, mesosImageTag));
-            }
-            if (commandUp.getStartConsul()) {
-                configBuilder.withConsul();
-            }
-            MesosCluster cluster = new MesosCluster(configBuilder.build());
-            cluster.start(timeout);
-            cluster.writeClusterId();
-
-        }
-
-        Main.clusterId = MesosCluster.readClusterId();
-
+    public void setCommandUp(CommandUp commandUp) {
+        this.commandUp = commandUp;
     }
 
+    public void setCommandDestroy(CommandDestroy commandDestroy) {
+        this.commandDestroy = commandDestroy;
+    }
+
+    public void setCommandHelp(CommandHelp commandHelp) {
+        this.commandHelp = commandHelp;
+    }
+
+    public void setCommandInstall(CommandInstall commandInstall) {
+        this.commandInstall = commandInstall;
+    }
+
+    public void setCommandState(CommandState commandState) {
+        this.commandState = commandState;
+    }
+
+    public void setCommandInfo(CommandInfo commandInfo) {
+        this.commandInfo = commandInfo;
+    }
 
 }

@@ -15,8 +15,11 @@ import java.util.stream.Stream;
  * Installs a framework with Marathon
  */
 @Parameters(commandDescription = "Install a framework with Marathon")
-public class CommandInstall {
+public class CommandInstall implements Command {
+
     private static Logger LOGGER = Logger.getLogger(CommandInstall.class);
+
+    public static final String CLINAME = "install";
 
     @Parameter(names = "--exposedHostPorts", description = "Expose the Mesos and Marathon UI ports on the host level (we recommend to enable this on Mac (e.g. when using docker-machine) and disable on Linux).")
     private boolean exposedHostPorts = false;
@@ -64,4 +67,22 @@ public class CommandInstall {
         return exposedHostPorts;
     }
 
+    @Override
+    public boolean getStartConsul() {
+        return false;
+    }
+
+    public void execute() {
+
+//                    cluster = MesosCluster.loadCluster(clusterId);
+//                    String marathonJson = commandInstall.getMarathonJson(MesosCluster.getHostDir());
+//                    if (StringUtils.isBlank(marathonJson)) {
+//                        jc.usage();
+//                    } else {
+//                        cluster.getMarathonContainer().deployApp(marathonJson);
+//                    }
+//                    break;
+
+
+    }
 }

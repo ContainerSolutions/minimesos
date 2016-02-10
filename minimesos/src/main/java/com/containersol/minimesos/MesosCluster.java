@@ -3,7 +3,8 @@ package com.containersol.minimesos;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.container.ContainerName;
 import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.containersol.minimesos.main.MinimesosCliCommand;
+import com.containersol.minimesos.main.Command;
+import com.containersol.minimesos.main.Main;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.marathon.MarathonClient;
 import com.containersol.minimesos.mesos.*;
@@ -19,17 +20,11 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.junit.rules.ExternalResource;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -40,10 +35,11 @@ import java.util.stream.Collectors;
  */
 public class MesosCluster extends ExternalResource {
 
-    public static final String MINIMESOS_HOST_DIR_PROPERTY = "minimesos.host.dir";
-    public static final String MINIMESOS_FILE_PROPERTY = "minimesos.cluster";
+    private static Logger CLILOGGER = Logger.getLogger(Main.class);
 
     private static Logger LOGGER = Logger.getLogger(MesosCluster.class);
+
+    public static final String MINIMESOS_HOST_DIR_PROPERTY = "minimesos.host.dir";
 
     private static DockerClient dockerClient = DockerClientFactory.build();
 
@@ -143,7 +139,6 @@ public class MesosCluster extends ExternalResource {
         this.containers.forEach((container) -> container.start(timeoutSeconds));
         // wait until the given number of slaves are registered
         new MesosClusterStateResponse(this).waitFor();
-        writeClusterId();
     }
 
     /**
@@ -151,11 +146,9 @@ public class MesosCluster extends ExternalResource {
      */
     public void info() {
         if (clusterId != null) {
-            LOGGER.info("Minimesos cluster is running");
-            LOGGER.info("Mesos version: " + MesosContainer.MESOS_IMAGE_TAG.substring(0, MesosContainer.MESOS_IMAGE_TAG.indexOf("-")));
+            CLILOGGER.info("Minimesos cluster is running");
+            CLILOGGER.info("Mesos version: " + MesosContainer.MESOS_IMAGE_TAG.substring(0, MesosContainer.MESOS_IMAGE_TAG.indexOf("-")));
             // todo: properly add service url printouts
-        } else {
-            LOGGER.info("Minimesos cluster is not running");
         }
     }
 
@@ -205,11 +198,6 @@ public class MesosCluster extends ExternalResource {
                 if (ContainerName.belongsToCluster(container.getNames(), clusterId)) {
                     dockerClient.removeContainerCmd(container.getId()).withForce().withRemoveVolumes(true).exec();
                 }
-            }
-
-            File minimesosFile = getMinimesosFile();
-            if (minimesosFile.exists()) {
-                minimesosFile.deleteOnExit();
             }
 
             LOGGER.info("Destroyed minimesos cluster " + clusterId);
@@ -391,70 +379,6 @@ public class MesosCluster extends ExternalResource {
         return null;
     }
 
-    /**
-     * Check existence of a running minimesos master container
-     * @param clusterId String
-     * @return boolean
-     */
-    public static boolean isUp(String clusterId) {
-        if (clusterId != null) {
-            DockerClient dockerClient = DockerClientFactory.build();
-            List<Container> containers = dockerClient.listContainersCmd().exec();
-            for (Container container : containers) {
-                if (ContainerName.hasRoleInCluster(container.getNames(), clusterId, "master")) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public static String readClusterId() {
-        try {
-            return IOUtils.toString(new FileReader(getMinimesosFile()));
-        } catch (IOException e) {
-            return null;
-        }
-    }
-
-    /**
-     * @return never null
-     */
-    private static File getMinimesosFile() {
-        return new File( getMinimesosDir(), MINIMESOS_FILE_PROPERTY);
-    }
-
-    public static File getMinimesosDir() {
-
-        File hostDir = getMinimesosHostDir();
-        File minimesosDir = new File( hostDir, ".minimesos");
-        if( !minimesosDir.exists() ) {
-            if( !minimesosDir.mkdirs() ) {
-                throw new MinimesosException( "Failed to create " + minimesosDir.getAbsolutePath() + " directory" );
-            }
-        }
-
-        return minimesosDir;
-    }
-
-    public static File getMinimesosHostDir() {
-        String sp = System.getProperty(MINIMESOS_HOST_DIR_PROPERTY);
-        if( sp == null ) {
-            sp = System.getProperty("user.dir");
-        }
-        return new File( sp );
-    }
-
-    public void writeClusterId() {
-        File minimesosDir = getMinimesosDir();
-        try {
-            FileUtils.forceMkdir(minimesosDir);
-            Files.write(Paths.get(minimesosDir.getAbsolutePath() + "/" + MINIMESOS_FILE_PROPERTY), getClusterId().getBytes());
-        } catch (IOException ie) {
-            LOGGER.error("Could not write .minimesos folder", ie);
-            throw new RuntimeException(ie);
-        }
-    }
 
     public void waitForState(final Predicate<State> predicate, int seconds) {
         Awaitility.await().atMost(seconds, TimeUnit.SECONDS).until(() -> {
@@ -472,18 +396,7 @@ public class MesosCluster extends ExternalResource {
         waitForState(predicate, 20);
     }
 
-    public static void checkStateFile(String clusterId) {
-        if (clusterId != null && !isUp(clusterId)) {
-            File minimesosFile = getMinimesosFile();
-            if (minimesosFile.delete()) {
-                LOGGER.info("Invalid state file removed");
-            } else {
-                LOGGER.info("Cannot remove invalid state file " + minimesosFile.getAbsolutePath());
-            }
-        }
-    }
-
-    public static void printServiceUrl(String clusterId, String serviceName, MinimesosCliCommand cmd) {
+    public static void printServiceUrl(String clusterId, String serviceName, Command cmd) {
         String dockerHostIp = System.getenv("DOCKER_HOST_IP");
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
@@ -522,7 +435,7 @@ public class MesosCluster extends ExternalResource {
     public static void deployMarathonApp(String clusterId, String marathonJson) {
         String marathonIp = getContainerIp(clusterId, "marathon");
         if (marathonIp == null) {
-            throw new MinimesosException("Marathon container is not found in cluster " + MesosCluster.readClusterId());
+            throw new MinimesosException("Marathon container is not found in cluster " + clusterId);
         }
 
         MarathonClient marathonClient = new MarathonClient(marathonIp);
@@ -531,4 +444,36 @@ public class MesosCluster extends ExternalResource {
         marathonClient.deployApp(marathonJson);
     }
 
+    public static File getHostDir() {
+        String sp = System.getProperty(MINIMESOS_HOST_DIR_PROPERTY);
+        if (sp == null) {
+            sp = System.getProperty("user.dir");
+        }
+        return new File(sp);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MesosCluster cluster = (MesosCluster) o;
+
+        return clusterId.equals(cluster.clusterId);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = clusterId.hashCode();
+        result = 31 * result + containers.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "MesosCluster{" +
+                "clusterId='" + clusterId + '\'' +
+                ", containers=" + containers +
+                '}';
+    }
 }

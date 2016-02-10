@@ -53,6 +53,7 @@ dependencies {
     compile 'com.mashape.unirest:unirest-java:1.4.5'
 
     testCompile "org.mockito:mockito-core:1.+"
+    testCompile 'com.github.stefanbirkner:system-rules:1.15.1'
 
 }
 

@@ -1,7 +1,7 @@
 package com.containersol.minimesos.cmdhooks;
 import com.containersol.minimesos.cmdhooks.up.PrintServiceInfo;
 import com.containersol.minimesos.cmdhooks.up.StartMesosConsul;
-import com.containersol.minimesos.main.MinimesosCliCommand;
+import com.containersol.minimesos.main.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,11 +9,11 @@ import java.util.concurrent.Callable;
 
 public abstract class CliCommandHookExecutor implements Callable {
     protected String clusterId;
-    protected MinimesosCliCommand cmd;
+    protected Command cmd;
 
     static Logger LOGGER = LoggerFactory.getLogger(CliCommandHookExecutor.class);
 
-    public CliCommandHookExecutor setCmd(MinimesosCliCommand cmd) {
+    public CliCommandHookExecutor setCmd(Command cmd) {
         this.cmd = cmd;
         return this;
     }
@@ -23,7 +23,7 @@ public abstract class CliCommandHookExecutor implements Callable {
         return this;
     }
 
-    public static void fireCallbacks(String command, String clusterId, MinimesosCliCommand cmd) {
+    public static void fireCallbacks(String command, String clusterId, Command cmd) {
         try {
             switch (command) {
                 case "up":

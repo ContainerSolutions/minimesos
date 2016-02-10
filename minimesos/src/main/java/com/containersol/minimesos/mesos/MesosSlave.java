@@ -63,7 +63,7 @@ public class MesosSlave extends MesosContainer {
 
     public CreateContainerCmd getBaseCommand() {
 
-        String hostDir = MesosCluster.getMinimesosHostDir().getAbsolutePath();
+        String hostDir = MesosCluster.getHostDir().getAbsolutePath();
 
         return dockerClient.createContainerCmd( getMesosImageName() + ":" + getMesosImageTag() )
                 .withName( getName() )

@@ -1,0 +1,60 @@
+Usage: minimesos [options] [command] [command options]
+  Options:
+    --help, -help, -?, -h
+       Show help
+       Default: true
+  Commands:
+    up      Create a minimesos cluster
+      Usage: up [options]
+        Options:
+          --consul
+             Start consul container
+             Default: false
+          --exposedHostPorts
+             Expose the Mesos and Marathon UI ports on the host level (we
+             recommend to enable this on Mac (e.g. when using docker-machine) and disable
+             on Linux).
+             Default: false
+          --marathonImageTag
+             The tag of the Marathon Docker image.
+             Default: v0.13.0
+          --mesosImageTag
+             The tag of the Mesos master and agent Docker images.
+             Default: 0.25.0-0.2.70.ubuntu1404
+          --num-agents
+             Number of agents to start
+             Default: 1
+          --timeout
+             Time to wait for a container to get responsive, in seconds.
+             Default: 60
+          --zooKeeperImageTag
+             The tag of the ZooKeeper Docker images.
+             Default: 3.4.6
+
+    destroy      Destroy a minimesos cluster
+      Usage: destroy [options]
+
+    help      Display help
+      Usage: help [options]
+
+    info      Display cluster information
+      Usage: info [options]
+
+    install      Install a framework with Marathon
+      Usage: install [options]
+        Options:
+          --exposedHostPorts
+             Expose the Mesos and Marathon UI ports on the host level (we
+             recommend to enable this on Mac (e.g. when using docker-machine) and disable
+             on Linux).
+             Default: false
+          --marathonFile
+             Marathon JSON app install file location
+             Default: <empty string>
+
+    state      Display state.json file of a master or an agent
+      Usage: state [options]
+        Options:
+          --agent
+             Specify an agent to query, otherwise query a master
+             Default: <empty string>

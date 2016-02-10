@@ -2,7 +2,7 @@ package com.containersol.minimesos.cmdhooks.up;
 
 import com.containersol.minimesos.MesosCluster;
 import com.containersol.minimesos.cmdhooks.CliCommandHookExecutor;
-import com.containersol.minimesos.main.MinimesosCliCommand;
+import com.containersol.minimesos.main.Command;
 import com.containersol.minimesos.mesos.ZooKeeper;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -14,9 +14,9 @@ import org.slf4j.LoggerFactory;
  */
 public class StartMesosConsul extends CliCommandHookExecutor {
     Logger LOGGER = LoggerFactory.getLogger(CliCommandHookExecutor.class);
-    protected MinimesosCliCommand cmd;
+    protected Command cmd;
 
-    public StartMesosConsul setCmd(MinimesosCliCommand cmd) {
+    public StartMesosConsul setCmd(Command cmd) {
         this.cmd = cmd;
         return this;
     }

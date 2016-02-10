@@ -9,7 +9,9 @@ import com.beust.jcommander.Parameters;
  * TODO: add --pretty
  */
 @Parameters(separators = "=", commandDescription = "Display state.json file of a master or an agent")
-public class CommandState {
+public class CommandState implements Command {
+
+    public static final String CLINAME = "state";
 
     @Parameter(names = "--agent", description = "Specify an agent to query, otherwise query a master")
     private String agent = "";
@@ -18,4 +20,17 @@ public class CommandState {
         return agent;
     }
 
+    @Override
+    public boolean isExposedHostPorts() {
+        return false;
+    }
+
+    @Override
+    public boolean getStartConsul() {
+        return false;
+    }
+
+    public void execute() {
+
+    }
 }
