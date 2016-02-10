@@ -62,7 +62,7 @@ public class MesosMaster extends MesosContainer {
     protected CreateContainerCmd dockerCommand() {
 
         return dockerClient.createContainerCmd(getMesosImageName() + ":" + getMesosImageTag())
-                .withName( buildContainerName() )
+                .withName( getName() )
                 .withExposedPorts(new ExposedPort(MESOS_MASTER_PORT))
                 .withEnv(createMesosLocalEnvironment());
     }

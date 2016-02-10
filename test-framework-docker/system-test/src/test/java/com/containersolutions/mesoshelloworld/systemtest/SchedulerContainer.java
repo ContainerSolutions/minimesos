@@ -44,7 +44,7 @@ public class SchedulerContainer extends AbstractContainer {
     protected CreateContainerCmd dockerCommand() {
         return dockerClient
                 .createContainerCmd(SCHEDULER_IMAGE)
-                .withName( buildContainerName() )
+                .withName( getName() )
                 .withEnv("JAVA_OPTS=-Xms128m -Xmx256m")
                 .withExtraHosts(IntStream.rangeClosed(1, 3).mapToObj(value -> "slave" + value + ":" + mesosIp).toArray(String[]::new))
                 .withCmd(Configuration.MESOS_MASTER, getMesosUrl());
@@ -55,7 +55,7 @@ public class SchedulerContainer extends AbstractContainer {
     }
 
     @Override
-    public String buildContainerName() {
+    public String getName() {
         return SCHEDULER_NAME + "_" + containerIndex;
     }
 

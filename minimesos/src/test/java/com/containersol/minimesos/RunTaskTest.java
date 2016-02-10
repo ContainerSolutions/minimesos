@@ -68,7 +68,7 @@ public class RunTaskTest {
             @Override
             protected CreateContainerCmd dockerCommand() {
                 return dockerClient.createContainerCmd( "containersol/mesos-agent:0.25.0-0.2.70.ubuntu1404" )
-                        .withName( buildContainerName() )
+                        .withName( getName() )
                         .withEntrypoint(
                                 "mesos-execute",
                                 "--master=" + cluster.getMasterContainer().getIpAddress() + ":5050",

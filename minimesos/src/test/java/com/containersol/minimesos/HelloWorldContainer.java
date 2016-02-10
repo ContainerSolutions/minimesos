@@ -30,11 +30,11 @@ class HelloWorldContainer extends AbstractContainer {
     @Override
     protected CreateContainerCmd dockerCommand() {
         return dockerClient.createContainerCmd(HELLO_WORLD_IMAGE).withPrivileged(true)
-                .withName( buildContainerName() );
+                .withName( getName() );
     }
 
     @Override
-    public String buildContainerName() {
+    public String getName() {
         return "helloworld-" + getUuid();
     }
 

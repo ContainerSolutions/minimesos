@@ -140,7 +140,7 @@ public abstract class AbstractContainer {
      *
      * @return container name
      */
-    public String buildContainerName() {
+    public String getName() {
         return ContainerName.get(this);
     }
 
