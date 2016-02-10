@@ -200,11 +200,10 @@ public class MesosCluster extends ExternalResource {
             MarathonClient marathon = new MarathonClient(getMarathonContainer().getIpAddress());
             marathon.killAllApps();
 
-            DockerClient dockerClient1 = DockerClientFactory.build();
-            List<Container> containers1 = dockerClient1.listContainersCmd().exec();
+            List<Container> containers1 = dockerClient.listContainersCmd().exec();
             for (Container container : containers1) {
                 if (ContainerName.belongsToCluster(container.getNames(), clusterId)) {
-                    dockerClient1.removeContainerCmd(container.getId()).withForce().withRemoveVolumes(true).exec();
+                    dockerClient.removeContainerCmd(container.getId()).withForce().withRemoveVolumes(true).exec();
                 }
             }
 

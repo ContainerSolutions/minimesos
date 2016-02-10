@@ -47,7 +47,7 @@ public class MesosClusterTest {
     }
 
     @Test
-    public void testConstructor() {
+    public void testLoadCluster() {
         String clusterId = CLUSTER.getClusterId();
 
         MesosCluster cluster = MesosCluster.loadCluster(clusterId);
