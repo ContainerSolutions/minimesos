@@ -14,11 +14,10 @@ import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
 
-/**
- * Created by alg on 1/27/16.
- */
 public class RunTaskTest {
+
     private static DockerClient dockerClient = DockerClientFactory.build();
+    private static final String TASK_CLUSTER_ROLE = "test";
 
     @ClassRule
     public static final MesosCluster cluster = new MesosCluster(
@@ -32,7 +31,8 @@ public class RunTaskTest {
     @After
     public void after() {
         DockerContainersUtil util = new DockerContainersUtil(dockerClient);
-        util.getContainers(false).filterByName("^mesos-[0-9a-f\\-]*S\\d*\\.[0-9a-f\\-]*$").remove();
+        // kill() is not used because containers are expected to exit by this time
+        util.getContainers(true).filterByName("^minimesos-" + TASK_CLUSTER_ROLE + "-[0-9a-f\\-]*$").remove();
     }
 
 
@@ -59,7 +59,7 @@ public class RunTaskTest {
 
             @Override
             protected String getRole() {
-                return "test";
+                return TASK_CLUSTER_ROLE;
             }
 
             @Override
@@ -71,7 +71,7 @@ public class RunTaskTest {
                         .withName( buildContainerName() )
                         .withEntrypoint(
                                 "mesos-execute",
-                                "--master=" + cluster.getMesosMasterContainer().getIpAddress() + ":5050",
+                                "--master=" + cluster.getMasterContainer().getIpAddress() + ":5050",
                                 "--command=echo 1",
                                 "--name=test-cmd",
                                 "--resources=cpus:0.1;mem:128"
@@ -89,10 +89,7 @@ public class RunTaskTest {
             dockerClient.logContainerCmd(mesosSlave.getContainerId()).withStdOut().exec(cb1);
             cb1.awaitCompletion();
             String log = cb1.toString();
-            if (log.contains("Received status update TASK_FINISHED for task test-cmd")) {
-                return true;
-            }
-            return false;
+            return log.contains("Received status update TASK_FINISHED for task test-cmd");
         });
     }
 

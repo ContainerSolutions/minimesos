@@ -37,15 +37,13 @@ public class DiscoverySystemTest {
     @ClassRule
     public static final MesosCluster CLUSTER = new MesosCluster(CONFIG);
 
-    private static SchedulerContainer scheduler = null;
-
     @BeforeClass
     public static void startScheduler() throws Exception {
 
-        String ipAddress = CLUSTER.getMesosMasterContainer().getIpAddress();
+        String ipAddress = CLUSTER.getMasterContainer().getIpAddress();
 
         LOGGER.info("Starting Scheduler, connected to " + ipAddress);
-        scheduler = new SchedulerContainer(CONFIG.dockerClient, ipAddress);
+        SchedulerContainer scheduler = new SchedulerContainer(CONFIG.dockerClient, ipAddress);
 
         // Cluster now has responsibility to shut down container
         CLUSTER.addAndStartContainer(scheduler, MesosContainer.DEFAULT_TIMEOUT_SEC);
@@ -63,7 +61,6 @@ public class DiscoverySystemTest {
         Awaitility.await("9 expected executors did not come up").atMost(timeout, TimeUnit.SECONDS).until(() -> {
             ipAddresses.clear();
             ipAddresses.addAll(util.getContainers(false).filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE).getIpAddresses());
-            LOGGER.info( String.format("%d executors are found", ipAddresses.size()) );
             return ipAddresses.size() == 9;
         });
 
@@ -75,13 +72,15 @@ public class DiscoverySystemTest {
     @AfterClass
     public static void removeExecutors() {
 
-        // stop container, otherwise it keeps on scheduling new executors as soon as they are stopped
-        CONFIG.dockerClient.killContainerCmd( scheduler.getContainerId() ).exec();
-
         DockerContainersUtil util = new DockerContainersUtil(CONFIG.dockerClient);
-        util = util.getContainers(false).filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE);
+
+        // stop scheduler, otherwise it keeps on scheduling new executors as soon as they are stopped
+        util.getContainers(false).filterByImage(SchedulerContainer.SCHEDULER_IMAGE).kill().remove();
+
+        DockerContainersUtil executors = util.getContainers(false).filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE);
         LOGGER.info( String.format("Found %d containers to stop and remove", util.size()) );
-        util.kill().remove();
+        executors.kill().remove();
+
     }
 
 }

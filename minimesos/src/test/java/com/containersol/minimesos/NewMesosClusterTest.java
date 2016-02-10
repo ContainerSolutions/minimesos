@@ -40,14 +40,14 @@ public class NewMesosClusterTest {
 
     @Test
     public void mesosClusterCanBeStarted() throws Exception {
-        JSONObject stateInfo = cluster.getMesosMasterContainer().getStateInfoJSON();
+        JSONObject stateInfo = cluster.getMasterContainer().getStateInfoJSON();
 
         assertEquals(1, stateInfo.getInt("activated_slaves")); // Only one slave is actually _required_ to have a cluster
     }
 
     @Test
     public void mesosResourcesCorrect() throws Exception {
-        JSONObject stateInfo = cluster.getMesosMasterContainer().getStateInfoJSON();
+        JSONObject stateInfo = cluster.getMasterContainer().getStateInfoJSON();
         for (int i = 0; i < 3; i++) {
             assertEquals((long) 0.2, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getLong("cpus"));
             assertEquals(256, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getInt("mem"));

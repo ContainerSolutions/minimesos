@@ -53,7 +53,7 @@ public class InstallCommandTest {
         MarathonClient marathon = new MarathonClient( CLUSTER.getMarathonContainer().getIpAddress() );
         Awaitility.await("Marathon did not start responding").atMost(60, TimeUnit.SECONDS).until(marathon::isReady);
 
-        String masterIp = CLUSTER.getMesosMasterContainer().getIpAddress();
+        String masterIp = CLUSTER.getMasterContainer().getIpAddress();
 
         try (FileInputStream fis = new FileInputStream(taskFile)) {
             String appJson = IOUtils.toString(fis);

@@ -31,9 +31,9 @@ public class MesosClusterTest {
     protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder(dockerClient)
             .withZooKeeper()
             .withMaster()
-            .withSlave(zooKeeper -> new MesosSlave(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
-            .withSlave(zooKeeper -> new MesosSlave(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
-            .withSlave(zooKeeper -> new MesosSlave(dockerClient, resources, "5051", zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
+            .withSlave(zooKeeper -> new MesosSlave(dockerClient, resources, 5051, zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
+            .withSlave(zooKeeper -> new MesosSlave(dockerClient, resources, 5051, zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
+            .withSlave(zooKeeper -> new MesosSlave(dockerClient, resources, 5051, zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
             .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper, true))
             .build();
 
@@ -50,31 +50,31 @@ public class MesosClusterTest {
     public void testConstructor() {
         String clusterId = CLUSTER.getClusterId();
 
-        MesosCluster cluster = new MesosCluster(clusterId);
+        MesosCluster cluster = MesosCluster.loadCluster(clusterId);
 
         assertArrayEquals(CLUSTER.getContainers().toArray(), cluster.getContainers().toArray());
 
         assertEquals(CLUSTER.getZkContainer().getIpAddress(), cluster.getZkContainer().getIpAddress());
-        assertEquals(CLUSTER.getMesosMasterContainer().getStateUrl(), cluster.getMesosMasterContainer().getStateUrl());
+        assertEquals(CLUSTER.getMasterContainer().getStateUrl(), cluster.getMasterContainer().getStateUrl());
     }
 
     @Test
     public void mesosAgentStateInfoJSONMatchesSchema() throws UnirestException, JsonParseException, JsonMappingException {
         String slaveId = CLUSTER.getSlaves()[0].getContainerId();
-        String state = MesosCluster.getContainerStateInfo(slaveId);
+        String state = CLUSTER.getContainerStateInfo(slaveId);
         assertNotNull( state );
     }
 
     @Test
     public void mesosClusterCanBeStarted() throws Exception {
-        JSONObject stateInfo = CLUSTER.getMesosMasterContainer().getStateInfoJSON();
+        JSONObject stateInfo = CLUSTER.getMasterContainer().getStateInfoJSON();
 
         Assert.assertEquals(3, stateInfo.getInt("activated_slaves"));
     }
 
     @Test
     public void mesosResourcesCorrect() throws Exception {
-        JSONObject stateInfo = CLUSTER.getMesosMasterContainer().getStateInfoJSON();
+        JSONObject stateInfo = CLUSTER.getMasterContainer().getStateInfoJSON();
         for (int i = 0; i < 3; i++) {
             Assert.assertEquals((long) 0.2, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getLong("cpus"));
             Assert.assertEquals(256, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getInt("mem"));

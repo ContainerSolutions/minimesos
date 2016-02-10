@@ -137,10 +137,11 @@ public abstract class AbstractContainer {
 
     /**
      * Builds container name following the naming convention
+     *
      * @return container name
      */
     public String buildContainerName() {
-        return String.format("minimesos-%s-%s-%s", getRole(), getClusterId(), getUuid() );
+        return ContainerName.get(this);
     }
 
     /**

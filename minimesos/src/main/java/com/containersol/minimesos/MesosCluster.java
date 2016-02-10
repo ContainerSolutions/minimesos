@@ -1,6 +1,7 @@
 package com.containersol.minimesos;
 
 import com.containersol.minimesos.container.AbstractContainer;
+import com.containersol.minimesos.container.ContainerName;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.main.MinimesosCliCommand;
 import com.containersol.minimesos.marathon.Marathon;
@@ -72,51 +73,57 @@ public class MesosCluster extends ExternalResource {
      *
      * @param clusterId the cluster ID of the cluster that is already running
      */
-    public MesosCluster(String clusterId) {
+    public static MesosCluster loadCluster(String clusterId) {
+        return new MesosCluster(clusterId);
+    }
+
+    private MesosCluster(String clusterId) {
         this.clusterId = clusterId;
 
         List<Container> containers = dockerClient.listContainersCmd().exec();
-
         Collections.sort(containers, (c1,c2) -> Long.compare(c1.getCreated(), c2.getCreated()));
 
+        ZooKeeper zkKeeper = null;
+
         for (Container container : containers) {
-            for (String name : container.getNames()) {
-                if (name.matches("^/minimesos-.+-" + clusterId + "-\\d+$")) {
+            String name = ContainerName.getFromDockerNames(container.getNames());
+            if (ContainerName.belongsToCluster(name, clusterId)) {
 
-                    String containerId = container.getId();
-                    String[] parts = name.split("-");
-                    String role = parts[1];
-                    String uuid = parts[3];
+                String containerId = container.getId();
+                String[] parts = name.split("-");
+                String role = parts[1];
+                String uuid = parts[3];
 
-                    switch (role) {
-                        case "zookeeper":
-                            this.containers.add(new ZooKeeper(dockerClient, clusterId, uuid, containerId));
-                            break;
-                        case "agent":
-                            this.containers.add(new MesosSlave(dockerClient, clusterId, uuid, containerId));
-                            break;
-                        case "master":
-                            this.containers.add(new MesosMaster(dockerClient, clusterId, uuid, containerId));
-                            break;
-                        case "marathon":
-                            this.containers.add(new Marathon(dockerClient, clusterId, uuid, containerId));
-                            break;
-                    }
-
+                switch (role) {
+                    case "zookeeper":
+                        zkKeeper = new ZooKeeper(dockerClient, clusterId, uuid, containerId);
+                        this.containers.add(zkKeeper);
+                        break;
+                    case "agent":
+                        this.containers.add(new MesosSlave(dockerClient, clusterId, uuid, containerId));
+                        break;
+                    case "master":
+                        this.containers.add(new MesosMaster(dockerClient, clusterId, uuid, containerId));
+                        break;
+                    case "marathon":
+                        this.containers.add(new Marathon(dockerClient, clusterId, uuid, containerId));
+                        break;
                 }
+
             }
+
         }
 
         if (containers.isEmpty()) {
             throw new RuntimeException("No containers found for cluster ID " + clusterId);
         }
 
-        if (getZkContainer() != null) {
+        if (zkKeeper != null) {
             for (MesosSlave mesosSlave : getSlaves()) {
-                mesosSlave.setZooKeeperContainer(getZkContainer());
+                mesosSlave.setZooKeeperContainer(zkKeeper);
             }
-            getMesosMasterContainer().setZooKeeperContainer(getZkContainer());
-            getMarathonContainer().setZooKeeper(getZkContainer());
+            getMasterContainer().setZooKeeperContainer(zkKeeper);
+            getMarathonContainer().setZooKeeper(zkKeeper);
         }
     }
 
@@ -196,7 +203,7 @@ public class MesosCluster extends ExternalResource {
             DockerClient dockerClient1 = DockerClientFactory.build();
             List<Container> containers1 = dockerClient1.listContainersCmd().exec();
             for (Container container : containers1) {
-                if (container.getNames()[0].contains(clusterId)) {
+                if (ContainerName.belongsToCluster(container.getNames(), clusterId)) {
                     dockerClient1.removeContainerCmd(container.getId()).withForce().withRemoveVolumes(true).exec();
                 }
             }
@@ -243,7 +250,7 @@ public class MesosCluster extends ExternalResource {
      * @param clusterId id of the cluster
      * @return stage JSON
      */
-    public static String getClusterStateInfo(String clusterId) {
+    public String getClusterStateInfo(String clusterId) {
         Container container = getContainer(clusterId, "master");
         return getContainerStateInfo(container);
     }
@@ -254,12 +261,17 @@ public class MesosCluster extends ExternalResource {
      * @param containerId ID of the container to get state from
      * @return stage JSON
      */
-    public static String getContainerStateInfo(String containerId) {
+    public String getContainerStateInfo(String containerId) {
         Container container = DockerContainersUtil.getContainer(dockerClient, containerId);
         return getContainerStateInfo(container);
     }
 
-    private static String getContainerStateInfo(Container container) {
+    /**
+     * TODO: parameter should change to MesosContainer
+     * @param container docker container to get state from
+     * @return mesos state JSON
+     */
+    private String getContainerStateInfo(Container container) {
 
         String info = null;
 
@@ -270,7 +282,8 @@ public class MesosCluster extends ExternalResource {
 
             if (ip != null) {
 
-                int port = container.getNames()[0].contains("minimesos-agent-") ? MesosSlave.MESOS_SLAVE_PORT : MesosMaster.MESOS_MASTER_PORT;
+                // TODO: this should use cluster ID; use of default ports in not sufficient
+                int port = ContainerName.getFromDockerNames(container.getNames()).contains("minimesos-agent-") ? MesosSlave.DEFAULT_MESOS_SLAVE_PORT : MesosMaster.MESOS_MASTER_PORT;
                 String url = "http://" + ip + ":" + port + "/state.json";
 
                 try {
@@ -304,7 +317,7 @@ public class MesosCluster extends ExternalResource {
         DockerClient dockerClient = DockerClientFactory.build();
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
-            if (container.getNames()[0].contains(clusterId)) {
+            if (ContainerName.belongsToCluster(container.getNames(), clusterId)) {
                 dockerClient.removeContainerCmd(container.getId()).withForce().withRemoveVolumes(true).exec();
             }
         }
@@ -326,7 +339,7 @@ public class MesosCluster extends ExternalResource {
         stop();
     }
 
-    public MesosMaster getMesosMasterContainer() {
+    public MesosMaster getMasterContainer() {
         return (MesosMaster) getOne(ClusterContainers.Filter.mesosMaster()).get();
     }
 
@@ -363,7 +376,7 @@ public class MesosCluster extends ExternalResource {
     public static Container getContainer(String clusterId, String role) {
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
-            if (container.getNames()[0].contains("minimesos-" + role) && container.getNames()[0].contains(clusterId + "-")) {
+            if (ContainerName.hasRoleInCluster(container.getNames(), clusterId, role) ) {
                 return container;
             }
         }
@@ -388,10 +401,8 @@ public class MesosCluster extends ExternalResource {
             DockerClient dockerClient = DockerClientFactory.build();
             List<Container> containers = dockerClient.listContainersCmd().exec();
             for (Container container : containers) {
-                for (String name : container.getNames()) {
-                    if (name.contains("minimesos-master-" + clusterId)) {
-                        return true;
-                    }
+                if (ContainerName.hasRoleInCluster(container.getNames(), clusterId, "master")) {
+                    return true;
                 }
             }
         }
@@ -448,7 +459,7 @@ public class MesosCluster extends ExternalResource {
     public void waitForState(final Predicate<State> predicate, int seconds) {
         Awaitility.await().atMost(seconds, TimeUnit.SECONDS).until(() -> {
             try {
-                return predicate.test(State.fromJSON(getMesosMasterContainer().getStateInfoJSON().toString()));
+                return predicate.test(State.fromJSON(getMasterContainer().getStateInfoJSON().toString()));
             } catch (InternalServerErrorException e) {
                 LOGGER.error(e);
                 // This probably means that the mesos cluster isn't ready yet..
@@ -476,34 +487,34 @@ public class MesosCluster extends ExternalResource {
         String dockerHostIp = System.getenv("DOCKER_HOST_IP");
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
-            for (String name : container.getNames()) {
-                if (name.contains("minimesos-" + serviceName + "-" + clusterId)) {
-                    String uri, ip;
-                    if (!cmd.isExposedHostPorts() || dockerHostIp.isEmpty()) {
-                        ip = DockerContainersUtil.getIpAddress( dockerClient, container.getId() );
-                    } else {
-                        ip = dockerHostIp;
-                    }
-                    switch (serviceName) {
-                        case "master":
-                            uri = "export MINIMESOS_MASTER=http://" + ip + ":" + MesosMaster.MESOS_MASTER_PORT;
-                            break;
-                        case "marathon":
-                            uri = "export MINIMESOS_MARATHON=http://" + ip + ":" + Marathon.MARATHON_PORT;
-                            break;
-                        case "zookeeper":
-                            uri = "export MINIMESOS_ZOOKEEPER=" + ZooKeeper.formatZKAddress(ip);
-                            break;
-                        case "consul":
-                            uri = "export MINIMESOS_CONSUL=http://" + ip + ":" + Consul.DEFAULT_CONSUL_PORT + "\n" +
-                            "export MINIMESOS_CONSUL_IP=" + ip;
-                            break;
-                        default:
-                            uri = "Unknown service type '" + serviceName + "'";
-                    }
-                    LOGGER.info(uri);
-                    return;
+            if (ContainerName.hasRoleInCluster(container.getNames(), clusterId, serviceName)) {
+
+                String uri, ip;
+                if (!cmd.isExposedHostPorts() || dockerHostIp.isEmpty()) {
+                    ip = DockerContainersUtil.getIpAddress(dockerClient, container.getId());
+                } else {
+                    ip = dockerHostIp;
                 }
+
+                switch (serviceName) {
+                    case "master":
+                        uri = "export MINIMESOS_MASTER=http://" + ip + ":" + MesosMaster.MESOS_MASTER_PORT;
+                        break;
+                    case "marathon":
+                        uri = "export MINIMESOS_MARATHON=http://" + ip + ":" + Marathon.MARATHON_PORT;
+                        break;
+                    case "zookeeper":
+                        uri = "export MINIMESOS_ZOOKEEPER=" + ZooKeeper.formatZKAddress(ip);
+                        break;
+                    case "consul":
+                        uri = "export MINIMESOS_CONSUL=http://" + ip + ":" + Consul.DEFAULT_CONSUL_PORT + "\n" +
+                                "export MINIMESOS_CONSUL_IP=" + ip;
+                        break;
+                    default:
+                        uri = "Unknown service type '" + serviceName + "'";
+                }
+                LOGGER.info(uri);
+                return;
             }
         }
     }
