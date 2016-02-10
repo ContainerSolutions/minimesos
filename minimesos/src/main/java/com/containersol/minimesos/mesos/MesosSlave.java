@@ -21,15 +21,35 @@ public class MesosSlave extends MesosContainer {
     private static final Logger LOGGER = Logger.getLogger(MesosSlave.class);
 
     public static final String MESOS_SLAVE_IMAGE = "containersol/mesos-agent";
-    public static final int MESOS_SLAVE_PORT = 5051;
+    public static final int DEFAULT_MESOS_SLAVE_PORT = 5051;
 
     public static final String DEFAULT_PORT_RESOURCES = "ports(*):[31000-32000]";
     public static final String DEFAULT_RESOURCES = DEFAULT_PORT_RESOURCES + "; cpus(*):0.2; mem(*):256; disk(*):200";
 
     private String mesosImageName = MESOS_SLAVE_IMAGE;
 
+    private String resources = DEFAULT_RESOURCES;
+
+    private int portNumber = DEFAULT_MESOS_SLAVE_PORT;
+
     public MesosSlave(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
         super(dockerClient, zooKeeperContainer);
+    }
+
+    public MesosSlave(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
+        super(dockerClient, clusterId, uuid, containerId);
+    }
+
+    public MesosSlave(DockerClient dockerClient, String resources, int portNumber, ZooKeeper zooKeeperContainer, String mesosLocalImage, String registryTag) {
+        super(dockerClient, zooKeeperContainer);
+        this.resources = resources;
+        this.portNumber = portNumber;
+        setMesosImageName( mesosLocalImage );
+        setMesosImageTag(registryTag);
+    }
+
+    public String getResources() {
+        return resources;
     }
 
     @Override
@@ -46,7 +66,7 @@ public class MesosSlave extends MesosContainer {
         String hostDir = MesosCluster.getMinimesosHostDir().getAbsolutePath();
 
         return dockerClient.createContainerCmd( getMesosImageName() + ":" + getMesosImageTag() )
-                .withName("minimesos-agent-" + getClusterId() + "-" + getRandomId())
+                .withName( getName() )
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
                 .withPid("host")
@@ -59,11 +79,16 @@ public class MesosSlave extends MesosContainer {
     }
 
     @Override
+    public String getRole() {
+        return "agent";
+    }
+
+    @Override
     protected CreateContainerCmd dockerCommand() {
         ArrayList<ExposedPort> exposedPorts= new ArrayList<>();
-        exposedPorts.add(new ExposedPort(MESOS_SLAVE_PORT));
+        exposedPorts.add(new ExposedPort(portNumber));
         try {
-            ArrayList<Integer> resourcePorts = parsePortsFromResource(DEFAULT_PORT_RESOURCES);
+            ArrayList<Integer> resourcePorts = parsePortsFromResource(resources);
             for (Integer port : resourcePorts) {
                 exposedPorts.add(new ExposedPort(port));
             }
@@ -93,8 +118,8 @@ public class MesosSlave extends MesosContainer {
     @Override
     public TreeMap<String, String> getDefaultEnvVars() {
         TreeMap<String,String> envs = new TreeMap<>();
-        envs.put("MESOS_RESOURCES", DEFAULT_RESOURCES);
-        envs.put("MESOS_PORT", String.valueOf(MESOS_SLAVE_PORT));
+        envs.put("MESOS_RESOURCES", resources);
+        envs.put("MESOS_PORT", String.valueOf(portNumber));
         envs.put("MESOS_MASTER", getFormattedZKAddress());
         envs.put("MESOS_SWITCH_USER", "false");
         return envs;

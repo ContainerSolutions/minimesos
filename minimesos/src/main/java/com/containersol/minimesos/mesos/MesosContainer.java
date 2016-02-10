@@ -17,11 +17,15 @@ public abstract class MesosContainer extends AbstractContainer {
 
     private String mesosImageTag = MESOS_IMAGE_TAG;
 
-    private final ZooKeeper zooKeeperContainer;
+    protected ZooKeeper zooKeeperContainer;
 
     protected MesosContainer(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
         super(dockerClient);
         this.zooKeeperContainer = zooKeeperContainer;
+    }
+
+    public MesosContainer(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
+        super(dockerClient, clusterId, uuid, containerId);
     }
 
     public abstract String getMesosImageName();
@@ -57,6 +61,10 @@ public abstract class MesosContainer extends AbstractContainer {
         envs.put("MESOS_LOGGING_LEVEL", "INFO");
         envs.put("MESOS_WORK_DIR", "/tmp/mesos");
         return envs;
+    }
+
+    public void setZooKeeperContainer(ZooKeeper zooKeeperContainer) {
+        this.zooKeeperContainer = zooKeeperContainer;
     }
 
     public ZooKeeper getZooKeeperContainer() {

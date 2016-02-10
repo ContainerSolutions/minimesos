@@ -22,7 +22,7 @@ public class MesosClusterStateResponse implements Callable<Boolean> {
 
     @Override
     public Boolean call() throws Exception {
-        String stateUrl = mesosCluster.getMesosMasterContainer().getStateUrl();
+        String stateUrl = mesosCluster.getMasterContainer().getStateUrl();
         try {
             int activated_slaves = Unirest.get(stateUrl).asJson().getBody().getObject().getInt("activated_slaves");
             if (activated_slaves != mesosCluster.getSlaves().length) {

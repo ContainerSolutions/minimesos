@@ -25,6 +25,10 @@ public class MesosMaster extends MesosContainer {
         super(dockerClient, zooKeeperContainer);
     }
 
+    public MesosMaster(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
+        super(dockerClient, clusterId, uuid, containerId);
+    }
+
     @Override
     public String getMesosImageName() {
         return mesosImageName;
@@ -50,10 +54,15 @@ public class MesosMaster extends MesosContainer {
     }
 
     @Override
+    protected String getRole() {
+        return "master";
+    }
+
+    @Override
     protected CreateContainerCmd dockerCommand() {
 
         return dockerClient.createContainerCmd(getMesosImageName() + ":" + getMesosImageTag())
-                .withName("minimesos-master-" + getClusterId() + "-" + getRandomId())
+                .withName( getName() )
                 .withExposedPorts(new ExposedPort(MESOS_MASTER_PORT))
                 .withEnv(createMesosLocalEnvironment());
     }

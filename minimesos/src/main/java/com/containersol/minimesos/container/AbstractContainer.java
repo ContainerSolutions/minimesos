@@ -28,20 +28,29 @@ public abstract class AbstractContainer {
 
     private static Logger LOGGER = Logger.getLogger(AbstractContainer.class);
 
-    private final String randomId;
-
-    private String containerId = "";
+    private String clusterId;
+    private String uuid;
+    private String containerId;
 
     private boolean removed;
 
     protected DockerClient dockerClient;
-    private String clusterId;
+
     private String ipAddress = null;
 
     protected AbstractContainer(DockerClient dockerClient) {
         this.dockerClient = dockerClient;
-        this.randomId = Integer.toUnsignedString(new SecureRandom().nextInt());
+        this.uuid = Integer.toUnsignedString(new SecureRandom().nextInt());
     }
+
+    public AbstractContainer(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
+        this.dockerClient = dockerClient;
+        this.clusterId = clusterId;
+        this.uuid = uuid;
+        this.containerId = containerId;
+    }
+
+    protected abstract String getRole();
 
     /**
      * Implement this method to pull your image. This will be called before the container is run.
@@ -126,8 +135,13 @@ public abstract class AbstractContainer {
         this.ipAddress = res;
     }
 
+    /**
+     * Builds container name following the naming convention
+     *
+     * @return container name
+     */
     public String getName() {
-        return dockerCommand().getName();
+        return ContainerName.get(this);
     }
 
     /**
@@ -214,15 +228,38 @@ public abstract class AbstractContainer {
         }
     }
 
-    @Override public String toString() {
-        return String.format("Container: %s", this.getContainerId());
+    @Override
+    public String toString() {
+        return String.format(": %s-%s-%s", getRole(), clusterId, uuid);
     }
 
     public boolean isRemoved() {
         return removed;
     }
 
-    public String getRandomId() {
-        return randomId;
+    public String getUuid() {
+        return uuid;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AbstractContainer that = (AbstractContainer) o;
+
+        if (!clusterId.equals(that.clusterId)) return false;
+        if (!uuid.equals(that.uuid)) return false;
+        return containerId.equals(that.containerId);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = clusterId.hashCode();
+        result = 31 * result + uuid.hashCode();
+        result = 31 * result + containerId.hashCode();
+        return result;
     }
 }
+

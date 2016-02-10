@@ -132,15 +132,13 @@ public class ClusterArchitecture {
 
         /**
          * Provide consul
-         * @return
          */
         public Builder withConsul() {
             return withConsul(new Consul(dockerClient));
         }
+
         /**
          * Provide consul
-         * @param consul
-         * @return
          */
         public Builder withConsul(Consul consul) {
             getContainers().add(consul);
@@ -174,14 +172,14 @@ public class ClusterArchitecture {
 
         /**
          * All default instance, but with defined resources
-         * @param resources definition of resources
+         * @param slaveResources definition of resources
          */
-        public Builder withSlave(String resources) {
+        public Builder withSlave(String slaveResources) {
             return withSlave(zooKeeper -> new MesosSlave(dockerClient, zooKeeper) {
                 @Override
                 public TreeMap<String, String> getDefaultEnvVars() {
                     TreeMap<String, String> envVars = super.getDefaultEnvVars();
-                    envVars.put("MESOS_RESOURCES", resources);
+                    envVars.put("MESOS_RESOURCES", slaveResources);
                     return envVars;
                 }
             });
