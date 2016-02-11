@@ -1,16 +1,15 @@
 <configuration debug="true">
 
-    <appender name="LOG" class="ch.qos.logback.core.ConsoleAppender" >
-        <!-- encoders are  by default assigned the type
-             ch.qos.logback.classic.encoder.PatternLayoutEncoder -->
+    <!-- NOTE: Because some unit tests assert the contents of stdout
+         we redirect formatted logs to stderr so they don't interleave with stdout -->
+    <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender" >
+        <target>System.err</target>
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <!-- encoders are  by default assigned the type
-             ch.qos.logback.classic.encoder.PatternLayoutEncoder -->
         <encoder>
             <pattern>%msg%n</pattern>
         </encoder>
@@ -21,6 +20,6 @@
     </logger>
 
     <root level="info">
-        <appender-ref ref="LOG" />
+        <appender-ref ref="STDERR" />
     </root>
 </configuration>

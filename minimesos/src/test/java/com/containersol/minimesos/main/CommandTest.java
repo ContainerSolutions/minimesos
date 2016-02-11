@@ -69,7 +69,7 @@ public class CommandTest {
         assertFalse("Minimesos file at " + minimesosFile + " should be removed", minimesosFile.exists());
     }
 
-    @Ignore
+    @Test
     public void testInfo_runningCluster() throws IOException {
         CommandUp commandUp = new CommandUp();
         commandUp.execute();
@@ -77,14 +77,13 @@ public class CommandTest {
         CommandInfo commandInfo = new CommandInfo();
         commandInfo.execute();
 
-//        assertTrue(systemOutRule.getLogWithNormalizedLineSeparator().contains(FileUtils.readFileToString(new File("src/test/resources/info.txt"))));
-        assertEquals(systemOutRule.getLogWithNormalizedLineSeparator(), FileUtils.readFileToString(new File("src/test/resources/info.txt")));
+        assertTrue(systemOutRule.getLogWithNormalizedLineSeparator().contains(FileUtils.readFileToString(new File("src/test/resources/info.txt"))));
 
         CommandDestroy commandDestroy = new CommandDestroy();
         commandDestroy.execute();
     }
 
-    @Ignore
+    @Test
     public void testInfo_notRunning() throws IOException {
         CommandInfo commandInfo = new CommandInfo();
         commandInfo.execute();
