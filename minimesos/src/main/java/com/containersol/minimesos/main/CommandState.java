@@ -2,14 +2,19 @@ package com.containersol.minimesos.main;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.containersol.minimesos.cluster.ClusterRepository;
+import com.containersol.minimesos.cluster.MesosCluster;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Parameters for the 'state' command
  *
- * TODO: add --pretty
  */
 @Parameters(separators = "=", commandDescription = "Display state.json file of a master or an agent")
 public class CommandState implements Command {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     public static final String CLINAME = "state";
 
@@ -31,6 +36,11 @@ public class CommandState implements Command {
     }
 
     public void execute() {
-
+        MesosCluster cluster = ClusterRepository.loadCluster();
+        if (cluster != null) {
+            cluster.state(agent);
+        } else {
+            LOGGER.info("Minimesos cluster is not running");
+        }
     }
 }

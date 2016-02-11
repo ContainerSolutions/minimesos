@@ -1,5 +1,6 @@
 package com.containersol.minimesos;
 
+import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.mesos.*;
 import com.containersol.minimesos.docker.DockerContainersUtil;

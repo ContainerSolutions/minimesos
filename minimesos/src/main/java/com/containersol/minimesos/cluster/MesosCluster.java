@@ -1,5 +1,6 @@
-package com.containersol.minimesos;
+package com.containersol.minimesos.cluster;
 
+import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.container.ContainerName;
 import com.containersol.minimesos.docker.DockerContainersUtil;
@@ -22,6 +23,7 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
 import java.io.File;
@@ -127,6 +129,7 @@ public class MesosCluster extends ExternalResource {
      * Starts the Mesos cluster and its containers with 60 second timeout.
      */
     public void start() {
+        LOGGER.info(getClusterId() + " - start");
         start(60);
     }
 
@@ -145,6 +148,7 @@ public class MesosCluster extends ExternalResource {
      * Print cluster info
      */
     public void info() {
+        LOGGER.info(getClusterId() + " - info");
         if (clusterId != null) {
             CLILOGGER.info("Minimesos cluster is running");
             CLILOGGER.info("Mesos version: " + MesosContainer.MESOS_IMAGE_TAG.substring(0, MesosContainer.MESOS_IMAGE_TAG.indexOf("-")));
@@ -156,15 +160,16 @@ public class MesosCluster extends ExternalResource {
      * Prints the state of the Mesos master or agent
      */
     public void state(String agent) {
+        LOGGER.info(getClusterId() + " - state");
         String stateInfo;
         if (StringUtils.isEmpty(agent)) {
             stateInfo = getClusterStateInfo(clusterId);
         } else {
             stateInfo = getContainerStateInfo(clusterId);
         }
-
-        if(stateInfo != null) {
-            LOGGER.info(stateInfo);
+        if (stateInfo != null) {
+            JSONObject state = new JSONObject(stateInfo);
+            CLILOGGER.info(state.toString(2));
         } else {
             throw new MinimesosException("Did not find the cluster or requested container");
         }
@@ -174,6 +179,7 @@ public class MesosCluster extends ExternalResource {
      * Stops the Mesos cluster and its containers
      */
     public void stop() {
+        LOGGER.info(getClusterId() + " - stop");
         for (AbstractContainer container : this.containers) {
             LOGGER.debug("Removing container [" + container.getContainerId() + "]");
             try {
@@ -189,6 +195,7 @@ public class MesosCluster extends ExternalResource {
      * Destroys the Mesos cluster and its containers
      */
     public void destroy() {
+        LOGGER.info(getClusterId() + " - destroy");
         if (clusterId != null) {
             MarathonClient marathon = new MarathonClient(getMarathonContainer().getIpAddress());
             marathon.killAllApps();

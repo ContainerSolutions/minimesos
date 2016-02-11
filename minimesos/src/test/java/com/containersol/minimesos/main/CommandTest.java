@@ -1,8 +1,9 @@
 package com.containersol.minimesos.main;
 
-import com.containersol.minimesos.MesosCluster;
+import com.containersol.minimesos.cluster.ClusterRepository;
+import com.containersol.minimesos.cluster.MesosCluster;
 import org.apache.commons.io.FileUtils;
-import org.junit.Ignore;
+import org.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
@@ -89,6 +90,33 @@ public class CommandTest {
         commandInfo.execute();
 
         assertTrue(systemOutRule.getLogWithNormalizedLineSeparator().contains(FileUtils.readFileToString(new File("src/test/resources/info-not-running.txt"))));
+    }
+
+    @Test
+    public void testState() throws IOException {
+        CommandUp commandUp = new CommandUp();
+        MesosCluster cluster = commandUp.execute();
+
+        CommandState commandState = new CommandState();
+        commandState.execute();
+
+        JSONObject state = new JSONObject(systemOutRule.getLogWithNormalizedLineSeparator());
+
+        assertEquals("master@" + cluster.getMasterContainer().getIpAddress() + ":5050", state.getString("leader"));
+
+        CommandDestroy commandDestroy = new CommandDestroy();
+        commandDestroy.execute();
+    }
+
+    @Test
+    public void testState_notRunning() throws IOException {
+        CommandState commandState = new CommandState();
+        commandState.execute();
+
+        assertTrue(systemOutRule.getLogWithNormalizedLineSeparator().contains("Minimesos cluster is not running"));
+
+        CommandDestroy commandDestroy = new CommandDestroy();
+        commandDestroy.execute();
     }
 
 }

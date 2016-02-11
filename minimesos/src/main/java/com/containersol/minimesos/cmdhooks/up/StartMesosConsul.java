@@ -1,6 +1,6 @@
 package com.containersol.minimesos.cmdhooks.up;
 
-import com.containersol.minimesos.MesosCluster;
+import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cmdhooks.CliCommandHookExecutor;
 import com.containersol.minimesos.main.Command;
 import com.containersol.minimesos.mesos.ZooKeeper;

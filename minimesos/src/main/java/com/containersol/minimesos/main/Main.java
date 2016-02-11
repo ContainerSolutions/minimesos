@@ -3,7 +3,8 @@ package com.containersol.minimesos.main;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.containersol.minimesos.MesosCluster;
+import com.containersol.minimesos.cluster.ClusterRepository;
+import com.containersol.minimesos.cluster.MesosCluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
  */
 @Parameters(separators = "=", commandDescription = "Global options")
 public class Main {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     @Parameter(names = {"--help", "-help", "-?", "-h"}, description = "Show help")

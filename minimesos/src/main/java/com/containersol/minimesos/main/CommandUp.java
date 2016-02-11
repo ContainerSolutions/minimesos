@@ -2,7 +2,8 @@ package com.containersol.minimesos.main;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.containersol.minimesos.MesosCluster;
+import com.containersol.minimesos.cluster.ClusterRepository;
+import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersol.minimesos.mesos.ClusterContainers;

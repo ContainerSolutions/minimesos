@@ -1,6 +1,6 @@
 package com.containersol.minimesos.main;
 
-import com.containersol.minimesos.MesosCluster;
+import com.containersol.minimesos.cluster.MesosCluster;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;

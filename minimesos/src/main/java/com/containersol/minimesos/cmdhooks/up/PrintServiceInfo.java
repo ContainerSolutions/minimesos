@@ -1,5 +1,5 @@
 package com.containersol.minimesos.cmdhooks.up;
-import com.containersol.minimesos.MesosCluster;
+import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cmdhooks.CliCommandHookExecutor;
 
 /**

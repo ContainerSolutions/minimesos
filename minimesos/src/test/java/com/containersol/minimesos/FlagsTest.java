@@ -1,5 +1,6 @@
 package com.containersol.minimesos;
 
+import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.mesos.DockerClientFactory;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersol.minimesos.mesos.MesosMaster;

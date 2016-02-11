@@ -1,6 +1,6 @@
 package com.containersol.minimesos.marathon;
 
-import com.containersol.minimesos.MesosCluster;
+import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.mesos.ZooKeeper;
 import com.github.dockerjava.api.DockerClient;

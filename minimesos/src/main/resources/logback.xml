@@ -1,4 +1,6 @@
-<configuration debug="false">
+<configuration>
+
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <!-- encoders are  by default assigned the type
@@ -8,7 +10,23 @@
         </encoder>
     </appender>
 
-    <root level="info">
+    <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender" >
+        <target>System.err</target>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="com.containersol.minimesos.main" level="INFO">
         <appender-ref ref="STDOUT" />
+    </logger>
+
+    <!--<logger name="com.containersol.minimesos" level="INFO">-->
+        <!--<appender-ref ref="STDERR" />-->
+    <!--</logger>-->
+
+    <root level="INFO">
+        <appender-ref ref="STDERR" />
     </root>
+
 </configuration>
