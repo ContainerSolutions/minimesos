@@ -57,6 +57,11 @@ public class MesosSlave extends MesosContainer {
         return mesosImageName;
     }
 
+    @Override
+    public int getPortNumber() {
+        return portNumber;
+    }
+
     public void setMesosImageName( String mesosImageName ) {
         this.mesosImageName = mesosImageName;
     }

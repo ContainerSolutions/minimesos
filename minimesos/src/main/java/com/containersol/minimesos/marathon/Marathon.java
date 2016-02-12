@@ -40,7 +40,7 @@ public class Marathon extends AbstractContainer {
     }
 
     @Override
-    protected String getRole() {
+    public String getRole() {
         return "marathon";
     }
 

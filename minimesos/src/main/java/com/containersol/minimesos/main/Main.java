@@ -68,8 +68,8 @@ public class Main {
         if (jc.getParsedCommand() == null) {
             MesosCluster cluster = ClusterRepository.loadCluster();
             if (cluster != null) {
-                MesosCluster.printServiceUrl(cluster.getClusterId(), "master", commandUp);
-                MesosCluster.printServiceUrl(cluster.getClusterId(), "marathon", commandUp);
+                cluster.printServiceUrl("master", commandUp);
+                cluster.printServiceUrl("marathon", commandUp);
             } else {
                 jc.usage();
             }

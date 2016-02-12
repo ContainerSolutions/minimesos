@@ -62,7 +62,7 @@ public class MesosClusterTest {
     @Test
     public void mesosAgentStateInfoJSONMatchesSchema() throws UnirestException, JsonParseException, JsonMappingException {
         String slaveId = CLUSTER.getSlaves()[0].getContainerId();
-        String state = CLUSTER.getContainerStateInfo(slaveId);
+        String state = CLUSTER.getAgentStateInfo(slaveId);
         assertNotNull( state );
     }
 

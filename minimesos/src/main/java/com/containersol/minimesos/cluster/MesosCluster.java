@@ -80,7 +80,7 @@ public class MesosCluster extends ExternalResource {
         this.clusterId = clusterId;
 
         List<Container> containers = dockerClient.listContainersCmd().exec();
-        Collections.sort(containers, (c1,c2) -> Long.compare(c1.getCreated(), c2.getCreated()));
+        Collections.sort(containers, (c1, c2) -> Long.compare(c1.getCreated(), c2.getCreated()));
 
         ZooKeeper zkKeeper = null;
 
@@ -160,20 +160,24 @@ public class MesosCluster extends ExternalResource {
     /**
      * Prints the state of the Mesos master or agent
      */
-    public void state(String agent) {
+    public void state(String agentContainerId) {
+
         LOGGER.info(getClusterId() + " - state");
         String stateInfo;
-        if (StringUtils.isEmpty(agent)) {
-            stateInfo = getClusterStateInfo(clusterId);
+
+        if (StringUtils.isEmpty(agentContainerId)) {
+            stateInfo = getClusterStateInfo();
         } else {
-            stateInfo = getContainerStateInfo(clusterId);
+            stateInfo = getAgentStateInfo(agentContainerId);
         }
+
         if (stateInfo != null) {
             JSONObject state = new JSONObject(stateInfo);
             CLILOGGER.info(state.toString(2));
         } else {
             throw new MinimesosException("Did not find the cluster or requested container");
         }
+
     }
 
     /**
@@ -218,21 +222,20 @@ public class MesosCluster extends ExternalResource {
      * Starts a container. This container will be removed when the Mesos cluster is shut down.
      *
      * @param container container to be started
-     * @param timeout in seconds
-     *
+     * @param timeout   in seconds
      * @return container ID
      */
     public String addAndStartContainer(AbstractContainer container, int timeout) {
 
         container.setClusterId(clusterId);
-        LOGGER.debug( String.format("Starting %s (%s) container", container.getName(), container.getContainerId()) );
+        LOGGER.debug(String.format("Starting %s (%s) container", container.getName(), container.getContainerId()));
 
         try {
             container.start(timeout);
-        } catch (Exception exc ) {
+        } catch (Exception exc) {
             String msg = String.format("Failed to start %s (%s) container", container.getName(), container.getContainerId());
-            LOGGER.error( msg, exc );
-            throw new MinimesosException(msg, exc );
+            LOGGER.error(msg, exc);
+            throw new MinimesosException(msg, exc);
         }
 
 
@@ -242,12 +245,10 @@ public class MesosCluster extends ExternalResource {
     /**
      * Retrieves JSON with Mesos Cluster master state
      *
-     * @param clusterId id of the cluster
      * @return stage JSON
      */
-    public String getClusterStateInfo(String clusterId) {
-        Container container = getContainer(clusterId, "master");
-        return getContainerStateInfo(container);
+    public String getClusterStateInfo() {
+        return getAgentStateInfo(getMasterContainer());
     }
 
     /**
@@ -256,29 +257,35 @@ public class MesosCluster extends ExternalResource {
      * @param containerId ID of the container to get state from
      * @return stage JSON
      */
-    public String getContainerStateInfo(String containerId) {
-        Container container = DockerContainersUtil.getContainer(dockerClient, containerId);
-        return getContainerStateInfo(container);
+    public String getAgentStateInfo(String containerId) {
+
+        MesosSlave theSlave = null;
+        for (MesosSlave slave : getSlaves()) {
+            if (slave.getContainerId().equals(containerId)) {
+                theSlave = slave;
+                break;
+            }
+        }
+
+        return (theSlave != null) ? getAgentStateInfo(theSlave) : null;
+
     }
 
     /**
-     * TODO: parameter should change to MesosContainer
      * @param container docker container to get state from
      * @return mesos state JSON
      */
-    private String getContainerStateInfo(Container container) {
+    private String getAgentStateInfo(MesosContainer container) {
 
         String info = null;
 
         if (container != null) {
 
-            String containerId = container.getId();
-            String ip = DockerContainersUtil.getIpAddress(dockerClient, containerId);
+            String ip = container.getIpAddress();
 
             if (ip != null) {
 
-                // TODO: this should use cluster ID; use of default ports in not sufficient
-                int port = ContainerName.getFromDockerNames(container.getNames()).contains("minimesos-agent-") ? MesosSlave.DEFAULT_MESOS_SLAVE_PORT : MesosMaster.MESOS_MASTER_PORT;
+                int port = container.getPortNumber();
                 String url = "http://" + ip + ":" + port + "/state.json";
 
                 try {
@@ -351,7 +358,7 @@ public class MesosCluster extends ExternalResource {
      * If it doesn't find that type, the optional is empty so the cast doesn't need to be performed.
      *
      * @param filter A predicate that is true when an {@link AbstractContainer} in the list is of type T
-     * @param <T> A container of type T that extends {@link AbstractContainer}
+     * @param <T>    A container of type T that extends {@link AbstractContainer}
      * @return the first container it comes across.
      */
     @SuppressWarnings("unchecked")
@@ -365,14 +372,15 @@ public class MesosCluster extends ExternalResource {
 
     /**
      * Type safe retrieval of container object (based on naming convention)
+     *
      * @param clusterId ID of the cluster to search for containers
-     * @param role container role in the cluster
+     * @param role      container role in the cluster
      * @return object of clazz type, which represent the container
      */
     public static Container getContainer(String clusterId, String role) {
         List<Container> containers = dockerClient.listContainersCmd().exec();
         for (Container container : containers) {
-            if (ContainerName.hasRoleInCluster(container.getNames(), clusterId, role) ) {
+            if (ContainerName.hasRoleInCluster(container.getNames(), clusterId, role)) {
                 return container;
             }
         }
@@ -381,8 +389,8 @@ public class MesosCluster extends ExternalResource {
 
     public static String getContainerIp(String clusterId, String role) {
         Container container = getContainer(clusterId, role);
-        if ( container != null ) {
-            return DockerContainersUtil.getIpAddress( dockerClient, container.getId() );
+        if (container != null) {
+            return DockerContainersUtil.getIpAddress(dockerClient, container.getId());
         }
         return null;
     }
@@ -404,15 +412,17 @@ public class MesosCluster extends ExternalResource {
         waitForState(predicate, 20);
     }
 
-    public static void printServiceUrl(String clusterId, String serviceName, Command cmd) {
+    public void printServiceUrl(String serviceName, Command cmd) {
+
         String dockerHostIp = System.getenv("DOCKER_HOST_IP");
-        List<Container> containers = dockerClient.listContainersCmd().exec();
-        for (Container container : containers) {
-            if (ContainerName.hasRoleInCluster(container.getNames(), clusterId, serviceName)) {
+
+        for (AbstractContainer container : getContainers()) {
+
+            if (container.getRole().equals(serviceName)) {
 
                 String uri, ip;
                 if (!cmd.isExposedHostPorts() || dockerHostIp.isEmpty()) {
-                    ip = DockerContainersUtil.getIpAddress(dockerClient, container.getId());
+                    ip = container.getIpAddress();
                 } else {
                     ip = dockerHostIp;
                 }

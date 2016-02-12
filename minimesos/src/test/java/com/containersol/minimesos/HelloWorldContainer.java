@@ -18,7 +18,7 @@ class HelloWorldContainer extends AbstractContainer {
     }
 
     @Override
-    protected String getRole() {
+    public String getRole() {
         return "helloworld";
     }
 

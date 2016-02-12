@@ -14,7 +14,6 @@ import com.containersol.minimesos.mesos.MesosMasterExtended;
 import com.containersol.minimesos.mesos.MesosSlave;
 import com.containersol.minimesos.mesos.ZooKeeper;
 import com.github.dockerjava.api.DockerClient;
-import org.apache.log4j.Logger;
 
 import java.util.TreeMap;
 
@@ -23,8 +22,6 @@ import java.util.TreeMap;
  */
 @Parameters(separators = "=", commandDescription = "Create a minimesos cluster")
 public class CommandUp implements Command {
-
-    private static Logger LOGGER = Logger.getLogger(MesosCluster.class);
 
     public static final String CLINAME = "up";
 
@@ -77,9 +74,6 @@ public class CommandUp implements Command {
         return startConsul;
     }
 
-//            Main.clusterId = MesosCluster.readClusterId();
-//            CliCommandHookExecutor.fireCallbacks("up", Main.clusterId, commandUp);
-//            return;
 
     public MesosCluster execute() {
         MesosCluster cluster = ClusterRepository.loadCluster();
@@ -106,7 +100,7 @@ public class CommandUp implements Command {
         cluster.start(getTimeout());
         cluster.waitForState(state -> state != null, 60);
 
-        ClusterRepository.saveCluster(cluster);
+        ClusterRepository.saveClusterFile(cluster);
 
         return cluster;
     }

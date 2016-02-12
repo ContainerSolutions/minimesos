@@ -59,7 +59,7 @@ public class RunTaskTest {
                 dockerClient) {
 
             @Override
-            protected String getRole() {
+            public String getRole() {
                 return TASK_CLUSTER_ROLE;
             }
 

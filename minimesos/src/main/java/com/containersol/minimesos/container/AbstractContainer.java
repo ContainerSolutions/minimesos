@@ -50,7 +50,7 @@ public abstract class AbstractContainer {
         this.containerId = containerId;
     }
 
-    protected abstract String getRole();
+    public abstract String getRole();
 
     /**
      * Implement this method to pull your image. This will be called before the container is run.

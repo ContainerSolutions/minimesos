@@ -26,7 +26,7 @@ public class CommandDestroy implements Command {
         MesosCluster cluster = ClusterRepository.loadCluster();
         if (cluster != null) {
             cluster.destroy();
-            ClusterRepository.deleteCluster();
+            ClusterRepository.deleteClusterFile();
         }
     }
 }
