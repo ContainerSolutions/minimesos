@@ -3,7 +3,6 @@ package com.containersol.minimesos.main;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
-import org.apache.log4j.Logger;
 
 import java.io.PrintStream;
 
@@ -12,8 +11,6 @@ import java.io.PrintStream;
  */
 @Parameters(separators = "=", commandDescription = "Display cluster information")
 public class CommandInfo implements Command {
-
-    private static Logger LOGGER = Logger.getLogger(Main.class);
 
     public static final String CLINAME = "info";
 

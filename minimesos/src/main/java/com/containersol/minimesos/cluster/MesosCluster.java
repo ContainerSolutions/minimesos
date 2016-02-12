@@ -78,12 +78,12 @@ public class MesosCluster extends ExternalResource {
     private MesosCluster(String clusterId) {
         this.clusterId = clusterId;
 
-        List<Container> containers = dockerClient.listContainersCmd().exec();
-        Collections.sort(containers, (c1, c2) -> Long.compare(c1.getCreated(), c2.getCreated()));
+        List<Container> dockerContainers = dockerClient.listContainersCmd().exec();
+        Collections.sort(dockerContainers, (c1, c2) -> Long.compare(c1.getCreated(), c2.getCreated()));
 
         ZooKeeper zkKeeper = null;
 
-        for (Container container : containers) {
+        for (Container container : dockerContainers) {
             String name = ContainerName.getFromDockerNames(container.getNames());
             if (ContainerName.belongsToCluster(name, clusterId)) {
 

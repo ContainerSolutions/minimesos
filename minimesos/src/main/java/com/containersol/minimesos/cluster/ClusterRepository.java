@@ -61,8 +61,9 @@ public class ClusterRepository {
 
     private static String readClusterId() {
         try {
-            String clusterId = IOUtils.toString(new FileReader(getMinimesosFile()));
-            LOGGER.debug("Reading cluster ID from " + getMinimesosFile() + ": " + clusterId);
+            File minimesosFile = getMinimesosFile();
+            String clusterId = FileUtils.readFileToString(minimesosFile);
+            LOGGER.debug("Reading cluster ID from " + minimesosFile + ": " + clusterId);
             return clusterId;
         } catch (IOException e) {
             return null;

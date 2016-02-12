@@ -48,12 +48,14 @@ public class CommandTest {
 
     @Test
     public void testUp_invalidMinimesosFile() throws IOException {
+
         FileUtils.write(ClusterRepository.getMinimesosFile(), "invalid");
 
         CommandUp commandUp = new CommandUp();
         MesosCluster cluster = commandUp.execute();
 
-        assertNotEquals("Invalid state file has not been overwritten", cluster.getClusterId(), "invalid");
+        String fileContent = FileUtils.readFileToString( ClusterRepository.getMinimesosFile() );
+        assertEquals("Invalid state file has not been overwritten", cluster.getClusterId(), fileContent);
 
         CommandDestroy commandDestroy = new CommandDestroy();
         commandDestroy.execute();

@@ -76,6 +76,7 @@ public class CommandUp implements Command {
 
 
     public MesosCluster execute() {
+
         MesosCluster cluster = ClusterRepository.loadCluster();
         if (cluster != null) {
             return cluster;
