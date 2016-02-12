@@ -8,6 +8,8 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.PrintStream;
+
 /**
  * Main method for interacting with minimesos.
  */
@@ -18,6 +20,8 @@ public class Main {
 
     @Parameter(names = {"--help", "-help", "-?", "-h"}, description = "Show help")
     private boolean help = false;
+
+    private PrintStream output = System.out;
 
     private final JCommander jc;
 
@@ -44,7 +48,12 @@ public class Main {
         jc.setProgramName("minimesos");
     }
 
+    public void setOutput(PrintStream output) {
+        this.output = output;
+    }
+
     public void run(String[] args) {
+
         jc.addCommand(CommandUp.CLINAME, commandUp);
         jc.addCommand(CommandDestroy.CLINAME, commandDestroy);
         jc.addCommand(CommandHelp.CLINAME, commandHelp);
@@ -56,29 +65,29 @@ public class Main {
             jc.parse(args);
         } catch (Exception e) {
             LOGGER.error("Failed to parse parameters. " + e.getMessage() + "\n" );
-            jc.usage();
+            printUsage();
             return;
         }
 
         if (jc.getParameters().get(0).isAssigned()) {
-            jc.usage();
+            printUsage();
             return;
         }
 
         if (jc.getParsedCommand() == null) {
             MesosCluster cluster = ClusterRepository.loadCluster();
             if (cluster != null) {
-                cluster.printServiceUrl("master", commandUp);
-                cluster.printServiceUrl("marathon", commandUp);
+                cluster.printServiceUrl(output, "master", commandUp);
+                cluster.printServiceUrl(output, "marathon", commandUp);
             } else {
-                jc.usage();
+                printUsage();
             }
             return;
         }
 
         switch (jc.getParsedCommand()) {
             case CommandHelp.CLINAME:
-                jc.usage();
+                printUsage();
                 break;
             case CommandUp.CLINAME:
                 commandUp.execute();
@@ -99,7 +108,12 @@ public class Main {
                 LOGGER.error("No such command: " + jc.getParsedCommand());
         }
 
+    }
 
+    private void printUsage() {
+        StringBuilder builder = new StringBuilder();
+        jc.usage(builder);
+        output.println(builder.toString());
     }
 
     public void setCommandUp(CommandUp commandUp) {

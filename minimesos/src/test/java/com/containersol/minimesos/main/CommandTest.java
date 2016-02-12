@@ -3,13 +3,15 @@ package com.containersol.minimesos.main;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.json.JSONObject;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.SystemOutRule;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -18,8 +20,14 @@ import static org.junit.Assert.assertTrue;
 
 public class CommandTest {
 
-    @Rule
-    public final SystemOutRule systemOutRule = new SystemOutRule().enableLog();
+    private ByteArrayOutputStream outputStream;
+    private PrintStream ps;
+
+    @Before
+    public void initTest() {
+        outputStream = new ByteArrayOutputStream();
+        ps = new PrintStream(outputStream, true);
+    }
 
     @Test
     public void testUpAndDestroy() {
@@ -75,10 +83,11 @@ public class CommandTest {
         CommandUp commandUp = new CommandUp();
         commandUp.execute();
 
-        CommandInfo commandInfo = new CommandInfo();
+        CommandInfo commandInfo = new CommandInfo(ps);
         commandInfo.execute();
 
-        assertTrue(systemOutRule.getLogWithNormalizedLineSeparator().contains(FileUtils.readFileToString(new File("src/test/resources/info.txt"))));
+        String result = outputStream.toString();
+        assertTrue(result.contains(FileUtils.readFileToString(new File("src/test/resources/info.txt"))));
 
         CommandDestroy commandDestroy = new CommandDestroy();
         commandDestroy.execute();
@@ -86,10 +95,11 @@ public class CommandTest {
 
     @Test
     public void testInfo_notRunning() throws IOException {
-        CommandInfo commandInfo = new CommandInfo();
+        CommandInfo commandInfo = new CommandInfo(ps);
         commandInfo.execute();
 
-        assertTrue(systemOutRule.getLogWithNormalizedLineSeparator().contains(FileUtils.readFileToString(new File("src/test/resources/info-not-running.txt"))));
+        String result = outputStream.toString();
+        assertTrue(result.contains(FileUtils.readFileToString(new File("src/test/resources/info-not-running.txt"))));
     }
 
     @Test
@@ -97,10 +107,10 @@ public class CommandTest {
         CommandUp commandUp = new CommandUp();
         MesosCluster cluster = commandUp.execute();
 
-        CommandState commandState = new CommandState();
+        CommandState commandState = new CommandState(ps);
         commandState.execute();
 
-        JSONObject state = new JSONObject(systemOutRule.getLogWithNormalizedLineSeparator());
+        JSONObject state = new JSONObject( outputStream.toString() );
 
         assertEquals("master@" + cluster.getMasterContainer().getIpAddress() + ":5050", state.getString("leader"));
 
@@ -110,10 +120,11 @@ public class CommandTest {
 
     @Test
     public void testState_notRunning() throws IOException {
-        CommandState commandState = new CommandState();
+        CommandState commandState = new CommandState(ps);
         commandState.execute();
 
-        assertTrue(systemOutRule.getLogWithNormalizedLineSeparator().contains("Minimesos cluster is not running"));
+        String result = outputStream.toString();
+        assertTrue(result.contains("Minimesos cluster is not running"));
 
         CommandDestroy commandDestroy = new CommandDestroy();
         commandDestroy.execute();

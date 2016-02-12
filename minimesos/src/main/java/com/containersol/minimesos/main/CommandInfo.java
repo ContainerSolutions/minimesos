@@ -5,6 +5,8 @@ import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 import org.apache.log4j.Logger;
 
+import java.io.PrintStream;
+
 /**
  * Info command
  */
@@ -14,6 +16,15 @@ public class CommandInfo implements Command {
     private static Logger LOGGER = Logger.getLogger(Main.class);
 
     public static final String CLINAME = "info";
+
+    private PrintStream output = System.out;
+
+    public CommandInfo() {
+    }
+
+    public CommandInfo(PrintStream ps) {
+        this.output = ps;
+    }
 
     @Override
     public boolean isExposedHostPorts() {
@@ -28,9 +39,9 @@ public class CommandInfo implements Command {
     public void execute() {
         MesosCluster cluster = ClusterRepository.loadCluster();
         if (cluster != null) {
-            cluster.info();
+            cluster.info(output);
         } else {
-            LOGGER.info("Minimesos cluster is not running");
+            output.println("Minimesos cluster is not running");
         }
     }
 }

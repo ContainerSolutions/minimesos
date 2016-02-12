@@ -27,6 +27,7 @@ import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -36,8 +37,6 @@ import java.util.stream.Collectors;
  * Mesos cluster with life cycle methods such as start, install, info, state, stop and destroy.
  */
 public class MesosCluster extends ExternalResource {
-
-    private static Logger CLILOGGER = Logger.getLogger(Main.class);
 
     private static Logger LOGGER = Logger.getLogger(MesosCluster.class);
 
@@ -148,11 +147,11 @@ public class MesosCluster extends ExternalResource {
     /**
      * Print cluster info
      */
-    public void info() {
+    public void info(PrintStream out) {
         LOGGER.info(getClusterId() + " - info");
         if (clusterId != null) {
-            CLILOGGER.info("Minimesos cluster is running");
-            CLILOGGER.info("Mesos version: " + MesosContainer.MESOS_IMAGE_TAG.substring(0, MesosContainer.MESOS_IMAGE_TAG.indexOf("-")));
+            out.println("Minimesos cluster is running");
+            out.println("Mesos version: " + MesosContainer.MESOS_IMAGE_TAG.substring(0, MesosContainer.MESOS_IMAGE_TAG.indexOf("-")));
             // todo: properly add service url printouts
         }
     }
@@ -160,7 +159,7 @@ public class MesosCluster extends ExternalResource {
     /**
      * Prints the state of the Mesos master or agent
      */
-    public void state(String agentContainerId) {
+    public void state(PrintStream out, String agentContainerId) {
 
         LOGGER.info(getClusterId() + " - state");
         String stateInfo;
@@ -173,7 +172,7 @@ public class MesosCluster extends ExternalResource {
 
         if (stateInfo != null) {
             JSONObject state = new JSONObject(stateInfo);
-            CLILOGGER.info(state.toString(2));
+            out.println(state.toString(2));
         } else {
             throw new MinimesosException("Did not find the cluster or requested container");
         }
@@ -412,7 +411,7 @@ public class MesosCluster extends ExternalResource {
         waitForState(predicate, 20);
     }
 
-    public void printServiceUrl(String serviceName, Command cmd) {
+    public void printServiceUrl(PrintStream out, String serviceName, Command cmd) {
 
         String dockerHostIp = System.getenv("DOCKER_HOST_IP");
 
@@ -444,18 +443,20 @@ public class MesosCluster extends ExternalResource {
                     default:
                         uri = "Unknown service type '" + serviceName + "'";
                 }
-                LOGGER.info(uri);
-                return;
+
+                out.println( uri );
+                break;
             }
         }
     }
 
-    public static void deployMarathonApp(String clusterId, String marathonJson) {
-        String marathonIp = getContainerIp(clusterId, "marathon");
-        if (marathonIp == null) {
+    public void deployMarathonApp(String marathonJson) {
+        Marathon marathon = getMarathonContainer();
+        if (marathon == null) {
             throw new MinimesosException("Marathon container is not found in cluster " + clusterId);
         }
 
+        String marathonIp = marathon.getIpAddress();
         MarathonClient marathonClient = new MarathonClient(marathonIp);
         LOGGER.debug(String.format("Installing %s app on marathon %s", marathonJson, marathonIp));
 

@@ -2,22 +2,21 @@ package com.containersol.minimesos.main;
 
 import com.containersol.minimesos.cluster.MesosCluster;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.SystemOutRule;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class MainTest {
 
-    @Rule
-    public final SystemOutRule systemOutRule = new SystemOutRule().enableLog();
-
+    private ByteArrayOutputStream outputStream;
     private Main main;
 
     private CommandInfo commandInfo;
@@ -29,22 +28,26 @@ public class MainTest {
     @Before
     public void before() {
 
+        outputStream = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(outputStream, true);
+
         commandUp = spy(new CommandUp());
         doReturn(mock(MesosCluster.class)).when(commandUp).execute();
 
         commandDestroy = spy(new CommandDestroy());
         doNothing().when(commandDestroy).execute();
 
-        commandInfo = spy(new CommandInfo());
+        commandInfo = spy(new CommandInfo(ps));
         doNothing().when(commandInfo).execute();
 
-        commandState = spy(new CommandState());
+        commandState = spy(new CommandState(ps));
         doNothing().when(commandState).execute();
 
         commandInstall = spy(new CommandInstall());
         doNothing().when(commandInstall).execute();
 
         main = new Main();
+        main.setOutput(ps);
         main.setCommandUp(commandUp);
         main.setCommandDestroy(commandDestroy);
         main.setCommandInfo(commandInfo);
@@ -93,22 +96,22 @@ public class MainTest {
     @Test
     public void testUnsupportedCommand() throws IOException {
         main.run(new String[]{"unsupported"});
-
-        assertTrue(systemOutRule.getLogWithNormalizedLineSeparator().contains(FileUtils.readFileToString(new File("src/test/resources/unsupported.txt"))));
+        String result = outputStream.toString();
+        assertTrue(result.contains(FileUtils.readFileToString(new File("src/test/resources/unsupported.txt"))));
     }
 
     @Test
     public void testMinusMinusHelp() throws IOException {
         main.run(new String[]{"--help"});
-
-        assertTrue(systemOutRule.getLogWithNormalizedLineSeparator().contains(FileUtils.readFileToString(new File("src/test/resources/help.txt"))));
+        String result = outputStream.toString();
+        assertTrue(result.contains(FileUtils.readFileToString(new File("src/test/resources/help.txt"))));
     }
 
     @Test
     public void testHelp() throws IOException {
         main.run(new String[]{"help"});
-
-        assertTrue(systemOutRule.getLogWithNormalizedLineSeparator().contains(FileUtils.readFileToString(new File("src/test/resources/help.txt"))));
+        String result = outputStream.toString();
+        assertTrue(result.contains(FileUtils.readFileToString(new File("src/test/resources/help.txt"))));
     }
 
 }

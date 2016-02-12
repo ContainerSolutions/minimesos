@@ -7,6 +7,8 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.PrintStream;
+
 /**
  * Parameters for the 'state' command
  *
@@ -15,14 +17,18 @@ import org.slf4j.LoggerFactory;
 public class CommandState implements Command {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
-
     public static final String CLINAME = "state";
 
     @Parameter(names = "--agent", description = "Specify an agent to query, otherwise query a master")
     private String agent = "";
 
-    public String getAgent() {
-        return agent;
+    private PrintStream output = System.out;
+
+    public CommandState() {
+    }
+
+    public CommandState(PrintStream ps) {
+        this.output = ps;
     }
 
     @Override
@@ -38,9 +44,10 @@ public class CommandState implements Command {
     public void execute() {
         MesosCluster cluster = ClusterRepository.loadCluster();
         if (cluster != null) {
-            cluster.state(agent);
+            cluster.state( output, agent);
         } else {
-            LOGGER.info("Minimesos cluster is not running");
+            output.println("Minimesos cluster is not running");
         }
     }
+
 }

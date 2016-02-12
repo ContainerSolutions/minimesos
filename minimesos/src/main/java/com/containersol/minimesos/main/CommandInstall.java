@@ -3,6 +3,8 @@ package com.containersol.minimesos.main;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MinimesosException;
+import com.containersol.minimesos.cluster.ClusterRepository;
+import com.containersol.minimesos.cluster.MesosCluster;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.log4j.Logger;
 
@@ -74,15 +76,15 @@ public class CommandInstall implements Command {
 
     public void execute() {
 
-//                    cluster = MesosCluster.loadCluster(clusterId);
-//                    String marathonJson = commandInstall.getMarathonJson(MesosCluster.getHostDir());
-//                    if (StringUtils.isBlank(marathonJson)) {
-//                        jc.usage();
-//                    } else {
-//                        cluster.getMarathonContainer().deployApp(marathonJson);
-//                    }
-//                    break;
+        String marathonJson = getMarathonJson(MesosCluster.getHostDir());
 
+        MesosCluster cluster = ClusterRepository.loadCluster();
+        if( cluster != null ) {
+            cluster.deployMarathonApp( marathonJson );
+        } else {
+            throw new MinimesosException("Running cluster is not found");
+        }
 
     }
+
 }
