@@ -11,12 +11,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class MainTest {
 
@@ -33,24 +28,20 @@ public class MainTest {
 
     @Before
     public void before() {
+
         commandUp = spy(new CommandUp());
-        reset(commandUp);
-        when(commandUp.execute()).thenReturn(mock(MesosCluster.class));
+        doReturn(mock(MesosCluster.class)).when(commandUp).execute();
 
         commandDestroy = spy(new CommandDestroy());
-        reset(commandDestroy);
         doNothing().when(commandDestroy).execute();
 
         commandInfo = spy(new CommandInfo());
-        reset(commandInfo);
         doNothing().when(commandInfo).execute();
 
         commandState = spy(new CommandState());
-        reset(commandState);
         doNothing().when(commandState).execute();
 
         commandInstall = spy(new CommandInstall());
-        reset(commandInstall);
         doNothing().when(commandInstall).execute();
 
         main = new Main();
@@ -60,6 +51,7 @@ public class MainTest {
         main.setCommandState(commandState);
         main.setCommandInstall(commandInstall);
         main.setCommandHelp(new CommandHelp());
+
     }
 
 
@@ -109,7 +101,7 @@ public class MainTest {
     public void testMinusMinusHelp() throws IOException {
         main.run(new String[]{"--help"});
 
-        assertTrue(systemOutRule.getLogWithNormalizedLineSeparator().contains(FileUtils.readFileToString(new File("src/test/resources/minusminushelp.txt"))));
+        assertTrue(systemOutRule.getLogWithNormalizedLineSeparator().contains(FileUtils.readFileToString(new File("src/test/resources/help.txt"))));
     }
 
     @Test

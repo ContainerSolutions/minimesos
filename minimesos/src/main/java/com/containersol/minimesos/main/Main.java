@@ -17,7 +17,7 @@ public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     @Parameter(names = {"--help", "-help", "-?", "-h"}, description = "Show help")
-    private static boolean help = false;
+    private boolean help = false;
 
     private final JCommander jc;
 
@@ -95,9 +95,11 @@ public class Main {
             case CommandState.CLINAME:
                 commandState.execute();
                 break;
+            default:
+                LOGGER.error("No such command: " + jc.getParsedCommand());
         }
 
-        LOGGER.error("No such command: " + jc.getParsedCommand());
+
     }
 
     public void setCommandUp(CommandUp commandUp) {

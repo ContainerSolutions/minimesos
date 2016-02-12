@@ -2,7 +2,7 @@ Usage: minimesos [options] [command] [command options]
   Options:
     --help, -help, -?, -h
        Show help
-       Default: true
+       Default: false
   Commands:
     up      Create a minimesos cluster
       Usage: up [options]
