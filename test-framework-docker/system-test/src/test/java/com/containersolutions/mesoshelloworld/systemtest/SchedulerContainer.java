@@ -31,7 +31,7 @@ public class SchedulerContainer extends AbstractContainer {
     }
 
     @Override
-    protected String getRole() {
+    public String getRole() {
         return "helloworld-scheduler";
     }
 

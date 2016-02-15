@@ -29,6 +29,7 @@ public abstract class MesosContainer extends AbstractContainer {
     }
 
     public abstract String getMesosImageName();
+    public abstract int getPortNumber();
 
     protected abstract TreeMap<String, String> getDefaultEnvVars();
 
@@ -78,4 +79,5 @@ public abstract class MesosContainer extends AbstractContainer {
     public static String getFormattedZKAddress(ZooKeeper zkContainer) {
         return ZooKeeper.formatZKAddress(zkContainer.getIpAddress()) + DEFAULT_MESOS_ZK_PATH;
     }
+
 }

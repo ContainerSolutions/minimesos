@@ -55,15 +55,16 @@ if [ ! -d ${MINIMESOS_DIR} ]; then
     echo "Created minimesos directory at ${MINIMESOS_DIR}."
 fi
 
-docker run \
-       --rm \
-       -v "${MINIMESOS_HOST_DIR}:${MINIMESOS_HOST_DIR}" \
-       -v "/var/run/docker.sock:/var/run/docker.sock" \
-       -v "/sys/fs/cgroup:/sys/fs/cgroup" \
-       -v "${DOCKER_BIN}:/usr/bin/docker" \
+DOCKER_RUN_PARAMS="
+       -v ${MINIMESOS_HOST_DIR}:${MINIMESOS_HOST_DIR} \
+       -v /var/run/docker.sock:/var/run/docker.sock \
+       -v /sys/fs/cgroup:/sys/fs/cgroup \
+       -v ${DOCKER_BIN}:/usr/bin/docker \
        -i \
        --env DOCKER_HOST_IP=$DOCKER_HOST_IP \
        --entrypoint java \
-       "containersol/minimesos:${MINIMESOS_TAG}" \
+       containersol/minimesos:${MINIMESOS_TAG} \
        -Dminimesos.host.dir=${MINIMESOS_HOST_DIR} \
-       -jar /usr/local/share/minimesos/minimesos.jar ${PARAMS}
+       -jar /usr/local/share/minimesos/minimesos.jar ${PARAMS}"
+
+docker run --rm $DOCKER_RUN_PARAMS

@@ -34,6 +34,11 @@ public class MesosMaster extends MesosContainer {
         return mesosImageName;
     }
 
+    @Override
+    public int getPortNumber() {
+        return MESOS_MASTER_PORT;
+    }
+
     public void setMesosImageName( String mesosImageName ) {
         this.mesosImageName = mesosImageName;
     }
@@ -54,7 +59,7 @@ public class MesosMaster extends MesosContainer {
     }
 
     @Override
-    protected String getRole() {
+    public String getRole() {
         return "master";
     }
 

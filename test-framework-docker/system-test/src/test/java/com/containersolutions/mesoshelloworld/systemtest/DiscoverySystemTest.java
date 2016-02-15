@@ -6,7 +6,7 @@ import com.containersol.minimesos.mesos.MesosContainer;
 import com.containersolutions.mesoshelloworld.scheduler.Configuration;
 import com.jayway.awaitility.Awaitility;
 import org.apache.log4j.Logger;
-import com.containersol.minimesos.MesosCluster;
+import com.containersol.minimesos.cluster.MesosCluster;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;

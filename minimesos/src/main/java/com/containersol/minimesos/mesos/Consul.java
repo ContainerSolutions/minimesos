@@ -20,7 +20,7 @@ public class Consul extends AbstractContainer {
     }
 
     @Override
-    protected String getRole() {
+    public String getRole() {
         return "consul";
     }
 

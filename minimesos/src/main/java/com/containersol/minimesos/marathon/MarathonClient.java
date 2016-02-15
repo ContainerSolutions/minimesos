@@ -30,7 +30,7 @@ public class MarathonClient {
      * Kill all apps that are currently running.
      */
     public void killAllApps() {
-        if( marathonIp != null ) {
+        if (marathonIp != null) {
             String marathonEndpoint = getMarathonEndpoint();
             JSONObject appsResponse;
             try {

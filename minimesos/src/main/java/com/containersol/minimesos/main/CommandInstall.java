@@ -3,20 +3,23 @@ package com.containersol.minimesos.main;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MinimesosException;
-import org.apache.commons.compress.utils.IOUtils;
+import com.containersol.minimesos.cluster.ClusterRepository;
+import com.containersol.minimesos.cluster.MesosCluster;
+
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.util.List;
 import java.util.Scanner;
-import java.util.stream.Stream;
 
 /**
  * Installs a framework with Marathon
  */
 @Parameters(commandDescription = "Install a framework with Marathon")
-public class CommandInstall {
+public class CommandInstall implements Command {
+
     private static Logger LOGGER = Logger.getLogger(CommandInstall.class);
+
+    public static final String CLINAME = "install";
 
     @Parameter(names = "--exposedHostPorts", description = "Expose the Mesos and Marathon UI ports on the host level (we recommend to enable this on Mac (e.g. when using docker-machine) and disable on Linux).")
     private boolean exposedHostPorts = false;
@@ -33,6 +36,7 @@ public class CommandInstall {
         String fileContents = "";
         Scanner scanner;
         try {
+
             if (!marathonFile.isEmpty()) {
 
                 File jsonFile = new File( marathonFile );
@@ -46,11 +50,14 @@ public class CommandInstall {
 
                 scanner = new Scanner(new FileReader(jsonFile));
             } else {
-                scanner = new Scanner(new InputStreamReader(System.in));
+                // TODO: this causes https://github.com/ContainerSolutions/minimesos/issues/224
+                scanner = new Scanner(System.in);
             }
+
             while (scanner.hasNextLine()) {
                 fileContents = fileContents.concat(scanner.nextLine());
             }
+
             return fileContents;
 
         } catch (Exception e) {
@@ -62,6 +69,24 @@ public class CommandInstall {
 
     public boolean isExposedHostPorts() {
         return exposedHostPorts;
+    }
+
+    @Override
+    public boolean getStartConsul() {
+        return false;
+    }
+
+    public void execute() {
+
+        String marathonJson = getMarathonJson(MesosCluster.getHostDir());
+
+        MesosCluster cluster = ClusterRepository.loadCluster();
+        if( cluster != null ) {
+            cluster.deployMarathonApp( marathonJson );
+        } else {
+            throw new MinimesosException("Running cluster is not found");
+        }
+
     }
 
 }

@@ -1,6 +1,6 @@
 package com.containersol.minimesos.mesos;
 
-import com.containersol.minimesos.MesosCluster;
+import com.containersol.minimesos.cluster.MesosCluster;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
@@ -57,13 +57,18 @@ public class MesosSlave extends MesosContainer {
         return mesosImageName;
     }
 
+    @Override
+    public int getPortNumber() {
+        return portNumber;
+    }
+
     public void setMesosImageName( String mesosImageName ) {
         this.mesosImageName = mesosImageName;
     }
 
     public CreateContainerCmd getBaseCommand() {
 
-        String hostDir = MesosCluster.getMinimesosHostDir().getAbsolutePath();
+        String hostDir = MesosCluster.getHostDir().getAbsolutePath();
 
         return dockerClient.createContainerCmd( getMesosImageName() + ":" + getMesosImageTag() )
                 .withName( getName() )

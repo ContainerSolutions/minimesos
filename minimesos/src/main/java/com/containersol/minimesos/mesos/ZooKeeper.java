@@ -30,7 +30,7 @@ public class ZooKeeper extends AbstractContainer {
     }
 
     @Override
-    protected String getRole() {
+    public String getRole() {
         return "zookeeper";
     }
 

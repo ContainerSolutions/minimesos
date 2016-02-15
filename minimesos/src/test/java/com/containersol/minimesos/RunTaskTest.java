@@ -1,5 +1,6 @@
 package com.containersol.minimesos;
 
+import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.mesos.*;
@@ -58,7 +59,7 @@ public class RunTaskTest {
                 dockerClient) {
 
             @Override
-            protected String getRole() {
+            public String getRole() {
                 return TASK_CLUSTER_ROLE;
             }
 
