@@ -1,2 +1,0 @@
-Minimesos cluster is running
-Mesos version: 0.25.0

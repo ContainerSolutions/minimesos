@@ -97,21 +97,30 @@ public class MainTest {
     public void testUnsupportedCommand() throws IOException {
         main.run(new String[]{"unsupported"});
         String result = outputStream.toString();
-        assertTrue(result.contains(FileUtils.readFileToString(new File("src/test/resources/unsupported.txt"))));
+        assertUsageText(result);
     }
 
     @Test
     public void testMinusMinusHelp() throws IOException {
         main.run(new String[]{"--help"});
         String result = outputStream.toString();
-        assertTrue(result.contains(FileUtils.readFileToString(new File("src/test/resources/help.txt"))));
+        assertUsageText(result);
     }
 
     @Test
     public void testHelp() throws IOException {
         main.run(new String[]{"help"});
         String result = outputStream.toString();
-        assertTrue(result.contains(FileUtils.readFileToString(new File("src/test/resources/help.txt"))));
+        assertUsageText(result);
+    }
+
+    private static void assertUsageText(String output) {
+        assertTrue( output.contains("Usage: minimesos [options] [command] [command options]") );
+        assertTrue( output.contains("Options:") );
+        assertTrue( output.contains("Commands:") );
+        assertTrue( output.contains("Usage: up [options]") );
+        assertTrue( output.contains("Usage: install [options]") );
+        assertTrue( output.contains("Usage: state [options]") );
     }
 
 }

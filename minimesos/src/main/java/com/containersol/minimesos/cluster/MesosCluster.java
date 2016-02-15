@@ -138,7 +138,7 @@ public class MesosCluster extends ExternalResource {
      * @param timeoutSeconds seconds to wait until timeout
      */
     public void start(int timeoutSeconds) {
-        LOGGER.info(getClusterId() + " - start");
+        LOGGER.info("Cluster " + getClusterId() + " - start");
         this.containers.forEach((container) -> container.start(timeoutSeconds));
         // wait until the given number of slaves are registered
         new MesosClusterStateResponse(this).waitFor();
@@ -148,9 +148,8 @@ public class MesosCluster extends ExternalResource {
      * Print cluster info
      */
     public void info(PrintStream out) {
-        LOGGER.info(getClusterId() + " - info");
         if (clusterId != null) {
-            out.println("Minimesos cluster is running");
+            out.println("Minimesos cluster is running: " + clusterId);
             out.println("Mesos version: " + MesosContainer.MESOS_IMAGE_TAG.substring(0, MesosContainer.MESOS_IMAGE_TAG.indexOf("-")));
             // todo: properly add service url printouts
         }
@@ -161,7 +160,6 @@ public class MesosCluster extends ExternalResource {
      */
     public void state(PrintStream out, String agentContainerId) {
 
-        LOGGER.info(getClusterId() + " - state");
         String stateInfo;
 
         if (StringUtils.isEmpty(agentContainerId)) {
@@ -183,7 +181,7 @@ public class MesosCluster extends ExternalResource {
      * Stops the Mesos cluster and its containers
      */
     public void stop() {
-        LOGGER.info(getClusterId() + " - stop");
+        LOGGER.info("Cluster " + getClusterId() + " - stop");
         for (AbstractContainer container : this.containers) {
             LOGGER.debug("Removing container [" + container.getContainerId() + "]");
             try {
@@ -199,7 +197,9 @@ public class MesosCluster extends ExternalResource {
      * Destroys the Mesos cluster and its containers
      */
     public void destroy() {
-        LOGGER.info(getClusterId() + " - destroy");
+
+        LOGGER.info("Cluster " + getClusterId() + " - destroy");
+
         if (clusterId != null) {
             MarathonClient marathon = new MarathonClient(getMarathonContainer().getIpAddress());
             marathon.killAllApps();
@@ -260,9 +260,13 @@ public class MesosCluster extends ExternalResource {
 
         MesosSlave theSlave = null;
         for (MesosSlave slave : getSlaves()) {
-            if (slave.getContainerId().equals(containerId)) {
-                theSlave = slave;
-                break;
+            if (slave.getContainerId().startsWith(containerId)) {
+                if( theSlave == null ) {
+                    theSlave = slave;
+                } else {
+                    throw new MinimesosException("Provided ID " + containerId + " is not enough to uniquely identify container");
+                }
+
             }
         }
 
@@ -330,7 +334,7 @@ public class MesosCluster extends ExternalResource {
     }
 
     public MesosSlave[] getSlaves() {
-        List<AbstractContainer> slaves = containers.stream().filter(ClusterContainers.Filter.mesosSlave()).collect(Collectors.toList());
+        List<MesosSlave> slaves = containers.stream().filter(ClusterContainers.Filter.mesosSlave()).map(c -> (MesosSlave) c).collect(Collectors.toList());
         MesosSlave[] array = new MesosSlave[slaves.size()];
         return slaves.toArray(array);
     }

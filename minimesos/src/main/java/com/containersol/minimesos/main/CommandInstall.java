@@ -5,13 +5,11 @@ import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
-import org.apache.commons.compress.utils.IOUtils;
+
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.util.List;
 import java.util.Scanner;
-import java.util.stream.Stream;
 
 /**
  * Installs a framework with Marathon
@@ -38,6 +36,7 @@ public class CommandInstall implements Command {
         String fileContents = "";
         Scanner scanner;
         try {
+
             if (!marathonFile.isEmpty()) {
 
                 File jsonFile = new File( marathonFile );
@@ -51,11 +50,14 @@ public class CommandInstall implements Command {
 
                 scanner = new Scanner(new FileReader(jsonFile));
             } else {
-                scanner = new Scanner(new InputStreamReader(System.in));
+                // TODO: this causes https://github.com/ContainerSolutions/minimesos/issues/224
+                scanner = new Scanner(System.in);
             }
+
             while (scanner.hasNextLine()) {
                 fileContents = fileContents.concat(scanner.nextLine());
             }
+
             return fileContents;
 
         } catch (Exception e) {

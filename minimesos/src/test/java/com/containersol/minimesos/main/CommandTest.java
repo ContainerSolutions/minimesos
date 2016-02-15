@@ -15,7 +15,6 @@ import java.io.PrintStream;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class CommandTest {
@@ -89,7 +88,9 @@ public class CommandTest {
         commandInfo.execute();
 
         String result = outputStream.toString();
-        assertTrue(result.contains(FileUtils.readFileToString(new File("src/test/resources/info.txt"))));
+
+        assertTrue(result.contains("Minimesos cluster is running"));
+        assertTrue(result.contains("Mesos version"));
 
         CommandDestroy commandDestroy = new CommandDestroy();
         commandDestroy.execute();
