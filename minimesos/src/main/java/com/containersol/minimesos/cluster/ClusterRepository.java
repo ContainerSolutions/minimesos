@@ -11,6 +11,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+/**
+ * Set of static method to manage persisted information about the minimesos cluster
+ */
 public class ClusterRepository {
 
     private static Logger LOGGER = Logger.getLogger(ClusterRepository.class);
@@ -20,6 +23,8 @@ public class ClusterRepository {
     private ClusterRepository() {}
 
     /**
+     * Loads representation of the running cluster
+     *
      * @return representation of the cluster, which ID is found in the file
      */
     public static MesosCluster loadCluster() {
@@ -36,6 +41,7 @@ public class ClusterRepository {
 
     /**
      * Writes cluster id to file
+     *
      * @param cluster cluster to store ID
      */
     public static void saveClusterFile(MesosCluster cluster) {
@@ -71,7 +77,7 @@ public class ClusterRepository {
     }
 
     /**
-     * @return never null
+     * @return file, possibly non-existing, where cluster information is stored
      */
     public static File getMinimesosFile() {
         return new File(getMinimesosDir(), MINIMESOS_FILE_PROPERTY);
