@@ -20,4 +20,19 @@ public class CommandHelp implements Command {
         return false;
     }
 
+    @Override
+    public void execute() {
+        // Usage is being printed from Main
+    }
+
+    @Override
+    public boolean validateParameters() {
+        return true;
+    }
+
+    @Override
+    public String getName() {
+        return CLINAME;
+    }
+
 }

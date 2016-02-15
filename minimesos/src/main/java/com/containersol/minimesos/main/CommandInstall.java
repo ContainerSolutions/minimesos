@@ -17,54 +17,53 @@ import java.util.Scanner;
 @Parameters(commandDescription = "Install a framework with Marathon")
 public class CommandInstall implements Command {
 
-    private static Logger LOGGER = Logger.getLogger(CommandInstall.class);
-
     public static final String CLINAME = "install";
 
     @Parameter(names = "--exposedHostPorts", description = "Expose the Mesos and Marathon UI ports on the host level (we recommend to enable this on Mac (e.g. when using docker-machine) and disable on Linux).")
     private boolean exposedHostPorts = false;
 
-    @Parameter(names = "--marathonFile", description = "Marathon JSON app install file location")
-    private String marathonFile = "";
+    @Parameter(names = "--marathonFile", description = "Marathon JSON app install file location. Either this or --stdin parameter must be used")
+    private String marathonFile = null;
+
+    @Parameter(names = "--stdin", description = "Use JSON from standard import. Allow piping JSON from other processes. Either this or --marathonFile parameter must be used")
+    private boolean stdin = false;
 
     /**
      * Getting content of <code>marathonFile</code>, if provided, or standard input
+     *
      * @param minimesosHostDir current directory on the host, which is mapped to the same directory in minimesos container
      * @return content of the file or standard input
      */
-    public String getMarathonJson( File minimesosHostDir ) {
+    public String getMarathonJson(File minimesosHostDir) throws IOException {
+
         String fileContents = "";
         Scanner scanner;
-        try {
 
-            if (!marathonFile.isEmpty()) {
+        if (marathonFile != null && !marathonFile.isEmpty()) {
 
-                File jsonFile = new File( marathonFile );
-                if( !jsonFile.exists() ) {
-                    jsonFile = new File( minimesosHostDir, marathonFile );
-                    if( !jsonFile.exists() ) {
-                        String msg = String.format("Neither %s nor %s exist", new File( marathonFile ).getAbsolutePath(), jsonFile.getAbsolutePath() );
-                        throw new MinimesosException( msg );
-                    }
+            File jsonFile = new File(marathonFile);
+            if (!jsonFile.exists()) {
+                jsonFile = new File(minimesosHostDir, marathonFile);
+                if (!jsonFile.exists()) {
+                    String msg = String.format("Neither %s nor %s exist", new File(marathonFile).getAbsolutePath(), jsonFile.getAbsolutePath());
+                    throw new MinimesosException(msg);
                 }
-
-                scanner = new Scanner(new FileReader(jsonFile));
-            } else {
-                // TODO: this causes https://github.com/ContainerSolutions/minimesos/issues/224
-                scanner = new Scanner(System.in);
             }
 
-            while (scanner.hasNextLine()) {
-                fileContents = fileContents.concat(scanner.nextLine());
-            }
+            scanner = new Scanner(new FileReader(jsonFile));
 
-            return fileContents;
-
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage());
+        } else if (stdin) {
+            scanner = new Scanner(System.in);
+        } else {
+            throw new MinimesosException("Neither --marathonFile nor --stdin parameters are provided. This situation should be checked in Main");
         }
 
-        return null;
+        while (scanner.hasNextLine()) {
+            fileContents = fileContents.concat(scanner.nextLine());
+        }
+
+        return fileContents;
+
     }
 
     public boolean isExposedHostPorts() {
@@ -76,17 +75,33 @@ public class CommandInstall implements Command {
         return false;
     }
 
-    public void execute() {
+    @Override
+    public void execute() throws MinimesosException {
 
-        String marathonJson = getMarathonJson(MesosCluster.getHostDir());
+        String marathonJson;
+        try {
+            marathonJson = getMarathonJson(MesosCluster.getHostDir());
+        } catch (IOException e) {
+            throw new MinimesosException("Failed to read JSON", e);
+        }
 
         MesosCluster cluster = ClusterRepository.loadCluster();
-        if( cluster != null ) {
-            cluster.deployMarathonApp( marathonJson );
+        if (cluster != null) {
+            cluster.deployMarathonApp(marathonJson);
         } else {
             throw new MinimesosException("Running cluster is not found");
         }
 
+    }
+
+    @Override
+    public boolean validateParameters() {
+        return stdin || (marathonFile != null && !marathonFile.isEmpty());
+    }
+
+    @Override
+    public String getName() {
+        return CLINAME;
     }
 
 }
