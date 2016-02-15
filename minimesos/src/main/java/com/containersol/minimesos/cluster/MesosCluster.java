@@ -389,15 +389,6 @@ public class MesosCluster extends ExternalResource {
         return null;
     }
 
-    public static String getContainerIp(String clusterId, String role) {
-        Container container = getContainer(clusterId, role);
-        if (container != null) {
-            return DockerContainersUtil.getIpAddress(dockerClient, container.getId());
-        }
-        return null;
-    }
-
-
     public void waitForState(final Predicate<State> predicate, int seconds) {
         Awaitility.await().atMost(seconds, TimeUnit.SECONDS).until(() -> {
             try {
@@ -447,7 +438,7 @@ public class MesosCluster extends ExternalResource {
                         uri = "Unknown service type '" + serviceName + "'";
                 }
 
-                out.println( uri );
+                out.println(uri);
                 break;
             }
         }
