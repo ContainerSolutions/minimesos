@@ -55,7 +55,7 @@ public class CommandInstall implements Command {
         } else if (stdin) {
             scanner = new Scanner(System.in);
         } else {
-            throw new MinimesosException("Neither --marathonFile nor --stdin parameters are provided. This situation should be checked in Main");
+            throw new MinimesosException("Neither --marathonFile nor --stdin parameters are provided");
         }
 
         while (scanner.hasNextLine()) {
