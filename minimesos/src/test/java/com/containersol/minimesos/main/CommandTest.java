@@ -6,7 +6,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.json.JSONObject;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.File;
@@ -30,8 +29,10 @@ public class CommandTest {
 
     @Test
     public void testUpAndDestroy() {
+
         CommandUp commandUp = new CommandUp();
-        MesosCluster cluster = commandUp.execute();
+        commandUp.execute();
+        MesosCluster cluster = commandUp.getCluster();
 
         File minimesosFile = ClusterRepository.getMinimesosFile();
 
@@ -51,7 +52,8 @@ public class CommandTest {
         FileUtils.write(ClusterRepository.getMinimesosFile(), "invalid");
 
         CommandUp commandUp = new CommandUp();
-        MesosCluster cluster = commandUp.execute();
+        commandUp.execute();
+        MesosCluster cluster = commandUp.getCluster();
 
         String fileContent = FileUtils.readFileToString( ClusterRepository.getMinimesosFile() );
         assertEquals("Invalid state file has not been overwritten", cluster.getClusterId(), fileContent);
@@ -66,9 +68,15 @@ public class CommandTest {
 
     @Test
     public void testUp_alreadyRunning() {
+
         CommandUp commandUp = new CommandUp();
-        MesosCluster firstCluster = commandUp.execute();
-        MesosCluster secondCluster = commandUp.execute();
+
+        commandUp.execute();
+        MesosCluster firstCluster = commandUp.getCluster();
+
+        commandUp.execute();
+        MesosCluster secondCluster = commandUp.getCluster();
+
         assertEquals(firstCluster, secondCluster);
 
         CommandDestroy commandDestroy = new CommandDestroy();
@@ -107,8 +115,10 @@ public class CommandTest {
 
     @Test
     public void testState() throws IOException {
+
         CommandUp commandUp = new CommandUp();
-        MesosCluster cluster = commandUp.execute();
+        commandUp.execute();
+        MesosCluster cluster = commandUp.getCluster();
 
         CommandState commandState = new CommandState(ps);
         commandState.execute();
@@ -119,6 +129,12 @@ public class CommandTest {
 
         CommandDestroy commandDestroy = new CommandDestroy();
         commandDestroy.execute();
+    }
+
+    @Test
+    public void testInstallCommandValidation() {
+        CommandInstall install = new CommandInstall();
+        assertFalse("Install command requires one of the parameters", install.validateParameters() );
     }
 
     @Test

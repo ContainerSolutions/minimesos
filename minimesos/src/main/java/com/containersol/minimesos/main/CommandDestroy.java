@@ -22,6 +22,7 @@ public class CommandDestroy implements Command {
         return false;
     }
 
+    @Override
     public void execute() {
         MesosCluster cluster = ClusterRepository.loadCluster();
         if (cluster != null) {
@@ -29,4 +30,15 @@ public class CommandDestroy implements Command {
             ClusterRepository.deleteClusterFile();
         }
     }
+
+    @Override
+    public boolean validateParameters() {
+        return true;
+    }
+
+    @Override
+    public String getName() {
+        return CLINAME;
+    }
+
 }

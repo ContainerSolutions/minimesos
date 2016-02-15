@@ -33,6 +33,7 @@ public class CommandInfo implements Command {
         return false;
     }
 
+    @Override
     public void execute() {
         MesosCluster cluster = ClusterRepository.loadCluster();
         if (cluster != null) {
@@ -41,4 +42,15 @@ public class CommandInfo implements Command {
             output.println("Minimesos cluster is not running");
         }
     }
+
+    @Override
+    public boolean validateParameters() {
+        return true;
+    }
+
+    @Override
+    public String getName() {
+        return CLINAME;
+    }
+
 }

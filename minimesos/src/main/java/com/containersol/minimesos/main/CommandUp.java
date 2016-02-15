@@ -74,12 +74,12 @@ public class CommandUp implements Command {
         return startConsul;
     }
 
+    @Override
+    public void execute() {
 
-    public MesosCluster execute() {
-
-        MesosCluster cluster = ClusterRepository.loadCluster();
+        MesosCluster cluster = getCluster();
         if (cluster != null) {
-            return cluster;
+            return;
         }
 
         DockerClient dockerClient = DockerClientFactory.build();
@@ -103,7 +103,20 @@ public class CommandUp implements Command {
 
         ClusterRepository.saveClusterFile(cluster);
 
-        return cluster;
+    }
+
+    public MesosCluster getCluster() {
+        return ClusterRepository.loadCluster();
+    }
+
+    @Override
+    public boolean validateParameters() {
+        return true;
+    }
+
+    @Override
+    public String getName() {
+        return CLINAME;
     }
 
 }

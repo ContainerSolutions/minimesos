@@ -1,13 +1,9 @@
 package com.containersol.minimesos.main;
 
-import com.containersol.minimesos.cluster.MesosCluster;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
@@ -32,7 +28,7 @@ public class MainTest {
         PrintStream ps = new PrintStream(outputStream, true);
 
         commandUp = spy(new CommandUp());
-        doReturn(mock(MesosCluster.class)).when(commandUp).execute();
+        doNothing().when(commandUp).execute();
 
         commandDestroy = spy(new CommandDestroy());
         doNothing().when(commandDestroy).execute();
@@ -48,48 +44,42 @@ public class MainTest {
 
         main = new Main();
         main.setOutput(ps);
-        main.setCommandUp(commandUp);
-        main.setCommandDestroy(commandDestroy);
-        main.setCommandInfo(commandInfo);
-        main.setCommandState(commandState);
-        main.setCommandInstall(commandInstall);
-        main.setCommandHelp(new CommandHelp());
+        main.addCommand(commandUp);
+        main.addCommand(commandDestroy);
+        main.addCommand(commandInfo);
+        main.addCommand(commandState);
+        main.addCommand(commandInstall);
+        main.addCommand(new CommandHelp());
 
     }
-
 
     @Test
     public void testUp() {
         main.run(new String[]{"up"});
-
         verify(commandUp).execute();
     }
 
     @Test
     public void testDestroy() {
         main.run(new String[]{"destroy"});
-
         verify(commandDestroy).execute();
     }
 
     @Test
     public void testInfo() throws IOException {
         main.run(new String[]{"info"});
-
         verify(commandInfo).execute();
     }
 
     @Test
     public void testState() throws IOException {
         main.run(new String[]{"state"});
-
         verify(commandState).execute();
     }
 
     @Test
     public void testInstall() throws IOException {
-        main.run(new String[]{"install"});
-
+        main.run(new String[]{"install", "--marathonFile", "bla.json"});
         verify(commandInstall).execute();
     }
 
@@ -105,6 +95,13 @@ public class MainTest {
         main.run(new String[]{"--help"});
         String result = outputStream.toString();
         assertUsageText(result);
+    }
+
+    @Test
+    public void testInstallNoParameters() throws IOException {
+        main.run(new String[]{"install"});
+        String output = outputStream.toString();
+        assertTrue( output.contains("Usage: install [options]") );
     }
 
     @Test
