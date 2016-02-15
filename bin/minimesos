@@ -14,7 +14,9 @@ if ! command_exists docker; then
     exit 1
 fi
 
-if command_exists docker-machine && [ "$DOCKER_MACHINE_NAME" != "" ]; then
+if [ "$DOCKER_HOST" != "" ] && [[ $DOCKER_HOST == tcp* ]]; then
+    DOCKER_HOST_IP=$(echo "$DOCKER_HOST" | grep -o '[0-9]\+[.][0-9]\+[.][0-9]\+[.][0-9]\+')
+elif command_exists docker-machine && [ "$DOCKER_MACHINE_NAME" != "" ]; then
     DOCKER_HOST_IP=$(docker-machine ip ${DOCKER_MACHINE_NAME})
 elif [ $(uname) != "Darwin" ]; then
     DOCKER_HOST_IP=$(ip addr show dev docker0 | grep inet | sed -r "s/.*inet\s([0-9\.]+)\/.*/\1/" | head -n 1)
