@@ -48,8 +48,17 @@ public class MesosSlave extends MesosContainer {
         setMesosImageTag(registryTag);
     }
 
+    public MesosSlave(DockerClient dockerClient, ZooKeeper zooKeeper, String slaveResources) {
+        super(dockerClient, zooKeeper);
+        setResources(slaveResources);
+    }
+
     public String getResources() {
         return resources;
+    }
+
+    public void setResources(String resources) {
+        this.resources = resources;
     }
 
     @Override
@@ -108,14 +117,21 @@ public class MesosSlave extends MesosContainer {
 
     public static ArrayList<Integer> parsePortsFromResource(String resources) throws Exception {
         String port = resources.replaceAll(".*ports\\(.+\\):\\[(.*)\\].*", "$1");
-        ArrayList<String> ports = new ArrayList<>(Arrays.asList(port.split(",")));
+        ArrayList<String> portRanges = new ArrayList<>(Arrays.asList(port.split(",")));
         ArrayList<Integer> returnList = new ArrayList<>();
-        for (String el : ports) {
-            String firstPortFromBinding = el.trim().split("-")[0];
-            if (Objects.equals(firstPortFromBinding, el.trim())) {
-                throw new Exception("Port binding " + firstPortFromBinding + " is incorrect");
+        for (String portRange : portRanges) {
+            if (!portRange.matches("\\d+-\\d+")) {
+                throw new Exception("Port binding in resources string '" + resources + "' is incorrect");
             }
-            returnList.add(Integer.parseInt(firstPortFromBinding)); // XXXX-YYYY will return XXXX
+            String[] ports = portRange.split("-");
+            int startPort = Integer.valueOf(ports[0]);
+            int endPort = Integer.valueOf(ports[1]);
+            if (startPort > endPort) {
+                throw new Exception("Port binding in resources string '" + resources + "' is incorrect");
+            }
+            for (int i = startPort; i <= endPort; i++) {
+                returnList.add(i);
+            }
         }
         return returnList;
     }
