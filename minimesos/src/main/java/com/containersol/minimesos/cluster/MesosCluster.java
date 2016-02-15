@@ -47,6 +47,7 @@ public class MesosCluster extends ExternalResource {
     private String clusterId;
 
     private List<AbstractContainer> containers = Collections.synchronizedList(new ArrayList<>());
+    private boolean running = false;
 
     /**
      * Create a new MesosCluster with a specified cluster architecture.
@@ -74,6 +75,10 @@ public class MesosCluster extends ExternalResource {
         return new MesosCluster(clusterId);
     }
 
+    /**
+     * This constructor is used for deserialization of running cluster
+     * @param clusterId ID of the cluster to deserialize
+     */
     private MesosCluster(String clusterId) {
         this.clusterId = clusterId;
 
@@ -122,6 +127,9 @@ public class MesosCluster extends ExternalResource {
             getMasterContainer().setZooKeeperContainer(zkKeeper);
             getMarathonContainer().setZooKeeper(zkKeeper);
         }
+
+        running = true;
+
     }
 
     /**
@@ -137,10 +145,18 @@ public class MesosCluster extends ExternalResource {
      * @param timeoutSeconds seconds to wait until timeout
      */
     public void start(int timeoutSeconds) {
+
+        if (running) {
+            throw new IllegalStateException("Cluster " + clusterId + " is already running");
+        }
+
         LOGGER.info("Cluster " + getClusterId() + " - start");
         this.containers.forEach((container) -> container.start(timeoutSeconds));
         // wait until the given number of slaves are registered
         new MesosClusterStateResponse(this).waitFor();
+
+        running = true;
+
     }
 
     /**

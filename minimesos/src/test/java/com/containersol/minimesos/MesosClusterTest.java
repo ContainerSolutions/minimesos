@@ -145,4 +145,10 @@ public class MesosClusterTest {
 
         }
     }
+
+    @Test(expected = IllegalStateException.class)
+    public void testStartingClusterSecondTime() {
+        CLUSTER.start(30);
+    }
+
 }
