@@ -205,6 +205,7 @@ public class MesosCluster extends ExternalResource {
                 LOGGER.error(String.format("Cannot remove container %s, maybe it's already dead?", container.getContainerId()));
             }
         }
+        this.running = false;
         this.containers.clear();
     }
 
