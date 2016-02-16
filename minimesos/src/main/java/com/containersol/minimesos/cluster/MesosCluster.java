@@ -3,8 +3,6 @@ package com.containersol.minimesos.cluster;
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.container.ContainerName;
-import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.containersol.minimesos.main.Command;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.marathon.MarathonClient;
 import com.containersol.minimesos.mesos.*;
@@ -47,6 +45,8 @@ public class MesosCluster extends ExternalResource {
     private String clusterId;
 
     private List<AbstractContainer> containers = Collections.synchronizedList(new ArrayList<>());
+
+    private boolean exposedHostPorts = false;
 
     /**
      * Create a new MesosCluster with a specified cluster architecture.
@@ -100,7 +100,18 @@ public class MesosCluster extends ExternalResource {
                         this.containers.add(new MesosSlave(dockerClient, clusterId, uuid, containerId));
                         break;
                     case "master":
-                        this.containers.add(new MesosMaster(dockerClient, clusterId, uuid, containerId));
+                        MesosMaster master = new MesosMaster(dockerClient, clusterId, uuid, containerId);
+                        this.containers.add(master);
+                        // restore "exposed ports" attribute
+                        Container.Port[] ports = container.getPorts();
+                        if (ports != null) {
+                            for (Container.Port port : ports) {
+                                if (port.getIp() != null && port.getPrivatePort() == MesosMaster.MESOS_MASTER_PORT) {
+                                    setExposedHostPorts(true);
+                                    master.setExposedHostPort(true);
+                                }
+                            }
+                        }
                         break;
                     case "marathon":
                         this.containers.add(new Marathon(dockerClient, clusterId, uuid, containerId));
@@ -137,7 +148,7 @@ public class MesosCluster extends ExternalResource {
      * @param timeoutSeconds seconds to wait until timeout
      */
     public void start(int timeoutSeconds) {
-        LOGGER.info("Cluster " + getClusterId() + " - start");
+        LOGGER.debug("Cluster " + getClusterId() + " - start");
         this.containers.forEach((container) -> container.start(timeoutSeconds));
         // wait until the given number of slaves are registered
         new MesosClusterStateResponse(this).waitFor();
@@ -150,7 +161,7 @@ public class MesosCluster extends ExternalResource {
         if (clusterId != null) {
             out.println("Minimesos cluster is running: " + clusterId);
             out.println("Mesos version: " + MesosContainer.MESOS_IMAGE_TAG.substring(0, MesosContainer.MESOS_IMAGE_TAG.indexOf("-")));
-            // todo: properly add service url printouts
+            printServiceUrls(out);
         }
     }
 
@@ -180,7 +191,7 @@ public class MesosCluster extends ExternalResource {
      * Stops the Mesos cluster and its containers
      */
     public void stop() {
-        LOGGER.info("Cluster " + getClusterId() + " - stop");
+        LOGGER.debug("Cluster " + getClusterId() + " - stop");
         for (AbstractContainer container : this.containers) {
             LOGGER.debug("Removing container [" + container.getContainerId() + "]");
             try {
@@ -197,7 +208,7 @@ public class MesosCluster extends ExternalResource {
      */
     public void destroy() {
 
-        LOGGER.info("Cluster " + getClusterId() + " - destroy");
+        LOGGER.debug("Cluster " + getClusterId() + " - destroy");
 
         if (clusterId != null) {
             MarathonClient marathon = new MarathonClient(getMarathonContainer().getIpAddress());
@@ -372,21 +383,12 @@ public class MesosCluster extends ExternalResource {
         return clusterId;
     }
 
-    /**
-     * Type safe retrieval of container object (based on naming convention)
-     *
-     * @param clusterId ID of the cluster to search for containers
-     * @param role      container role in the cluster
-     * @return object of clazz type, which represent the container
-     */
-    public static Container getContainer(String clusterId, String role) {
-        List<Container> containers = dockerClient.listContainersCmd().exec();
-        for (Container container : containers) {
-            if (ContainerName.hasRoleInCluster(container.getNames(), clusterId, role)) {
-                return container;
-            }
-        }
-        return null;
+    public boolean isExposedHostPorts() {
+        return exposedHostPorts;
+    }
+
+    public void setExposedHostPorts(boolean exposedHostPorts) {
+        this.exposedHostPorts = exposedHostPorts;
     }
 
     public void waitForState(final Predicate<State> predicate, int seconds) {
@@ -405,42 +407,36 @@ public class MesosCluster extends ExternalResource {
         waitForState(predicate, 20);
     }
 
-    public void printServiceUrl(PrintStream out, String serviceName, Command cmd) {
+    public void printServiceUrls(PrintStream out) {
 
+        boolean exposedHostPorts = isExposedHostPorts();
         String dockerHostIp = System.getenv("DOCKER_HOST_IP");
 
         for (AbstractContainer container : getContainers()) {
 
-            if (container.getRole().equals(serviceName)) {
-
-                String uri, ip;
-                if (!cmd.isExposedHostPorts() || dockerHostIp.isEmpty()) {
-                    ip = container.getIpAddress();
-                } else {
-                    ip = dockerHostIp;
-                }
-
-                switch (serviceName) {
-                    case "master":
-                        uri = "export MINIMESOS_MASTER=http://" + ip + ":" + MesosMaster.MESOS_MASTER_PORT;
-                        break;
-                    case "marathon":
-                        uri = "export MINIMESOS_MARATHON=http://" + ip + ":" + Marathon.MARATHON_PORT;
-                        break;
-                    case "zookeeper":
-                        uri = "export MINIMESOS_ZOOKEEPER=" + ZooKeeper.formatZKAddress(ip);
-                        break;
-                    case "consul":
-                        uri = "export MINIMESOS_CONSUL=http://" + ip + ":" + Consul.DEFAULT_CONSUL_PORT + "\n" +
-                                "export MINIMESOS_CONSUL_IP=" + ip;
-                        break;
-                    default:
-                        uri = "Unknown service type '" + serviceName + "'";
-                }
-
-                out.println(uri);
-                break;
+            String ip;
+            if (!exposedHostPorts || dockerHostIp.isEmpty()) {
+                ip = container.getIpAddress();
+            } else {
+                ip = dockerHostIp;
             }
+
+            switch (container.getRole()) {
+                case "master":
+                    out.println("export MINIMESOS_MASTER=http://" + ip + ":" + MesosMaster.MESOS_MASTER_PORT);
+                    break;
+                case "marathon":
+                    out.println("export MINIMESOS_MARATHON=http://" + ip + ":" + Marathon.MARATHON_PORT);
+                    break;
+                case "zookeeper":
+                    out.println("export MINIMESOS_ZOOKEEPER=" + ZooKeeper.formatZKAddress(ip));
+                    break;
+                case "consul":
+                    out.println("export MINIMESOS_CONSUL=http://" + ip + ":" + Consul.DEFAULT_CONSUL_PORT);
+                    out.println("export MINIMESOS_CONSUL_IP=" + ip);
+                    break;
+            }
+
         }
     }
 

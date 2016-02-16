@@ -4,11 +4,6 @@ import com.containersol.minimesos.MinimesosException;
 
 public interface Command {
 
-    // TODO: this does not belong here
-    boolean isExposedHostPorts();
-    // TODO: this does not belong here
-    boolean getStartConsul();
-
     /**
      * Validates combination of command parameters
      *

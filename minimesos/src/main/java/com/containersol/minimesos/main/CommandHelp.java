@@ -11,16 +11,6 @@ public class CommandHelp implements Command {
     public static final String CLINAME = "help";
 
     @Override
-    public boolean isExposedHostPorts() {
-        return false;
-    }
-
-    @Override
-    public boolean getStartConsul() {
-        return false;
-    }
-
-    @Override
     public void execute() {
         // Usage is being printed from Main
     }

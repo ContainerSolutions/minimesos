@@ -71,9 +71,7 @@ public class Main {
         if (jc.getParsedCommand() == null) {
             MesosCluster cluster = ClusterRepository.loadCluster();
             if (cluster != null) {
-                Command cmd = commands.get(CommandUp.CLINAME);
-                cluster.printServiceUrl(output, "master", cmd);
-                cluster.printServiceUrl(output, "marathon", cmd);
+                cluster.printServiceUrls(output);
             } else {
                 printUsage(null);
             }
