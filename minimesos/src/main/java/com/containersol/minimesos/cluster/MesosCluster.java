@@ -46,6 +46,7 @@ public class MesosCluster extends ExternalResource {
 
     private List<AbstractContainer> containers = Collections.synchronizedList(new ArrayList<>());
 
+    private boolean running = false;
     private boolean exposedHostPorts = false;
 
     /**
@@ -74,6 +75,10 @@ public class MesosCluster extends ExternalResource {
         return new MesosCluster(clusterId);
     }
 
+    /**
+     * This constructor is used for deserialization of running cluster
+     * @param clusterId ID of the cluster to deserialize
+     */
     private MesosCluster(String clusterId) {
         this.clusterId = clusterId;
 
@@ -133,6 +138,9 @@ public class MesosCluster extends ExternalResource {
             getMasterContainer().setZooKeeperContainer(zkKeeper);
             getMarathonContainer().setZooKeeper(zkKeeper);
         }
+
+        running = true;
+
     }
 
     /**
@@ -148,10 +156,18 @@ public class MesosCluster extends ExternalResource {
      * @param timeoutSeconds seconds to wait until timeout
      */
     public void start(int timeoutSeconds) {
+
+        if (running) {
+            throw new IllegalStateException("Cluster " + clusterId + " is already running");
+        }
+
         LOGGER.debug("Cluster " + getClusterId() + " - start");
         this.containers.forEach((container) -> container.start(timeoutSeconds));
         // wait until the given number of slaves are registered
         new MesosClusterStateResponse(this).waitFor();
+
+        running = true;
+
     }
 
     /**
@@ -200,6 +216,7 @@ public class MesosCluster extends ExternalResource {
                 LOGGER.error(String.format("Cannot remove container %s, maybe it's already dead?", container.getContainerId()));
             }
         }
+        this.running = false;
         this.containers.clear();
     }
 
