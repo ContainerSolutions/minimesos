@@ -66,15 +66,6 @@ public class CommandInstall implements Command {
 
     }
 
-    public boolean isExposedHostPorts() {
-        return exposedHostPorts;
-    }
-
-    @Override
-    public boolean getStartConsul() {
-        return false;
-    }
-
     @Override
     public void execute() throws MinimesosException {
 

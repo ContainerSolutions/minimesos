@@ -50,6 +50,8 @@ public class CommandUp implements Command {
     @Parameter(names = "--consul", description = "Start consul container")
     private boolean startConsul = false;
 
+    private MesosCluster startedCluster = null;
+
     public String getMesosImageTag() {
         return mesosImageTag;
     }
@@ -97,16 +99,19 @@ public class CommandUp implements Command {
             configBuilder.withConsul();
         }
 
-        cluster = new MesosCluster(configBuilder.build());
-        cluster.start(getTimeout());
-        cluster.waitForState(state -> state != null, 60);
+        startedCluster = new MesosCluster(configBuilder.build());
+        startedCluster.start(getTimeout());
+        startedCluster.waitForState(state -> state != null, 60);
+        startedCluster.setExposedHostPorts( isExposedHostPorts() );
 
-        ClusterRepository.saveClusterFile(cluster);
+        startedCluster.printServiceUrls(System.out);
+
+        ClusterRepository.saveClusterFile(startedCluster);
 
     }
 
     public MesosCluster getCluster() {
-        return ClusterRepository.loadCluster();
+        return (startedCluster != null) ? startedCluster : ClusterRepository.loadCluster();
     }
 
     @Override

@@ -29,16 +29,6 @@ public class CommandState implements Command {
     }
 
     @Override
-    public boolean isExposedHostPorts() {
-        return false;
-    }
-
-    @Override
-    public boolean getStartConsul() {
-        return false;
-    }
-
-    @Override
     public void execute() {
         MesosCluster cluster = ClusterRepository.loadCluster();
         if (cluster != null) {
