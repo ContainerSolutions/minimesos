@@ -100,7 +100,18 @@ public class MesosCluster extends ExternalResource {
                         this.containers.add(new MesosSlave(dockerClient, clusterId, uuid, containerId));
                         break;
                     case "master":
-                        this.containers.add(new MesosMaster(dockerClient, clusterId, uuid, containerId));
+                        MesosMaster master = new MesosMaster(dockerClient, clusterId, uuid, containerId);
+                        this.containers.add(master);
+                        // restore "exposed ports" attribute
+                        Container.Port[] ports = container.getPorts();
+                        if (ports != null) {
+                            for (Container.Port port : ports) {
+                                if (port.getIp() != null && port.getPrivatePort() == MesosMaster.MESOS_MASTER_PORT) {
+                                    setExposedHostPorts(true);
+                                    master.setExposedHostPort(true);
+                                }
+                            }
+                        }
                         break;
                     case "marathon":
                         this.containers.add(new Marathon(dockerClient, clusterId, uuid, containerId));
@@ -150,7 +161,7 @@ public class MesosCluster extends ExternalResource {
         if (clusterId != null) {
             out.println("Minimesos cluster is running: " + clusterId);
             out.println("Mesos version: " + MesosContainer.MESOS_IMAGE_TAG.substring(0, MesosContainer.MESOS_IMAGE_TAG.indexOf("-")));
-            // todo: properly add service url printouts
+            printServiceUrls(out);
         }
     }
 
@@ -378,23 +389,6 @@ public class MesosCluster extends ExternalResource {
 
     public void setExposedHostPorts(boolean exposedHostPorts) {
         this.exposedHostPorts = exposedHostPorts;
-    }
-
-    /**
-     * Type safe retrieval of container object (based on naming convention)
-     *
-     * @param clusterId ID of the cluster to search for containers
-     * @param role      container role in the cluster
-     * @return object of clazz type, which represent the container
-     */
-    public static Container getContainer(String clusterId, String role) {
-        List<Container> containers = dockerClient.listContainersCmd().exec();
-        for (Container container : containers) {
-            if (ContainerName.hasRoleInCluster(container.getNames(), clusterId, role)) {
-                return container;
-            }
-        }
-        return null;
     }
 
     public void waitForState(final Predicate<State> predicate, int seconds) {

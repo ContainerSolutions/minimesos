@@ -19,7 +19,7 @@ public class MesosMaster extends MesosContainer {
     public static final int MESOS_MASTER_PORT = 5050;
 
     private String mesosImageName = MESOS_MASTER_IMAGE;
-    private boolean exposedHostPort;
+    private boolean exposedHostPort = false;
 
     public MesosMaster(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
         super(dockerClient, zooKeeperContainer);

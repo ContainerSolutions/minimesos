@@ -15,6 +15,7 @@ import com.containersol.minimesos.mesos.MesosSlave;
 import com.containersol.minimesos.mesos.ZooKeeper;
 import com.github.dockerjava.api.DockerClient;
 
+import java.io.PrintStream;
 import java.util.TreeMap;
 
 /**
@@ -51,6 +52,14 @@ public class CommandUp implements Command {
     private boolean startConsul = false;
 
     private MesosCluster startedCluster = null;
+    private PrintStream output = System.out;
+
+    public CommandUp() {
+    }
+
+    public CommandUp(PrintStream ps) {
+        output = ps;
+    }
 
     public String getMesosImageTag() {
         return mesosImageTag;
@@ -81,6 +90,7 @@ public class CommandUp implements Command {
 
         MesosCluster cluster = getCluster();
         if (cluster != null) {
+            output.println("Cluster " + cluster.getClusterId() + " is already running");
             return;
         }
 
@@ -104,7 +114,7 @@ public class CommandUp implements Command {
         startedCluster.waitForState(state -> state != null, 60);
         startedCluster.setExposedHostPorts( isExposedHostPorts() );
 
-        startedCluster.printServiceUrls(System.out);
+        startedCluster.printServiceUrls(output);
 
         ClusterRepository.saveClusterFile(startedCluster);
 
