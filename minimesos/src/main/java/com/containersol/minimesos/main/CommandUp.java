@@ -15,6 +15,7 @@ import com.containersol.minimesos.mesos.MesosSlave;
 import com.containersol.minimesos.mesos.ZooKeeper;
 import com.github.dockerjava.api.DockerClient;
 
+import java.io.PrintStream;
 import java.util.TreeMap;
 
 /**
@@ -50,6 +51,16 @@ public class CommandUp implements Command {
     @Parameter(names = "--consul", description = "Start consul container")
     private boolean startConsul = false;
 
+    private MesosCluster startedCluster = null;
+    private PrintStream output = System.out;
+
+    public CommandUp() {
+    }
+
+    public CommandUp(PrintStream ps) {
+        output = ps;
+    }
+
     public String getMesosImageTag() {
         return mesosImageTag;
     }
@@ -74,12 +85,13 @@ public class CommandUp implements Command {
         return startConsul;
     }
 
+    @Override
+    public void execute() {
 
-    public MesosCluster execute() {
-
-        MesosCluster cluster = ClusterRepository.loadCluster();
+        MesosCluster cluster = getCluster();
         if (cluster != null) {
-            return cluster;
+            output.println("Cluster " + cluster.getClusterId() + " is already running");
+            return;
         }
 
         DockerClient dockerClient = DockerClientFactory.build();
@@ -97,13 +109,29 @@ public class CommandUp implements Command {
             configBuilder.withConsul();
         }
 
-        cluster = new MesosCluster(configBuilder.build());
-        cluster.start(getTimeout());
-        cluster.waitForState(state -> state != null, 60);
+        startedCluster = new MesosCluster(configBuilder.build());
+        startedCluster.start(getTimeout());
+        startedCluster.waitForState(state -> state != null, 60);
+        startedCluster.setExposedHostPorts( isExposedHostPorts() );
 
-        ClusterRepository.saveClusterFile(cluster);
+        startedCluster.printServiceUrls(output);
 
-        return cluster;
+        ClusterRepository.saveClusterFile(startedCluster);
+
+    }
+
+    public MesosCluster getCluster() {
+        return (startedCluster != null) ? startedCluster : ClusterRepository.loadCluster();
+    }
+
+    @Override
+    public boolean validateParameters() {
+        return true;
+    }
+
+    @Override
+    public String getName() {
+        return CLINAME;
     }
 
 }

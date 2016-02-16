@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Main method for interacting with minimesos.
@@ -25,21 +27,16 @@ public class Main {
 
     private final JCommander jc;
 
-    private CommandUp commandUp;
-    private CommandDestroy commandDestroy;
-    private CommandHelp commandHelp;
-    private CommandInfo commandInfo;
-    private CommandInstall commandInstall;
-    private CommandState commandState;
+    private HashMap<String, Command> commands = new HashMap<>();
 
     public static void main(String[] args) {
         Main main = new Main();
-        main.setCommandUp(new CommandUp());
-        main.setCommandDestroy(new CommandDestroy());
-        main.setCommandHelp(new CommandHelp());
-        main.setCommandInstall(new CommandInstall());
-        main.setCommandState(new CommandState());
-        main.setCommandInfo(new CommandInfo());
+        main.addCommand(new CommandUp());
+        main.addCommand(new CommandDestroy());
+        main.addCommand(new CommandHelp());
+        main.addCommand(new CommandInstall());
+        main.addCommand(new CommandState());
+        main.addCommand(new CommandInfo());
         main.run(args);
     }
 
@@ -54,90 +51,61 @@ public class Main {
 
     public void run(String[] args) {
 
-        jc.addCommand(CommandUp.CLINAME, commandUp);
-        jc.addCommand(CommandDestroy.CLINAME, commandDestroy);
-        jc.addCommand(CommandHelp.CLINAME, commandHelp);
-        jc.addCommand(CommandInfo.CLINAME, commandInfo);
-        jc.addCommand(CommandInstall.CLINAME, commandInstall);
-        jc.addCommand(CommandState.CLINAME, commandState);
+        for (Map.Entry<String, Command> entry : commands.entrySet()) {
+            jc.addCommand(entry.getKey(), entry.getValue());
+        }
 
         try {
             jc.parse(args);
         } catch (Exception e) {
-            LOGGER.error("Failed to parse parameters. " + e.getMessage() + "\n" );
-            printUsage();
+            LOGGER.error("Failed to parse parameters. " + e.getMessage() + "\n");
+            printUsage(null);
             return;
         }
 
         if (jc.getParameters().get(0).isAssigned()) {
-            printUsage();
+            printUsage(null);
             return;
         }
 
         if (jc.getParsedCommand() == null) {
             MesosCluster cluster = ClusterRepository.loadCluster();
             if (cluster != null) {
-                cluster.printServiceUrl(output, "master", commandUp);
-                cluster.printServiceUrl(output, "marathon", commandUp);
+                cluster.printServiceUrls(output);
             } else {
-                printUsage();
+                printUsage(null);
             }
             return;
         }
 
-        switch (jc.getParsedCommand()) {
-            case CommandHelp.CLINAME:
-                printUsage();
-                break;
-            case CommandUp.CLINAME:
-                commandUp.execute();
-                break;
-            case CommandDestroy.CLINAME:
-                commandDestroy.execute();
-                break;
-            case CommandInfo.CLINAME:
-                commandInfo.execute();
-                break;
-            case CommandInstall.CLINAME:
-                commandInstall.execute();
-                break;
-            case CommandState.CLINAME:
-                commandState.execute();
-                break;
-            default:
-                LOGGER.error("No such command: " + jc.getParsedCommand());
+        Command parsedCommand = commands.get(jc.getParsedCommand());
+
+        if (parsedCommand == null) {
+            LOGGER.error("No such command: " + jc.getParsedCommand());
+        } else if (CommandHelp.CLINAME.equals(parsedCommand.getName())) {
+            printUsage(null);
+        } else {
+            if (parsedCommand.validateParameters()) {
+                parsedCommand.execute();
+            } else {
+                printUsage(jc.getParsedCommand());
+            }
         }
 
     }
 
-    private void printUsage() {
+    private void printUsage(String commandName) {
         StringBuilder builder = new StringBuilder();
-        jc.usage(builder);
+        if (commandName != null) {
+            jc.usage(commandName, builder);
+        } else {
+            jc.usage(builder);
+        }
         output.println(builder.toString());
     }
 
-    public void setCommandUp(CommandUp commandUp) {
-        this.commandUp = commandUp;
-    }
-
-    public void setCommandDestroy(CommandDestroy commandDestroy) {
-        this.commandDestroy = commandDestroy;
-    }
-
-    public void setCommandHelp(CommandHelp commandHelp) {
-        this.commandHelp = commandHelp;
-    }
-
-    public void setCommandInstall(CommandInstall commandInstall) {
-        this.commandInstall = commandInstall;
-    }
-
-    public void setCommandState(CommandState commandState) {
-        this.commandState = commandState;
-    }
-
-    public void setCommandInfo(CommandInfo commandInfo) {
-        this.commandInfo = commandInfo;
+    public void addCommand(Command command) {
+        commands.put(command.getName(), command);
     }
 
 }

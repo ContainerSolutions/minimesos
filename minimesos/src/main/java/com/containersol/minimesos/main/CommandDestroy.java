@@ -13,15 +13,6 @@ public class CommandDestroy implements Command {
     public static final String CLINAME = "destroy";
 
     @Override
-    public boolean isExposedHostPorts() {
-        return false;
-    }
-
-    @Override
-    public boolean getStartConsul() {
-        return false;
-    }
-
     public void execute() {
         MesosCluster cluster = ClusterRepository.loadCluster();
         if (cluster != null) {
@@ -29,4 +20,15 @@ public class CommandDestroy implements Command {
             ClusterRepository.deleteClusterFile();
         }
     }
+
+    @Override
+    public boolean validateParameters() {
+        return true;
+    }
+
+    @Override
+    public String getName() {
+        return CLINAME;
+    }
+
 }

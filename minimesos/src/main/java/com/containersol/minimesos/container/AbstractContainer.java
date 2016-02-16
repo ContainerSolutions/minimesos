@@ -169,16 +169,17 @@ public abstract class AbstractContainer {
     }
 
     protected void pullImage(String imageName, String registryTag) {
+
         if (imageExists(imageName, registryTag)) {
             return;
         }
 
-        LOGGER.info("Image [" + imageName + ":" + registryTag + "] not found. Pulling...");
+        LOGGER.debug("Image [" + imageName + ":" + registryTag + "] not found. Pulling...");
 
         PullImageResultCallback callback = new PullImageResultCallback() {
             @Override
             public void awaitSuccess() {
-                LOGGER.info("Finished pulling the image: " + imageName + ":" + registryTag);
+                LOGGER.debug("Finished pulling the image: " + imageName + ":" + registryTag);
             }
             @Override
             public void onNext(PullResponseItem item) {

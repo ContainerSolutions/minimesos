@@ -1,6 +1,8 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.util.ResourceUtil;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
@@ -9,8 +11,6 @@ import com.github.dockerjava.api.model.Link;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
 import java.util.TreeMap;
 
 /**
@@ -48,8 +48,17 @@ public class MesosSlave extends MesosContainer {
         setMesosImageTag(registryTag);
     }
 
+    public MesosSlave(DockerClient dockerClient, ZooKeeper zooKeeper, String slaveResources) {
+        super(dockerClient, zooKeeper);
+        setResources(slaveResources);
+    }
+
     public String getResources() {
         return resources;
+    }
+
+    public void setResources(String resources) {
+        this.resources = resources;
     }
 
     @Override
@@ -93,31 +102,17 @@ public class MesosSlave extends MesosContainer {
         ArrayList<ExposedPort> exposedPorts= new ArrayList<>();
         exposedPorts.add(new ExposedPort(portNumber));
         try {
-            ArrayList<Integer> resourcePorts = parsePortsFromResource(resources);
+            ArrayList<Integer> resourcePorts = ResourceUtil.parsePorts(resources);
             for (Integer port : resourcePorts) {
                 exposedPorts.add(new ExposedPort(port));
             }
-        } catch (Exception e) {
+        } catch (MinimesosException e) {
             LOGGER.error("Port binding is incorrect: " + e.getMessage());
         }
 
         return getBaseCommand()
                 .withExposedPorts(exposedPorts.toArray(new ExposedPort[exposedPorts.size()]));
 
-    }
-
-    public static ArrayList<Integer> parsePortsFromResource(String resources) throws Exception {
-        String port = resources.replaceAll(".*ports\\(.+\\):\\[(.*)\\].*", "$1");
-        ArrayList<String> ports = new ArrayList<>(Arrays.asList(port.split(",")));
-        ArrayList<Integer> returnList = new ArrayList<>();
-        for (String el : ports) {
-            String firstPortFromBinding = el.trim().split("-")[0];
-            if (Objects.equals(firstPortFromBinding, el.trim())) {
-                throw new Exception("Port binding " + firstPortFromBinding + " is incorrect");
-            }
-            returnList.add(Integer.parseInt(firstPortFromBinding)); // XXXX-YYYY will return XXXX
-        }
-        return returnList;
     }
 
     @Override

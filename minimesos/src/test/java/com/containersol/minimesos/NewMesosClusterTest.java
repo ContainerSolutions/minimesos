@@ -3,6 +3,7 @@ package com.containersol.minimesos;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.mesos.*;
+import com.containersol.minimesos.util.ResourceUtil;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -57,8 +58,8 @@ public class NewMesosClusterTest {
 
     @Test
     public void dockerExposeResourcesPorts() throws Exception {
-        String resources = MesosSlave.DEFAULT_PORT_RESOURCES;
-        ArrayList<Integer> ports = MesosSlave.parsePortsFromResource(resources);
+        String mesosResourceString = MesosSlave.DEFAULT_PORT_RESOURCES;
+        ArrayList<Integer> ports = ResourceUtil.parsePorts(mesosResourceString);
         List<MesosSlave> containers = Arrays.asList(cluster.getSlaves());
         for (MesosSlave container : containers) {
             InspectContainerResponse response = dockerClient.inspectContainerCmd(container.getContainerId()).exec();

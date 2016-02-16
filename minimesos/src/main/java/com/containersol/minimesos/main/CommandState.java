@@ -4,8 +4,6 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.PrintStream;
 
@@ -16,7 +14,6 @@ import java.io.PrintStream;
 @Parameters(separators = "=", commandDescription = "Display state.json file of a master or an agent")
 public class CommandState implements Command {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
     public static final String CLINAME = "state";
 
     @Parameter(names = "--agent", description = "Specify an agent to query, otherwise query a master")
@@ -32,15 +29,6 @@ public class CommandState implements Command {
     }
 
     @Override
-    public boolean isExposedHostPorts() {
-        return false;
-    }
-
-    @Override
-    public boolean getStartConsul() {
-        return false;
-    }
-
     public void execute() {
         MesosCluster cluster = ClusterRepository.loadCluster();
         if (cluster != null) {
@@ -48,6 +36,16 @@ public class CommandState implements Command {
         } else {
             output.println("Minimesos cluster is not running");
         }
+    }
+
+    @Override
+    public boolean validateParameters() {
+        return true;
+    }
+
+    @Override
+    public String getName() {
+        return CLINAME;
     }
 
 }
