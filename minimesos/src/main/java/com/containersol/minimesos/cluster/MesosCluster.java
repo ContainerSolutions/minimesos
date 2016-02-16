@@ -14,9 +14,6 @@ import com.github.dockerjava.api.InternalServerErrorException;
 import com.github.dockerjava.api.NotFoundException;
 import com.github.dockerjava.api.model.Container;
 import com.jayway.awaitility.Awaitility;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
-import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -186,8 +183,7 @@ public class MesosCluster extends ExternalResource {
      */
     public void state(PrintStream out, String agentContainerId) {
 
-        String stateInfo;
-
+        JSONObject stateInfo;
         if (StringUtils.isEmpty(agentContainerId)) {
             stateInfo = getClusterStateInfo();
         } else {
@@ -195,8 +191,7 @@ public class MesosCluster extends ExternalResource {
         }
 
         if (stateInfo != null) {
-            JSONObject state = new JSONObject(stateInfo);
-            out.println(state.toString(2));
+            out.println(stateInfo.toString(2));
         } else {
             throw new MinimesosException("Did not find the cluster or requested container");
         }
@@ -273,8 +268,12 @@ public class MesosCluster extends ExternalResource {
      *
      * @return stage JSON
      */
-    public String getClusterStateInfo() {
-        return getAgentStateInfo(getMasterContainer());
+    public JSONObject getClusterStateInfo() {
+        try {
+            return getMasterContainer().getStateInfoJSON();
+        } catch (UnirestException e) {
+            throw new MinimesosException("Failed to retrieve state from Mesos Master", e);
+        }
     }
 
     /**
@@ -283,7 +282,7 @@ public class MesosCluster extends ExternalResource {
      * @param containerId ID of the container to get state from
      * @return stage JSON
      */
-    public String getAgentStateInfo(String containerId) {
+    public JSONObject getAgentStateInfo(String containerId) {
 
         MesosSlave theSlave = null;
         for (MesosSlave slave : getSlaves()) {
@@ -297,40 +296,11 @@ public class MesosCluster extends ExternalResource {
             }
         }
 
-        return (theSlave != null) ? getAgentStateInfo(theSlave) : null;
-
-    }
-
-    /**
-     * @param container docker container to get state from
-     * @return mesos state JSON
-     */
-    private String getAgentStateInfo(MesosContainer container) {
-
-        String info = null;
-
-        if (container != null) {
-
-            String ip = container.getIpAddress();
-
-            if (ip != null) {
-
-                int port = container.getPortNumber();
-                String url = "http://" + ip + ":" + port + "/state.json";
-
-                try {
-                    HttpResponse<JsonNode> request = Unirest.get(url).asJson();
-                    info = request.getBody().toString();
-                } catch (UnirestException e) {
-                    throw new MinimesosException("Failed to retrieve state from " + url, e);
-                }
-
-            } else {
-                throw new MinimesosException("Cannot find container. Please verify the cluster is running using `minimesos info` command.");
-            }
+        try {
+            return (theSlave != null) ? theSlave.getStateInfoJSON() : null;
+        } catch (UnirestException e) {
+            throw new MinimesosException("Failed to retrieve state from Mesos Agent container " + theSlave.getContainerId(), e);
         }
-
-        return info;
 
     }
 

@@ -2,6 +2,9 @@ package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.container.AbstractContainer;
 import com.github.dockerjava.api.DockerClient;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import org.json.JSONObject;
 
 import java.util.TreeMap;
 
@@ -78,6 +81,14 @@ public abstract class MesosContainer extends AbstractContainer {
 
     public static String getFormattedZKAddress(ZooKeeper zkContainer) {
         return ZooKeeper.formatZKAddress(zkContainer.getIpAddress()) + DEFAULT_MESOS_ZK_PATH;
+    }
+
+    public String getStateUrl() {
+        return "http://" + getIpAddress() + ":" + getPortNumber() + "/state.json";
+    }
+
+    public JSONObject getStateInfoJSON() throws UnirestException {
+        return Unirest.get(getStateUrl()).asJson().getBody().getObject();
     }
 
 }
