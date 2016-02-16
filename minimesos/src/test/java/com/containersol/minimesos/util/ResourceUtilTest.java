@@ -36,6 +36,9 @@ public class ResourceUtilTest {
     }
 
     @Test(expected = MinimesosException.class)
+    /**
+     * Should be resolved by https://github.com/ContainerSolutions/minimesos/issues/237
+     */
     public void testParsePorts_portRanges() {
         ResourceUtil.parsePorts("ports(*):[8080-8082],[5000-5001]");
     }
