@@ -1,6 +1,8 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.util.ResourceUtil;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
@@ -9,8 +11,6 @@ import com.github.dockerjava.api.model.Link;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
 import java.util.TreeMap;
 
 /**
@@ -102,38 +102,17 @@ public class MesosSlave extends MesosContainer {
         ArrayList<ExposedPort> exposedPorts= new ArrayList<>();
         exposedPorts.add(new ExposedPort(portNumber));
         try {
-            ArrayList<Integer> resourcePorts = parsePortsFromResource(resources);
+            ArrayList<Integer> resourcePorts = ResourceUtil.parsePorts(resources);
             for (Integer port : resourcePorts) {
                 exposedPorts.add(new ExposedPort(port));
             }
-        } catch (Exception e) {
+        } catch (MinimesosException e) {
             LOGGER.error("Port binding is incorrect: " + e.getMessage());
         }
 
         return getBaseCommand()
                 .withExposedPorts(exposedPorts.toArray(new ExposedPort[exposedPorts.size()]));
 
-    }
-
-    public static ArrayList<Integer> parsePortsFromResource(String resources) throws Exception {
-        String port = resources.replaceAll(".*ports\\(.+\\):\\[(.*)\\].*", "$1");
-        ArrayList<String> portRanges = new ArrayList<>(Arrays.asList(port.split(",")));
-        ArrayList<Integer> returnList = new ArrayList<>();
-        for (String portRange : portRanges) {
-            if (!portRange.matches("\\d+-\\d+")) {
-                throw new Exception("Port binding in resources string '" + resources + "' is incorrect");
-            }
-            String[] ports = portRange.split("-");
-            int startPort = Integer.valueOf(ports[0]);
-            int endPort = Integer.valueOf(ports[1]);
-            if (startPort > endPort) {
-                throw new Exception("Port binding in resources string '" + resources + "' is incorrect");
-            }
-            for (int i = startPort; i <= endPort; i++) {
-                returnList.add(i);
-            }
-        }
-        return returnList;
     }
 
     @Override

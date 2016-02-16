@@ -4,6 +4,7 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.mesos.*;
 import com.containersol.minimesos.docker.DockerContainersUtil;
+import com.containersol.minimesos.util.ResourceUtil;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.dockerjava.api.DockerClient;
@@ -15,7 +16,6 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.json.JSONObject;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -112,7 +112,7 @@ public class MesosClusterTest {
         List<MesosSlave> containers = Arrays.asList(CLUSTER.getSlaves());
 
         for (MesosSlave container : containers) {
-            ArrayList<Integer> ports = MesosSlave.parsePortsFromResource(container.getResources());
+            ArrayList<Integer> ports = ResourceUtil.parsePorts(container.getResources());
             InspectContainerResponse response = docker.inspectContainerCmd(container.getContainerId()).exec();
             Map bindings = response.getNetworkSettings().getPorts().getBindings();
             for (Integer port : ports) {
