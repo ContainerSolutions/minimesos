@@ -200,16 +200,22 @@ public class MesosCluster extends ExternalResource {
     }
 
     /**
-     * Stops the Mesos cluster and its containers
+     * Stops the Mesos cluster and its containers.
+     * Containers are stopped in reverse order of their creation
      */
     public void stop() {
+
         LOGGER.debug("Cluster " + getClusterId() + " - stop");
-        for (AbstractContainer container : this.containers) {
-            LOGGER.debug("Removing container [" + container.getContainerId() + "]");
-            try {
-                container.remove();
-            } catch (NotFoundException e) {
-                LOGGER.error(String.format("Cannot remove container %s, maybe it's already dead?", container.getContainerId()));
+
+        if( containers.size() > 0 ) {
+            for( int i = containers.size() - 1; i >= 0; i-- ) {
+                AbstractContainer container = containers.get(i);
+                LOGGER.debug("Removing container [" + container.getContainerId() + "]");
+                try {
+                    container.remove();
+                } catch (NotFoundException e) {
+                    LOGGER.error(String.format("Cannot remove container %s, maybe it's already dead?", container.getContainerId()));
+                }
             }
         }
         this.running = false;

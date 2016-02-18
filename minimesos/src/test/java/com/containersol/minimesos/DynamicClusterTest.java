@@ -10,7 +10,7 @@ import java.util.TreeMap;
 
 import static org.junit.Assert.*;
 
-public class UnusualSetupsTest {
+public class DynamicClusterTest {
 
     private static final boolean EXPOSED_PORTS = false;
 
