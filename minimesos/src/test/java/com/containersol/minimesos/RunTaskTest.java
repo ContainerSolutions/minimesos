@@ -80,7 +80,7 @@ public class RunTaskTest {
             }
         };
 
-        cluster.addAndStartContainer(mesosSlave, MesosContainer.DEFAULT_TIMEOUT_SEC);
+        cluster.addAndStartContainer(mesosSlave);
         LogContainerTestCallback cb = new LogContainerTestCallback();
         dockerClient.logContainerCmd(mesosSlave.getContainerId()).withStdOut().exec(cb);
         cb.awaitCompletion();

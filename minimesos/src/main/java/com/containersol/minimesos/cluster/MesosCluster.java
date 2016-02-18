@@ -35,7 +35,7 @@ public class MesosCluster extends ExternalResource {
     private static Logger LOGGER = Logger.getLogger(MesosCluster.class);
 
     public static final String MINIMESOS_HOST_DIR_PROPERTY = "minimesos.host.dir";
-    private static final int DEFAULT_TIMEOUT_SECS = 60;
+    public static final int DEFAULT_TIMEOUT_SECS = 60;
 
     private static DockerClient dockerClient = DockerClientFactory.build();
 
@@ -142,6 +142,7 @@ public class MesosCluster extends ExternalResource {
 
     /**
      * Starts the Mesos cluster and its containers with 60 second timeout.
+     * The method is used by frameworks
      */
     public void start() {
         start(DEFAULT_TIMEOUT_SECS);
@@ -259,8 +260,18 @@ public class MesosCluster extends ExternalResource {
             throw new MinimesosException(msg, exc);
         }
 
-
         return container.getContainerId();
+    }
+
+    /**
+     * Starts a container. This container will be removed when the Mesos cluster is shut down.
+     * The method is used by frameworks
+     *
+     * @param container container to be started
+     * @return container ID
+     */
+    public String addAndStartContainer(AbstractContainer container) {
+        return addAndStartContainer(container, DEFAULT_TIMEOUT_SECS);
     }
 
     /**
@@ -306,7 +317,7 @@ public class MesosCluster extends ExternalResource {
 
     @Override
     protected void before() throws Throwable {
-        start(MesosContainer.DEFAULT_TIMEOUT_SEC);
+        start();
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {

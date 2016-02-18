@@ -43,7 +43,7 @@ public class CommandUp implements Command {
     }
 
     @Parameter(names = "--timeout", description = "Time to wait for a container to get responsive, in seconds.")
-    private int timeout = MesosContainer.DEFAULT_TIMEOUT_SEC;
+    private int timeout = MesosCluster.DEFAULT_TIMEOUT_SECS;
 
     @Parameter(names = "--num-agents", description = "Number of agents to start")
     private int numAgents = 1;
