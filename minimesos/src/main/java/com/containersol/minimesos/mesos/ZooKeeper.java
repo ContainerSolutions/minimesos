@@ -46,7 +46,19 @@ public class ZooKeeper extends AbstractContainer {
                 .withExposedPorts(new ExposedPort(DEFAULT_ZOOKEEPER_PORT), new ExposedPort(2888), new ExposedPort(3888));
     }
 
-    public static String formatZKAddress(String ipAddress) {
+    /**
+     * @return ZooKeeper URL based on real IP address
+     */
+    public String getFormattedZKAddress() {
+        return getFormattedZKAddress(getIpAddress());
+    }
+
+    /**
+     * @param ipAddress overwrites real IP of ZooKeeper container
+     * @return ZooKeeper URL based on given IP address
+     */
+    public static String getFormattedZKAddress(String ipAddress) {
         return "zk://" + ipAddress + ":" + DEFAULT_ZOOKEEPER_PORT;
     }
+
 }

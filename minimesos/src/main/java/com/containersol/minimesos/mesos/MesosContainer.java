@@ -74,11 +74,7 @@ public abstract class MesosContainer extends AbstractContainer {
     }
 
     public String getFormattedZKAddress() {
-        return getFormattedZKAddress(zooKeeperContainer);
-    }
-
-    public static String getFormattedZKAddress(ZooKeeper zkContainer) {
-        return ZooKeeper.formatZKAddress(zkContainer.getIpAddress()) + DEFAULT_MESOS_ZK_PATH;
+        return zooKeeperContainer.getFormattedZKAddress() + DEFAULT_MESOS_ZK_PATH;
     }
 
     public String getStateUrl() {
