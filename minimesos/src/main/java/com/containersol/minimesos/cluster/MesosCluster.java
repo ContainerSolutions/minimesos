@@ -200,16 +200,22 @@ public class MesosCluster extends ExternalResource {
     }
 
     /**
-     * Stops the Mesos cluster and its containers
+     * Stops the Mesos cluster and its containers.
+     * Containers are stopped in reverse order of their creation
      */
     public void stop() {
+
         LOGGER.debug("Cluster " + getClusterId() + " - stop");
-        for (AbstractContainer container : this.containers) {
-            LOGGER.debug("Removing container [" + container.getContainerId() + "]");
-            try {
-                container.remove();
-            } catch (NotFoundException e) {
-                LOGGER.error(String.format("Cannot remove container %s, maybe it's already dead?", container.getContainerId()));
+
+        if( containers.size() > 0 ) {
+            for( int i = containers.size() - 1; i >= 0; i-- ) {
+                AbstractContainer container = containers.get(i);
+                LOGGER.debug("Removing container [" + container.getContainerId() + "]");
+                try {
+                    container.remove();
+                } catch (NotFoundException e) {
+                    LOGGER.error(String.format("Cannot remove container %s, maybe it's already dead?", container.getContainerId()));
+                }
             }
         }
         this.running = false;
@@ -224,8 +230,12 @@ public class MesosCluster extends ExternalResource {
         LOGGER.debug("Cluster " + getClusterId() + " - destroy");
 
         if (clusterId != null) {
-            MarathonClient marathon = new MarathonClient(getMarathonContainer().getIpAddress());
-            marathon.killAllApps();
+
+            Marathon marathon = getMarathonContainer();
+            if( marathon != null ) {
+                MarathonClient client = new MarathonClient(getMarathonContainer().getIpAddress());
+                client.killAllApps();
+            }
 
             List<Container> containers1 = dockerClient.listContainersCmd().exec();
             for (Container container : containers1) {
@@ -250,6 +260,8 @@ public class MesosCluster extends ExternalResource {
     public String addAndStartContainer(AbstractContainer container, int timeout) {
 
         container.setClusterId(clusterId);
+        containers.add(container);
+
         LOGGER.debug(String.format("Starting %s (%s) container", container.getName(), container.getContainerId()));
 
         try {
@@ -353,15 +365,18 @@ public class MesosCluster extends ExternalResource {
     }
 
     public MesosMaster getMasterContainer() {
-        return (MesosMaster) getOne(ClusterContainers.Filter.mesosMaster()).get();
+        Optional<MesosMaster> master = getOne(ClusterContainers.Filter.mesosMaster());
+        return master.isPresent() ? master.get() : null;
     }
 
     public ZooKeeper getZkContainer() {
-        return (ZooKeeper) getOne(ClusterContainers.Filter.zooKeeper()).get();
+        Optional<ZooKeeper> zooKeeper = getOne(ClusterContainers.Filter.zooKeeper());
+        return zooKeeper.isPresent() ? zooKeeper.get() : null;
     }
 
     public Marathon getMarathonContainer() {
-        return (Marathon) getOne(ClusterContainers.Filter.marathon()).get();
+        Optional<Marathon> marathon = getOne(ClusterContainers.Filter.marathon());
+        return marathon.isPresent() ? marathon.get() : null;
     }
 
     /**
@@ -372,7 +387,6 @@ public class MesosCluster extends ExternalResource {
      * @param <T>    A container of type T that extends {@link AbstractContainer}
      * @return the first container it comes across.
      */
-    @SuppressWarnings("unchecked")
     public <T extends AbstractContainer> Optional<T> getOne(java.util.function.Predicate<AbstractContainer> filter) {
         return (Optional<T>) getContainers().stream().filter(filter).findFirst();
     }
