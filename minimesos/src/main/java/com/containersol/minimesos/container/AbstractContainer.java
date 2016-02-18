@@ -149,7 +149,9 @@ public abstract class AbstractContainer {
      */
     public void remove() {
         try {
-            dockerClient.removeContainerCmd(containerId).withForce().withRemoveVolumes(true).exec();
+            if (DockerContainersUtil.getContainer(dockerClient, containerId) != null) {
+                dockerClient.removeContainerCmd(containerId).withForce().withRemoveVolumes(true).exec();
+            }
             this.removed = true;
         } catch (Exception e) {
             LOGGER.error("Could not remove container " + dockerCommand().getName(), e);
