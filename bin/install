@@ -35,9 +35,8 @@ httpcode=$(curl -s -o /dev/null -I -w '%{http_code}' --max-time 1 $SCRIPT_PATH/b
 if [ $httpcode -eq 200 ]; then
     install_version $SCRIPT_PATH/bin/install-version $VERSION
 else
-    # initial version of minimesos used single install script
-    # FIXME: this will only skip guessing the latest version and will try to pull the same "install-version" that failed above
-    install_version $SCRIPT_PATH/bin/install $VERSION
+    echo "Failed to pull installer off github.com, please try again."
+    exit 1
 fi
 
 exit 0
