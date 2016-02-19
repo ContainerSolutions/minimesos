@@ -21,7 +21,7 @@ INSTALL_LOCATION=$HOME/.minimesos/bin
 VERSION=$1
 echo "Version: " $VERSION
 mkdir -p $INSTALL_LOCATION
-curl -sSL https://raw.githubusercontent.com/ContainerSolutions/minimesos/$VERSION/bin/minimesos > $INSTALL_LOCATION
+curl -sSL https://raw.githubusercontent.com/ContainerSolutions/minimesos/$VERSION/bin/minimesos > $INSTALL_LOCATION/minimesos
 chmod +x $INSTALL_LOCATION/minimesos
 
 echo "minimesos has been installed to ${INSTALL_LOCATION}"
