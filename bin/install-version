@@ -25,12 +25,12 @@ curl -sSL https://raw.githubusercontent.com/ContainerSolutions/minimesos/$VERSIO
 chmod +x $INSTALL_LOCATION/minimesos
 
 if [ -f "/usr/local/bin/minimesos" ]; then
-    echo "Found an old version of minimesos, please remove it:\n"
-    echo "rm -f /usr/local/bin/minimesos\n"
+    echo "Found an old version of minimesos, please remove it:" && echo
+    echo "rm -f /usr/local/bin/minimesos" && echo
 fi
 
 echo "minimesos is installed into ${INSTALL_LOCATION}/minimesos"
-echo "Run the following command to add it to your executables path:\n"
+echo "Run the following command to add it to your executables path:" && echo
 echo "export PATH=\$PATH:$INSTALL_LOCATION"
 
 exit 0
