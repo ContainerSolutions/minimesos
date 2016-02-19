@@ -1,10 +1,10 @@
-#!/bin/bash
+#!/bin/sh
 
 # This script is meant to be invoked with VERSION given as a parameter.
 # Installs the given version of minimesos on the box
 
 command_exists() {
-	command -v "$@" > /dev/null 2>&1
+    command -v "$@" > /dev/null 2>&1
 }
 
 if ! command_exists curl; then
@@ -17,12 +17,15 @@ if [ ! "$#" -eq 1 ]; then
 	exit 1
 fi
 
+INSTALL_LOCATION=$HOME/.minimesos/bin
 VERSION=$1
-echo "VERSION GIVEN IS " $VERSION
+echo "Version: " $VERSION
+mkdir -p $INSTALL_LOCATION
+curl -sSL https://raw.githubusercontent.com/ContainerSolutions/minimesos/$VERSION/bin/minimesos > $INSTALL_LOCATION
+chmod +x $INSTALL_LOCATION/minimesos
 
-curl -sSL https://raw.githubusercontent.com/ContainerSolutions/minimesos/$VERSION/bin/minimesos > /usr/local/bin/minimesos
-chmod +x /usr/local/bin/minimesos
-
-# TODO: pull docker image from Docker Hub
+echo "minimesos has been installed to ${INSTALL_LOCATION}"
+echo "Run the following command to add it to your executables path:"
+echo "export PATH=\$PATH:$INSTALL_LOCATION"
 
 exit 0
