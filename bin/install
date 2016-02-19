@@ -10,7 +10,6 @@ command_exists() {
 }
 
 install_version() {
-    echo "Using $1"
     curl -sSL $1 | sh -s $2
 }
 
@@ -31,7 +30,6 @@ if [ -z "$VERSION" ]; then
 fi
 
 # invoking versioned installation script
-echo "Installing minimesos $VERSION"
 SCRIPT_PATH=https://raw.githubusercontent.com/ContainerSolutions/minimesos/$VERSION
 httpcode=$(curl -s -o /dev/null -I -w '%{http_code}' --max-time 1 $SCRIPT_PATH/bin/install-version || echo "404" )
 if [ $httpcode -eq 200 ]; then
@@ -41,7 +39,5 @@ else
     # FIXME: this will only skip guessing the latest version and will try to pull the same "install-version" that failed above
     install_version $SCRIPT_PATH/bin/install $VERSION
 fi
-
-echo "Done"
 
 exit 0

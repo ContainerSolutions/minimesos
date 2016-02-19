@@ -19,12 +19,12 @@ fi
 
 INSTALL_LOCATION=$HOME/.minimesos/bin
 VERSION=$1
-echo "Version: " $VERSION
+echo "Installing version " $VERSION
 mkdir -p $INSTALL_LOCATION
 curl -sSL https://raw.githubusercontent.com/ContainerSolutions/minimesos/$VERSION/bin/minimesos > $INSTALL_LOCATION/minimesos
 chmod +x $INSTALL_LOCATION/minimesos
 
-echo "minimesos has been installed to ${INSTALL_LOCATION}"
+echo "minimesos is installed into ${INSTALL_LOCATION}/minimesos"
 echo "Run the following command to add it to your executables path:"
 echo "export PATH=\$PATH:$INSTALL_LOCATION"
 
