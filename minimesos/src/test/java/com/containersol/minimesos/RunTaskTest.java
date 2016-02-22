@@ -25,8 +25,8 @@ public class RunTaskTest {
             new ClusterArchitecture.Builder()
                     .withZooKeeper()
                     .withMaster()
-                    .withSlave()
-                    .withSlave()
+                    .withAgent()
+                    .withAgent()
                     . build());
 
     @After
@@ -55,7 +55,7 @@ public class RunTaskTest {
     @Test
     public void testMesosExecuteContainerSuccess() throws InterruptedException {
 
-        AbstractContainer mesosSlave = new AbstractContainer(
+        AbstractContainer mesosAgent = new AbstractContainer(
                 dockerClient) {
 
             @Override
@@ -80,14 +80,14 @@ public class RunTaskTest {
             }
         };
 
-        cluster.addAndStartContainer(mesosSlave);
+        cluster.addAndStartContainer(mesosAgent);
         LogContainerTestCallback cb = new LogContainerTestCallback();
-        dockerClient.logContainerCmd(mesosSlave.getContainerId()).withStdOut().exec(cb);
+        dockerClient.logContainerCmd(mesosAgent.getContainerId()).withStdOut().exec(cb);
         cb.awaitCompletion();
 
         Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
             LogContainerTestCallback cb1 = new LogContainerTestCallback();
-            dockerClient.logContainerCmd(mesosSlave.getContainerId()).withStdOut().exec(cb1);
+            dockerClient.logContainerCmd(mesosAgent.getContainerId()).withStdOut().exec(cb1);
             cb1.awaitCompletion();
             String log = cb1.toString();
             return log.contains("Received status update TASK_FINISHED for task test-cmd");

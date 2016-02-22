@@ -28,9 +28,9 @@ public class DiscoverySystemTest {
     protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder()
             .withZooKeeper()
             .withMaster()
-            .withSlave("ports(*):[8080-8082]")
-            .withSlave("ports(*):[8080-8082]")
-            .withSlave("ports(*):[8080-8082]")
+            .withAgent("ports(*):[8080-8082]")
+            .withAgent("ports(*):[8080-8082]")
+            .withAgent("ports(*):[8080-8082]")
             .build();
 
     @ClassRule

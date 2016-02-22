@@ -47,12 +47,12 @@ public class ClusterContainersTest {
     }
 
     @Test
-    public void shouldFilterMesosSlave() {
-        MesosSlave mock = mock(MesosSlave.class);
+    public void shouldFilterMesosAgent() {
+        MesosAgent mock = mock(MesosAgent.class);
         AbstractContainer abstractContainer = mock(AbstractContainer.class);
         ClusterContainers clusterContainers = new ClusterContainers();
         clusterContainers.add(mock).add(abstractContainer);
 
-        assertTrue(clusterContainers.isPresent(Filter.mesosSlave()));
+        assertTrue(clusterContainers.isPresent(Filter.mesosAgent()));
     }
 }

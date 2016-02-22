@@ -14,33 +14,33 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 /**
- * Base MesosSlave class
+ * Base MesosAgent class
  */
-public class MesosSlave extends MesosContainer {
+public class MesosAgent extends MesosContainer {
 
-    private static final Logger LOGGER = Logger.getLogger(MesosSlave.class);
+    private static final Logger LOGGER = Logger.getLogger(MesosAgent.class);
 
-    public static final String MESOS_SLAVE_IMAGE = "containersol/mesos-agent";
-    public static final int DEFAULT_MESOS_SLAVE_PORT = 5051;
+    public static final String MESOS_AGENT_IMAGE = "containersol/mesos-agent";
+    public static final int DEFAULT_MESOS_AGENT_PORT = 5051;
 
     public static final String DEFAULT_PORT_RESOURCES = "ports(*):[31000-32000]";
     public static final String DEFAULT_RESOURCES = DEFAULT_PORT_RESOURCES + "; cpus(*):0.2; mem(*):256; disk(*):200";
 
-    private String mesosImageName = MESOS_SLAVE_IMAGE;
+    private String mesosImageName = MESOS_AGENT_IMAGE;
 
     private String resources = DEFAULT_RESOURCES;
 
-    private int portNumber = DEFAULT_MESOS_SLAVE_PORT;
+    private int portNumber = DEFAULT_MESOS_AGENT_PORT;
 
-    public MesosSlave(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
+    public MesosAgent(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
         super(dockerClient, zooKeeperContainer);
     }
 
-    public MesosSlave(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
+    public MesosAgent(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
         super(dockerClient, clusterId, uuid, containerId);
     }
 
-    public MesosSlave(DockerClient dockerClient, String resources, int portNumber, ZooKeeper zooKeeperContainer, String mesosLocalImage, String registryTag) {
+    public MesosAgent(DockerClient dockerClient, String resources, int portNumber, ZooKeeper zooKeeperContainer, String mesosLocalImage, String registryTag) {
         super(dockerClient, zooKeeperContainer);
         this.resources = resources;
         this.portNumber = portNumber;
@@ -48,9 +48,9 @@ public class MesosSlave extends MesosContainer {
         setMesosImageTag(registryTag);
     }
 
-    public MesosSlave(DockerClient dockerClient, ZooKeeper zooKeeper, String slaveResources) {
+    public MesosAgent(DockerClient dockerClient, ZooKeeper zooKeeper, String agentResources) {
         super(dockerClient, zooKeeper);
-        setResources(slaveResources);
+        setResources(agentResources);
     }
 
     public String getResources() {

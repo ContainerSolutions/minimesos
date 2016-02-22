@@ -10,15 +10,15 @@ import static org.mockito.Mockito.mock;
  */
 public class ClusterUtilTest {
     @Test
-    public void shouldBeAbleToAddSlaves() {
-        ClusterArchitecture.Builder builder = ClusterUtil.withSlaves(3);
+    public void shouldBeAbleToAddAgents() {
+        ClusterArchitecture.Builder builder = ClusterUtil.withAgent(3);
         assertEquals(3 + 1 + 1, builder.build().getClusterContainers().getContainers().size());
     }
 
     @Test
-    public void shouldBeAbleToAddCustomSlaves() {
-        MesosSlave mock = mock(MesosSlave.class);
-        ClusterArchitecture.Builder builder = ClusterUtil.withSlaves(3, zk -> mock);
+    public void shouldBeAbleToAddCustomAgents() {
+        MesosAgent mock = mock(MesosAgent.class);
+        ClusterArchitecture.Builder builder = ClusterUtil.withAgent(3, zk -> mock);
         assertEquals(3 + 1 + 1, builder.build().getClusterContainers().getContainers().size());
     }
 }
