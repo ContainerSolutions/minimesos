@@ -1,12 +1,12 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.marathon.Marathon;
 import com.github.dockerjava.api.DockerClient;
 import org.apache.log4j.Logger;
 
 import java.util.Optional;
-import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -108,17 +108,26 @@ public class ClusterArchitecture {
         }
 
         /**
+         * Docker client getter
+         *
+         * @return docker client
+         */
+        public DockerClient getDockerClient() {
+            return dockerClient;
+        }
+
+        /**
          * Includes the default {@link ZooKeeper} instance in the cluster
          */
         public Builder withZooKeeper() {
-            return withZooKeeper(ZooKeeper.ZOOKEEPER_IMAGE_TAG);
+            return withZooKeeper(new ZooKeeperConfig());
         }
 
         /**
          * Be explicit about the version of the image to use.
          */
-        public Builder withZooKeeper(String zooKeeperImageTag) {
-            return withZooKeeper(new ZooKeeper(dockerClient, zooKeeperImageTag));
+        public Builder withZooKeeper(ZooKeeperConfig zooKeeperConfig) {
+            return withZooKeeper(new ZooKeeper(dockerClient, zooKeeperConfig));
         }
 
         /**

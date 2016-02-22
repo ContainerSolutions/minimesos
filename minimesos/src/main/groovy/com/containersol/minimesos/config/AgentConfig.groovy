@@ -3,7 +3,7 @@ package com.containersol.minimesos.config
 import groovy.util.logging.Slf4j
 
 @Slf4j
-class Agent extends Block {
+class AgentConfig extends GroovyBlock {
 
     def imageName     = "containersol/mesos-agent"
     def imageTag      = "0.25"

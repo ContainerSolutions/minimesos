@@ -1,6 +1,6 @@
 package com.containersol.minimesos.config
 
-class ResourceDef extends Block {
+class ResourceDef extends GroovyBlock {
 
     String role
     def value

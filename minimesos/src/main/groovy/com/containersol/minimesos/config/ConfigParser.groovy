@@ -5,10 +5,10 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class ConfigParser {
 
-    Cluster parse(String config) {
+    ClusterConfig parse(String config) {
         Binding binding = new Binding();
 
-        Cluster minimesosDsl = new Cluster()
+        ClusterConfig minimesosDsl = new ClusterConfig()
         binding.setVariable("minimesos", minimesosDsl)
 
         GroovyShell shell = new GroovyShell(binding)

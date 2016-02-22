@@ -87,10 +87,10 @@ public class ConfigParserTest {
                 }
         """
 
-        Cluster dsl = parser.parse(config)
+        ClusterConfig dsl = parser.parse(config)
         assertEquals( 1, dsl.agents.size() )
 
-        Agent agent = dsl.agents.get(0)
+        AgentConfig agent = dsl.agents.get(0)
         assertEquals( "WARN", agent.loggingLevel )
 
     }
@@ -107,7 +107,7 @@ public class ConfigParserTest {
                 }
         """
 
-        Cluster dsl = parser.parse(config)
+        ClusterConfig dsl = parser.parse(config)
         assertEquals( 2, dsl.agents.size() )
 
     }
@@ -123,7 +123,7 @@ public class ConfigParserTest {
                 }
         """
 
-        Cluster dsl = parser.parse(config)
+        ClusterConfig dsl = parser.parse(config)
         assertNotNull( dsl.master )
         assertEquals( "another/master", dsl.master.imageName )
 
@@ -158,7 +158,7 @@ public class ConfigParserTest {
 
         parser.parse(config)
 
-        Cluster dsl = parser.parse(config)
+        ClusterConfig dsl = parser.parse(config)
         assertNotNull(dsl.zookeeper)
         assertEquals("jplock/zookeeper", dsl.zookeeper.imageName)
         assertEquals("3.4.6", dsl.zookeeper.imageTag)
@@ -177,7 +177,7 @@ public class ConfigParserTest {
 
         parser.parse(config)
 
-        Cluster dsl = parser.parse(config)
+        ClusterConfig dsl = parser.parse(config)
         assertNotNull(dsl.zookeeper)
         assertEquals("containersol/zookeeper", dsl.zookeeper.imageName)
         assertEquals("3.4.5", dsl.zookeeper.imageTag)
@@ -195,7 +195,7 @@ public class ConfigParserTest {
 
         parser.parse(config)
 
-        Cluster dsl = parser.parse(config)
+        ClusterConfig dsl = parser.parse(config)
         assertNotNull(dsl.marathon)
         assertEquals("mesosphere/marathon", dsl.marathon.imageName)
         assertEquals("v0.13.0", dsl.marathon.imageTag)
@@ -215,7 +215,7 @@ public class ConfigParserTest {
 
         parser.parse(config)
 
-        Cluster dsl = parser.parse(config)
+        ClusterConfig dsl = parser.parse(config)
         assertNotNull(dsl.marathon)
         assertEquals("containersol/marathon", dsl.marathon.imageName)
         assertEquals("v0.14.0", dsl.marathon.imageTag)
@@ -245,10 +245,10 @@ public class ConfigParserTest {
                 }
         """
 
-        Cluster dsl = parser.parse(config)
+        ClusterConfig dsl = parser.parse(config)
         assertEquals( 1, dsl.agents.size() )
 
-        Agent agent = dsl.agents.get(0)
+        AgentConfig agent = dsl.agents.get(0)
 
         assertEquals( "4", agent.resources.cpus["*"].value )
         assertEquals( "1", agent.resources.cpus["logstash"].value )

@@ -3,7 +3,7 @@ package com.containersol.minimesos.config
 import groovy.util.logging.Slf4j
 
 @Slf4j
-class AgentResources extends Block {
+class AgentResources extends GroovyBlock {
 
     static final ResourceDef DEFAULT_CPU = new ResourceDef("*", 1)
     static final ResourceDef DEFAULT_MEM = new ResourceDef("*", 4096)

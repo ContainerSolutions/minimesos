@@ -1,5 +1,6 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -10,23 +11,22 @@ import com.github.dockerjava.api.model.ExposedPort;
  */
 public class ZooKeeper extends AbstractContainer {
 
-    public static final String MESOS_LOCAL_IMAGE = "jplock/zookeeper";
-    public static final String ZOOKEEPER_IMAGE_TAG = "3.4.6";
     public static final int DEFAULT_ZOOKEEPER_PORT = 2181;
 
-    private String zooKeeperImageTag = ZOOKEEPER_IMAGE_TAG;
+    private final ZooKeeperConfig config;
 
-    protected ZooKeeper(DockerClient dockerClient, String zooKeeperImageTag) {
+    public ZooKeeper(DockerClient dockerClient, ZooKeeperConfig config) {
         super(dockerClient);
-        this.zooKeeperImageTag = zooKeeperImageTag;
+        this.config = config;
     }
 
     protected ZooKeeper(DockerClient dockerClient) {
-        this(dockerClient, ZOOKEEPER_IMAGE_TAG);
+        this(dockerClient, new ZooKeeperConfig());
     }
 
     public ZooKeeper(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
         super(dockerClient, clusterId, uuid, containerId);
+        this.config = new ZooKeeperConfig();
     }
 
     @Override
@@ -36,13 +36,13 @@ public class ZooKeeper extends AbstractContainer {
 
     @Override
     protected void pullImage() {
-        pullImage(MESOS_LOCAL_IMAGE, zooKeeperImageTag);
+        pullImage(config.getImageName(), config.getImageTag());
     }
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        return dockerClient.createContainerCmd(MESOS_LOCAL_IMAGE + ":" + zooKeeperImageTag)
-                .withName( getName() )
+        return dockerClient.createContainerCmd(config.getImageName() + ":" + config.getImageTag())
+                .withName(getName())
                 .withExposedPorts(new ExposedPort(DEFAULT_ZOOKEEPER_PORT), new ExposedPort(2888), new ExposedPort(3888));
     }
 

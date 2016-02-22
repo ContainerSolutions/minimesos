@@ -1,6 +1,6 @@
 package com.containersol.minimesos.config;
 
-class Block {
+class GroovyBlock {
 
     def delegateTo(Object obj, Closure cl) {
         def code = cl.rehydrate(obj, this, this)

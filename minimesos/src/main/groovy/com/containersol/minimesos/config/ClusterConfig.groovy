@@ -3,7 +3,7 @@ package com.containersol.minimesos.config
 import groovy.util.logging.Slf4j
 
 @Slf4j
-class Cluster extends Block {
+class ClusterConfig extends GroovyBlock {
 
     def call(Closure cl) {
         cl.setDelegate(this);
@@ -14,43 +14,42 @@ class Cluster extends Block {
     def exposePorts = true
     int timeout = 60
     String mesosVersion = "0.25"
-    def loggingLevel = "INFO"
+
     def clusterName = "minimesos-test"
 
-    Master master = null
-    List<Agent> agents = new ArrayList<>()
-    Zookeeper zookeeper = null
-    Marathon marathon = null
+    MasterConfig master = null
+    List<AgentConfig> agents = new ArrayList<>()
+    ZooKeeperConfig zookeeper = null
+    MarathonConfig marathon = null
 
-    def master(@DelegatesTo(Agent) Closure cl) {
+    def master(@DelegatesTo(MasterConfig) Closure cl) {
         if (master != null) {
             throw new RuntimeException("Multiple Masters are not supported in this version yet")
         }
-        master = new Master();
+        master = new MasterConfig();
         delegateTo(master, cl)
     }
 
-    def agent(@DelegatesTo(Agent) Closure cl) {
-        def agent = new Agent()
+    def agent(@DelegatesTo(AgentConfig) Closure cl) {
+        def agent = new AgentConfig()
         delegateTo(agent, cl)
         agents.add(agent)
     }
 
-    def zookeeper(@DelegatesTo(Zookeeper) Closure cl) {
+    def zookeeper(@DelegatesTo(ZooKeeperConfig) Closure cl) {
         if (zookeeper != null) {
             throw new RuntimeException("Multiple Zookeepers are not supported in this version yet")
         }
-        zookeeper = new Zookeeper();
+        zookeeper = new ZooKeeperConfig();
         delegateTo(zookeeper, cl)
     }
 
-    def marathon(@DelegatesTo(Marathon) Closure cl) {
+    def marathon(@DelegatesTo(MarathonConfig) Closure cl) {
         if (marathon != null) {
             throw new RuntimeException("Cannot have more than 1 marathon")
         }
-        marathon = new Marathon();
+        marathon = new MarathonConfig();
         delegateTo(marathon, cl)
     }
-
 
 }
