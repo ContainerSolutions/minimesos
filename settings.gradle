@@ -1,5 +1,7 @@
 rootProject.name = 'minimesos-project'
 include "minimesos"
+include "rest-api"
+include "minimesos-java"
 include "test-framework-docker:scheduler"
 include "test-framework-docker:executor"
 include "test-framework-docker:system-test"
