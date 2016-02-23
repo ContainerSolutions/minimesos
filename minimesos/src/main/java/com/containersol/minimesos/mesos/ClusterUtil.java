@@ -7,15 +7,15 @@ import java.util.stream.IntStream;
  * Helper methods for ClusterArchitecture
  */
 public class ClusterUtil {
-    public static ClusterArchitecture.Builder withSlaves(Integer numberOfSlaves) {
+    public static ClusterArchitecture.Builder withAgent(Integer numberOfAgents) {
         ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder().withZooKeeper();
-        IntStream.range(0, numberOfSlaves).forEach(x -> builder.withSlave());
+        IntStream.range(0, numberOfAgents).forEach(x -> builder.withAgent());
         return builder;
     }
 
-    public static <T extends MesosSlave> ClusterArchitecture.Builder withSlaves(Integer numberOfSlaves, Function<ZooKeeper, T> slave) {
+    public static <T extends MesosAgent> ClusterArchitecture.Builder withAgent(Integer numberOfAgents, Function<ZooKeeper, T> agent) {
         ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder().withZooKeeper();
-        IntStream.range(0, numberOfSlaves).forEach(x -> builder.withSlave(slave::apply));
+        IntStream.range(0, numberOfAgents).forEach(x -> builder.withAgent(agent::apply));
         return builder;
     }
 }

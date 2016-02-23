@@ -14,7 +14,7 @@ public class DynamicClusterTest {
 
     private static final boolean EXPOSED_PORTS = false;
 
-    protected static final String resources = MesosSlave.DEFAULT_PORT_RESOURCES + "; cpus(*):0.2; mem(*):256; disk(*):200";
+    protected static final String resources = MesosAgent.DEFAULT_PORT_RESOURCES + "; cpus(*):0.2; mem(*):256; disk(*):200";
     protected static final DockerClient dockerClient = DockerClientFactory.build();
 
     @Test
@@ -23,7 +23,7 @@ public class DynamicClusterTest {
         ClusterArchitecture config = new ClusterArchitecture.Builder(dockerClient)
                 .withZooKeeper()
                 .withMaster(zooKeeper -> new MesosMasterExtended(dockerClient, zooKeeper, MesosMaster.MESOS_MASTER_IMAGE, MesosContainer.MESOS_IMAGE_TAG, new TreeMap<>(), EXPOSED_PORTS ))
-                .withSlave(zooKeeper -> new MesosSlave(dockerClient, resources, 5051, zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
+                .withAgent(zooKeeper -> new MesosAgent(dockerClient, resources, 5051, zooKeeper, MesosAgent.MESOS_AGENT_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
                 .build();
 
         MesosCluster cluster = new MesosCluster(config);
@@ -44,16 +44,16 @@ public class DynamicClusterTest {
         ClusterArchitecture config = new ClusterArchitecture.Builder(dockerClient)
                 .withZooKeeper()
                 .withMaster(zooKeeper -> new MesosMasterExtended(dockerClient, zooKeeper, MesosMaster.MESOS_MASTER_IMAGE, MesosContainer.MESOS_IMAGE_TAG, new TreeMap<>(), EXPOSED_PORTS ))
-                .withSlave(zooKeeper -> new MesosSlave(dockerClient, resources, 5051, zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
+                .withAgent(zooKeeper -> new MesosAgent(dockerClient, resources, 5051, zooKeeper, MesosAgent.MESOS_AGENT_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
                 .build();
 
         MesosCluster cluster = new MesosCluster(config);
         cluster.start();
 
         ZooKeeper zooKeeper = cluster.getZkContainer();
-        MesosSlave extraSlave = new MesosSlave(dockerClient, resources, 5051, zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, MesosContainer.MESOS_IMAGE_TAG);
+        MesosAgent extraAgent = new MesosAgent(dockerClient, resources, 5051, zooKeeper, MesosAgent.MESOS_AGENT_IMAGE, MesosContainer.MESOS_IMAGE_TAG);
 
-        String containerId = cluster.addAndStartContainer(extraSlave);
+        String containerId = cluster.addAndStartContainer(extraAgent);
         assertNotNull("freshly started container is not found", DockerContainersUtil.getContainer(dockerClient, containerId));
 
         cluster.stop();

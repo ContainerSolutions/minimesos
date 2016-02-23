@@ -11,7 +11,7 @@ import com.containersol.minimesos.mesos.DockerClientFactory;
 import com.containersol.minimesos.mesos.MesosContainer;
 import com.containersol.minimesos.mesos.MesosMaster;
 import com.containersol.minimesos.mesos.MesosMasterExtended;
-import com.containersol.minimesos.mesos.MesosSlave;
+import com.containersol.minimesos.mesos.MesosAgent;
 import com.containersol.minimesos.mesos.ZooKeeper;
 import com.github.dockerjava.api.DockerClient;
 
@@ -102,7 +102,7 @@ public class CommandUp implements Command {
                 .withContainer(zooKeeper -> new Marathon(dockerClient, zooKeeper, getMarathonImageTag(), isExposedHostPorts()), ClusterContainers.Filter.zooKeeper());
 
         for (int i = 0; i < getNumAgents(); i++) {
-            configBuilder.withSlave(zooKeeper -> new MesosSlave(dockerClient, "ports(*):[33000-34000]", 5051, zooKeeper, MesosSlave.MESOS_SLAVE_IMAGE, getMesosImageTag()));
+            configBuilder.withAgent(zooKeeper -> new MesosAgent(dockerClient, "ports(*):[33000-34000]", 5051, zooKeeper, MesosAgent.MESOS_AGENT_IMAGE, getMesosImageTag()));
         }
 
         if (getStartConsul()) {
