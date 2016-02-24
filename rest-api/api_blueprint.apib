@@ -7,6 +7,9 @@ Manage minimesos cluster configuration and lifecycle.
 
 ## Cluster [/cluster/{cluster_id}]
 
++ Parameters
+    + cluster_id (string)
+
 ### Get cluster state [GET]
 
 + Response 200 (application/json)
@@ -30,16 +33,14 @@ Manage minimesos cluster configuration and lifecycle.
         + ok : true (boolean)
         + cluster_id (string)
  
-## Destroy a cluster [DELETE]
+### Destroy a cluster [DELETE]
 
-+ Attributes
-    + cluster_id (string, required)
-    + force (boolean, optional)
         
 + Request (application/json)
-    + Attributes 
-        + cluster_id (string)
-        
+    + Attributes
+        + cluster_id (string, required)
+        + force (boolean, optional)
+       
 + Response 200 (application/json)
     + Attributes
         + ok : true (boolean)
