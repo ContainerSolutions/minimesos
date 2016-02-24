@@ -5,7 +5,6 @@ HOST: https:///
 
 Manage minimesos cluster configuration and lifecycle.
 
-
 ## Cluster [/cluster/{cluster_id}]
 
 ### Get cluster state [GET]
@@ -27,12 +26,10 @@ Manage minimesos cluster configuration and lifecycle.
         + num_agents (number, optional)
 
 + Response 200 (application/json)
+    + Attributes
+        + ok : true (boolean)
+        + cluster_id (string)
  
-        {
-            "ok": "true",
-            "cluster_id": "12345",
-        }
-        
 ## Destroy a cluster [DELETE]
 
 + Attributes
@@ -90,6 +87,8 @@ Manage minimesos cluster configuration and lifecycle.
     
 + state (string)
 
+    Terminating, Running
+
 + master (Cluster container)
 
 + marathon (Cluster container)
@@ -116,6 +115,7 @@ Manage minimesos cluster configuration and lifecycle.
 
 
 ## DiscoveryInfo (object)
+
 + visibility (string, required)
 + name (string, optional)
 + environment (string, optional)
@@ -130,9 +130,11 @@ Manage minimesos cluster configuration and lifecycle.
 + value (string, optional)
 
 ## Port (object)
+
 + number (number)
 + name (string)
 + protocol (string)
 
 ## Task (object)
+
 + discoveryinfo (DiscoveryInfo)
