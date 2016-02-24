@@ -8,9 +8,6 @@ class MesosAgentConfig extends MesosContainerConfig {
     public static final String MESOS_SLAVE_IMAGE = "containersol/mesos-agent";
     public static final int DEFAULT_MESOS_SLAVE_PORT = 5051;
 
-    // TODO: remove this
-    public static final String DEFAULT_PORT_RESOURCES = "ports(*):[31000-32000]";
-
     int portNumber = DEFAULT_MESOS_SLAVE_PORT;
 
     String imageName     = MESOS_SLAVE_IMAGE
