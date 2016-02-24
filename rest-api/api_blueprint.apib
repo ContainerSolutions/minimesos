@@ -1,0 +1,138 @@
+FORMAT: 1A
+HOST: https:///
+
+# minimesos
+
+Manage minimesos cluster configuration and lifecycle.
+
+
+## Cluster [/cluster/{cluster_id}]
+
+### Get cluster state [GET]
+
++ Response 200 (application/json)
+    + Attributes
+        + state (string)
+        + cluster (Cluster)
+        
+### Start a cluster [POST]
+
++ Request (application/json)
+    + Attributes 
+        + marathon_image_tag (string, optional)
+        + exposed_host_ports (boolean, optional)
+        + mesos_image_tag (string, optional)
+        + zookeeper_image_tag (string, optional)
+        + timeout (number, optional)
+        + num_agents (number, optional)
+
++ Response 200 (application/json)
+ 
+        {
+            "ok": "true",
+            "cluster_id": "12345",
+        }
+        
+## Destroy a cluster [DELETE]
+
++ Attributes
+    + cluster_id (string, required)
+    + force (boolean, optional)
+        
++ Request (application/json)
+    + Attributes 
+        + cluster_id (string)
+        
++ Response 200 (application/json)
+    + Attributes
+        + ok : true (boolean)
+        + state : "teardown" (string)
+        + cluster_id (string
+
+        
++ Response 400 (application/json)
+    + Attributes
+        + ok : false (boolean)
+        + error (string)
+        
+## App [/app]
+
+### Install an app [POST]
+
++ Request (application/json)
+    + Attributes
+        + cluster_id (string, required)
+        + exposed_host_ports (boolean, required)
+        + marathon_file (string, optional)
+        + marathon_spec (string, optional)
+
++ Response 200 (application/json)
+    + Attributes 
+        + ok: true (boolean)
+        + cluster_id (string)
+        
++ Response 400 (application/json)  
+    + Attributes
+        + ok: false (boolean)
+        + error (string)
+
+
+### Query state [/query/{cluster_id}]
+
+
+# Data Structures
+
+## Cluster (object)
+
++ cluster_id (string)
+    
+    Cluster id
+    
++ state (string)
+
++ master (Cluster container)
+
++ marathon (Cluster container)
+
++ zookeeper (Cluster container)
+
++ agents (array[Cluster container])
+
++ tasks (array[Task])
+
+
+## Cluster container (object)
++ container_id (number)
+
+    Docker container id
+
++ image (string)
+
+    Image
+    
++ ip_address (string)
+
+    IP of the container
+
+
+## DiscoveryInfo (object)
++ visibility (string, required)
++ name (string, optional)
++ environment (string, optional)
++ location (string, optional) 
++ version (string, optional)
++ ports (array[Port])
++ labels (array[Label])
+
+## Label (object)
+
++ key (string, required)
++ value (string, optional)
+
+## Port (object)
++ number (number)
++ name (string)
++ protocol (string)
+
+## Task (object)
++ discoveryinfo (DiscoveryInfo)
