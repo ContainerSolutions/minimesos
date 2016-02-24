@@ -46,7 +46,7 @@ public class NewMesosClusterTest {
     public void mesosClusterCanBeStarted() throws Exception {
         JSONObject stateInfo = cluster.getMasterContainer().getStateInfoJSON();
 
-        assertEquals(1, stateInfo.getInt("activated_slaves")); // Only one slave is actually _required_ to have a cluster
+        assertEquals(1, stateInfo.getInt("activated_slaves")); // Only one agent is actually _required_ to have a cluster
     }
 
     @Test
@@ -62,8 +62,8 @@ public class NewMesosClusterTest {
     public void dockerExposeResourcesPorts() throws Exception {
         String mesosResourceString = MesosAgentConfig.DEFAULT_PORT_RESOURCES;
         ArrayList<Integer> ports = ResourceUtil.parsePorts(mesosResourceString);
-        List<MesosSlave> containers = Arrays.asList(cluster.getSlaves());
-        for (MesosSlave container : containers) {
+        List<MesosAgent> containers = Arrays.asList(cluster.getAgents());
+        for (MesosAgent container : containers) {
             InspectContainerResponse response = dockerClient.inspectContainerCmd(container.getContainerId()).exec();
             Map bindings = response.getNetworkSettings().getPorts().getBindings();
             for (Integer port : ports) {

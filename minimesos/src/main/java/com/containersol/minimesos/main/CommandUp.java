@@ -220,7 +220,7 @@ public class CommandUp implements Command {
         for (int i = 0; i < getNumAgents(); i++) {
             MesosAgentConfig agentConfig = (agentConfigs.size()>i) ? agentConfigs.get(i) : new MesosAgentConfig();
             agentConfig.setImageTag( getMesosImageTag() );
-            configBuilder.withSlave(zooKeeper -> new MesosSlave(dockerClient, zooKeeper, agentConfig));
+            configBuilder.withSlave(zooKeeper -> new MesosAgent(dockerClient, zooKeeper, agentConfig));
         }
 
         if (getStartConsul()) {

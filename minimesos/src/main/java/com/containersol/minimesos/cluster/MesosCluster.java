@@ -102,7 +102,7 @@ public class MesosCluster extends ExternalResource {
                         this.containers.add(zkKeeper);
                         break;
                     case "agent":
-                        this.containers.add(new MesosSlave(dockerClient, clusterId, uuid, containerId));
+                        this.containers.add(new MesosAgent(dockerClient, clusterId, uuid, containerId));
                         break;
                     case "master":
                         MesosMaster master = new MesosMaster(dockerClient, clusterId, uuid, containerId);
@@ -132,8 +132,8 @@ public class MesosCluster extends ExternalResource {
         }
 
         if (zkKeeper != null) {
-            for (MesosSlave mesosSlave : getSlaves()) {
-                mesosSlave.setZooKeeperContainer(zkKeeper);
+            for (MesosAgent mesosAgent : getAgents()) {
+                mesosAgent.setZooKeeperContainer(zkKeeper);
             }
             getMasterContainer().setZooKeeperContainer(zkKeeper);
             getMarathonContainer().setZooKeeper(zkKeeper);
@@ -164,7 +164,7 @@ public class MesosCluster extends ExternalResource {
 
         LOGGER.debug("Cluster " + getClusterId() + " - start");
         this.containers.forEach((container) -> container.start(timeoutSeconds));
-        // wait until the given number of slaves are registered
+        // wait until the given number of agents are registered
         new MesosClusterStateResponse(this).waitFor();
 
         running = true;
@@ -310,11 +310,11 @@ public class MesosCluster extends ExternalResource {
      */
     public JSONObject getAgentStateInfo(String containerId) {
 
-        MesosSlave theSlave = null;
-        for (MesosSlave slave : getSlaves()) {
-            if (slave.getContainerId().startsWith(containerId)) {
-                if( theSlave == null ) {
-                    theSlave = slave;
+        MesosAgent theAgent = null;
+        for (MesosAgent agent : getAgents()) {
+            if (agent.getContainerId().startsWith(containerId)) {
+                if( theAgent == null ) {
+                    theAgent = agent;
                 } else {
                     throw new MinimesosException("Provided ID " + containerId + " is not enough to uniquely identify container");
                 }
@@ -323,9 +323,9 @@ public class MesosCluster extends ExternalResource {
         }
 
         try {
-            return (theSlave != null) ? theSlave.getStateInfoJSON() : null;
+            return (theAgent != null) ? theAgent.getStateInfoJSON() : null;
         } catch (UnirestException e) {
-            throw new MinimesosException("Failed to retrieve state from Mesos Agent container " + theSlave.getContainerId(), e);
+            throw new MinimesosException("Failed to retrieve state from Mesos Agent container " + theAgent.getContainerId(), e);
         }
 
     }
@@ -356,10 +356,10 @@ public class MesosCluster extends ExternalResource {
         return containers;
     }
 
-    public MesosSlave[] getSlaves() {
-        List<MesosSlave> slaves = containers.stream().filter(ClusterContainers.Filter.mesosSlave()).map(c -> (MesosSlave) c).collect(Collectors.toList());
-        MesosSlave[] array = new MesosSlave[slaves.size()];
-        return slaves.toArray(array);
+    public MesosAgent[] getAgents() {
+        List<MesosAgent> agents = containers.stream().filter(ClusterContainers.Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
+        MesosAgent[] array = new MesosAgent[agents.size()];
+        return agents.toArray(array);
     }
 
     @Override

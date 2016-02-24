@@ -15,28 +15,28 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 /**
- * Base MesosSlave class
+ * Base MesosAgent class
  */
-public class MesosSlave extends MesosContainer {
+public class MesosAgent extends MesosContainer {
 
-    private static final Logger LOGGER = Logger.getLogger(MesosSlave.class);
+    private static final Logger LOGGER = Logger.getLogger(MesosAgent.class);
 
     private final MesosAgentConfig config;
 
-    public MesosSlave(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
+    public MesosAgent(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
         this(dockerClient, zooKeeperContainer, new MesosAgentConfig());
     }
 
-    public MesosSlave(DockerClient dockerClient, ZooKeeper zooKeeperContainer, MesosAgentConfig config) {
+    public MesosAgent(DockerClient dockerClient, ZooKeeper zooKeeperContainer, MesosAgentConfig config) {
         super(dockerClient, zooKeeperContainer, config);
         this.config = config;
     }
 
-    public MesosSlave(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
+    public MesosAgent(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
         this(dockerClient, clusterId, uuid, containerId, new MesosAgentConfig());
     }
 
-    private MesosSlave(DockerClient dockerClient, String clusterId, String uuid, String containerId, MesosAgentConfig config) {
+    private MesosAgent(DockerClient dockerClient, String clusterId, String uuid, String containerId, MesosAgentConfig config) {
         super(dockerClient, clusterId, uuid, containerId, config);
         this.config = config;
     }

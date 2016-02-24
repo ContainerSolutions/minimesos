@@ -1,4 +1,4 @@
-# Mini Mesos
+# minimesos
 
 Testing infrastructure for Mesos frameworks. 
 

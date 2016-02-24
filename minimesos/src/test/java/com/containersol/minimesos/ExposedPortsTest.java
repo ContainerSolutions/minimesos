@@ -36,7 +36,7 @@ public class ExposedPortsTest {
         ClusterArchitecture architecture = new ClusterArchitecture.Builder(dockerClient)
                 .withZooKeeper()
                 .withMaster(zooKeeper -> new MesosMaster(dockerClient, zooKeeper, masterConfig))
-                .withSlave(zooKeeper -> new MesosSlave(dockerClient, zooKeeper, agentConfig))
+                .withSlave(zooKeeper -> new MesosAgent(dockerClient, zooKeeper, agentConfig))
                 .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper, marathonConfig))
                 .build();
 

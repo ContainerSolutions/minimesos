@@ -12,6 +12,7 @@ import static org.junit.Assert.*;
 public class DynamicClusterTest {
 
     private static final boolean EXPOSED_PORTS = false;
+
     protected static final DockerClient dockerClient = DockerClientFactory.build();
 
     @Test
@@ -23,7 +24,7 @@ public class DynamicClusterTest {
         ClusterArchitecture config = new ClusterArchitecture.Builder(dockerClient)
                 .withZooKeeper()
                 .withMaster(zooKeeper -> new MesosMaster(dockerClient, zooKeeper, masterConfig ))
-                .withSlave(zooKeeper -> new MesosSlave(dockerClient, zooKeeper ))
+                .withSlave(zooKeeper -> new MesosAgent(dockerClient, zooKeeper ))
                 .build();
 
         MesosCluster cluster = new MesosCluster(config);
@@ -47,16 +48,16 @@ public class DynamicClusterTest {
         ClusterArchitecture config = new ClusterArchitecture.Builder(dockerClient)
                 .withZooKeeper()
                 .withMaster(zooKeeper -> new MesosMaster(dockerClient, zooKeeper, masterConfig ))
-                .withSlave(zooKeeper -> new MesosSlave(dockerClient, zooKeeper))
+                .withSlave(zooKeeper -> new MesosAgent(dockerClient, zooKeeper))
                 .build();
 
         MesosCluster cluster = new MesosCluster(config);
         cluster.start();
 
         ZooKeeper zooKeeper = cluster.getZkContainer();
-        MesosSlave extraSlave = new MesosSlave(dockerClient, zooKeeper);
+        MesosAgent extraAgent = new MesosAgent(dockerClient, zooKeeper);
 
-        String containerId = cluster.addAndStartContainer(extraSlave);
+        String containerId = cluster.addAndStartContainer(extraAgent);
         assertNotNull("freshly started container is not found", DockerContainersUtil.getContainer(dockerClient, containerId));
 
         cluster.stop();

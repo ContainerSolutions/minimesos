@@ -74,8 +74,8 @@ public class ClusterContainers {
             return abstractContainer -> abstractContainer instanceof MesosMaster;
         }
 
-        public static Predicate<AbstractContainer> mesosSlave() {
-            return abstractContainer -> abstractContainer instanceof MesosSlave;
+        public static Predicate<AbstractContainer> mesosAgent() {
+            return abstractContainer -> abstractContainer instanceof MesosAgent;
         }
 
         public static Predicate<AbstractContainer> marathon() {
