@@ -1,6 +1,7 @@
 package com.containersol.minimesos;
 
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.config.MarathonConfig;
 import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.marathon.Marathon;
@@ -29,11 +30,14 @@ public class ExposedPortsTest {
 
         MesosAgentConfig agentConfig = new MesosAgentConfig();
 
+        MarathonConfig marathonConfig = new MarathonConfig();
+        marathonConfig.setExposedHostPort(EXPOSED_PORTS);
+
         ClusterArchitecture architecture = new ClusterArchitecture.Builder(dockerClient)
                 .withZooKeeper()
                 .withMaster(zooKeeper -> new MesosMaster(dockerClient, zooKeeper, masterConfig))
                 .withSlave(zooKeeper -> new MesosSlave(dockerClient, zooKeeper, agentConfig))
-                .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper, true))
+                .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper, marathonConfig))
                 .build();
 
         cluster = new MesosCluster(architecture);

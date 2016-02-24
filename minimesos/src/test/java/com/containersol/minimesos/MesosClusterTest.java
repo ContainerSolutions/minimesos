@@ -36,7 +36,7 @@ public class MesosClusterTest {
             .withSlave(zooKeeper -> new MesosSlave(dockerClient, zooKeeper))
             .withSlave(zooKeeper -> new MesosSlave(dockerClient, zooKeeper))
             .withSlave(zooKeeper -> new MesosSlave(dockerClient, zooKeeper))
-            .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper, true))
+            .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper))
             .build();
 
     @ClassRule

@@ -16,7 +16,7 @@ public abstract class MesosContainer extends AbstractContainer {
 
     public static final String DEFAULT_MESOS_ZK_PATH = "/mesos";
 
-    protected ZooKeeper zooKeeperContainer;
+    private ZooKeeper zooKeeperContainer;
     private final MesosContainerConfig config;
 
     protected MesosContainer(DockerClient dockerClient, ZooKeeper zooKeeperContainer, MesosContainerConfig config) {

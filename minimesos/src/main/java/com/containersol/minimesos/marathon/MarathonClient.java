@@ -1,6 +1,7 @@
 package com.containersol.minimesos.marathon;
 
 import com.containersol.minimesos.MinimesosException;
+import com.containersol.minimesos.config.MarathonConfig;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -57,7 +58,7 @@ public class MarathonClient {
     }
 
     public String getMarathonEndpoint() {
-        return "http://" + marathonIp + ":" + Marathon.MARATHON_PORT;
+        return "http://" + marathonIp + ":" + MarathonConfig.MARATHON_PORT;
     }
 
     public boolean deployApp(String appJson) {

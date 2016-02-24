@@ -1,6 +1,7 @@
 package com.containersol.minimesos.cluster;
 
 import com.containersol.minimesos.MinimesosException;
+import com.containersol.minimesos.config.MarathonConfig;
 import com.containersol.minimesos.config.MesosContainerConfig;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.container.AbstractContainer;
@@ -440,7 +441,7 @@ public class MesosCluster extends ExternalResource {
                     out.println("export MINIMESOS_MASTER=http://" + ip + ":" + MesosMasterConfig.MESOS_MASTER_PORT);
                     break;
                 case "marathon":
-                    out.println("export MINIMESOS_MARATHON=http://" + ip + ":" + Marathon.MARATHON_PORT);
+                    out.println("export MINIMESOS_MARATHON=http://" + ip + ":" + MarathonConfig.MARATHON_PORT);
                     break;
                 case "zookeeper":
                     out.println("export MINIMESOS_ZOOKEEPER=" + ZooKeeper.getFormattedZKAddress(ip));

@@ -28,7 +28,7 @@ public class CommandUp implements Command {
     private boolean exposedHostPorts = false;
 
     @Parameter(names = "--marathonImageTag", description = "The tag of the Marathon Docker image.")
-    private String marathonImageTag = Marathon.MARATHON_IMAGE_TAG;
+    private String marathonImageTag = MarathonConfig.MARATHON_IMAGE_TAG;
 
     @Parameter(names = "--mesosImageTag", description = "The tag of the Mesos master and agent Docker images.")
     private String mesosImageTag = MesosContainerConfig.MESOS_IMAGE_TAG;
@@ -209,8 +209,11 @@ public class CommandUp implements Command {
         masterConfig.setExposedHostPort(isExposedHostPorts());
         configBuilder.withMaster(zooKeeper -> new MesosMaster(dockerClient, zooKeeper, masterConfig));
 
-        // TODO: zooKeeper
-        configBuilder.withContainer(zooKeeper -> new Marathon(dockerClient, zooKeeper, getMarathonImageTag(), isExposedHostPorts()), ClusterContainers.Filter.zooKeeper());
+        // ZooKeeper
+        MarathonConfig marathonConfig = (clusterConfig.getMarathon() != null) ? clusterConfig.getMarathon() : new MarathonConfig();
+        marathonConfig.setImageTag(getMarathonImageTag());
+        marathonConfig.setExposedHostPort(isExposedHostPorts());
+        configBuilder.withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper, marathonConfig));
 
         // creation of agents
         List<MesosAgentConfig> agentConfigs = clusterConfig.getAgents();
