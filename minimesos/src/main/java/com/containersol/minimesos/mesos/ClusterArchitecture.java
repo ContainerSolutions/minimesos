@@ -185,11 +185,11 @@ public class ClusterArchitecture {
          * All default instance, but with defined resources
          * @param agentResources definition of resources
          */
-        public Builder withSlave(String agentResources) {
+        public Builder withAgent(String agentResources) {
             AgentResources resources = AgentResources.fromString(agentResources);
             MesosAgentConfig config = new MesosAgentConfig();
             config.setResources(resources);
-            return withSlave(zooKeeper -> new MesosAgent(dockerClient, zooKeeper, config));
+            return withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper, config));
         }
 
         /**

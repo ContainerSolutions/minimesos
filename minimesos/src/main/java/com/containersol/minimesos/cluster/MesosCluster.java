@@ -356,10 +356,8 @@ public class MesosCluster extends ExternalResource {
         return containers;
     }
 
-    public MesosAgent[] getAgents() {
-        List<MesosAgent> agents = containers.stream().filter(ClusterContainers.Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
-        MesosAgent[] array = new MesosAgent[agents.size()];
-        return agents.toArray(array);
+    public List<MesosAgent> getAgents() {
+        return containers.stream().filter(ClusterContainers.Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
     }
 
     @Override
@@ -390,6 +388,7 @@ public class MesosCluster extends ExternalResource {
      * @param <T>    A container of type T that extends {@link AbstractContainer}
      * @return the first container it comes across.
      */
+    @SuppressWarnings("unchecked")
     public <T extends AbstractContainer> Optional<T> getOne(java.util.function.Predicate<AbstractContainer> filter) {
         return (Optional<T>) getContainers().stream().filter(filter).findFirst();
     }
@@ -468,12 +467,25 @@ public class MesosCluster extends ExternalResource {
         marathonClient.deployApp(marathonJson);
     }
 
+    /**
+     * Returns current user directory, which is mapped to host
+     *
+     * @return container directory, which is mapped to current directory on host
+     */
     public static File getHostDir() {
         String sp = System.getProperty(MINIMESOS_HOST_DIR_PROPERTY);
         if (sp == null) {
             sp = System.getProperty("user.dir");
         }
         return new File(sp);
+    }
+
+    public static File getHostFile(String hostFilePath) {
+        File file = new File(hostFilePath);
+        if (!file.exists()) {
+            file = new File(getHostDir(), hostFilePath);
+        }
+        return file;
     }
 
     @Override

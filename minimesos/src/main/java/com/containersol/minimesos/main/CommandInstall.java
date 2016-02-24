@@ -31,23 +31,19 @@ public class CommandInstall implements Command {
     /**
      * Getting content of <code>marathonFile</code>, if provided, or standard input
      *
-     * @param minimesosHostDir current directory on the host, which is mapped to the same directory in minimesos container
      * @return content of the file or standard input
      */
-    public String getMarathonJson(File minimesosHostDir) throws IOException {
+    public String getMarathonJson() throws IOException {
 
         String fileContents = "";
         Scanner scanner;
 
         if (marathonFile != null && !marathonFile.isEmpty()) {
 
-            File jsonFile = new File(marathonFile);
+            File jsonFile = MesosCluster.getHostFile(marathonFile);
             if (!jsonFile.exists()) {
-                jsonFile = new File(minimesosHostDir, marathonFile);
-                if (!jsonFile.exists()) {
-                    String msg = String.format("Neither %s nor %s exist", new File(marathonFile).getAbsolutePath(), jsonFile.getAbsolutePath());
-                    throw new MinimesosException(msg);
-                }
+                String msg = String.format("Neither %s nor %s exist", new File(marathonFile).getAbsolutePath(), jsonFile.getAbsolutePath());
+                throw new MinimesosException(msg);
             }
 
             scanner = new Scanner(new FileReader(jsonFile));
@@ -71,7 +67,7 @@ public class CommandInstall implements Command {
 
         String marathonJson;
         try {
-            marathonJson = getMarathonJson(MesosCluster.getHostDir());
+            marathonJson = getMarathonJson();
         } catch (IOException e) {
             throw new MinimesosException("Failed to read JSON", e);
         }

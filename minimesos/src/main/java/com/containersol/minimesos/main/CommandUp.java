@@ -150,14 +150,15 @@ public class CommandUp implements Command {
             return clusterConfig;
         }
 
-        File clusterConfigFile = new File(getClusterConfigPath());
+        File clusterConfigFile = MesosCluster.getHostFile(getClusterConfigPath());
         if (clusterConfigFile.exists()) {
             configFileFound = true;
             ConfigParser configParser = new ConfigParser();
             try {
                 clusterConfig = configParser.parse(FileUtils.readFileToString(clusterConfigFile));
-            } catch (IOException e) {
-                throw new MinimesosException("Failed to load cluster configuration from " + clusterConfigFile.getAbsolutePath(), e);
+            } catch (Exception e) {
+                String msg = String.format("Failed to load cluster configuration from %s: %s", getClusterConfigPath(), e.getMessage());
+                throw new MinimesosException(msg, e);
             }
         } else {
             configFileFound = false;
@@ -220,7 +221,7 @@ public class CommandUp implements Command {
         for (int i = 0; i < getNumAgents(); i++) {
             MesosAgentConfig agentConfig = (agentConfigs.size()>i) ? agentConfigs.get(i) : new MesosAgentConfig();
             agentConfig.setImageTag( getMesosImageTag() );
-            configBuilder.withSlave(zooKeeper -> new MesosAgent(dockerClient, zooKeeper, agentConfig));
+            configBuilder.withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper, agentConfig));
         }
 
         if (getStartConsul()) {

@@ -24,7 +24,7 @@ public class DynamicClusterTest {
         ClusterArchitecture config = new ClusterArchitecture.Builder(dockerClient)
                 .withZooKeeper()
                 .withMaster(zooKeeper -> new MesosMaster(dockerClient, zooKeeper, masterConfig ))
-                .withSlave(zooKeeper -> new MesosAgent(dockerClient, zooKeeper ))
+                .withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper ))
                 .build();
 
         MesosCluster cluster = new MesosCluster(config);
@@ -48,7 +48,7 @@ public class DynamicClusterTest {
         ClusterArchitecture config = new ClusterArchitecture.Builder(dockerClient)
                 .withZooKeeper()
                 .withMaster(zooKeeper -> new MesosMaster(dockerClient, zooKeeper, masterConfig ))
-                .withSlave(zooKeeper -> new MesosAgent(dockerClient, zooKeeper))
+                .withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper))
                 .build();
 
         MesosCluster cluster = new MesosCluster(config);

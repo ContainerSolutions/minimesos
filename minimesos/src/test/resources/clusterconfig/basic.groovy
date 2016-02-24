@@ -1,4 +1,5 @@
 package clusterconfig
+
 minimesos {
 
     exposePorts 		= true

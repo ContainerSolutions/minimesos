@@ -3,6 +3,7 @@ package com.containersol.minimesos.main;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 import org.slf4j.Logger;
@@ -19,6 +20,9 @@ import java.util.Map;
 public class Main {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
+
+    private static final int RC_OK = 0;
+    private static final int RC_ERR = 1;
 
     @Parameter(names = {"--help", "-help", "-?", "-h"}, description = "Show help")
     private boolean help = false;
@@ -37,7 +41,15 @@ public class Main {
         main.addCommand(new CommandInstall());
         main.addCommand(new CommandState());
         main.addCommand(new CommandInfo());
-        main.run(args);
+        try {
+            int rc = main.run(args);
+            if( RC_OK != rc ) {
+                System.exit(rc);
+            }
+        } catch (MinimesosException mme) {
+            LOGGER.error( mme.getMessage() );
+            System.exit(RC_ERR);
+        }
     }
 
     public Main() {
@@ -49,7 +61,7 @@ public class Main {
         this.output = output;
     }
 
-    public void run(String[] args) {
+    public int run(String[] args) {
 
         for (Map.Entry<String, Command> entry : commands.entrySet()) {
             jc.addCommand(entry.getKey(), entry.getValue());
@@ -60,28 +72,30 @@ public class Main {
         } catch (Exception e) {
             LOGGER.error("Failed to parse parameters. " + e.getMessage() + "\n");
             printUsage(null);
-            return;
+            return RC_ERR;
         }
 
         if (jc.getParameters().get(0).isAssigned()) {
             printUsage(null);
-            return;
+            return RC_OK;
         }
 
         if (jc.getParsedCommand() == null) {
             MesosCluster cluster = ClusterRepository.loadCluster();
             if (cluster != null) {
                 cluster.printServiceUrls(output);
+                return RC_OK;
             } else {
                 printUsage(null);
+                return RC_ERR;
             }
-            return;
         }
 
         Command parsedCommand = commands.get(jc.getParsedCommand());
 
         if (parsedCommand == null) {
             LOGGER.error("No such command: " + jc.getParsedCommand());
+            return RC_ERR;
         } else if (CommandHelp.CLINAME.equals(parsedCommand.getName())) {
             printUsage(null);
         } else {
@@ -89,9 +103,11 @@ public class Main {
                 parsedCommand.execute();
             } else {
                 printUsage(jc.getParsedCommand());
+                return RC_ERR;
             }
         }
 
+        return RC_OK;
     }
 
     private void printUsage(String commandName) {

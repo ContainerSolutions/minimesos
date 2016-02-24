@@ -62,7 +62,7 @@ public class NewMesosClusterTest {
     public void dockerExposeResourcesPorts() throws Exception {
         String mesosResourceString = MesosAgentConfig.DEFAULT_PORT_RESOURCES;
         ArrayList<Integer> ports = ResourceUtil.parsePorts(mesosResourceString);
-        List<MesosAgent> containers = Arrays.asList(cluster.getAgents());
+        List<MesosAgent> containers = cluster.getAgents();
         for (MesosAgent container : containers) {
             InspectContainerResponse response = dockerClient.inspectContainerCmd(container.getContainerId()).exec();
             Map bindings = response.getNetworkSettings().getPorts().getBindings();
