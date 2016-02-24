@@ -1,6 +1,7 @@
 package com.containersol.minimesos.cluster;
 
 import com.containersol.minimesos.MinimesosException;
+import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.config.MarathonConfig;
 import com.containersol.minimesos.config.MesosContainerConfig;
 import com.containersol.minimesos.config.MesosMasterConfig;
@@ -446,7 +447,7 @@ public class MesosCluster extends ExternalResource {
                     out.println("export MINIMESOS_ZOOKEEPER=" + ZooKeeper.getFormattedZKAddress(ip));
                     break;
                 case "consul":
-                    out.println("export MINIMESOS_CONSUL=http://" + ip + ":" + Consul.DEFAULT_CONSUL_PORT);
+                    out.println("export MINIMESOS_CONSUL=http://" + ip + ":" + ConsulConfig.DEFAULT_CONSUL_PORT);
                     out.println("export MINIMESOS_CONSUL_IP=" + ip);
                     break;
             }

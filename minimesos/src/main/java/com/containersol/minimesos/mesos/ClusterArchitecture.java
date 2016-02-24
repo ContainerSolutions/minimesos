@@ -1,13 +1,12 @@
 package com.containersol.minimesos.mesos;
 
-import com.containersol.minimesos.config.AgentResources;
-import com.containersol.minimesos.config.MesosAgentConfig;
-import com.containersol.minimesos.config.ZooKeeperConfig;
+import com.containersol.minimesos.config.*;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.marathon.Marathon;
 import com.github.dockerjava.api.DockerClient;
 import org.apache.log4j.Logger;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -73,7 +72,9 @@ public class ClusterArchitecture {
      * A builder to help construct the cluster. Use the <code>with*</code> methods to add containers.
      */
     public static class Builder {
+
         private static final Logger LOGGER = Logger.getLogger(ClusterArchitecture.class);
+
         private final ClusterArchitecture clusterArchitecture;
         private final DockerClient dockerClient;
 
@@ -90,6 +91,37 @@ public class ClusterArchitecture {
         public Builder(DockerClient dockerClient) {
             this.dockerClient = dockerClient;
             this.clusterArchitecture = new ClusterArchitecture(dockerClient);
+        }
+
+        /**
+         * Creates architecture for default cluster configuration
+         *
+         * @param clusterConfig loaded from file cluster configuration
+         * @return reference to the given builder, so the method call can be chained
+         */
+        static public ClusterArchitecture.Builder createCluster(ClusterConfig clusterConfig) {
+
+            Builder configBuilder = new Builder();
+            DockerClient dockerClient = configBuilder.getDockerClient();
+
+            configBuilder.withZooKeeper(clusterConfig.getZookeeper());
+            configBuilder.withMaster(zooKeeper -> new MesosMaster(dockerClient, zooKeeper, clusterConfig.getMaster()));
+            configBuilder.withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper, clusterConfig.getMarathon()));
+
+            // creation of agents
+            List<MesosAgentConfig> agentConfigs = clusterConfig.getAgents();
+            for (MesosAgentConfig agentConfig : agentConfigs) {
+                configBuilder.withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper, agentConfig));
+            }
+
+            // Consul (optional)
+            ConsulConfig consulConfig = clusterConfig.getConsul();
+            if (consulConfig != null) {
+                configBuilder.withConsul(new Consul(dockerClient, consulConfig));
+            }
+
+            return configBuilder;
+
         }
 
         /**
@@ -139,13 +171,6 @@ public class ClusterArchitecture {
         public Builder withZooKeeper(ZooKeeper zooKeeper) {
             getContainers().add(zooKeeper); // You don't need a zookeeper container to add a zookeeper container
             return this;
-        }
-
-        /**
-         * Provide consul
-         */
-        public Builder withConsul() {
-            return withConsul(new Consul(dockerClient));
         }
 
         /**

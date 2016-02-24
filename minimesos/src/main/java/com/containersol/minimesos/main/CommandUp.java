@@ -14,6 +14,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -43,6 +44,10 @@ public class CommandUp implements Command {
     @Parameter(names = "--timeout", description = "Time to wait for a container to get responsive, in seconds.")
     private int timeout = MesosCluster.DEFAULT_TIMEOUT_SECS;
 
+    /**
+     * As number of agents can be determined either in config file or command line parameters, it defaults to invalid value.
+     * Logic to select the actual number of agent is in the field getter
+     */
     @Parameter(names = "--num-agents", description = "Number of agents to start")
     private int numAgents = -1;
 
@@ -175,60 +180,60 @@ public class CommandUp implements Command {
      */
     public ClusterArchitecture getClusterArchitecture() {
 
-        DockerClient dockerClient = DockerClientFactory.build();
-        ClusterArchitecture.Builder configBuilder = new ClusterArchitecture.Builder(dockerClient);
-
         ClusterConfig clusterConfig = getClusterConfig();
         if( clusterConfig == null ) {
+            // default cluster configuration is created
             clusterConfig = new ClusterConfig();
         }
-        configBuilder = createCluster(configBuilder, clusterConfig);
+        updateWithParameters( clusterConfig );
+
+
+        ClusterArchitecture.Builder configBuilder = ClusterArchitecture.Builder.createCluster(clusterConfig);
 
         return configBuilder.build();
 
     }
 
     /**
-     * Creates architecture for default cluster configuration
+     * Adjust cluster configuration according to CLI parameters
      *
-     * @param configBuilder builder to extend
-     * @param clusterConfig loaded from file cluster configuration
-     * @return reference to the given builder, so the method call can be chained
+     * @param clusterConfig cluster configuration to update
      */
-    private ClusterArchitecture.Builder createCluster(ClusterArchitecture.Builder configBuilder, ClusterConfig clusterConfig) {
+    private void updateWithParameters(ClusterConfig clusterConfig) {
 
-        DockerClient dockerClient = configBuilder.getDockerClient();
-
-        // ZooKeeper configuration
+        // ZooKeeper
         ZooKeeperConfig zooKeeperConfig = (clusterConfig.getZookeeper() != null) ? clusterConfig.getZookeeper() : new ZooKeeperConfig();
         zooKeeperConfig.setImageTag(getZooKeeperImageTag());
-        configBuilder.withZooKeeper(zooKeeperConfig);
+        clusterConfig.setZookeeper(zooKeeperConfig);
 
         // Mesos Master
         MesosMasterConfig masterConfig = (clusterConfig.getMaster() != null) ? clusterConfig.getMaster() : new MesosMasterConfig();
         masterConfig.setImageTag(getMesosImageTag());
         masterConfig.setExposedHostPort(isExposedHostPorts());
-        configBuilder.withMaster(zooKeeper -> new MesosMaster(dockerClient, zooKeeper, masterConfig));
+        clusterConfig.setMaster(masterConfig);
 
-        // ZooKeeper
+        // Marathon
         MarathonConfig marathonConfig = (clusterConfig.getMarathon() != null) ? clusterConfig.getMarathon() : new MarathonConfig();
         marathonConfig.setImageTag(getMarathonImageTag());
         marathonConfig.setExposedHostPort(isExposedHostPorts());
-        configBuilder.withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper, marathonConfig));
+        clusterConfig.setMarathon(marathonConfig);
 
         // creation of agents
         List<MesosAgentConfig> agentConfigs = clusterConfig.getAgents();
+        List<MesosAgentConfig> updatedConfigs = new ArrayList<>();
         for (int i = 0; i < getNumAgents(); i++) {
             MesosAgentConfig agentConfig = (agentConfigs.size()>i) ? agentConfigs.get(i) : new MesosAgentConfig();
             agentConfig.setImageTag( getMesosImageTag() );
-            configBuilder.withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper, agentConfig));
+            updatedConfigs.add(agentConfig);
         }
+        clusterConfig.setAgents(updatedConfigs);
 
-        if (getStartConsul()) {
-            configBuilder.withConsul();
+        // Consul (optional)
+        ConsulConfig consulConfig = clusterConfig.getConsul();
+        if( consulConfig == null && getStartConsul() ) {
+            consulConfig = new ConsulConfig();
         }
-
-        return configBuilder;
+        clusterConfig.setConsul(consulConfig);
 
     }
 

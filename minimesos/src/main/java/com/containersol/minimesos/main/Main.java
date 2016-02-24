@@ -21,8 +21,8 @@ public class Main {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
-    private static final int RC_OK = 0;
-    private static final int RC_ERR = 1;
+    private static final int EXIT_CODE_OK = 0;
+    private static final int EXIT_CODE_ERR = 1;
 
     @Parameter(names = {"--help", "-help", "-?", "-h"}, description = "Show help")
     private boolean help = false;
@@ -43,12 +43,12 @@ public class Main {
         main.addCommand(new CommandInfo());
         try {
             int rc = main.run(args);
-            if( RC_OK != rc ) {
+            if( EXIT_CODE_OK != rc ) {
                 System.exit(rc);
             }
         } catch (MinimesosException mme) {
             LOGGER.error( mme.getMessage() );
-            System.exit(RC_ERR);
+            System.exit(EXIT_CODE_ERR);
         }
     }
 
@@ -72,22 +72,22 @@ public class Main {
         } catch (Exception e) {
             LOGGER.error("Failed to parse parameters. " + e.getMessage() + "\n");
             printUsage(null);
-            return RC_ERR;
+            return EXIT_CODE_ERR;
         }
 
         if (jc.getParameters().get(0).isAssigned()) {
             printUsage(null);
-            return RC_OK;
+            return EXIT_CODE_OK;
         }
 
         if (jc.getParsedCommand() == null) {
             MesosCluster cluster = ClusterRepository.loadCluster();
             if (cluster != null) {
                 cluster.printServiceUrls(output);
-                return RC_OK;
+                return EXIT_CODE_OK;
             } else {
                 printUsage(null);
-                return RC_ERR;
+                return EXIT_CODE_ERR;
             }
         }
 
@@ -95,7 +95,7 @@ public class Main {
 
         if (parsedCommand == null) {
             LOGGER.error("No such command: " + jc.getParsedCommand());
-            return RC_ERR;
+            return EXIT_CODE_ERR;
         } else if (CommandHelp.CLINAME.equals(parsedCommand.getName())) {
             printUsage(null);
         } else {
@@ -103,11 +103,11 @@ public class Main {
                 parsedCommand.execute();
             } else {
                 printUsage(jc.getParsedCommand());
-                return RC_ERR;
+                return EXIT_CODE_ERR;
             }
         }
 
-        return RC_OK;
+        return EXIT_CODE_OK;
     }
 
     private void printUsage(String commandName) {

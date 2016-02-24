@@ -26,7 +26,7 @@ public class CommandUpTest {
         ClusterContainers clusterContainers = architecture.getClusterContainers();
         assertNotNull("cluster containers are not loaded", clusterContainers);
 
-        assertTrue("zooker is required component of cluster", clusterContainers.isPresent(ClusterContainers.Filter.zooKeeper()));
+        assertTrue("ZooKeeper is required component of cluster", clusterContainers.isPresent(ClusterContainers.Filter.zooKeeper()));
         assertTrue("Mesos Master is required component of cluster", clusterContainers.isPresent(ClusterContainers.Filter.mesosMaster()));
 
     }
@@ -43,7 +43,7 @@ public class CommandUpTest {
         ClusterContainers clusterContainers = architecture.getClusterContainers();
         assertNotNull("cluster containers are not loaded", clusterContainers);
 
-        assertTrue("zooker is required component of cluster", clusterContainers.isPresent(ClusterContainers.Filter.zooKeeper()));
+        assertTrue("ZooKeeper is required component of cluster", clusterContainers.isPresent(ClusterContainers.Filter.zooKeeper()));
         assertTrue("Mesos Master is required component of cluster", clusterContainers.isPresent(ClusterContainers.Filter.mesosMaster()));
 
         List<MesosAgent> agents = clusterContainers.getContainers().stream().filter(ClusterContainers.Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
@@ -63,7 +63,7 @@ public class CommandUpTest {
         ClusterContainers clusterContainers = architecture.getClusterContainers();
         assertNotNull("cluster containers are not loaded", clusterContainers);
 
-        assertTrue("zooker is required component of cluster", clusterContainers.isPresent(ClusterContainers.Filter.zooKeeper()));
+        assertTrue("ZooKeeper is required component of cluster", clusterContainers.isPresent(ClusterContainers.Filter.zooKeeper()));
         assertTrue("Mesos Master is required component of cluster", clusterContainers.isPresent(ClusterContainers.Filter.mesosMaster()));
 
         List<MesosAgent> agents = clusterContainers.getContainers().stream().filter(ClusterContainers.Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());

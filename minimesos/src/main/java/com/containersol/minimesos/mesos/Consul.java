@@ -1,5 +1,6 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -10,13 +11,11 @@ import com.github.dockerjava.api.model.ExposedPort;
  */
 public class Consul extends AbstractContainer {
 
-    public static final String CONSUL_IMAGE_NAME = "containersol/consul-server";
-    public static final String CONSUL_TAG_NAME = "0.6";
+    private final ConsulConfig config;
 
-    public static final int DEFAULT_CONSUL_PORT= 8500;
-
-    public Consul(DockerClient dockerClient) {
+    public Consul(DockerClient dockerClient, ConsulConfig config) {
         super(dockerClient);
+        this.config = config;
     }
 
     @Override
@@ -26,7 +25,7 @@ public class Consul extends AbstractContainer {
 
     @Override
     protected void pullImage() {
-        pullImage(CONSUL_IMAGE_NAME, CONSUL_TAG_NAME);
+        pullImage(config.getImageName(), config.getImageTag());
     }
 
     @Override
@@ -36,8 +35,8 @@ public class Consul extends AbstractContainer {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        return dockerClient.createContainerCmd(CONSUL_IMAGE_NAME + ":" + CONSUL_TAG_NAME)
+        return dockerClient.createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withName( getName() )
-                .withExposedPorts(new ExposedPort(DEFAULT_CONSUL_PORT));
+                .withExposedPorts(new ExposedPort(ConsulConfig.DEFAULT_CONSUL_PORT));
     }
 }
