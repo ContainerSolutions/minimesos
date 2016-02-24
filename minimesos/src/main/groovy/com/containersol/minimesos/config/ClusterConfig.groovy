@@ -17,21 +17,21 @@ class ClusterConfig extends GroovyBlock {
 
     def clusterName = "minimesos-test"
 
-    MasterConfig master = null
-    List<AgentConfig> agents = new ArrayList<>()
+    MesosMasterConfig master = null
+    List<MesosAgentConfig> agents = new ArrayList<>()
     ZooKeeperConfig zookeeper = null
     MarathonConfig marathon = null
 
-    def master(@DelegatesTo(MasterConfig) Closure cl) {
+    def master(@DelegatesTo(MesosMasterConfig) Closure cl) {
         if (master != null) {
             throw new RuntimeException("Multiple Masters are not supported in this version yet")
         }
-        master = new MasterConfig();
+        master = new MesosMasterConfig();
         delegateTo(master, cl)
     }
 
-    def agent(@DelegatesTo(AgentConfig) Closure cl) {
-        def agent = new AgentConfig()
+    def agent(@DelegatesTo(MesosAgentConfig) Closure cl) {
+        def agent = new MesosAgentConfig()
         delegateTo(agent, cl)
         agents.add(agent)
     }

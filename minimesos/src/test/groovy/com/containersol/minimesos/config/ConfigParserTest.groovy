@@ -82,7 +82,6 @@ public class ConfigParserTest {
         String config = """
                 minimesos {
                     agent {
-                        loggingLevel = "WARN"
                     }
                 }
         """
@@ -90,8 +89,8 @@ public class ConfigParserTest {
         ClusterConfig dsl = parser.parse(config)
         assertEquals( 1, dsl.agents.size() )
 
-        AgentConfig agent = dsl.agents.get(0)
-        assertEquals( "WARN", agent.loggingLevel )
+        MesosAgentConfig agent = dsl.agents.get(0)
+        assertNotNull(agent)
 
     }
 
@@ -248,7 +247,7 @@ public class ConfigParserTest {
         ClusterConfig dsl = parser.parse(config)
         assertEquals( 1, dsl.agents.size() )
 
-        AgentConfig agent = dsl.agents.get(0)
+        MesosAgentConfig agent = dsl.agents.get(0)
 
         assertEquals( "4", agent.resources.cpus["*"].value )
         assertEquals( "1", agent.resources.cpus["logstash"].value )

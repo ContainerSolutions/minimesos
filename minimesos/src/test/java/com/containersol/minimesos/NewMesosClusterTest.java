@@ -1,6 +1,8 @@
 package com.containersol.minimesos;
 
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.config.AgentResources;
+import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.mesos.*;
 import com.containersol.minimesos.util.ResourceUtil;
@@ -51,14 +53,14 @@ public class NewMesosClusterTest {
     public void mesosResourcesCorrect() throws Exception {
         JSONObject stateInfo = cluster.getMasterContainer().getStateInfoJSON();
         for (int i = 0; i < 3; i++) {
-            assertEquals((long) 0.2, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getLong("cpus"));
+            assertEquals( AgentResources.DEFAULT_CPU.getValue(), stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getDouble("cpus"));
             assertEquals(256, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getInt("mem"));
         }
     }
 
     @Test
     public void dockerExposeResourcesPorts() throws Exception {
-        String mesosResourceString = MesosSlave.DEFAULT_PORT_RESOURCES;
+        String mesosResourceString = MesosAgentConfig.DEFAULT_PORT_RESOURCES;
         ArrayList<Integer> ports = ResourceUtil.parsePorts(mesosResourceString);
         List<MesosSlave> containers = Arrays.asList(cluster.getSlaves());
         for (MesosSlave container : containers) {

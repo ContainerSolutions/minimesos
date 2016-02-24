@@ -1,6 +1,8 @@
 package com.containersol.minimesos.cluster;
 
 import com.containersol.minimesos.MinimesosException;
+import com.containersol.minimesos.config.MesosContainerConfig;
+import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.container.ContainerName;
 import com.containersol.minimesos.marathon.Marathon;
@@ -108,7 +110,7 @@ public class MesosCluster extends ExternalResource {
                         Container.Port[] ports = container.getPorts();
                         if (ports != null) {
                             for (Container.Port port : ports) {
-                                if (port.getIp() != null && port.getPrivatePort() == MesosMaster.MESOS_MASTER_PORT) {
+                                if (port.getIp() != null && port.getPrivatePort() == MesosMasterConfig.MESOS_MASTER_PORT) {
                                     setExposedHostPorts(true);
                                     master.setExposedHostPort(true);
                                 }
@@ -174,7 +176,7 @@ public class MesosCluster extends ExternalResource {
     public void info(PrintStream out) {
         if (clusterId != null) {
             out.println("Minimesos cluster is running: " + clusterId);
-            out.println("Mesos version: " + MesosContainer.MESOS_IMAGE_TAG.substring(0, MesosContainer.MESOS_IMAGE_TAG.indexOf("-")));
+            out.println("Mesos version: " + MesosContainerConfig.MESOS_IMAGE_TAG.substring(0, MesosContainerConfig.MESOS_IMAGE_TAG.indexOf("-")));
             printServiceUrls(out);
         }
     }
@@ -435,7 +437,7 @@ public class MesosCluster extends ExternalResource {
 
             switch (container.getRole()) {
                 case "master":
-                    out.println("export MINIMESOS_MASTER=http://" + ip + ":" + MesosMaster.MESOS_MASTER_PORT);
+                    out.println("export MINIMESOS_MASTER=http://" + ip + ":" + MesosMasterConfig.MESOS_MASTER_PORT);
                     break;
                 case "marathon":
                     out.println("export MINIMESOS_MARATHON=http://" + ip + ":" + Marathon.MARATHON_PORT);

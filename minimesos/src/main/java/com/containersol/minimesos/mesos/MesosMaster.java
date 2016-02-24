@@ -1,8 +1,10 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.config.MesosMasterConfig;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.Ports;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONObject;
 
@@ -14,39 +16,36 @@ import java.util.TreeMap;
  */
 public class MesosMaster extends MesosContainer {
 
-    public static final String MESOS_MASTER_IMAGE = "containersol/mesos-master";
-    public static final int MESOS_MASTER_PORT = 5050;
-
-    private String mesosImageName = MESOS_MASTER_IMAGE;
-    private boolean exposedHostPort = false;
+    private final MesosMasterConfig config;
 
     public MesosMaster(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
-        super(dockerClient, zooKeeperContainer);
+        this(dockerClient, zooKeeperContainer, new MesosMasterConfig());
+    }
+
+    public MesosMaster(DockerClient dockerClient, ZooKeeper zooKeeperContainer, MesosMasterConfig config) {
+        super(dockerClient, zooKeeperContainer, config);
+        this.config = config;
     }
 
     public MesosMaster(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
-        super(dockerClient, clusterId, uuid, containerId);
+        this(dockerClient, clusterId, uuid, containerId, new MesosMasterConfig());
     }
 
-    @Override
-    public String getMesosImageName() {
-        return mesosImageName;
+    private MesosMaster(DockerClient dockerClient, String clusterId, String uuid, String containerId, MesosMasterConfig config) {
+        super(dockerClient, clusterId, uuid, containerId, config);
+        this.config = config;
     }
 
     @Override
     public int getPortNumber() {
-        return MESOS_MASTER_PORT;
-    }
-
-    public void setMesosImageName( String mesosImageName ) {
-        this.mesosImageName = mesosImageName;
+        return MesosMasterConfig.MESOS_MASTER_PORT;
     }
 
     public boolean isExposedHostPort() {
-        return exposedHostPort;
+        return config.isExposedHostPort();
     }
     public void setExposedHostPort(boolean exposedHostPort) {
-        this.exposedHostPort = exposedHostPort;
+        config.setExposedHostPort(exposedHostPort);
     }
 
     @Override
@@ -65,10 +64,19 @@ public class MesosMaster extends MesosContainer {
     @Override
     protected CreateContainerCmd dockerCommand() {
 
+        int port = getPortNumber();
+        ExposedPort exposedPort = ExposedPort.tcp(port);
+
+        Ports portBindings = new Ports();
+        if (isExposedHostPort()) {
+            portBindings.bind(exposedPort, Ports.Binding(port));
+        }
+
         return dockerClient.createContainerCmd(getMesosImageName() + ":" + getMesosImageTag())
                 .withName( getName() )
-                .withExposedPorts(new ExposedPort(MESOS_MASTER_PORT))
-                .withEnv(createMesosLocalEnvironment());
+                .withExposedPorts(new ExposedPort(getPortNumber()))
+                .withEnv(createMesosLocalEnvironment())
+                .withPortBindings(portBindings);
     }
 
     public Map<String, String> getFlags() throws UnirestException {

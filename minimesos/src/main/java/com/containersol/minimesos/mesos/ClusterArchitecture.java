@@ -1,5 +1,7 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.config.AgentResources;
+import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.marathon.Marathon;
@@ -184,7 +186,10 @@ public class ClusterArchitecture {
          * @param slaveResources definition of resources
          */
         public Builder withSlave(String slaveResources) {
-            return withSlave(zooKeeper -> new MesosSlave(dockerClient, zooKeeper, slaveResources));
+            AgentResources resources = AgentResources.fromString(slaveResources);
+            MesosAgentConfig config = new MesosAgentConfig();
+            config.setResources(resources);
+            return withSlave(zooKeeper -> new MesosSlave(dockerClient, zooKeeper, config));
         }
 
         /**
