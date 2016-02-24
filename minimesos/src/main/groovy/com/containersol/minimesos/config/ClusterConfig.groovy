@@ -15,7 +15,7 @@ class ClusterConfig extends GroovyBlock {
     int timeout = 60
     String mesosVersion = "0.25"
 
-    def clusterName = "minimesos-test"
+    def clusterName = "minimesos"
 
     MesosMasterConfig master = null
     List<MesosAgentConfig> agents = new ArrayList<>()

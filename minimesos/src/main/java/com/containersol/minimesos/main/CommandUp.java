@@ -6,13 +6,10 @@ import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.*;
-import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.mesos.*;
-import com.github.dockerjava.api.DockerClient;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -135,7 +132,7 @@ public class CommandUp implements Command {
         startedCluster = new MesosCluster(clusterArchitecture);
         startedCluster.start(getTimeout());
         startedCluster.waitForState(state -> state != null, 60);
-        startedCluster.setExposedHostPorts( isExposedHostPorts() );
+        startedCluster.setExposedHostPorts(isExposedHostPorts());
 
         startedCluster.printServiceUrls(output);
 
@@ -151,7 +148,7 @@ public class CommandUp implements Command {
      */
     public ClusterConfig getClusterConfig() {
 
-        if( configFileFound != null ) {
+        if (configFileFound != null) {
             return clusterConfig;
         }
 
@@ -181,11 +178,11 @@ public class CommandUp implements Command {
     public ClusterArchitecture getClusterArchitecture() {
 
         ClusterConfig clusterConfig = getClusterConfig();
-        if( clusterConfig == null ) {
+        if (clusterConfig == null) {
             // default cluster configuration is created
             clusterConfig = new ClusterConfig();
         }
-        updateWithParameters( clusterConfig );
+        updateWithParameters(clusterConfig);
 
 
         ClusterArchitecture.Builder configBuilder = ClusterArchitecture.Builder.createCluster(clusterConfig);
@@ -222,15 +219,15 @@ public class CommandUp implements Command {
         List<MesosAgentConfig> agentConfigs = clusterConfig.getAgents();
         List<MesosAgentConfig> updatedConfigs = new ArrayList<>();
         for (int i = 0; i < getNumAgents(); i++) {
-            MesosAgentConfig agentConfig = (agentConfigs.size()>i) ? agentConfigs.get(i) : new MesosAgentConfig();
-            agentConfig.setImageTag( getMesosImageTag() );
+            MesosAgentConfig agentConfig = (agentConfigs.size() > i) ? agentConfigs.get(i) : new MesosAgentConfig();
+            agentConfig.setImageTag(getMesosImageTag());
             updatedConfigs.add(agentConfig);
         }
         clusterConfig.setAgents(updatedConfigs);
 
         // Consul (optional)
         ConsulConfig consulConfig = clusterConfig.getConsul();
-        if( consulConfig == null && getStartConsul() ) {
+        if (consulConfig == null && getStartConsul()) {
             consulConfig = new ConsulConfig();
         }
         clusterConfig.setConsul(consulConfig);
