@@ -3,20 +3,19 @@ package com.containersol.minimesos.config
 import groovy.util.logging.Slf4j
 
 import java.util.regex.Matcher
-import java.util.regex.Pattern
 
 @Slf4j
 class AgentResources extends GroovyBlock {
 
-    static public final ResourceDef DEFAULT_CPU = new ResourceDef("*", (double) 0.2)
-    static public final ResourceDef DEFAULT_MEM = new ResourceDef("*", 256)
-    static public final ResourceDef DEFAULT_DISK = new ResourceDef("*", 200)
-    static public final ResourceDef DEFAULT_PORTS = new ResourceDef("*", "[31000-32000]")
+    static public final ResourceDefScalar DEFAULT_CPU = new ResourceDefScalar("*", 0.2)
+    static public final ResourceDefScalar DEFAULT_MEM = new ResourceDefScalar("*", 256)
+    static public final ResourceDefScalar DEFAULT_DISK = new ResourceDefScalar("*", 200)
+    static public final ResourceDefRanges DEFAULT_PORTS = new ResourceDefRanges("*", "[31000-32000]")
 
-    HashMap<String, ResourceDef> cpus
-    HashMap<String, ResourceDef> mems
-    HashMap<String, ResourceDef> disks
-    HashMap<String, ResourceDef> ports
+    HashMap<String, ResourceDefScalar> cpus
+    HashMap<String, ResourceDefScalar> mems
+    HashMap<String, ResourceDefScalar> disks
+    HashMap<String, ResourceDefRanges> ports
 
     public AgentResources() {
         this(true)
@@ -27,7 +26,7 @@ class AgentResources extends GroovyBlock {
         mems = new HashMap<>()
         disks = new HashMap<>()
         ports = new HashMap<>()
-        if( defaults ) {
+        if (defaults) {
             setDefaults()
         }
     }
@@ -50,25 +49,25 @@ class AgentResources extends GroovyBlock {
         AgentResources resources = new AgentResources(false)
 
         String[] split = strResources.split(";")
-        for( String str : split ) {
+        for (String str : split) {
             Matcher matcher = str.trim() =~ pattern
-            if( matcher.matches() && (matcher.groupCount() == 3) ) {
+            if (matcher.matches() && (matcher.groupCount() == 3)) {
                 String type = matcher.group(1)
                 String role = matcher.group(2)
                 String value = matcher.group(3)
 
                 switch (type) {
                     case "ports":
-                        resources.ports.put(role, new ResourceDef(role, value))
+                        resources.ports.put(role, new ResourceDefRanges(role, value))
                         break
                     case "cpus":
-                        resources.cpus.put(role, new ResourceDef(role, Double.valueOf(value)))
+                        resources.cpus.put(role, new ResourceDefScalar(role, Double.valueOf(value)))
                         break
                     case "mem":
-                        resources.mems.put(role, new ResourceDef(role, Integer.valueOf(value)))
+                        resources.mems.put(role, new ResourceDefScalar(role, Double.valueOf(value)))
                         break
                     case "disk":
-                        resources.disks.put(role, new ResourceDef(role, Integer.valueOf(value)))
+                        resources.disks.put(role, new ResourceDefScalar(role, Double.valueOf(value)))
                         break
                 }
 
@@ -79,22 +78,23 @@ class AgentResources extends GroovyBlock {
     }
 
     def cpu(@DelegatesTo(ResourceDef) Closure cl) {
-        addResource(cpus, loadResourceDef(cl))
+        addResource(cpus, loadResourceDef(cl, ResourceDefScalar.class))
     }
 
     def mem(@DelegatesTo(ResourceDef) Closure cl) {
-        addResource(mems, loadResourceDef(cl))
+        addResource(mems, loadResourceDef(cl, ResourceDefScalar.class))
     }
 
     def disk(@DelegatesTo(ResourceDef) Closure cl) {
-        addResource(disks, loadResourceDef(cl))
-    }
-    def ports(@DelegatesTo(ResourceDef) Closure cl) {
-        addResource(ports, loadResourceDef(cl))
+        addResource(disks, loadResourceDef(cl, ResourceDefScalar.class))
     }
 
-    ResourceDef loadResourceDef(Closure cl) {
-        ResourceDef resource = new ResourceDef()
+    def ports(@DelegatesTo(ResourceDef) Closure cl) {
+        addResource(ports, loadResourceDef(cl, ResourceDefRanges.class))
+    }
+
+    ResourceDef loadResourceDef(Closure cl, Class<ResourceDef> resourceDefClass) {
+        ResourceDef resource = resourceDefClass.newInstance()
         delegateTo(resource, cl)
         return resource
     }
@@ -128,7 +128,7 @@ class AgentResources extends GroovyBlock {
         if (builder.length() > 0) {
             builder.append("; ")
         }
-        builder.append(res).append("(").append(resourceDef.role).append("):").append(resourceDef.value);
+        builder.append(res).append("(").append(resourceDef.role).append("):").append(resourceDef.valueAsString());
     }
 
     static void addResource(HashMap<String, ResourceDef> resources, ResourceDef resource) {

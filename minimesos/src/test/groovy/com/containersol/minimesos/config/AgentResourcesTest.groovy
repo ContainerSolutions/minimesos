@@ -11,12 +11,7 @@ public class AgentResourcesTest {
 
         AgentResources resources = new AgentResources()
         String asString = resources.asMesosString()
-
-        String expected = String.format("ports(*):%s; cpus(*):%s; mem(*):%s; disk(*):%s",
-                AgentResources.DEFAULT_PORTS.value,
-                AgentResources.DEFAULT_CPU.value,
-                AgentResources.DEFAULT_MEM.value,
-                AgentResources.DEFAULT_DISK.value)
+        String expected = "ports(*):[31000-32000]; cpus(*):0.2; mem(*):256; disk(*):200"
 
         assertEquals(expected, asString)
 
@@ -45,7 +40,7 @@ public class AgentResourcesTest {
 
         assertEquals(1, resources.cpus.size())
         double actual = resources.cpus["*"].value
-        assertEquals(1.2, actual, 0.001 )
+        assertEquals(1.2, actual, 0.001)
 
         assertEquals(0, resources.disks.size())
         assertEquals(0, resources.mems.size())

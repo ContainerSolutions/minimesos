@@ -1,17 +1,19 @@
 package com.containersol.minimesos.config
 
-class ResourceDef extends GroovyBlock {
+/**
+ * Check http://mesos.apache.org/documentation/latest/attributes-resources/ for possible types of values
+ */
+abstract class ResourceDef extends GroovyBlock {
 
     String role
-    def value
 
-    public ResourceDef() {
-
+    protected ResourceDef() {
     }
 
-    public ResourceDef(String role, def value) {
+    protected ResourceDef(String role) {
         this.role = role
-        this.value = value
     }
+
+    abstract public String valueAsString()
 
 }

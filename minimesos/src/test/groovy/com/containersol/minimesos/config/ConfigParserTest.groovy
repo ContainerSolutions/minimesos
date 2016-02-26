@@ -19,7 +19,7 @@ public class ConfigParserTest {
     @Test
     public void testClusterName() {
         String config =
-        """
+                """
         minimesos {
 
             clusterName = "testcluster"
@@ -33,7 +33,7 @@ public class ConfigParserTest {
     @Test
     public void testTimeout() {
         String config =
-        """
+                """
         minimesos {
 
             timeout = 500
@@ -87,7 +87,7 @@ public class ConfigParserTest {
         """
 
         ClusterConfig dsl = parser.parse(config)
-        assertEquals( 1, dsl.agents.size() )
+        assertEquals(1, dsl.agents.size())
 
         MesosAgentConfig agent = dsl.agents.get(0)
         assertNotNull(agent)
@@ -107,7 +107,7 @@ public class ConfigParserTest {
         """
 
         ClusterConfig dsl = parser.parse(config)
-        assertEquals( 2, dsl.agents.size() )
+        assertEquals(2, dsl.agents.size())
 
     }
 
@@ -123,12 +123,12 @@ public class ConfigParserTest {
         """
 
         ClusterConfig dsl = parser.parse(config)
-        assertNotNull( dsl.master )
-        assertEquals( "another/master", dsl.master.imageName )
+        assertNotNull(dsl.master)
+        assertEquals("another/master", dsl.master.imageName)
 
     }
 
-    @Test(expected=Exception.class)
+    @Test(expected = Exception.class)
     public void testFailureToLoadTwoMaster() {
 
         String config = """
@@ -141,7 +141,7 @@ public class ConfigParserTest {
                 }
         """
 
-       parser.parse(config)
+        parser.parse(config)
 
     }
 
@@ -221,7 +221,50 @@ public class ConfigParserTest {
     }
 
     @Test
-    public void testLoadSingleAgentResources() {
+    public void testLoadSingleAgentResourcesNumbers() {
+
+        String config = """
+                minimesos {
+                    agent {
+                        resources {
+                            cpu {
+                                role  = "logstash"
+                                value = 1
+                            }
+                            cpu {
+                                role  = "*"
+                                value = 4
+                            }
+                            ports {
+                                role  = "logstash"
+                                value = "[514-514]"
+                            }
+                        }
+                    }
+                }
+        """
+
+        ClusterConfig dsl = parser.parse(config)
+        assertEquals(1, dsl.agents.size())
+
+        MesosAgentConfig agent = dsl.agents.get(0)
+
+        assertEquals(4, agent.resources.cpus["*"].value, 0.0001)
+        assertEquals(1, agent.resources.cpus["logstash"].value, 0.0001)
+
+        assertNotNull(agent.resources.mems["*"])
+        assertNull(agent.resources.mems["logstash"])
+
+        assertNotNull(agent.resources.ports["*"])
+        assertEquals("[514-514]", agent.resources.ports["logstash"].value)
+
+    }
+
+    @Test
+    /**
+     * Explicit test for surrounding numbers with ""
+     */
+    public void testLoadSingleAgentResourcesStrings() {
 
         String config = """
                 minimesos {
@@ -245,18 +288,18 @@ public class ConfigParserTest {
         """
 
         ClusterConfig dsl = parser.parse(config)
-        assertEquals( 1, dsl.agents.size() )
+        assertEquals(1, dsl.agents.size())
 
         MesosAgentConfig agent = dsl.agents.get(0)
 
-        assertEquals( "4", agent.resources.cpus["*"].value )
-        assertEquals( "1", agent.resources.cpus["logstash"].value )
+        assertEquals(4, agent.resources.cpus["*"].value, 0.0001)
+        assertEquals(1, agent.resources.cpus["logstash"].value, 0.0001)
 
-        assertNotNull( agent.resources.mems["*"] )
-        assertNull( agent.resources.mems["logstash"] )
+        assertNotNull(agent.resources.mems["*"])
+        assertNull(agent.resources.mems["logstash"])
 
-        assertNotNull( agent.resources.ports["*"] )
-        assertEquals( "[514-514]", agent.resources.ports["logstash"].value )
+        assertNotNull(agent.resources.ports["*"])
+        assertEquals("[514-514]", agent.resources.ports["logstash"].value)
 
     }
 
