@@ -20,6 +20,7 @@ repositories {
     }
 }
 
+apply plugin: "groovy"
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'application'
@@ -34,6 +35,7 @@ version = rootProject.version.toString()
 group = "com.containersol.minimesos"
 
 dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.4.5'
     compile 'com.github.docker-java:docker-java:4f094c112'
     compile 'junit:junit:4.11'
     compile 'com.jayway.awaitility:awaitility:1.6.3'
@@ -54,6 +56,20 @@ dependencies {
 
     testCompile "org.mockito:mockito-core:1.+"
 
+}
+
+sourceSets {
+    main {
+        groovy {
+            // this makes the groovy-compiler compile groovy- as well as java-files.
+            // Needed, because java is normally compiled before groovy.
+            // Since we are using groovy objects from java, we need it the other way round.
+            srcDirs = ['src/main/groovy', 'src/main/java']
+        }
+        java {
+            srcDirs = [] // don't compile Java code twice
+        }
+    }
 }
 
 mainClassName = "com.containersol.minimesos.main.Main"

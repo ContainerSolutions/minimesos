@@ -2,21 +2,17 @@ package com.containersol.minimesos.main;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.marathon.Marathon;
-import com.containersol.minimesos.mesos.ClusterArchitecture;
-import com.containersol.minimesos.mesos.ClusterContainers;
-import com.containersol.minimesos.mesos.DockerClientFactory;
-import com.containersol.minimesos.mesos.MesosContainer;
-import com.containersol.minimesos.mesos.MesosMaster;
-import com.containersol.minimesos.mesos.MesosMasterExtended;
-import com.containersol.minimesos.mesos.MesosAgent;
-import com.containersol.minimesos.mesos.ZooKeeper;
-import com.github.dockerjava.api.DockerClient;
+import com.containersol.minimesos.config.*;
+import com.containersol.minimesos.mesos.*;
+import org.apache.commons.io.FileUtils;
 
+import java.io.File;
 import java.io.PrintStream;
-import java.util.TreeMap;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Parameters for the 'up' command
@@ -30,13 +26,13 @@ public class CommandUp implements Command {
     private boolean exposedHostPorts = false;
 
     @Parameter(names = "--marathonImageTag", description = "The tag of the Marathon Docker image.")
-    private String marathonImageTag = Marathon.MARATHON_IMAGE_TAG;
+    private String marathonImageTag = MarathonConfig.MARATHON_IMAGE_TAG;
 
     @Parameter(names = "--mesosImageTag", description = "The tag of the Mesos master and agent Docker images.")
-    private String mesosImageTag = MesosContainer.MESOS_IMAGE_TAG;
+    private String mesosImageTag = MesosContainerConfig.MESOS_IMAGE_TAG;
 
     @Parameter(names = "--zooKeeperImageTag", description = "The tag of the ZooKeeper Docker images.")
-    private String zooKeeperImageTag = ZooKeeper.ZOOKEEPER_IMAGE_TAG;
+    private String zooKeeperImageTag = ZooKeeperConfig.ZOOKEEPER_IMAGE_TAG;
 
     public String getMarathonImageTag() {
         return marathonImageTag;
@@ -45,14 +41,28 @@ public class CommandUp implements Command {
     @Parameter(names = "--timeout", description = "Time to wait for a container to get responsive, in seconds.")
     private int timeout = MesosCluster.DEFAULT_TIMEOUT_SECS;
 
+    /**
+     * As number of agents can be determined either in config file or command line parameters, it defaults to invalid value.
+     * Logic to select the actual number of agent is in the field getter
+     */
     @Parameter(names = "--num-agents", description = "Number of agents to start")
-    private int numAgents = 1;
+    private int numAgents = -1;
 
     @Parameter(names = "--consul", description = "Start consul container")
     private boolean startConsul = false;
 
+    @Parameter(names = "--clusterConfig", description = "Path to file with cluster configuration. Defaults to minimesosFile")
+    private String clusterConfigPath = "minimesosFile";
+
+    /**
+     * Indicates is configurationFile was found
+     */
+    private Boolean configFileFound = null;
+    private ClusterConfig clusterConfig = null;
+
     private MesosCluster startedCluster = null;
     private PrintStream output = System.out;
+
 
     public CommandUp() {
     }
@@ -77,12 +87,35 @@ public class CommandUp implements Command {
         return timeout;
     }
 
+    /**
+     * Number of agents defined in configuration file, unless overwritten in the command line.
+     * If neither is set, 1 is returned
+     *
+     * @return Number of agents to create
+     */
     public int getNumAgents() {
-        return numAgents;
+        if (numAgents > 0) {
+            return numAgents;
+        } else {
+            ClusterConfig clusterConfig = getClusterConfig();
+            if ((clusterConfig != null) && (clusterConfig.getAgents() != null) && (clusterConfig.getAgents().size() > 0)) {
+                return clusterConfig.getAgents().size();
+            } else {
+                return 1;
+            }
+        }
     }
 
     public boolean getStartConsul() {
         return startConsul;
+    }
+
+    public String getClusterConfigPath() {
+        return clusterConfigPath;
+    }
+
+    public void setClusterConfigPath(String clusterConfigPath) {
+        this.clusterConfigPath = clusterConfigPath;
     }
 
     @Override
@@ -94,29 +127,110 @@ public class CommandUp implements Command {
             return;
         }
 
-        DockerClient dockerClient = DockerClientFactory.build();
+        ClusterArchitecture clusterArchitecture = getClusterArchitecture();
 
-        ClusterArchitecture.Builder configBuilder = new ClusterArchitecture.Builder(dockerClient)
-                .withZooKeeper(getZooKeeperImageTag())
-                .withMaster(zooKeeper -> new MesosMasterExtended(dockerClient, zooKeeper, MesosMaster.MESOS_MASTER_IMAGE, getMesosImageTag(), new TreeMap<>(), isExposedHostPorts()))
-                .withContainer(zooKeeper -> new Marathon(dockerClient, zooKeeper, getMarathonImageTag(), isExposedHostPorts()), ClusterContainers.Filter.zooKeeper());
-
-        for (int i = 0; i < getNumAgents(); i++) {
-            configBuilder.withAgent(zooKeeper -> new MesosAgent(dockerClient, "ports(*):[33000-34000]", 5051, zooKeeper, MesosAgent.MESOS_AGENT_IMAGE, getMesosImageTag()));
-        }
-
-        if (getStartConsul()) {
-            configBuilder.withConsul();
-        }
-
-        startedCluster = new MesosCluster(configBuilder.build());
+        startedCluster = new MesosCluster(clusterArchitecture);
         startedCluster.start(getTimeout());
         startedCluster.waitForState(state -> state != null, 60);
-        startedCluster.setExposedHostPorts( isExposedHostPorts() );
+        startedCluster.setExposedHostPorts(isExposedHostPorts());
 
         startedCluster.printServiceUrls(output);
 
         ClusterRepository.saveClusterFile(startedCluster);
+
+    }
+
+    /**
+     * Getter for Cluster Config with caching logic.
+     * This implementation cannot be used in multi-threaded mode
+     *
+     * @return configuration of the cluster from the file
+     */
+    public ClusterConfig getClusterConfig() {
+
+        if (configFileFound != null) {
+            return clusterConfig;
+        }
+
+        File clusterConfigFile = MesosCluster.getHostFile(getClusterConfigPath());
+        if (clusterConfigFile.exists()) {
+            configFileFound = true;
+            ConfigParser configParser = new ConfigParser();
+            try {
+                clusterConfig = configParser.parse(FileUtils.readFileToString(clusterConfigFile));
+            } catch (Exception e) {
+                String msg = String.format("Failed to load cluster configuration from %s: %s", getClusterConfigPath(), e.getMessage());
+                throw new MinimesosException(msg, e);
+            }
+        } else {
+            configFileFound = false;
+        }
+
+        return clusterConfig;
+
+    }
+
+    /**
+     * Creates cluster architecture based on the command parameters and configuration file
+     *
+     * @return cluster architecture
+     */
+    public ClusterArchitecture getClusterArchitecture() {
+
+        ClusterConfig clusterConfig = getClusterConfig();
+        if (clusterConfig == null) {
+            // default cluster configuration is created
+            clusterConfig = new ClusterConfig();
+        }
+        updateWithParameters(clusterConfig);
+
+
+        ClusterArchitecture.Builder configBuilder = ClusterArchitecture.Builder.createCluster(clusterConfig);
+
+        return configBuilder.build();
+
+    }
+
+    /**
+     * Adjust cluster configuration according to CLI parameters
+     *
+     * @param clusterConfig cluster configuration to update
+     */
+    private void updateWithParameters(ClusterConfig clusterConfig) {
+
+        // ZooKeeper
+        ZooKeeperConfig zooKeeperConfig = (clusterConfig.getZookeeper() != null) ? clusterConfig.getZookeeper() : new ZooKeeperConfig();
+        zooKeeperConfig.setImageTag(getZooKeeperImageTag());
+        clusterConfig.setZookeeper(zooKeeperConfig);
+
+        // Mesos Master
+        MesosMasterConfig masterConfig = (clusterConfig.getMaster() != null) ? clusterConfig.getMaster() : new MesosMasterConfig();
+        masterConfig.setImageTag(getMesosImageTag());
+        masterConfig.setExposedHostPort(isExposedHostPorts());
+        clusterConfig.setMaster(masterConfig);
+
+        // Marathon
+        MarathonConfig marathonConfig = (clusterConfig.getMarathon() != null) ? clusterConfig.getMarathon() : new MarathonConfig();
+        marathonConfig.setImageTag(getMarathonImageTag());
+        marathonConfig.setExposedHostPort(isExposedHostPorts());
+        clusterConfig.setMarathon(marathonConfig);
+
+        // creation of agents
+        List<MesosAgentConfig> agentConfigs = clusterConfig.getAgents();
+        List<MesosAgentConfig> updatedConfigs = new ArrayList<>();
+        for (int i = 0; i < getNumAgents(); i++) {
+            MesosAgentConfig agentConfig = (agentConfigs.size() > i) ? agentConfigs.get(i) : new MesosAgentConfig();
+            agentConfig.setImageTag(getMesosImageTag());
+            updatedConfigs.add(agentConfig);
+        }
+        clusterConfig.setAgents(updatedConfigs);
+
+        // Consul (optional)
+        ConsulConfig consulConfig = clusterConfig.getConsul();
+        if (consulConfig == null && getStartConsul()) {
+            consulConfig = new ConsulConfig();
+        }
+        clusterConfig.setConsul(consulConfig);
 
     }
 

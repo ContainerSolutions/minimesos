@@ -29,15 +29,14 @@ import static org.junit.Assert.*;
 
 public class MesosClusterTest {
 
-    protected static final String resources = MesosAgent.DEFAULT_PORT_RESOURCES + "; cpus(*):0.2; mem(*):256; disk(*):200";
     protected static final DockerClient dockerClient = DockerClientFactory.build();
     protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder(dockerClient)
             .withZooKeeper()
             .withMaster()
-            .withAgent(zooKeeper -> new MesosAgent(dockerClient, resources, 5051, zooKeeper, MesosAgent.MESOS_AGENT_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
-            .withAgent(zooKeeper -> new MesosAgent(dockerClient, resources, 5051, zooKeeper, MesosAgent.MESOS_AGENT_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
-            .withAgent(zooKeeper -> new MesosAgent(dockerClient, resources, 5051, zooKeeper, MesosAgent.MESOS_AGENT_IMAGE, MesosContainer.MESOS_IMAGE_TAG))
-            .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper, true))
+            .withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper))
+            .withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper))
+            .withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper))
+            .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper))
             .build();
 
     @ClassRule
@@ -66,7 +65,7 @@ public class MesosClusterTest {
 
     @Test
     public void mesosAgentStateInfoJSONMatchesSchema() throws UnirestException, JsonParseException, JsonMappingException {
-        String agentId = CLUSTER.getAgents()[0].getContainerId();
+        String agentId = CLUSTER.getAgents().get(0).getContainerId();
         JSONObject state = CLUSTER.getAgentStateInfo(agentId);
         assertNotNull(state);
     }
@@ -89,11 +88,11 @@ public class MesosClusterTest {
 
     @Test
     public void testAgentStateRetrieval() {
-        MesosAgent[] agents = CLUSTER.getAgents();
+        List<MesosAgent> agents = CLUSTER.getAgents();
         assertNotNull(agents);
-        assertTrue(agents.length > 0);
+        assertTrue(agents.size() > 0);
 
-        MesosAgent agent = agents[0];
+        MesosAgent agent = agents.get(0);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(outputStream, true);
 
@@ -109,7 +108,7 @@ public class MesosClusterTest {
     @Test
     public void dockerExposeResourcesPorts() throws Exception {
         DockerClient docker = CONFIG.dockerClient;
-        List<MesosAgent> containers = Arrays.asList(CLUSTER.getAgents());
+        List<MesosAgent> containers = CLUSTER.getAgents();
 
         for (MesosAgent container : containers) {
             ArrayList<Integer> ports = ResourceUtil.parsePorts(container.getResources());
@@ -132,7 +131,7 @@ public class MesosClusterTest {
 
     @Test
     public void testMasterLinkedToAgents() throws UnirestException {
-        List<MesosAgent> containers = Arrays.asList(CLUSTER.getAgents());
+        List<MesosAgent> containers = CLUSTER.getAgents();
         for (MesosAgent container : containers) {
             InspectContainerResponse exec = CONFIG.dockerClient.inspectContainerCmd(container.getContainerId()).exec();
 

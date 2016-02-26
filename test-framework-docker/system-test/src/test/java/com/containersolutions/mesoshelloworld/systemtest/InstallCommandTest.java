@@ -35,7 +35,7 @@ public class InstallCommandTest {
             .withZooKeeper()
             .withMaster()
             .withAgent("ports(*):[8081-8082]")
-            .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper, true ))
+            .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper))
             .build();
 
     @ClassRule

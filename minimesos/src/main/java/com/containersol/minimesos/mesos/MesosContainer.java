@@ -1,5 +1,6 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.config.MesosContainerConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.github.dockerjava.api.DockerClient;
 import com.mashape.unirest.http.Unirest;
@@ -13,23 +14,22 @@ import java.util.TreeMap;
  */
 public abstract class MesosContainer extends AbstractContainer {
 
-    public static final String MESOS_IMAGE_TAG = "0.25.0-0.2.70.ubuntu1404";
     public static final String DEFAULT_MESOS_ZK_PATH = "/mesos";
 
-    private String mesosImageTag = MESOS_IMAGE_TAG;
+    private ZooKeeper zooKeeperContainer;
+    private final MesosContainerConfig config;
 
-    protected ZooKeeper zooKeeperContainer;
-
-    protected MesosContainer(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
+    protected MesosContainer(DockerClient dockerClient, ZooKeeper zooKeeperContainer, MesosContainerConfig config) {
         super(dockerClient);
         this.zooKeeperContainer = zooKeeperContainer;
+        this.config = config;
     }
 
-    public MesosContainer(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
+    protected MesosContainer(DockerClient dockerClient, String clusterId, String uuid, String containerId, MesosContainerConfig config) {
         super(dockerClient, clusterId, uuid, containerId);
+        this.config = config;
     }
 
-    public abstract String getMesosImageName();
     public abstract int getPortNumber();
 
     protected abstract TreeMap<String, String> getDefaultEnvVars();
@@ -40,11 +40,19 @@ public abstract class MesosContainer extends AbstractContainer {
     }
 
     public String getMesosImageTag() {
-        return mesosImageTag;
+        return config.getImageTag();
     }
 
     public void setMesosImageTag(String mesosImageTag) {
-        this.mesosImageTag = mesosImageTag;
+        this.config.setImageTag(mesosImageTag);
+    }
+
+    public String getMesosImageName() {
+        return config.getImageName();
+    }
+
+    public void setMesosImageName( String mesosImageName ) {
+        config.setImageName(mesosImageName);
     }
 
     protected String[] createMesosLocalEnvironment() {

@@ -2,6 +2,7 @@ package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.util.ResourceUtil;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -20,59 +21,34 @@ public class MesosAgent extends MesosContainer {
 
     private static final Logger LOGGER = Logger.getLogger(MesosAgent.class);
 
-    public static final String MESOS_AGENT_IMAGE = "containersol/mesos-agent";
-    public static final int DEFAULT_MESOS_AGENT_PORT = 5051;
-
-    public static final String DEFAULT_PORT_RESOURCES = "ports(*):[31000-32000]";
-    public static final String DEFAULT_RESOURCES = DEFAULT_PORT_RESOURCES + "; cpus(*):0.2; mem(*):256; disk(*):200";
-
-    private String mesosImageName = MESOS_AGENT_IMAGE;
-
-    private String resources = DEFAULT_RESOURCES;
-
-    private int portNumber = DEFAULT_MESOS_AGENT_PORT;
+    private final MesosAgentConfig config;
 
     public MesosAgent(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
-        super(dockerClient, zooKeeperContainer);
+        this(dockerClient, zooKeeperContainer, new MesosAgentConfig());
+    }
+
+    public MesosAgent(DockerClient dockerClient, ZooKeeper zooKeeperContainer, MesosAgentConfig config) {
+        super(dockerClient, zooKeeperContainer, config);
+        this.config = config;
     }
 
     public MesosAgent(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
-        super(dockerClient, clusterId, uuid, containerId);
+        this(dockerClient, clusterId, uuid, containerId, new MesosAgentConfig());
     }
 
-    public MesosAgent(DockerClient dockerClient, String resources, int portNumber, ZooKeeper zooKeeperContainer, String mesosLocalImage, String registryTag) {
-        super(dockerClient, zooKeeperContainer);
-        this.resources = resources;
-        this.portNumber = portNumber;
-        setMesosImageName( mesosLocalImage );
-        setMesosImageTag(registryTag);
-    }
-
-    public MesosAgent(DockerClient dockerClient, ZooKeeper zooKeeper, String agentResources) {
-        super(dockerClient, zooKeeper);
-        setResources(agentResources);
+    private MesosAgent(DockerClient dockerClient, String clusterId, String uuid, String containerId, MesosAgentConfig config) {
+        super(dockerClient, clusterId, uuid, containerId, config);
+        this.config = config;
     }
 
     public String getResources() {
-        return resources;
+        return config.getResources().asMesosString();
     }
 
-    public void setResources(String resources) {
-        this.resources = resources;
-    }
-
-    @Override
-    public String getMesosImageName() {
-        return mesosImageName;
-    }
 
     @Override
     public int getPortNumber() {
-        return portNumber;
-    }
-
-    public void setMesosImageName( String mesosImageName ) {
-        this.mesosImageName = mesosImageName;
+        return config.getPortNumber();
     }
 
     public CreateContainerCmd getBaseCommand() {
@@ -100,9 +76,9 @@ public class MesosAgent extends MesosContainer {
     @Override
     protected CreateContainerCmd dockerCommand() {
         ArrayList<ExposedPort> exposedPorts= new ArrayList<>();
-        exposedPorts.add(new ExposedPort(portNumber));
+        exposedPorts.add(new ExposedPort(getPortNumber()));
         try {
-            ArrayList<Integer> resourcePorts = ResourceUtil.parsePorts(resources);
+            ArrayList<Integer> resourcePorts = ResourceUtil.parsePorts(getResources());
             for (Integer port : resourcePorts) {
                 exposedPorts.add(new ExposedPort(port));
             }
@@ -118,8 +94,8 @@ public class MesosAgent extends MesosContainer {
     @Override
     public TreeMap<String, String> getDefaultEnvVars() {
         TreeMap<String,String> envs = new TreeMap<>();
-        envs.put("MESOS_RESOURCES", resources);
-        envs.put("MESOS_PORT", String.valueOf(portNumber));
+        envs.put("MESOS_RESOURCES", getResources());
+        envs.put("MESOS_PORT", String.valueOf(getPortNumber()));
         envs.put("MESOS_MASTER", getFormattedZKAddress());
         envs.put("MESOS_SWITCH_USER", "false");
         return envs;

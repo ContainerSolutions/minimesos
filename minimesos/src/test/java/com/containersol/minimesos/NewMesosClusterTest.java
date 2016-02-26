@@ -1,6 +1,7 @@
 package com.containersol.minimesos;
 
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.config.AgentResources;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.mesos.*;
 import com.containersol.minimesos.util.ResourceUtil;
@@ -17,7 +18,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +37,7 @@ public class NewMesosClusterTest {
     @After
     public void after() {
         DockerContainersUtil util = new DockerContainersUtil(dockerClient);
-        util.getContainers(false).filterByName( HelloWorldContainer.CONTAINER_NAME_PATTERN ).kill().remove();
+        util.getContainers(false).filterByName(HelloWorldContainer.CONTAINER_NAME_PATTERN).kill().remove();
     }
 
     @Test
@@ -51,16 +51,16 @@ public class NewMesosClusterTest {
     public void mesosResourcesCorrect() throws Exception {
         JSONObject stateInfo = cluster.getMasterContainer().getStateInfoJSON();
         for (int i = 0; i < 3; i++) {
-            assertEquals((long) 0.2, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getLong("cpus"));
+            assertEquals(AgentResources.DEFAULT_CPU.getValue(), stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getDouble("cpus"), 0.0001);
             assertEquals(256, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getInt("mem"));
         }
     }
 
     @Test
     public void dockerExposeResourcesPorts() throws Exception {
-        String mesosResourceString = MesosAgent.DEFAULT_PORT_RESOURCES;
+        String mesosResourceString = "ports(*):[31000-32000]";
         ArrayList<Integer> ports = ResourceUtil.parsePorts(mesosResourceString);
-        List<MesosAgent> containers = Arrays.asList(cluster.getAgents());
+        List<MesosAgent> containers = cluster.getAgents();
         for (MesosAgent container : containers) {
             InspectContainerResponse response = dockerClient.inspectContainerCmd(container.getContainerId()).exec();
             Map bindings = response.getNetworkSettings().getPorts().getBindings();

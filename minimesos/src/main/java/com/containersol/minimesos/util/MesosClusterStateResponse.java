@@ -25,8 +25,8 @@ public class MesosClusterStateResponse implements Callable<Boolean> {
         String stateUrl = mesosCluster.getMasterContainer().getStateUrl();
         try {
             int activatedAgents = Unirest.get(stateUrl).asJson().getBody().getObject().getInt("activated_slaves");
-            if (activatedAgents != mesosCluster.getAgents().length) {
-                LOGGER.debug("Waiting for " + mesosCluster.getAgents().length + " activated agents - current number of activated agents: " + activatedAgents);
+            if (activatedAgents != mesosCluster.getAgents().size()) {
+                LOGGER.debug("Waiting for " + mesosCluster.getAgents().size() + " activated agents - current number of activated agents: " + activatedAgents);
                 return false;
             }
         } catch (UnirestException e) {
