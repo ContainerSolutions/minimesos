@@ -197,7 +197,7 @@ public class ConfigParserTest {
         ClusterConfig dsl = parser.parse(config)
         assertNotNull(dsl.marathon)
         assertEquals("mesosphere/marathon", dsl.marathon.imageName)
-        assertEquals("v0.13.0", dsl.marathon.imageTag)
+        assertEquals("v0.15.3", dsl.marathon.imageTag)
     }
 
 
