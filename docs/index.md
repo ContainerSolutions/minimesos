@@ -122,26 +122,17 @@ containersol/minimesos          latest                  cf854cfb1865        2 mi
 
 Running ```./gradlew install``` will make latest version of minimesos script available on the PATH
 
-### Installing a released vesion of minimesos on VM
-
-Install minimesos on MAC
-
-```
-$ curl -sSL https://raw.githubusercontent.com/ContainerSolutions/minimesos/master/bin/install | sudo sh
-```
-
-The command above makes minimesos script available on the PATH
-
 ### Running minimesos from CLI
 
 To create minimesos cluster execute ```minimesos up```. It will create temporary container with minimesos process, which will start other containers and will exit.
 When cluster is started ```.minimesos/minimesos.cluster``` file with cluster ID is created in local directory. This file is destroyed with ```minimesos destroy```
 
 ```
-$ minimesos up
-Mesos: http://192.168.99.100:5050
-Marathon: http://192.168.99.100:8080
-$ curl -s http://172.17.2.12:5050/state.json | jq ".version"
+$ minimesos up 
+export MINIMESOS_ZOOKEEPER=zk://172.17.0.3:2181
+export MINIMESOS_MASTER=http://172.17.0.4:5050
+export MINIMESOS_MARATHON=http://172.17.0.5:8080$ minimesos up
+$ curl -s http://172.17.0.4:5050/state.json | jq ".version"
 0.25.0
 $ minimesos destroy
 Destroyed minimesos cluster 3878417609
@@ -149,7 +140,7 @@ Destroyed minimesos cluster 3878417609
 
 The `minimesos up` command supports `--exposedHostPorts` flag, that automatically binds Mesos and Marathon ports `5050`, resp. `8080` to the host machine, providing you with easy access to the services. Let the following table explain what the host machine is in different contexts:
 
-| --exposedHostPorts | Linux                            | Max OS X                            |
+| --exposedHostPorts | Linux                            | OS X                                |
 |--------------------|----------------------------------|-------------------------------------|
 | disabled           | container IP addresses (default) | n/a                                 |
 | enabled            | host computer                    | docker-machine IP address (default) |
@@ -176,10 +167,10 @@ The table below is an attempt to summarize mappings, which enable execution of m
 `minimesos up` command supports `--mesosImageTag` parameter, which can be used to override the version of Mesos to be used. 
 When running an older version of Mesos, you may encounter [compatibility issues between Mesos 0.22 and Docker v. greater than 1.7](https://issues.apache.org/jira/browse/INFRA-10621).
 
-Since version 0.3.0 minimesos uses 'flat' container structure, which means that all containers (agents, master, zookeeper) as well as all Docker executor tasks are run in the same Docker context - host machine.
+Since version 0.3.0 minimesos uses 'flat' container structure, which means that all containers (agents, master, zookeeper) as well as all Docker executor tasks are run in the same Docker context - the host machine.
 This has following benefits:
   1. Shared repository with the host Docker
-  2. Transparency of your test-cluster.
+  2. Transparency of your test cluster.
   3. Ability to keep track of executor tasks
   4. Easy access to the logs
 
