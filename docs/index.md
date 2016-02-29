@@ -5,10 +5,15 @@ Testing infrastructure for Mesos frameworks.
 ## Installing
 
 ```
-$ curl https://raw.githubusercontent.com/ContainerSolutions/minimesos/master/bin/install | bash
+$ curl -sSL https://minimesos.org/install | sh
 ```
 
-This installs the minimesos jar into ``/usr/local/share/minimesos`` and the minimesos script in ``/usr/local/bin``
+This installs the minimesos binary into ``${HOME}/.minimesos/bin``
+
+You can add it to your executables search path using following command:
+```
+$ export PATH=$PATH:$HOME/.minimesos/bin
+```
 
 ## System Requirements
 
@@ -18,17 +23,21 @@ version of Docker or Docker Machine. See Docker [API compatibility](https://docs
 
 
 ## Command line interface
+Run
+```
+$ minimesos help
+```
+To get the list of available commands
 
+The easiest way to start a Mesos cluster is to run:
 ```
 $ minimesos up
-Mesos: http://192.168.99.100:5050
-Marathon: http://192.168.99.100:8080
-$ curl -s http://172.17.2.12:5050/state.json | jq ".version"
-0.25.0
-$ minimesos destroy
-Destroyed minimesos cluster 3878417609
 ```
 
+To destroy the cluster run:
+```
+$ minimesos destroy
+```
 
 ## Java API
 
