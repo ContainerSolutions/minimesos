@@ -47,8 +47,10 @@ if [ "$#" -gt 0 -a "$1" = up ]; then
     pullImage "jplock/zookeeper" ${ZOOKEEPER_TAG}
 
     if [ "$(uname)" = "Darwin" ]; then
-	echo "You are running minimesos on OS X, enabling --exposedHostPorts"
-	PARAMS="${PARAMS} --exposedHostPorts"
+        if [[ ${PARAMS} != *"--exposedHostPorts"* ]]; then
+        	echo "# You are running minimesos on OS X, enabling --exposedHostPorts"
+	        PARAMS="${PARAMS} --exposedHostPorts"
+	    fi
     fi
 
 fi
@@ -57,7 +59,7 @@ MINIMESOS_HOST_DIR="$(pwd)"
 MINIMESOS_DIR="$(pwd)/.minimesos"
 if [ ! -d ${MINIMESOS_DIR} ]; then
     mkdir -p ${MINIMESOS_DIR}
-    echo "Created minimesos directory at ${MINIMESOS_DIR}."
+    echo "# Created minimesos directory at ${MINIMESOS_DIR}."
 fi
 
 DOCKER_RUN_PARAMS="
