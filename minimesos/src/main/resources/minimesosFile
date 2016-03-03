@@ -1,0 +1,33 @@
+minimesos = {
+
+    exposePorts = true
+    timeout     = 60
+
+    master {
+        imageName = "containersol/mesos-master"
+        imageTag = "0.25.0-0.2.70.ubuntu1404"
+    }
+
+    agent {
+
+        resources {
+            cpu {
+                role  = "*"
+                value = 0.25
+            }
+            mem {
+                role  = "*"
+                value = 1024
+            }
+            disk {
+                role = "*"
+                value = 8192
+            }
+        }
+    }
+
+    zookeeper {  }
+
+    marathon {  }
+
+}
