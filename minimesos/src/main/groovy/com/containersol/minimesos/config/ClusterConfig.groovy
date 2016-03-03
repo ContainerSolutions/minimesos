@@ -14,8 +14,8 @@ class ClusterConfig extends GroovyBlock {
     boolean exposePorts = true
     int timeout = 60
     String mesosVersion = "0.25"
-
     def clusterName = "minimesos"
+    String loggingLevel = "INFO"
 
     MesosMasterConfig master = null
     List<MesosAgentConfig> agents = new ArrayList<>()
@@ -53,4 +53,14 @@ class ClusterConfig extends GroovyBlock {
         delegateTo(marathon, cl)
     }
 
+    void setLoggingLevel(String loggingLevel) {
+         if (!loggingLevel.equals("WARNING") && !loggingLevel.equals("INFO") && !loggingLevel.equals("ERROR")) {
+             throw new RuntimeException("Property 'loggingLevel' can only have the values INFO, WARNING or ERROR")
+         }
+        this.loggingLevel = loggingLevel
+    }
+
+    String getLoggingLevel() {
+        return loggingLevel
+    }
 }

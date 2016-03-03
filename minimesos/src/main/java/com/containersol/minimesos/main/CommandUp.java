@@ -209,6 +209,7 @@ public class CommandUp implements Command {
         // Mesos Master
         MesosMasterConfig masterConfig = (clusterConfig.getMaster() != null) ? clusterConfig.getMaster() : new MesosMasterConfig();
         masterConfig.setImageTag(getMesosImageTag());
+        masterConfig.setLoggingLevel(clusterConfig.getLoggingLevel());
         clusterConfig.setMaster(masterConfig);
 
         // Marathon
@@ -222,6 +223,7 @@ public class CommandUp implements Command {
         for (int i = 0; i < getNumAgents(); i++) {
             MesosAgentConfig agentConfig = (agentConfigs.size() > i) ? agentConfigs.get(i) : new MesosAgentConfig();
             agentConfig.setImageTag(getMesosImageTag());
+            agentConfig.setLoggingLevel(clusterConfig.getLoggingLevel());
             updatedConfigs.add(agentConfig);
         }
         clusterConfig.setAgents(updatedConfigs);

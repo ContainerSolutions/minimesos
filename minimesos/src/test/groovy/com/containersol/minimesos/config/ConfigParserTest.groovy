@@ -17,6 +17,20 @@ public class ConfigParserTest {
     }
 
     @Test
+    public void testLoggingLevel() {
+        String config =
+                """
+        minimesos {
+
+            loggingLevel = "WARNING"
+
+        }
+        """
+
+        assertEquals("WARNING", parser.parse(config).getLoggingLevel())
+    }
+
+    @Test
     public void testClusterName() {
         String config =
                 """
