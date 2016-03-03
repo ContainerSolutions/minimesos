@@ -30,8 +30,8 @@ public class Marathon extends AbstractContainer {
         this.config = config;
     }
 
-    public Marathon(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
-        super(dockerClient, clusterId, uuid, containerId);
+    public Marathon(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId) {
+        super(dockerClient, cluster, uuid, containerId);
         this.config = new MarathonConfig();
     }
 
@@ -53,7 +53,7 @@ public class Marathon extends AbstractContainer {
     protected CreateContainerCmd dockerCommand() {
         ExposedPort exposedPort = ExposedPort.tcp(MarathonConfig.MARATHON_PORT);
         Ports portBindings = new Ports();
-        if (config.isExposedHostPort()) {
+        if (getCluster().isExposedHostPorts()) {
             portBindings.bind(exposedPort, Ports.Binding(MarathonConfig.MARATHON_PORT));
         }
         return dockerClient.createContainerCmd(config.getImageName() + ":" + config.getImageTag())

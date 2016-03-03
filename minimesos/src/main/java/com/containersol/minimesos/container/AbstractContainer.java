@@ -1,5 +1,6 @@
 package com.containersol.minimesos.container;
 
+import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -12,6 +13,7 @@ import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.jayway.awaitility.Duration;
 import com.jayway.awaitility.core.ConditionTimeoutException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.security.SecureRandom;
@@ -28,7 +30,7 @@ public abstract class AbstractContainer {
 
     private static Logger LOGGER = Logger.getLogger(AbstractContainer.class);
 
-    private String clusterId;
+    private MesosCluster cluster;
     private String uuid;
     private String containerId;
 
@@ -43,9 +45,9 @@ public abstract class AbstractContainer {
         this.uuid = Integer.toUnsignedString(new SecureRandom().nextInt());
     }
 
-    public AbstractContainer(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
+    public AbstractContainer(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId) {
         this.dockerClient = dockerClient;
-        this.clusterId = clusterId;
+        this.cluster = cluster;
         this.uuid = uuid;
         this.containerId = containerId;
     }
@@ -203,12 +205,19 @@ public abstract class AbstractContainer {
         });
     }
 
-    public void setClusterId(String clusterId) {
-        this.clusterId = clusterId;
+    public void setCluster(MesosCluster cluster) {
+        this.cluster = cluster;
     }
 
+    public MesosCluster getCluster() {
+        return cluster;
+    }
+
+    /**
+     * @return if set, ID of the cluster the container belongs to
+     */
     public String getClusterId() {
-        return clusterId;
+        return (cluster != null) ? cluster.getClusterId() : null;
     }
 
     private class ContainerIsRunning implements Callable<Boolean> {
@@ -233,7 +242,7 @@ public abstract class AbstractContainer {
 
     @Override
     public String toString() {
-        return String.format(": %s-%s-%s", getRole(), clusterId, uuid);
+        return String.format(": %s-%s-%s", getRole(), getClusterId(), uuid);
     }
 
     public boolean isRemoved() {
@@ -251,15 +260,15 @@ public abstract class AbstractContainer {
 
         AbstractContainer that = (AbstractContainer) o;
 
-        if (!clusterId.equals(that.clusterId)) return false;
+        if (!StringUtils.equals(this.getClusterId(), that.getClusterId())) return false;
+
         if (!uuid.equals(that.uuid)) return false;
         return containerId.equals(that.containerId);
-
     }
 
     @Override
     public int hashCode() {
-        int result = clusterId.hashCode();
+        int result = (cluster != null) ? cluster.hashCode() : 0;
         result = 31 * result + uuid.hashCode();
         result = 31 * result + containerId.hashCode();
         return result;

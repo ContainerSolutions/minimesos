@@ -9,6 +9,4 @@ public class MarathonConfig extends GroovyBlock implements ContainerConfig {
     String imageName     = MARATHON_IMAGE
     String imageTag      = MARATHON_IMAGE_TAG
 
-    boolean exposedHostPort = false;
-
 }

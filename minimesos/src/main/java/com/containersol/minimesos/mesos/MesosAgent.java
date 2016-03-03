@@ -32,12 +32,12 @@ public class MesosAgent extends MesosContainer {
         this.config = config;
     }
 
-    public MesosAgent(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
-        this(dockerClient, clusterId, uuid, containerId, new MesosAgentConfig());
+    public MesosAgent(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId) {
+        this(dockerClient, cluster, uuid, containerId, new MesosAgentConfig());
     }
 
-    private MesosAgent(DockerClient dockerClient, String clusterId, String uuid, String containerId, MesosAgentConfig config) {
-        super(dockerClient, clusterId, uuid, containerId, config);
+    private MesosAgent(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId, MesosAgentConfig config) {
+        super(dockerClient, cluster, uuid, containerId, config);
         this.config = config;
     }
 

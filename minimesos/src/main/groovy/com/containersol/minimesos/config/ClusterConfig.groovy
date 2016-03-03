@@ -11,7 +11,7 @@ class ClusterConfig extends GroovyBlock {
         cl.call();
     }
 
-    def exposePorts = true
+    boolean exposePorts = true
     int timeout = 60
     String mesosVersion = "0.25"
 

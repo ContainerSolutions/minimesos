@@ -1,5 +1,6 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -16,6 +17,7 @@ import java.util.TreeMap;
  */
 public class MesosMaster extends MesosContainer {
 
+    // is here for future extension of Master configuration
     private final MesosMasterConfig config;
 
     public MesosMaster(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
@@ -27,25 +29,18 @@ public class MesosMaster extends MesosContainer {
         this.config = config;
     }
 
-    public MesosMaster(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
-        this(dockerClient, clusterId, uuid, containerId, new MesosMasterConfig());
+    public MesosMaster(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId) {
+        this(dockerClient, cluster, uuid, containerId, new MesosMasterConfig());
     }
 
-    private MesosMaster(DockerClient dockerClient, String clusterId, String uuid, String containerId, MesosMasterConfig config) {
-        super(dockerClient, clusterId, uuid, containerId, config);
+    private MesosMaster(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId, MesosMasterConfig config) {
+        super(dockerClient, cluster, uuid, containerId, config);
         this.config = config;
     }
 
     @Override
     public int getPortNumber() {
         return MesosMasterConfig.MESOS_MASTER_PORT;
-    }
-
-    public boolean isExposedHostPort() {
-        return config.isExposedHostPort();
-    }
-    public void setExposedHostPort(boolean exposedHostPort) {
-        config.setExposedHostPort(exposedHostPort);
     }
 
     @Override
@@ -68,7 +63,7 @@ public class MesosMaster extends MesosContainer {
         ExposedPort exposedPort = ExposedPort.tcp(port);
 
         Ports portBindings = new Ports();
-        if (isExposedHostPort()) {
+        if (getCluster().isExposedHostPorts()) {
             portBindings.bind(exposedPort, Ports.Binding(port));
         }
 
