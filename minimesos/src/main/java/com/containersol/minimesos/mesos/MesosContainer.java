@@ -1,5 +1,6 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.MesosContainerConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.github.dockerjava.api.DockerClient;
@@ -25,8 +26,8 @@ public abstract class MesosContainer extends AbstractContainer {
         this.config = config;
     }
 
-    protected MesosContainer(DockerClient dockerClient, String clusterId, String uuid, String containerId, MesosContainerConfig config) {
-        super(dockerClient, clusterId, uuid, containerId);
+    protected MesosContainer(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId, MesosContainerConfig config) {
+        super(dockerClient, cluster, uuid, containerId);
         this.config = config;
     }
 
@@ -43,16 +44,8 @@ public abstract class MesosContainer extends AbstractContainer {
         return config.getImageTag();
     }
 
-    public void setMesosImageTag(String mesosImageTag) {
-        this.config.setImageTag(mesosImageTag);
-    }
-
     public String getMesosImageName() {
         return config.getImageName();
-    }
-
-    public void setMesosImageName( String mesosImageName ) {
-        config.setImageName(mesosImageName);
     }
 
     protected String[] createMesosLocalEnvironment() {

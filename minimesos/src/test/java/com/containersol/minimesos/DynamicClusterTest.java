@@ -19,7 +19,6 @@ public class DynamicClusterTest {
     public void noMarathonTest() {
 
         MesosMasterConfig masterConfig = new MesosMasterConfig();
-        masterConfig.setExposedHostPort(EXPOSED_PORTS);
 
         ClusterArchitecture config = new ClusterArchitecture.Builder(dockerClient)
                 .withZooKeeper()
@@ -28,6 +27,7 @@ public class DynamicClusterTest {
                 .build();
 
         MesosCluster cluster = new MesosCluster(config);
+        cluster.setExposedHostPorts(EXPOSED_PORTS);
 
         cluster.start();
         String clusterId = cluster.getClusterId();
@@ -43,7 +43,6 @@ public class DynamicClusterTest {
     public void stopWithNewContainerTest() {
 
         MesosMasterConfig masterConfig = new MesosMasterConfig();
-        masterConfig.setExposedHostPort(EXPOSED_PORTS);
 
         ClusterArchitecture config = new ClusterArchitecture.Builder(dockerClient)
                 .withZooKeeper()
@@ -52,6 +51,7 @@ public class DynamicClusterTest {
                 .build();
 
         MesosCluster cluster = new MesosCluster(config);
+        cluster.setExposedHostPorts(EXPOSED_PORTS);
         cluster.start();
 
         ZooKeeper zooKeeper = cluster.getZkContainer();

@@ -1,5 +1,6 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.github.dockerjava.api.DockerClient;
@@ -24,8 +25,8 @@ public class ZooKeeper extends AbstractContainer {
         this(dockerClient, new ZooKeeperConfig());
     }
 
-    public ZooKeeper(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
-        super(dockerClient, clusterId, uuid, containerId);
+    public ZooKeeper(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId) {
+        super(dockerClient, cluster, uuid, containerId);
         this.config = new ZooKeeperConfig();
     }
 

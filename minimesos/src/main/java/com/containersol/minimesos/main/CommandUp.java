@@ -198,6 +198,9 @@ public class CommandUp implements Command {
      */
     private void updateWithParameters(ClusterConfig clusterConfig) {
 
+        clusterConfig.setExposePorts(isExposedHostPorts());
+        clusterConfig.setTimeout(getTimeout());
+
         // ZooKeeper
         ZooKeeperConfig zooKeeperConfig = (clusterConfig.getZookeeper() != null) ? clusterConfig.getZookeeper() : new ZooKeeperConfig();
         zooKeeperConfig.setImageTag(getZooKeeperImageTag());
@@ -206,13 +209,11 @@ public class CommandUp implements Command {
         // Mesos Master
         MesosMasterConfig masterConfig = (clusterConfig.getMaster() != null) ? clusterConfig.getMaster() : new MesosMasterConfig();
         masterConfig.setImageTag(getMesosImageTag());
-        masterConfig.setExposedHostPort(isExposedHostPorts());
         clusterConfig.setMaster(masterConfig);
 
         // Marathon
         MarathonConfig marathonConfig = (clusterConfig.getMarathon() != null) ? clusterConfig.getMarathon() : new MarathonConfig();
         marathonConfig.setImageTag(getMarathonImageTag());
-        marathonConfig.setExposedHostPort(isExposedHostPorts());
         clusterConfig.setMarathon(marathonConfig);
 
         // creation of agents

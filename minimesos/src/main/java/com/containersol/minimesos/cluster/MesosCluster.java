@@ -63,7 +63,7 @@ public class MesosCluster extends ExternalResource {
         this.containers = clusterArchitecture.getClusterContainers().getContainers();
         clusterId = Integer.toUnsignedString(new SecureRandom().nextInt());
         for (AbstractContainer container : containers) {
-            container.setClusterId(clusterId);
+            container.setCluster(this);
         }
     }
 
@@ -99,14 +99,14 @@ public class MesosCluster extends ExternalResource {
 
                 switch (role) {
                     case "zookeeper":
-                        zkKeeper = new ZooKeeper(dockerClient, clusterId, uuid, containerId);
+                        zkKeeper = new ZooKeeper(dockerClient, this, uuid, containerId);
                         this.containers.add(zkKeeper);
                         break;
                     case "agent":
-                        this.containers.add(new MesosAgent(dockerClient, clusterId, uuid, containerId));
+                        this.containers.add(new MesosAgent(dockerClient, this, uuid, containerId));
                         break;
                     case "master":
-                        MesosMaster master = new MesosMaster(dockerClient, clusterId, uuid, containerId);
+                        MesosMaster master = new MesosMaster(dockerClient, this, uuid, containerId);
                         this.containers.add(master);
                         // restore "exposed ports" attribute
                         Container.Port[] ports = container.getPorts();
@@ -114,13 +114,12 @@ public class MesosCluster extends ExternalResource {
                             for (Container.Port port : ports) {
                                 if (port.getIp() != null && port.getPrivatePort() == MesosMasterConfig.MESOS_MASTER_PORT) {
                                     setExposedHostPorts(true);
-                                    master.setExposedHostPort(true);
                                 }
                             }
                         }
                         break;
                     case "marathon":
-                        this.containers.add(new Marathon(dockerClient, clusterId, uuid, containerId));
+                        this.containers.add(new Marathon(dockerClient, this, uuid, containerId));
                         break;
                 }
 
@@ -263,7 +262,7 @@ public class MesosCluster extends ExternalResource {
      */
     public String addAndStartContainer(AbstractContainer container, int timeout) {
 
-        container.setClusterId(clusterId);
+        container.setCluster(this);
         containers.add(container);
 
         LOGGER.debug(String.format("Starting %s (%s) container", container.getName(), container.getContainerId()));
@@ -501,9 +500,8 @@ public class MesosCluster extends ExternalResource {
 
     @Override
     public int hashCode() {
-        int result = clusterId.hashCode();
-        result = 31 * result + containers.hashCode();
-        return result;
+        // logic of hashCode() has to match logic of equals()
+        return clusterId.hashCode();
     }
 
     @Override
