@@ -8,6 +8,7 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.*;
 import com.containersol.minimesos.mesos.*;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -209,7 +210,9 @@ public class CommandUp implements Command {
         // Mesos Master
         MesosMasterConfig masterConfig = (clusterConfig.getMaster() != null) ? clusterConfig.getMaster() : new MesosMasterConfig();
         masterConfig.setImageTag(getMesosImageTag());
-        masterConfig.setLoggingLevel(clusterConfig.getLoggingLevel());
+        if (StringUtils.equalsIgnoreCase(masterConfig.getLoggingLevel(), MesosMasterConfig.MESOS_LOGGING_LEVEL)) {
+            masterConfig.setLoggingLevel(clusterConfig.getLoggingLevel());
+        }
         clusterConfig.setMaster(masterConfig);
 
         // Marathon
@@ -223,7 +226,9 @@ public class CommandUp implements Command {
         for (int i = 0; i < getNumAgents(); i++) {
             MesosAgentConfig agentConfig = (agentConfigs.size() > i) ? agentConfigs.get(i) : new MesosAgentConfig();
             agentConfig.setImageTag(getMesosImageTag());
-            agentConfig.setLoggingLevel(clusterConfig.getLoggingLevel());
+            if (StringUtils.equalsIgnoreCase(agentConfig.getLoggingLevel(), MesosAgentConfig.MESOS_LOGGING_LEVEL)) {
+                agentConfig.setLoggingLevel(clusterConfig.getLoggingLevel());
+            }
             updatedConfigs.add(agentConfig);
         }
         clusterConfig.setAgents(updatedConfigs);

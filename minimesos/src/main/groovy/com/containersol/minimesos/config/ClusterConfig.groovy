@@ -1,6 +1,7 @@
 package com.containersol.minimesos.config
 
 import groovy.util.logging.Slf4j
+import org.apache.commons.lang.StringUtils
 
 @Slf4j
 class ClusterConfig extends GroovyBlock {
@@ -28,11 +29,13 @@ class ClusterConfig extends GroovyBlock {
             throw new RuntimeException("Multiple Masters are not supported in this version yet")
         }
         master = new MesosMasterConfig();
+        master.setLoggingLevel(loggingLevel)
         delegateTo(master, cl)
     }
 
     def agent(@DelegatesTo(MesosAgentConfig) Closure cl) {
         def agent = new MesosAgentConfig()
+        agent.setLoggingLevel(getLoggingLevel())
         delegateTo(agent, cl)
         agents.add(agent)
     }
@@ -54,9 +57,9 @@ class ClusterConfig extends GroovyBlock {
     }
 
     void setLoggingLevel(String loggingLevel) {
-         if (!loggingLevel.equals("WARNING") && !loggingLevel.equals("INFO") && !loggingLevel.equals("ERROR")) {
-             throw new RuntimeException("Property 'loggingLevel' can only have the values INFO, WARNING or ERROR")
-         }
+        if (!StringUtils.equalsIgnoreCase(loggingLevel, "WARNING") && !StringUtils.equalsIgnoreCase(loggingLevel, "INFO") && !StringUtils.equalsIgnoreCase(loggingLevel, "ERROR")) {
+            throw new RuntimeException("Property 'loggingLevel' can only have the values INFO, WARNING or ERROR")
+        }
         this.loggingLevel = loggingLevel
     }
 

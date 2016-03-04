@@ -31,6 +31,20 @@ public class ConfigParserTest {
     }
 
     @Test
+    public void testLoggingLevel_caseInsensitive() {
+        String config =
+                """
+        minimesos {
+
+            loggingLevel = "warning"
+
+        }
+        """
+
+        assertEquals("warning", parser.parse(config).getLoggingLevel())
+    }
+
+    @Test
     public void testClusterName() {
         String config =
                 """
@@ -123,6 +137,32 @@ public class ConfigParserTest {
         ClusterConfig dsl = parser.parse(config)
         assertEquals(2, dsl.agents.size())
 
+    }
+
+    @Test
+    public void testLoadAgentTwoAgents_loggingLevel() {
+        String config = """
+                minimesos {
+
+                    loggingLevel = "warning"
+
+                    agent {
+                        loggingLevel = "ERROR"
+                    }
+
+                    agent {
+
+                    }
+                }
+        """
+
+        ClusterConfig dsl = parser.parse(config)
+
+        MesosAgentConfig agent1 = dsl.agents.get(0)
+        assertEquals("ERROR", agent1.getLoggingLevel())
+
+        MesosAgentConfig agent2 = dsl.agents.get(1)
+        assertEquals("WARNING", agent2.getLoggingLevel())
     }
 
     @Test
