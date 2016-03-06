@@ -8,7 +8,6 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.*;
 import com.containersol.minimesos.mesos.*;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -40,7 +39,7 @@ public class CommandUp implements Command {
     }
 
     @Parameter(names = "--timeout", description = "Time to wait for a container to get responsive, in seconds.")
-    private int timeout = MesosCluster.DEFAULT_TIMEOUT_SECS;
+    private int timeout = ClusterConfig.DEFAULT_TIMEOUT_SECS;
 
     /**
      * As number of agents can be determined either in config file or command line parameters, it defaults to invalid value.
@@ -132,8 +131,7 @@ public class CommandUp implements Command {
 
         startedCluster = new MesosCluster(clusterArchitecture);
         startedCluster.start(getTimeout());
-        startedCluster.waitForState(state -> state != null, 60);
-        startedCluster.setExposedHostPorts(isExposedHostPorts());
+        startedCluster.waitForState(state -> state != null);
 
         startedCluster.printServiceUrls(output);
 
@@ -210,9 +208,6 @@ public class CommandUp implements Command {
         // Mesos Master
         MesosMasterConfig masterConfig = (clusterConfig.getMaster() != null) ? clusterConfig.getMaster() : new MesosMasterConfig();
         masterConfig.setImageTag(getMesosImageTag());
-        if (StringUtils.equalsIgnoreCase(masterConfig.getLoggingLevel(), MesosMasterConfig.MESOS_LOGGING_LEVEL)) {
-            masterConfig.setLoggingLevel(clusterConfig.getLoggingLevel());
-        }
         clusterConfig.setMaster(masterConfig);
 
         // Marathon
@@ -226,9 +221,6 @@ public class CommandUp implements Command {
         for (int i = 0; i < getNumAgents(); i++) {
             MesosAgentConfig agentConfig = (agentConfigs.size() > i) ? agentConfigs.get(i) : new MesosAgentConfig();
             agentConfig.setImageTag(getMesosImageTag());
-            if (StringUtils.equalsIgnoreCase(agentConfig.getLoggingLevel(), MesosAgentConfig.MESOS_LOGGING_LEVEL)) {
-                agentConfig.setLoggingLevel(clusterConfig.getLoggingLevel());
-            }
             updatedConfigs.add(agentConfig);
         }
         clusterConfig.setAgents(updatedConfigs);

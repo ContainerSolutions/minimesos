@@ -48,7 +48,7 @@ public class MesosMaster extends MesosContainer {
         TreeMap<String,String> envs = new TreeMap<>();
         envs.put("MESOS_QUORUM", "1");
         envs.put("MESOS_ZK", getFormattedZKAddress());
-        envs.put("MESOS_LOGGING_LEVEL", config.getLoggingLevel());
+        envs.put("MESOS_LOGGING_LEVEL", getLoggingLevel());
         return envs;
     }
 
