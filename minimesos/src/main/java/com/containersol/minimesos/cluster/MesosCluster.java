@@ -484,6 +484,24 @@ public class MesosCluster extends ExternalResource {
         return file;
     }
 
+    /**
+     * @return configured or default logging level of all mesos containers in the cluster
+     */
+    public String getLoggingLevel() {
+        return clusterConfig.getLoggingLevel();
+    }
+
+    /**
+     * @return either configured or composed with ID cluster name
+     */
+    public String getClusterName() {
+        String name = clusterConfig.getClusterName();
+        if( StringUtils.isBlank(name)) {
+            name = "minimesos-" + clusterId;
+        }
+        return name;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -506,10 +524,6 @@ public class MesosCluster extends ExternalResource {
                 "clusterId='" + clusterId + '\'' +
                 ", containers=" + containers +
                 '}';
-    }
-
-    public String getLoggingLevel() {
-        return clusterConfig.getLoggingLevel();
     }
 
 }

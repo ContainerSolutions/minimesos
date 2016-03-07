@@ -18,7 +18,7 @@ class ClusterConfig extends GroovyBlock {
     boolean exposePorts = false
     int timeout = DEFAULT_TIMEOUT_SECS
     String mesosVersion = "0.25"
-    String clusterName = "minimesos"
+    String clusterName = null
     String loggingLevel = DEFAULT_LOGGING_LEVEL
 
     MesosMasterConfig master = null
