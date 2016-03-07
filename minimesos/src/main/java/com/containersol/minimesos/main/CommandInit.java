@@ -3,13 +3,12 @@ package com.containersol.minimesos.main;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
-import org.apache.commons.io.IOUtils;
+import com.containersol.minimesos.config.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -37,17 +36,37 @@ public class CommandInit implements Command {
 
     @Override
     public void execute() throws MinimesosException {
-        File minimesosFile = new File(MesosCluster.getHostDir(), "minimesosFile");
+
+        File minimesosFile = new File(MesosCluster.getHostDir(), ClusterConfig.DEFAULT_CONFIG_FILE);
 
         if (minimesosFile.exists()) {
             throw new MinimesosException("A minimesosFile already exists in this directory");
         }
 
-        try (InputStream minimesosFileTemplate = getClass().getResourceAsStream("/minimesosFile")) {
-            Files.write(Paths.get(minimesosFile.getAbsolutePath()), IOUtils.toString(minimesosFileTemplate).getBytes());
-            LOGGER.info("Initialized minimesosFile in this directory");
+        String fileContent = getConfigFileContent();
+
+        try {
+            Files.write(Paths.get(minimesosFile.getAbsolutePath()), fileContent.getBytes());
         } catch (IOException e) {
             throw new MinimesosException(format("Could not initialize minimesosFile: %s", e.getMessage()), e);
         }
+        LOGGER.info("Initialized minimesosFile in this directory");
+
     }
+
+    public String getConfigFileContent() {
+
+        ClusterConfig config = new ClusterConfig();
+        config.setClusterName("Change Cluster Name in " + ClusterConfig.DEFAULT_CONFIG_FILE + " file");
+
+        config.setMaster(new MesosMasterConfig());
+        config.setZookeeper(new ZooKeeperConfig());
+        config.setMarathon(new MarathonConfig());
+        config.getAgents().add(new MesosAgentConfig());
+
+        ConfigParser parser = new ConfigParser();
+        return parser.toString(config);
+    }
+
+
 }

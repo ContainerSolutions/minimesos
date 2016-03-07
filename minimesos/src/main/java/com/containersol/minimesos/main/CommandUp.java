@@ -52,7 +52,7 @@ public class CommandUp implements Command {
     private boolean startConsul = false;
 
     @Parameter(names = "--clusterConfig", description = "Path to file with cluster configuration. Defaults to minimesosFile")
-    private String clusterConfigPath = "minimesosFile";
+    private String clusterConfigPath = ClusterConfig.DEFAULT_CONFIG_FILE;
 
     /**
      * Indicates is configurationFile was found
