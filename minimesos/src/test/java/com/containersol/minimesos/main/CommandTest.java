@@ -110,7 +110,7 @@ public class CommandTest {
         commandInfo.execute();
 
         String result = outputStream.toString();
-        assertTrue(result.contains(FileUtils.readFileToString(new File("src/test/resources/info-not-running.txt"))));
+        assertTrue(result.contains("Minimesos cluster is not running"));
     }
 
     @Test
