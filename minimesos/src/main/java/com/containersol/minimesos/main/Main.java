@@ -43,11 +43,11 @@ public class Main {
         main.addCommand(new CommandInfo());
         try {
             int rc = main.run(args);
-            if( EXIT_CODE_OK != rc ) {
+            if (EXIT_CODE_OK != rc) {
                 System.exit(rc);
             }
         } catch (MinimesosException mme) {
-            LOGGER.error( mme.getMessage() );
+            LOGGER.error(mme.getMessage());
             System.exit(EXIT_CODE_ERR);
         }
     }

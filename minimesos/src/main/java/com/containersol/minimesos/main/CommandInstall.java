@@ -64,7 +64,6 @@ public class CommandInstall implements Command {
 
     @Override
     public void execute() throws MinimesosException {
-
         String marathonJson;
         try {
             marathonJson = getMarathonJson();
@@ -91,4 +90,7 @@ public class CommandInstall implements Command {
         return CLINAME;
     }
 
+    public void setMarathonFile(String marathonFile) {
+        this.marathonFile = marathonFile;
+    }
 }
