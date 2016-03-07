@@ -1,10 +1,12 @@
 package com.containersol.minimesos.main;
 
+import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.json.JSONObject;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,7 +31,6 @@ public class CommandTest {
 
     @Test
     public void testUpAndDestroy() {
-
         CommandUp commandUp = new CommandUp();
         commandUp.execute();
         MesosCluster cluster = commandUp.getCluster();
@@ -48,7 +49,6 @@ public class CommandTest {
 
     @Test
     public void testUp_invalidMinimesosFile() throws IOException {
-
         FileUtils.write(ClusterRepository.getMinimesosFile(), "invalid");
 
         CommandUp commandUp = new CommandUp();
@@ -68,7 +68,6 @@ public class CommandTest {
 
     @Test
     public void testUp_alreadyRunning() {
-
         CommandUp commandUp = new CommandUp();
 
         commandUp.execute();
@@ -115,7 +114,6 @@ public class CommandTest {
 
     @Test
     public void testState() throws IOException {
-
         CommandUp commandUp = new CommandUp();
         commandUp.execute();
         MesosCluster cluster = commandUp.getCluster();
@@ -134,7 +132,39 @@ public class CommandTest {
     @Test
     public void testInstallCommandValidation() {
         CommandInstall install = new CommandInstall();
-        assertFalse("Install command requires one of the parameters", install.validateParameters() );
+        assertFalse("Install command requires one of the parameters", install.validateParameters());
+    }
+
+    @Test
+    public void testInstall() {
+        CommandUp commandUp = new CommandUp();
+        commandUp.execute();
+
+        CommandInstall install = new CommandInstall();
+        install.setMarathonFile("src/test/resources/app.json");
+
+        install.execute();
+
+        CommandDestroy commandDestroy = new CommandDestroy();
+        commandDestroy.execute();
+    }
+
+    @Test(expected = MinimesosException.class)
+    public void testInstall_alreadyRunning() {
+        CommandUp commandUp = new CommandUp();
+        commandUp.execute();
+
+        CommandInstall install = new CommandInstall();
+        install.setMarathonFile("src/test/resources/app.json");
+
+        install.execute();
+
+        try {
+            install.execute();
+        } finally {
+            CommandDestroy commandDestroy = new CommandDestroy();
+            commandDestroy.execute();
+        }
     }
 
     @Test

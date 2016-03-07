@@ -1,5 +1,6 @@
 package com.containersol.minimesos.marathon;
 
+import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.MarathonConfig;
 import com.containersol.minimesos.container.AbstractContainer;
@@ -8,7 +9,19 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.http.HttpStatus;
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.nio.charset.Charset;
+import java.util.concurrent.TimeUnit;
+
+import static com.jayway.awaitility.Awaitility.await;
 
 /**
  * Marathon container
@@ -64,10 +77,80 @@ public class Marathon extends AbstractContainer {
                 .withPortBindings(portBindings);
     }
 
+    /**
+     * Deploy a Marathon app or a framework
+     *
+     * @param appJson JSON string
+     */
     public void deployApp(String appJson) {
-        MarathonClient marathonClient = new MarathonClient(getIpAddress());
-        LOGGER.info(String.format("Installing an app on marathon %s", getIpAddress()));
-        marathonClient.deployApp(appJson);
+        String marathonEndpoint = getMarathonEndpoint();
+        try {
+            byte[] app = appJson.getBytes(Charset.forName("UTF-8"));
+
+            HttpResponse<JsonNode> response = Unirest.post(marathonEndpoint + "/v2/apps").header("accept", "application/json").body(app).asJson();
+            JSONObject deployResponse = response.getBody().getObject();
+
+            if (response.getStatus() == HttpStatus.SC_CREATED) {
+                LOGGER.debug(deployResponse);
+            } else {
+                throw new MinimesosException("Marathon did not accept the app: " + deployResponse);
+            }
+
+        } catch (UnirestException e) {
+            String msg = "Could not deploy app on Marathon at " + marathonEndpoint + " => " + e.getMessage();
+            LOGGER.error(msg);
+            throw new MinimesosException(msg, e);
+        }
+        LOGGER.info(String.format("Installing an app on marathon %s", getMarathonEndpoint()));
     }
 
+    /**
+     * Kill all apps that are currently running.
+     */
+    public void killAllApps() {
+        String marathonEndpoint = getMarathonEndpoint();
+        JSONObject appsResponse;
+        try {
+            appsResponse = Unirest.get(marathonEndpoint + "/v2/apps").header("accept", "application/json").asJson().getBody().getObject();
+            if (appsResponse.length() == 0) {
+                return;
+            }
+        } catch (UnirestException e) {
+            LOGGER.error("Could not retrieve apps from Marathon at " + marathonEndpoint);
+            return;
+        }
+
+        JSONArray apps = appsResponse.getJSONArray("apps");
+        for (int i = 0; i < apps.length(); i++) {
+            JSONObject app = apps.getJSONObject(i);
+            String appId = app.getString("id");
+            try {
+                Unirest.delete(marathonEndpoint + "/v2/apps" + appId).asJson();
+            } catch (UnirestException e) {
+                LOGGER.error("Could not delete app " + appId + " at " + marathonEndpoint);
+            }
+        }
+    }
+
+    public String getMarathonEndpoint() {
+        return "http://" + getIpAddress() + ":" + MarathonConfig.MARATHON_PORT;
+    }
+
+    public void waitFor() {
+        await("Marathon did not start responding").atMost(getCluster().getClusterConfig().getTimeout(), TimeUnit.SECONDS).until(this::isReady);
+    }
+
+    public boolean isReady() {
+        JSONObject appsResponse;
+        try {
+            appsResponse = Unirest.get(getMarathonEndpoint() + "/v2/apps").header("accept", "application/json").asJson().getBody().getObject();
+            if (appsResponse.length() == 0) {
+                return false;
+            }
+        } catch (UnirestException e) {
+            return false;
+        }
+
+        return true;
+    }
 }

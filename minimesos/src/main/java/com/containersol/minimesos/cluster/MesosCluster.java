@@ -5,10 +5,8 @@ import com.containersol.minimesos.config.*;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.container.ContainerName;
 import com.containersol.minimesos.marathon.Marathon;
-import com.containersol.minimesos.marathon.MarathonClient;
 import com.containersol.minimesos.mesos.*;
 import com.containersol.minimesos.state.State;
-import com.containersol.minimesos.util.MesosClusterStateResponse;
 import com.containersol.minimesos.util.Predicate;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.InternalServerErrorException;
@@ -165,10 +163,12 @@ public class MesosCluster extends ExternalResource {
         LOGGER.debug("Cluster " + getClusterId() + " - start");
         this.containers.forEach((container) -> container.start(timeoutSeconds));
         // wait until the given number of agents are registered
-        new MesosClusterStateResponse(this).waitFor();
+        getMasterContainer().waitFor();
+        if (getMarathonContainer() != null) {
+            getMarathonContainer().waitFor();
+        }
 
         running = true;
-
     }
 
     /**
@@ -235,9 +235,8 @@ public class MesosCluster extends ExternalResource {
         if (clusterId != null) {
 
             Marathon marathon = getMarathonContainer();
-            if( marathon != null ) {
-                MarathonClient client = new MarathonClient(getMarathonContainer().getIpAddress());
-                client.killAllApps();
+            if (marathon != null) {
+                marathon.killAllApps();
             }
 
             List<Container> containers1 = dockerClient.listContainersCmd().exec();
@@ -457,10 +456,9 @@ public class MesosCluster extends ExternalResource {
         }
 
         String marathonIp = marathon.getIpAddress();
-        MarathonClient marathonClient = new MarathonClient(marathonIp);
         LOGGER.debug(String.format("Installing %s app on marathon %s", marathonJson, marathonIp));
 
-        marathonClient.deployApp(marathonJson);
+        marathon.deployApp(marathonJson);
     }
 
     /**
@@ -500,6 +498,10 @@ public class MesosCluster extends ExternalResource {
             name = "minimesos-" + clusterId;
         }
         return name;
+    }
+
+    public ClusterConfig getClusterConfig() {
+        return clusterConfig;
     }
 
     @Override
