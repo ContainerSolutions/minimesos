@@ -6,8 +6,6 @@ import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 
-import org.apache.log4j.Logger;
-
 import java.io.*;
 import java.util.Scanner;
 
