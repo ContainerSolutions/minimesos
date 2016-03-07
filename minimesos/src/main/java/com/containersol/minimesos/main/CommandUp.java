@@ -39,7 +39,7 @@ public class CommandUp implements Command {
     }
 
     @Parameter(names = "--timeout", description = "Time to wait for a container to get responsive, in seconds.")
-    private int timeout = MesosCluster.DEFAULT_TIMEOUT_SECS;
+    private int timeout = ClusterConfig.DEFAULT_TIMEOUT_SECS;
 
     /**
      * As number of agents can be determined either in config file or command line parameters, it defaults to invalid value.
@@ -131,8 +131,7 @@ public class CommandUp implements Command {
 
         startedCluster = new MesosCluster(clusterArchitecture);
         startedCluster.start(getTimeout());
-        startedCluster.waitForState(state -> state != null, 60);
-        startedCluster.setExposedHostPorts(isExposedHostPorts());
+        startedCluster.waitForState(state -> state != null);
 
         startedCluster.printServiceUrls(output);
 

@@ -1,6 +1,7 @@
 package com.containersol.minimesos.config
 
 import groovy.util.logging.Slf4j
+import org.apache.commons.lang.StringUtils
 
 @Slf4j
 class ClusterConfig extends GroovyBlock {
@@ -11,11 +12,14 @@ class ClusterConfig extends GroovyBlock {
         cl.call();
     }
 
-    boolean exposePorts = true
-    int timeout = 60
-    String mesosVersion = "0.25"
+    public static final String DEFAULT_LOGGING_LEVEL = "INFO"
+    public static final int DEFAULT_TIMEOUT_SECS = 60
 
-    def clusterName = "minimesos"
+    boolean exposePorts = false
+    int timeout = DEFAULT_TIMEOUT_SECS
+    String mesosVersion = "0.25"
+    String clusterName = null
+    String loggingLevel = DEFAULT_LOGGING_LEVEL
 
     MesosMasterConfig master = null
     List<MesosAgentConfig> agents = new ArrayList<>()
@@ -27,7 +31,7 @@ class ClusterConfig extends GroovyBlock {
         if (master != null) {
             throw new RuntimeException("Multiple Masters are not supported in this version yet")
         }
-        master = new MesosMasterConfig();
+        master = new MesosMasterConfig()
         delegateTo(master, cl)
     }
 
@@ -53,4 +57,14 @@ class ClusterConfig extends GroovyBlock {
         delegateTo(marathon, cl)
     }
 
+    void setLoggingLevel(String loggingLevel) {
+        if (!StringUtils.equalsIgnoreCase(loggingLevel, "WARNING") && !StringUtils.equalsIgnoreCase(loggingLevel, "INFO") && !StringUtils.equalsIgnoreCase(loggingLevel, "ERROR")) {
+            throw new RuntimeException("Property 'loggingLevel' can only have the values INFO, WARNING or ERROR")
+        }
+        this.loggingLevel = loggingLevel.toUpperCase()
+    }
+
+    String getLoggingLevel() {
+        return loggingLevel
+    }
 }

@@ -5,7 +5,6 @@ import com.containersol.minimesos.mesos.ClusterContainers;
 import com.containersol.minimesos.mesos.MesosAgent;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
