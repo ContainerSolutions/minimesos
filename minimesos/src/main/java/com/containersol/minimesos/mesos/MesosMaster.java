@@ -131,7 +131,7 @@ public class MesosMaster extends MesosContainer {
 
         public void waitFor() {
             await()
-                    .atMost(60, TimeUnit.SECONDS)
+                    .atMost( mesosCluster.getClusterConfig().getTimeout(), TimeUnit.SECONDS)
                     .pollInterval(1, TimeUnit.SECONDS)
                     .until(this);
 
