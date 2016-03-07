@@ -500,6 +500,10 @@ public class MesosCluster extends ExternalResource {
         return name;
     }
 
+    public ClusterConfig getClusterConfig() {
+        return clusterConfig;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

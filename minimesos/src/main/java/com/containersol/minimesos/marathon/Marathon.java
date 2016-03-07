@@ -137,7 +137,7 @@ public class Marathon extends AbstractContainer {
     }
 
     public void waitFor() {
-        await("Marathon did not start responding").atMost(60, TimeUnit.SECONDS).until(this::isReady);
+        await("Marathon did not start responding").atMost(getCluster().getClusterConfig().getTimeout(), TimeUnit.SECONDS).until(this::isReady);
     }
 
     public boolean isReady() {
