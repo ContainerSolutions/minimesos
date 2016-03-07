@@ -41,7 +41,7 @@ public class ConfigParserTest {
         }
         """
 
-        assertEquals("warning", parser.parse(config).getLoggingLevel())
+        assertEquals("WARNING", parser.parse(config).getLoggingLevel())
     }
 
     @Test
@@ -162,7 +162,7 @@ public class ConfigParserTest {
         assertEquals("ERROR", agent1.getLoggingLevel())
 
         MesosAgentConfig agent2 = dsl.agents.get(1)
-        assertEquals("WARNING", agent2.getLoggingLevel())
+        assertEquals(MesosContainerConfig.MESOS_LOGGING_LEVEL_INHERIT, agent2.getLoggingLevel())
     }
 
     @Test
