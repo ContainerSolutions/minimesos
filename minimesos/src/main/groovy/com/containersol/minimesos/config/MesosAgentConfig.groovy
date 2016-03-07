@@ -11,7 +11,7 @@ class MesosAgentConfig extends MesosContainerConfig {
     int portNumber = DEFAULT_MESOS_SLAVE_PORT
 
     String imageName        = MESOS_SLAVE_IMAGE
-    String imageTag         = MESOS_IMAGE_TAG
+    String imageTag         = MESOS_TAG
 
     AgentResources resources = new AgentResources()
 

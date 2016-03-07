@@ -29,7 +29,7 @@ public class CommandUp implements Command {
     private String marathonImageTag = MarathonConfig.MARATHON_IMAGE_TAG;
 
     @Parameter(names = "--mesosImageTag", description = "The tag of the Mesos master and agent Docker images.")
-    private String mesosImageTag = MesosContainerConfig.MESOS_IMAGE_TAG;
+    private String mesosImageTag = MesosContainerConfig.MESOS_TAG;
 
     @Parameter(names = "--zooKeeperImageTag", description = "The tag of the ZooKeeper Docker images.")
     private String zooKeeperImageTag = ZooKeeperConfig.ZOOKEEPER_IMAGE_TAG;

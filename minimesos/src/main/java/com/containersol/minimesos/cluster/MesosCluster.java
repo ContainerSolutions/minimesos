@@ -177,7 +177,7 @@ public class MesosCluster extends ExternalResource {
     public void info(PrintStream out) {
         if (clusterId != null) {
             out.println("Minimesos cluster is running: " + clusterId);
-            out.println("Mesos version: " + MesosContainerConfig.MESOS_IMAGE_TAG.substring(0, MesosContainerConfig.MESOS_IMAGE_TAG.indexOf("-")));
+            out.println("Mesos version: " + clusterConfig.getMesosVersion());
             printServiceUrls(out);
         }
     }
@@ -485,10 +485,17 @@ public class MesosCluster extends ExternalResource {
     }
 
     /**
-     * @return configured or default logging level of all mesos containers in the cluster
+     * @return configured or default logging level of all Mesos containers in the cluster
      */
     public String getLoggingLevel() {
         return clusterConfig.getLoggingLevel();
+    }
+
+    /**
+     * @return configured or default Mesos version of all Mesos containers in the cluster
+     */
+    public String getMesosVersion() {
+        return clusterConfig.getMesosVersion();
     }
 
     /**
