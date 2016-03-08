@@ -66,6 +66,13 @@ class ClusterConfig extends GroovyBlock {
         this.loggingLevel = loggingLevel.toUpperCase()
     }
 
+    void setMesosVersion(String mesosVersion) {
+        if (!MesosContainerConfig.MESOS_IMAGE_TAGS.keySet().contains(mesosVersion)) {
+            throw new RuntimeException("Property 'mesosVersion' supports values: " + StringUtils.join(MesosContainerConfig.MESOS_IMAGE_TAGS.keySet(), ","))
+        }
+        this.mesosVersion = mesosVersion
+    }
+
     String getLoggingLevel() {
         return loggingLevel
     }

@@ -182,6 +182,68 @@ public class ConfigParserTest {
 
     }
 
+    @Test(expected = RuntimeException.class)
+    public void testMesosVersion_nonExistentVersion() {
+        String config = """
+                minimesos {
+
+                    mesosVersion = "1.0.0-does-not-exist"
+
+                    master {
+
+                    }
+                }
+        """
+
+        parser.parse(config)
+    }
+
+    @Test
+    public void testMesosVersion_inheritTag() {
+        String config = """
+                minimesos {
+
+                    mesosVersion = "0.26"
+
+                    master {
+
+                    }
+                }
+        """
+
+        ClusterConfig dsl = parser.parse(config)
+        assertNotNull(dsl.master)
+        assertEquals("containersol/mesos-master", dsl.master.imageName)
+        assertEquals("INHERIT", dsl.master.imageTag)
+    }
+
+    @Test
+    public void testMesosVersion_overrideTag() {
+        String config = """
+                minimesos {
+
+                    mesosVersion = "0.26"
+
+                    master {
+                        imageTag = "0.27"
+                    }
+
+                    agent {
+                        imageTag = "0.28"
+                    }
+                }
+        """
+
+        ClusterConfig dsl = parser.parse(config)
+        assertNotNull(dsl.master)
+        assertEquals("containersol/mesos-master", dsl.master.imageName)
+        assertEquals("0.27", dsl.master.imageTag)
+
+        assertNotNull(dsl.agents.get(0))
+        assertEquals("containersol/mesos-agent", dsl.agents.get(0).imageName)
+        assertEquals("0.28", dsl.agents.get(0).imageTag)
+    }
+
     @Test(expected = Exception.class)
     public void testFailureToLoadTwoMaster() {
 

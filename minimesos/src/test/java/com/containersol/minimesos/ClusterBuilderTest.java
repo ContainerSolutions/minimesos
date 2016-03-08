@@ -15,11 +15,10 @@ import static org.junit.Assert.assertEquals;
 public class ClusterBuilderTest {
 
     @Test
-    public void testInheritedLoggingLevel() {
-
+    public void testInheritedImageTag() {
         String config = "minimesos { \n" +
-                "loggingLevel = \"warning\" \n" +
-                "agent { loggingLevel = \"ERROR\"} \n" +
+                "mesosVersion = \"0.26\" \n" +
+                "agent { imageTag = \"0.27.0-0.2.190.ubuntu1404\"} \n" +
                 "agent {} \n" +
                 "}";
 
@@ -32,14 +31,12 @@ public class ClusterBuilderTest {
         List<MesosAgent> agents = cluster.getAgents();
         assertEquals(2, agents.size());
 
-        assertEquals("ERROR", agents.get(0).getLoggingLevel());
-        assertEquals("WARNING", agents.get(1).getLoggingLevel());
-
+        assertEquals("0.27.0-0.2.190.ubuntu1404", agents.get(0).getMesosImageTag());
+        assertEquals("0.26.0-0.2.145.ubuntu1404", agents.get(1).getMesosImageTag());
     }
 
     @Test
     public void testDefaultInAgentLoggingLevel() {
-
         String config = "minimesos { \n" +
                 "loggingLevel = \"warning\" \n" +
                 "agent { loggingLevel = \"ERROR\" } \n" +
@@ -57,7 +54,27 @@ public class ClusterBuilderTest {
 
         assertEquals("ERROR", agents.get(0).getLoggingLevel());
         assertEquals("INFO", agents.get(1).getLoggingLevel());
+    }
 
+    @Test
+    public void testInheritedLoggingLevel() {
+        String config = "minimesos { \n" +
+                "loggingLevel = \"warning\" \n" +
+                "agent { loggingLevel = \"ERROR\"} \n" +
+                "agent {} \n" +
+                "}";
+
+        ConfigParser parser = new ConfigParser();
+        ClusterConfig dsl = parser.parse(config);
+
+        ClusterArchitecture.Builder builder = ClusterArchitecture.Builder.createCluster(dsl);
+        MesosCluster cluster = new MesosCluster(builder.build());
+
+        List<MesosAgent> agents = cluster.getAgents();
+        assertEquals(2, agents.size());
+
+        assertEquals("ERROR", agents.get(0).getLoggingLevel());
+        assertEquals("WARNING", agents.get(1).getLoggingLevel());
     }
 
 }
