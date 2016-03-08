@@ -12,6 +12,7 @@ class ClusterConfig extends GroovyBlock {
         cl.call();
     }
 
+    public static final String DEFAULT_CONFIG_FILE      = "minimesosFile"
     public static final String DEFAULT_LOGGING_LEVEL    = "INFO"
     public static final int DEFAULT_TIMEOUT_SECS        = 60
     public static final String DEFAULT_MESOS_VERSION    = "0.25"

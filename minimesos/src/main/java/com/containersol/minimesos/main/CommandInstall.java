@@ -6,8 +6,6 @@ import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 
-import org.apache.log4j.Logger;
-
 import java.io.*;
 import java.util.Scanner;
 
@@ -64,7 +62,6 @@ public class CommandInstall implements Command {
 
     @Override
     public void execute() throws MinimesosException {
-
         String marathonJson;
         try {
             marathonJson = getMarathonJson();
@@ -91,4 +88,7 @@ public class CommandInstall implements Command {
         return CLINAME;
     }
 
+    public void setMarathonFile(String marathonFile) {
+        this.marathonFile = marathonFile;
+    }
 }
