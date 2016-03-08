@@ -4,12 +4,12 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class AgentResourcesTest {
+public class AgentResourcesConfigTest {
 
     @Test
     public void testDefaultResourcesAsString() {
 
-        AgentResources resources = new AgentResources()
+        AgentResourcesConfig resources = new AgentResourcesConfig()
         String asString = resources.asMesosString()
         String expected = "ports(*):[31000-32000]; cpus(*):0.2; mem(*):256; disk(*):200"
 
@@ -21,7 +21,7 @@ public class AgentResourcesTest {
     public void testPortsFromString() {
 
         String strResources = "ports(*):[8081-8082]"
-        AgentResources resources = AgentResources.fromString(strResources);
+        AgentResourcesConfig resources = AgentResourcesConfig.fromString(strResources);
 
         assertEquals(0, resources.cpus.size())
         assertEquals(0, resources.disks.size())
@@ -36,7 +36,7 @@ public class AgentResourcesTest {
     public void testPortsCpusFromString() {
 
         String strResources = "ports(*):[8081-8082]; cpus(*):1.2"
-        AgentResources resources = AgentResources.fromString(strResources);
+        AgentResourcesConfig resources = AgentResourcesConfig.fromString(strResources);
 
         assertEquals(1, resources.cpus.size())
         double actual = resources.cpus["*"].value

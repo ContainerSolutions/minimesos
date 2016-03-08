@@ -45,7 +45,12 @@ public class MesosClusterTest {
     @After
     public void after() {
         DockerContainersUtil util = new DockerContainersUtil(CONFIG.dockerClient);
-        util.getContainers(false).filterByName( HelloWorldContainer.CONTAINER_NAME_PATTERN ).kill().remove();
+        util.getContainers(false).filterByName(HelloWorldContainer.CONTAINER_NAME_PATTERN).kill().remove();
+    }
+
+    @Test(expected =  ClusterArchitecture.MesosArchitectureException.class)
+    public void testConstructor() {
+        MesosCluster cluster = new MesosCluster(null);
     }
 
     @Test
@@ -60,7 +65,26 @@ public class MesosClusterTest {
         assertEquals(CLUSTER.getMasterContainer().getStateUrl(), cluster.getMasterContainer().getStateUrl());
 
         assertFalse( "Deserialize cluster is expected to remember exposed ports setting", cluster.isExposedHostPorts() );
+    }
 
+    @Test(expected = MinimesosException.class)
+    public void testLoadCluster_noContainersFound() {
+        MesosCluster cluster = MesosCluster.loadCluster("nonexistent");
+    }
+
+    @Test
+    public void testInfo() {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        PrintStream printStream = new PrintStream(byteArrayOutputStream);
+
+        CLUSTER.info(printStream);
+
+        String output = byteArrayOutputStream.toString();
+
+        assertTrue(output.contains("Minimesos cluster is running: " + CLUSTER.getClusterId() + "\n"));
+        assertTrue(output.contains("export MINIMESOS_ZOOKEEPER=zk://" + CLUSTER.getZkContainer().getIpAddress() + ":2181\n"));
+        assertTrue(output.contains("export MINIMESOS_MASTER=http://" + CLUSTER.getMasterContainer().getIpAddress() + ":5050\n"));
+        assertTrue(output.contains("export MINIMESOS_MARATHON=http://" + CLUSTER.getMarathonContainer().getIpAddress() + ":8080\n"));
     }
 
     @Test
@@ -140,8 +164,12 @@ public class MesosClusterTest {
             assertNotNull( links );
             assertEquals( "link to zookeeper is expected", 1, links.size() );
             assertEquals( "minimesos-zookeeper", links.get(0).getAlias() );
-
         }
+    }
+
+    @Test(expected = MinimesosException.class)
+    public void testInstall() {
+        CLUSTER.install(null);
     }
 
     @Test(expected = IllegalStateException.class)

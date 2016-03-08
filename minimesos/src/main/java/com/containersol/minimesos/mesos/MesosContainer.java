@@ -88,7 +88,7 @@ public abstract class MesosContainer extends AbstractContainer {
 
     public String getLoggingLevel() {
         String level = config.getLoggingLevel();
-        if( MesosContainerConfig.MESOS_LOGGING_LEVEL_INHERIT.equalsIgnoreCase(level)) {
+        if (MesosContainerConfig.MESOS_LOGGING_LEVEL_INHERIT.equalsIgnoreCase(level)) {
             level = getCluster().getLoggingLevel();
         }
         return level;

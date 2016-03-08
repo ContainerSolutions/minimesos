@@ -1,6 +1,6 @@
 # minimesos
 
-Testing infrastructure for Mesos frameworks. 
+The experimentation and testing tool for Mesos. 
 
 ## Installing
 
@@ -17,12 +17,14 @@ $ export PATH=$PATH:$HOME/.minimesos/bin
 
 ## System Requirements
 
-```minimesos``` runs docker containers with 0.25.0-0.2.70.ubuntu1404 version of ```mesos```, which comes with installation of Docker 1.8.3. The
-docker clients in mesos contains should be able to talk to docker server on your host machine. Therefore the host is expected to run 1.8 or higher 
-version of Docker or Docker Machine. See Docker [API compatibility](https://docs.docker.com/engine/reference/api/docker_remote_api/) table. 
+minimesos runs Docker containers with a configurable version version of Mesos. See the [minimesos-docker](https://github.com/ContainerSolutions/minimesos-docker) repository
+with an overview of the images supported by minimesos.
 
+The Docker client in these Mesos images should be able to talk to Docker daemon on your host machine. The Docker daemon is expected to run version 1.10 or higher 
+of Docker or Docker Machine. See Docker [API compatibility](https://docs.docker.com/engine/reference/api/docker_remote_api/) table. 
 
 ## Command line interface
+
 Run
 ```
 $ minimesos help
@@ -66,8 +68,8 @@ public class MesosClusterTest {
 
 A possible testing scenario could be:
  
- 1. In the test setup  launch the Mesos cluster container
- 2. Call the scheduler directly from your test and point to zookeeper to detect the master or passing the master URL directly.
+ 1. In the test setup launch the Mesos cluster container
+ 2. Call the scheduler directly from your test and point to Zookeeper to detect the master or passing the master URL directly.
  3. The scheduler launches a task on a suitable agent.
  4. Poll the state of the Mesos cluster to verify that you framework is running
  5. The test utilities take care of stopping and removing the Mesos cluster
@@ -186,5 +188,3 @@ export LIBPROCESS_IP=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | 
 ```
 
 This ensures your executor task will be assigned an interface to allow communication within the cluster.
-
-

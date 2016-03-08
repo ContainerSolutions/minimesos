@@ -1,7 +1,7 @@
 package com.containersol.minimesos;
 
 import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.config.AgentResources;
+import com.containersol.minimesos.config.AgentResourcesConfig;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.mesos.*;
 import com.containersol.minimesos.util.ResourceUtil;
@@ -51,7 +51,7 @@ public class NewMesosClusterTest {
     public void mesosResourcesCorrect() throws Exception {
         JSONObject stateInfo = cluster.getMasterContainer().getStateInfoJSON();
         for (int i = 0; i < 3; i++) {
-            assertEquals(AgentResources.DEFAULT_CPU.getValue(), stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getDouble("cpus"), 0.0001);
+            assertEquals(AgentResourcesConfig.DEFAULT_CPU.getValue(), stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getDouble("cpus"), 0.0001);
             assertEquals(256, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getInt("mem"));
         }
     }

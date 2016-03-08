@@ -5,7 +5,7 @@ import groovy.util.logging.Slf4j
 import java.util.regex.Matcher
 
 @Slf4j
-class AgentResources extends GroovyBlock {
+class AgentResourcesConfig extends GroovyBlock {
 
     static public final ResourceDefScalar DEFAULT_CPU = new ResourceDefScalar("*", 0.2)
     static public final ResourceDefScalar DEFAULT_MEM = new ResourceDefScalar("*", 256)
@@ -17,11 +17,11 @@ class AgentResources extends GroovyBlock {
     HashMap<String, ResourceDefScalar> disks
     HashMap<String, ResourceDefRanges> ports
 
-    public AgentResources() {
+    public AgentResourcesConfig() {
         this(true)
     }
 
-    private AgentResources(boolean defaults) {
+    private AgentResourcesConfig(boolean defaults) {
         cpus = new HashMap<>()
         mems = new HashMap<>()
         disks = new HashMap<>()
@@ -43,10 +43,10 @@ class AgentResources extends GroovyBlock {
      * @param strResources in format like ports(*):[8081-8082]; cpus(*):1.2
      * @return
      */
-    static AgentResources fromString(String strResources) {
+    static AgentResourcesConfig fromString(String strResources) {
 
         String pattern = "(\\w+)\\(([A-Za-z0-9_\\*]+)\\):(\\[?[0-9_\\-\\*.]+\\]?)"
-        AgentResources resources = new AgentResources(false)
+        AgentResourcesConfig resources = new AgentResourcesConfig(false)
 
         String[] split = strResources.split(";")
         for (String str : split) {
