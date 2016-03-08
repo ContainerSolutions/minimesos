@@ -175,7 +175,9 @@ public class MesosCluster extends ExternalResource {
     public void info(PrintStream out) {
         if (clusterId != null) {
             out.println("Minimesos cluster is running: " + clusterId);
-            out.println("Mesos version: " + clusterConfig.getMesosVersion());
+            if (getMesosVersion() != null) {
+                out.println("Mesos version: " + clusterConfig.getMesosVersion());
+            }
             printServiceUrls(out);
         }
     }
