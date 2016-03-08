@@ -42,7 +42,7 @@ public abstract class MesosContainer extends AbstractContainer {
 
     public String getMesosImageTag() {
         String imageTag = config.getImageTag();
-        if (MesosContainerConfig.MESOS_TAG.equalsIgnoreCase(imageTag)) {
+        if (MesosContainerConfig.MESOS_IMAGE_TAG.equalsIgnoreCase(imageTag)) {
             String mesosVersion = getCluster().getMesosVersion();
             imageTag = MesosContainerConfig.MESOS_IMAGE_TAGS.get(mesosVersion);
         }
