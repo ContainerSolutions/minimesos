@@ -27,7 +27,8 @@ import static com.jayway.awaitility.Awaitility.await;
  */
 public abstract class AbstractContainer {
 
-    private static Logger LOGGER = Logger.getLogger(AbstractContainer.class);
+    static private final int IMAGE_PULL_TIMEOUT_SECS = 5 * 60;
+    static private final Logger LOGGER = Logger.getLogger(AbstractContainer.class);
 
     private MesosCluster cluster;
     private String uuid;
@@ -184,7 +185,7 @@ public abstract class AbstractContainer {
             public void onNext(PullResponseItem item) {
                 String status = item.getStatus();
                 if (status == null) {
-                    String msg = "Error pulling image or image not found in registry: " + imageName + ":" + registryTag;
+                    String msg = String.format("# Error pulling image from registry. Try executing the command below manually\ndocker pull %s:%s", imageName, registryTag);
                     result.completeExceptionally(new MinimesosException(msg));
                 }
             }
@@ -199,7 +200,7 @@ public abstract class AbstractContainer {
 
 
         try {
-            result.get(5, TimeUnit.MINUTES);
+            result.get(IMAGE_PULL_TIMEOUT_SECS, TimeUnit.SECONDS);
         } catch (ExecutionException e) {
             throw new MinimesosException(e.getCause().getMessage());
         } catch (InterruptedException|TimeoutException|RuntimeException e) {
