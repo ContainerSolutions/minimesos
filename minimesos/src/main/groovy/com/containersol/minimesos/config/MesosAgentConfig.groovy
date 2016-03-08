@@ -13,9 +13,9 @@ class MesosAgentConfig extends MesosContainerConfig {
     String imageName        = MESOS_SLAVE_IMAGE
     String imageTag         = MESOS_IMAGE_TAG
 
-    AgentResources resources = new AgentResources()
+    AgentResourcesConfig resources = new AgentResourcesConfig()
 
-    def resources(@DelegatesTo(AgentResources) Closure cl) {
+    def resources(@DelegatesTo(AgentResourcesConfig) Closure cl) {
         delegateTo(resources, cl)
     }
 

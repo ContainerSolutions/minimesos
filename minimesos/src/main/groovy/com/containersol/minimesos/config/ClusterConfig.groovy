@@ -6,20 +6,20 @@ import org.apache.commons.lang.StringUtils
 @Slf4j
 class ClusterConfig extends GroovyBlock {
 
+    public static final int DEFAULT_TIMEOUT_SECS = 60
+    public static final String DEFAULT_MESOS_VERSION = "0.25"
+    public static final String DEFAULT_CONFIG_FILE = "minimesosFile"
+    public static final String DEFAULT_LOGGING_LEVEL = "INFO"
+
     def call(Closure cl) {
         cl.setDelegate(this);
         cl.setResolveStrategy(Closure.DELEGATE_ONLY)
         cl.call();
     }
 
-    public static final String DEFAULT_CONFIG_FILE = "minimesosFile"
-
-    public static final String DEFAULT_LOGGING_LEVEL = "INFO"
-    public static final int DEFAULT_TIMEOUT_SECS = 60
-
     boolean exposePorts = false
     int timeout = DEFAULT_TIMEOUT_SECS
-    String mesosVersion = "0.25"
+    String mesosVersion = DEFAULT_MESOS_VERSION
     String clusterName = null
     String loggingLevel = DEFAULT_LOGGING_LEVEL
 

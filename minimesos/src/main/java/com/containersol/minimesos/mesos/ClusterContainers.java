@@ -12,6 +12,7 @@ import java.util.function.Predicate;
  * Holds the containers and helper methods for the Mesos cluster
  */
 public class ClusterContainers {
+
     private final List<AbstractContainer> containers;
 
     /**

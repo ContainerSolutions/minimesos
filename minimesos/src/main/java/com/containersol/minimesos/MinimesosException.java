@@ -1,7 +1,7 @@
 package com.containersol.minimesos;
 
 /**
- *
+ * Thrown when a minimesos command fails.
  */
 public class MinimesosException extends RuntimeException {
 

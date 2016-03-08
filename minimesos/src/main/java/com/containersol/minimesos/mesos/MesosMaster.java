@@ -68,7 +68,6 @@ public class MesosMaster extends MesosContainer {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-
         int port = getPortNumber();
         ExposedPort exposedPort = ExposedPort.tcp(port);
 

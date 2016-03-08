@@ -117,7 +117,6 @@ public class ClusterArchitecture {
          * @return reference to the given builder, so the method call can be chained
          */
         static public ClusterArchitecture.Builder createCluster(ClusterConfig clusterConfig) {
-
             Builder configBuilder = new Builder(clusterConfig);
             DockerClient dockerClient = configBuilder.getDockerClient();
 
@@ -138,7 +137,6 @@ public class ClusterArchitecture {
             }
 
             return configBuilder;
-
         }
 
         /**
@@ -225,10 +223,10 @@ public class ClusterArchitecture {
 
         /**
          * All default instance, but with defined resources
-         * @param agentResources definition of resources
+         * @param agentResourcesConfig agent resources configuration
          */
-        public Builder withAgent(String agentResources) {
-            AgentResources resources = AgentResources.fromString(agentResources);
+        public Builder withAgent(String agentResourcesConfig) {
+            AgentResourcesConfig resources = AgentResourcesConfig.fromString(agentResourcesConfig);
             MesosAgentConfig config = new MesosAgentConfig();
             config.setResources(resources);
             return withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper, config));

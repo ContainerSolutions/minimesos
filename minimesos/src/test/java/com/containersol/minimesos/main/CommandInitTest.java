@@ -34,18 +34,22 @@ public class CommandInitTest {
 
     @Test(expected = MinimesosException.class)
     public void testExecute_existingMiniMesosFile() throws IOException {
+        String oldDir = System.getProperty("user.dir");
 
-        File dir = File.createTempFile("mimimesos-test", "dir");
+        File dir = File.createTempFile("minjava imesos-test", "dir");
         assertTrue("Failed to delete temp file", dir.delete());
         assertTrue("Failed to create temp directory", dir.mkdir());
 
         File minimesosFile = new File(dir, ClusterConfig.DEFAULT_CONFIG_FILE);
         Files.write(Paths.get(minimesosFile.getAbsolutePath()), "minimesos { }".getBytes());
 
+        System.setProperty("user.dir", minimesosFile.getParent());
+
         try {
             commandInit.execute();
         } finally {
             FileUtils.forceDelete(dir);
+            System.setProperty("user.dir", oldDir);
         }
     }
 
