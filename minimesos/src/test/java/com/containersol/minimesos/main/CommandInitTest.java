@@ -1,6 +1,7 @@
 package com.containersol.minimesos.main;
 
 import com.containersol.minimesos.MinimesosException;
+import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ClusterConfig;
 import org.apache.commons.io.FileUtils;
 
@@ -34,22 +35,26 @@ public class CommandInitTest {
 
     @Test(expected = MinimesosException.class)
     public void testExecute_existingMiniMesosFile() throws IOException {
-        String oldDir = System.getProperty("user.dir");
 
-        File dir = File.createTempFile("minjava imesos-test", "dir");
+        String oldHostDir = System.getProperty(MesosCluster.MINIMESOS_HOST_DIR_PROPERTY);
+        File dir = File.createTempFile("mimimesos-test", "dir");
         assertTrue("Failed to delete temp file", dir.delete());
         assertTrue("Failed to create temp directory", dir.mkdir());
+        System.setProperty(MesosCluster.MINIMESOS_HOST_DIR_PROPERTY, dir.getAbsolutePath());
+
 
         File minimesosFile = new File(dir, ClusterConfig.DEFAULT_CONFIG_FILE);
         Files.write(Paths.get(minimesosFile.getAbsolutePath()), "minimesos { }".getBytes());
 
-        System.setProperty("user.dir", minimesosFile.getParent());
-
         try {
             commandInit.execute();
         } finally {
+            if (oldHostDir == null) {
+                System.getProperties().remove(MesosCluster.MINIMESOS_HOST_DIR_PROPERTY);
+            } else {
+                System.setProperty(MesosCluster.MINIMESOS_HOST_DIR_PROPERTY, oldHostDir);
+            }
             FileUtils.forceDelete(dir);
-            System.setProperty("user.dir", oldDir);
         }
     }
 
