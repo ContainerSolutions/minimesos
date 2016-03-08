@@ -7,6 +7,7 @@ import java.util.stream.IntStream;
  * Helper methods for ClusterArchitecture
  */
 public class ClusterUtil {
+
     public static ClusterArchitecture.Builder withAgent(Integer numberOfAgents) {
         ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder().withZooKeeper();
         IntStream.range(0, numberOfAgents).forEach(x -> builder.withAgent());

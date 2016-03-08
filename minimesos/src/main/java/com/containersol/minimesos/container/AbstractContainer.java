@@ -33,12 +33,10 @@ public abstract class AbstractContainer {
     private MesosCluster cluster;
     private String uuid;
     private String containerId;
-
+    private String ipAddress = null;
     private boolean removed;
 
     protected DockerClient dockerClient;
-
-    private String ipAddress = null;
 
     protected AbstractContainer(DockerClient dockerClient) {
         this.dockerClient = dockerClient;

@@ -39,7 +39,7 @@ public class State {
     private ArrayList<Framework> frameworks = new ArrayList<>();
 
     public Framework getFramework(String name) {
-        for(Framework fw : getFrameworks()) {
+        for (Framework fw : getFrameworks()) {
             if (fw.getName().equals(name)) return fw;
         }
         return null;

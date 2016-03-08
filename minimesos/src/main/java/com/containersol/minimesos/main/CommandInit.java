@@ -36,7 +36,6 @@ public class CommandInit implements Command {
 
     @Override
     public void execute() throws MinimesosException {
-
         File minimesosFile = new File(MesosCluster.getHostDir(), ClusterConfig.DEFAULT_CONFIG_FILE);
 
         if (minimesosFile.exists()) {
@@ -51,7 +50,6 @@ public class CommandInit implements Command {
             throw new MinimesosException(format("Could not initialize minimesosFile: %s", e.getMessage()), e);
         }
         LOGGER.info("Initialized minimesosFile in this directory");
-
     }
 
     public String getConfigFileContent() {

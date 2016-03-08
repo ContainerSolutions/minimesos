@@ -46,9 +46,8 @@ public class DockerContainersUtil {
      * @param pattern regular expression pattern of the container name
      * @return filtered set
      */
-    public DockerContainersUtil filterByName( String pattern ) {
-
-        if( this.containers == null ) {
+    public DockerContainersUtil filterByName(String pattern) {
+        if (this.containers == null) {
             return this;
         }
 
@@ -71,9 +70,8 @@ public class DockerContainersUtil {
      * @param pattern regular expression pattern of the container name
      * @return filtered set
      */
-    public DockerContainersUtil filterByImage( String pattern ) {
-
-        if( this.containers == null ) {
+    public DockerContainersUtil filterByImage(String pattern) {
+        if (this.containers == null) {
             return this;
         }
 
@@ -91,7 +89,7 @@ public class DockerContainersUtil {
      * Removes all containers in the util object
      */
     public void remove() {
-        if( containers != null ) {
+        if (containers != null) {
             for (Container container : containers) {
                 dockerClient.removeContainerCmd(container.getId()).withForce(true).withRemoveVolumes(true).exec();
             }
@@ -102,7 +100,7 @@ public class DockerContainersUtil {
      * Removes all containers in the util object
      */
     public DockerContainersUtil kill() {
-        if( containers != null ) {
+        if (containers != null) {
             for (Container container : containers) {
                 dockerClient.killContainerCmd(container.getId()).exec();
             }

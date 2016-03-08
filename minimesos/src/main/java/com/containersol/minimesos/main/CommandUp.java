@@ -120,7 +120,6 @@ public class CommandUp implements Command {
 
     @Override
     public void execute() {
-
         MesosCluster cluster = getCluster();
         if (cluster != null) {
             output.println("Cluster " + cluster.getClusterId() + " is already running");
@@ -136,7 +135,6 @@ public class CommandUp implements Command {
         startedCluster.printServiceUrls(output);
 
         ClusterRepository.saveClusterFile(startedCluster);
-
     }
 
     /**
@@ -146,7 +144,6 @@ public class CommandUp implements Command {
      * @return configuration of the cluster from the file
      */
     public ClusterConfig getClusterConfig() {
-
         if (configFileFound != null) {
             return clusterConfig;
         }
@@ -166,7 +163,6 @@ public class CommandUp implements Command {
         }
 
         return clusterConfig;
-
     }
 
     /**
@@ -175,7 +171,6 @@ public class CommandUp implements Command {
      * @return cluster architecture
      */
     public ClusterArchitecture getClusterArchitecture() {
-
         ClusterConfig clusterConfig = getClusterConfig();
         if (clusterConfig == null) {
             // default cluster configuration is created
@@ -187,7 +182,6 @@ public class CommandUp implements Command {
         ClusterArchitecture.Builder configBuilder = ClusterArchitecture.Builder.createCluster(clusterConfig);
 
         return configBuilder.build();
-
     }
 
     /**
@@ -196,7 +190,6 @@ public class CommandUp implements Command {
      * @param clusterConfig cluster configuration to update
      */
     private void updateWithParameters(ClusterConfig clusterConfig) {
-
         clusterConfig.setExposePorts(isExposedHostPorts());
         clusterConfig.setTimeout(getTimeout());
 
@@ -231,7 +224,6 @@ public class CommandUp implements Command {
             consulConfig = new ConsulConfig();
         }
         clusterConfig.setConsul(consulConfig);
-
     }
 
     public MesosCluster getCluster() {

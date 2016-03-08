@@ -52,7 +52,6 @@ public class MesosAgent extends MesosContainer {
     }
 
     public CreateContainerCmd getBaseCommand() {
-
         String hostDir = MesosCluster.getHostDir().getAbsolutePath();
 
         return dockerClient.createContainerCmd( getMesosImageName() + ":" + getMesosImageTag() )

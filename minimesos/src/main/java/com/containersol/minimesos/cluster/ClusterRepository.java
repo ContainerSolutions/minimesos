@@ -2,17 +2,15 @@ package com.containersol.minimesos.cluster;
 
 import com.containersol.minimesos.MinimesosException;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 /**
- * Set of static method to manage persisted information about the minimesos cluster
+ * Manages persistent information about the minimesos cluster
  */
 public class ClusterRepository {
 

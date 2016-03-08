@@ -5,6 +5,13 @@ import groovy.util.logging.Slf4j
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 
+/**
+ * Parser for the minimesosFile. Turns minimesosFile with Groovy DSL specification into a {@link ClusterConfig} object.
+ *
+ * The minimesosFile DSL contains two components: blocks, and properties. A block starts and ends with curly braces: { }
+ * and properties are nested inside the block. The main block is minimesos and it contains cluster-wide properties.
+ * Other blocks contain properties that only affect the block itself like 'imageName' inside an agent block.
+ */
 @Slf4j
 class ConfigParser {
 
@@ -35,17 +42,14 @@ class ConfigParser {
      * @return string representation of the cluster configuration
      */
     public String toString(ClusterConfig config) {
-
         StringBuilder buffer = new StringBuilder(CONFIG_VARIABLE).append(" {\n")
         printProperties( buffer, "    ", config.properties)
         buffer.append("}\n")
 
         buffer.toString()
-
     }
 
     private void printProperties(StringBuilder buffer, String intent, Map properties) {
-
         List<String> propNames = properties.keySet().sort()
         List<String> complexProps = new ArrayList<>()
 
@@ -91,11 +95,9 @@ class ConfigParser {
                 }
             }
         }
-
     }
 
     private String formatSimpleValue(Object value) {
-
         String strValue = null
 
         if (value == null) {
@@ -116,7 +118,6 @@ class ConfigParser {
         }
 
         strValue
-
     }
 
     private void printCollection(StringBuilder buffer, String intent, String propName, Collection values) {
