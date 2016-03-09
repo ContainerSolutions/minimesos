@@ -25,20 +25,72 @@ of Docker or Docker Machine. See Docker [API compatibility](https://docs.docker.
 
 ## Command line interface
 
-Run
 ```
-$ minimesos help
-```
-To get the list of available commands
+Usage: minimesos [options] [command] [command options]
+  Options:
+    --help, -help, -?, -h
+       Show help
+       Default: false
+  Commands:
+    help      Display help
+      Usage: help [options]
 
-The easiest way to start a Mesos cluster is to run:
-```
-$ minimesos up
-```
+    init      Initialize a minimesosFile
+      Usage: init [options]
 
-To destroy the cluster run:
-```
-$ minimesos destroy
+    install      Install a framework with Marathon
+      Usage: install [options]
+        Options:
+          --marathonFile
+             Marathon JSON app install file location. Either this or --stdin
+             parameter must be used
+          --stdin
+             Use JSON from standard import. Allow piping JSON from other
+             processes. Either this or --marathonFile parameter must be used
+             Default: false
+
+    destroy      Destroy a minimesos cluster
+      Usage: destroy [options]
+
+    up      Create a minimesos cluster
+      Usage: up [options]
+        Options:
+          --clusterConfig
+             Path to file with cluster configuration. Defaults to minimesosFile
+             Default: minimesosFile
+          --consul
+             Start consul container
+             Default: false
+          --exposedHostPorts
+             Expose the Mesos and Marathon UI ports on the host level (we
+             recommend to enable this on Mac (e.g. when using docker-machine) and disable
+             on Linux).
+             Default: false
+          --marathonImageTag
+             The tag of the Marathon Docker image.
+             Default: v0.15.3
+          --mesosImageTag
+             The tag of the Mesos master and agent Docker images.
+             Default: INHERIT
+          --num-agents
+             Number of agents to start
+             Default: -1
+          --timeout
+             Time to wait for a container to get responsive, in seconds.
+             Default: 60
+          --zooKeeperImageTag
+             The tag of the ZooKeeper Docker images.
+             Default: 3.4.6
+
+    state      Display state.json file of a master or an agent
+      Usage: state [options]
+        Options:
+          --agent
+             Specify an agent to query, otherwise query a master
+             Default: <empty string>
+
+    info      Display cluster information
+      Usage: info [options]
 ```
 
 ## Java API
