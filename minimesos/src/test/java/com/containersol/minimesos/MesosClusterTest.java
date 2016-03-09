@@ -96,7 +96,8 @@ public class MesosClusterTest {
 
     @Test
     public void mesosClusterCanBeStarted() throws Exception {
-        JSONObject stateInfo = CLUSTER.getMasterContainer().getStateInfoJSON();
+        MesosMaster master = CLUSTER.getMasterContainer();
+        JSONObject stateInfo = master.getStateInfoJSON();
 
         assertEquals(3, stateInfo.getInt("activated_slaves"));
     }
