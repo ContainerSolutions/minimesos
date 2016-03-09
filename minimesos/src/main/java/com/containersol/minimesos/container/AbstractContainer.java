@@ -27,8 +27,8 @@ import static com.jayway.awaitility.Awaitility.await;
  */
 public abstract class AbstractContainer {
 
-    static private final int IMAGE_PULL_TIMEOUT_SECS = 5 * 60;
-    static private final Logger LOGGER = Logger.getLogger(AbstractContainer.class);
+    private static final int IMAGE_PULL_TIMEOUT_SECS = 5 * 60;
+    private static final Logger LOGGER = Logger.getLogger(AbstractContainer.class);
 
     private MesosCluster cluster;
     private String uuid;
