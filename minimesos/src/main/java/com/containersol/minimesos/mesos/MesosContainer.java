@@ -4,8 +4,11 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.MesosContainerConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.github.dockerjava.api.DockerClient;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import com.mashape.unirest.request.GetRequest;
 import org.json.JSONObject;
 
 import java.util.TreeMap;
@@ -88,7 +91,10 @@ public abstract class MesosContainer extends AbstractContainer {
     }
 
     public JSONObject getStateInfoJSON() throws UnirestException {
-        return Unirest.get(getStateUrl()).asJson().getBody().getObject();
+        String stateUrl = getStateUrl();
+        GetRequest request = Unirest.get(stateUrl);
+        HttpResponse<JsonNode> response = request.asJson();
+        return response.getBody().getObject();
     }
 
     public String getLoggingLevel() {

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 MINIMESOS_TAG="latest"
-MESOS_TAG="0.27.0-0.2.190.ubuntu1404"
+MESOS_TAG="0.25.0-0.2.70.ubuntu1404"
 ZOOKEEPER_TAG="3.4.6"
 DOCKER_BIN="$(command -v docker)"
 PARAMS="$@"
