@@ -68,8 +68,8 @@ public class ConfigWriterTest {
             if (second == null) {
                 fail("Expected " + first + ", but null was found")
             } else {
-                assertTrue(StringUtils.equals(first.imageName, second.imageName))
-                assertTrue(StringUtils.equals(first.imageTag, second.imageTag))
+                assertEquals(first.imageName, second.imageName)
+                assertEquals(first.imageTag, second.imageTag)
             }
         }
     }
@@ -77,7 +77,7 @@ public class ConfigWriterTest {
     static void compareMesosContainers(MesosContainerConfig first, MesosContainerConfig second) {
         compareContainers(first, second)
         if (first != null) {
-            assertTrue(StringUtils.equals(first.loggingLevel, second.loggingLevel))
+            assertEquals(first.loggingLevel, second.loggingLevel)
         }
     }
 

@@ -214,7 +214,7 @@ public class ConfigParserTest {
         ClusterConfig dsl = parser.parse(config)
         assertNotNull(dsl.master)
         assertEquals("containersol/mesos-master", dsl.master.imageName)
-        assertEquals("INHERIT", dsl.master.imageTag)
+        assertEquals( MesosContainerConfig.MESOS_IMAGE_TAG, dsl.master.imageTag)
     }
 
     @Test
