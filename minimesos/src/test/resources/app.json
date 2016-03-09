@@ -1,0 +1,7 @@
+{
+  "id": "hello",
+  "cmd": "echo 'hello'",
+  "cpus": 0.1,
+  "mem": 16.0,
+  "instances": 1
+}

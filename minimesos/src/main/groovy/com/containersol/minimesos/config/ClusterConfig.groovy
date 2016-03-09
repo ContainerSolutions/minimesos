@@ -1,9 +1,15 @@
 package com.containersol.minimesos.config
 
 import groovy.util.logging.Slf4j
+import org.apache.commons.lang.StringUtils
 
 @Slf4j
 class ClusterConfig extends GroovyBlock {
+
+    public static final int DEFAULT_TIMEOUT_SECS = 60
+    public static final String DEFAULT_MESOS_VERSION = "0.25"
+    public static final String DEFAULT_CONFIG_FILE = "minimesosFile"
+    public static final String DEFAULT_LOGGING_LEVEL = "INFO"
 
     def call(Closure cl) {
         cl.setDelegate(this);
@@ -11,11 +17,11 @@ class ClusterConfig extends GroovyBlock {
         cl.call();
     }
 
-    def exposePorts = true
-    int timeout = 60
-    String mesosVersion = "0.25"
-
-    def clusterName = "minimesos"
+    boolean exposePorts = false
+    int timeout = DEFAULT_TIMEOUT_SECS
+    String mesosVersion = DEFAULT_MESOS_VERSION
+    String clusterName = null
+    String loggingLevel = DEFAULT_LOGGING_LEVEL
 
     MesosMasterConfig master = null
     List<MesosAgentConfig> agents = new ArrayList<>()
@@ -27,7 +33,7 @@ class ClusterConfig extends GroovyBlock {
         if (master != null) {
             throw new RuntimeException("Multiple Masters are not supported in this version yet")
         }
-        master = new MesosMasterConfig();
+        master = new MesosMasterConfig()
         delegateTo(master, cl)
     }
 
@@ -53,4 +59,21 @@ class ClusterConfig extends GroovyBlock {
         delegateTo(marathon, cl)
     }
 
+    void setLoggingLevel(String loggingLevel) {
+        if (!StringUtils.equalsIgnoreCase(loggingLevel, "WARNING") && !StringUtils.equalsIgnoreCase(loggingLevel, "INFO") && !StringUtils.equalsIgnoreCase(loggingLevel, "ERROR")) {
+            throw new RuntimeException("Property 'loggingLevel' can only have the values INFO, WARNING or ERROR")
+        }
+        this.loggingLevel = loggingLevel.toUpperCase()
+    }
+
+    void setMesosVersion(String mesosVersion) {
+        if (!MesosContainerConfig.MESOS_IMAGE_TAGS.keySet().contains(mesosVersion)) {
+            throw new RuntimeException("Property 'mesosVersion' supports values: " + StringUtils.join(MesosContainerConfig.MESOS_IMAGE_TAGS.keySet(), ","))
+        }
+        this.mesosVersion = mesosVersion
+    }
+
+    String getLoggingLevel() {
+        return loggingLevel
+    }
 }

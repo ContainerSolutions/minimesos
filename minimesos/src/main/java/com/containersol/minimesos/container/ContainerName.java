@@ -66,7 +66,6 @@ public class ContainerName {
      * @return name of the container, which is not inherited from link
      */
     public static String getFromDockerNames(String[] dockerNames) {
-
         String name = null;
         for (String dockerName : dockerNames) {
             String slashLess = dockerName;
@@ -78,7 +77,6 @@ public class ContainerName {
                 break;
             }
         }
-
         return name;
     }
 

@@ -6,8 +6,6 @@ import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 
-import org.apache.log4j.Logger;
-
 import java.io.*;
 import java.util.Scanner;
 
@@ -18,9 +16,6 @@ import java.util.Scanner;
 public class CommandInstall implements Command {
 
     public static final String CLINAME = "install";
-
-    @Parameter(names = "--exposedHostPorts", description = "Expose the Mesos and Marathon UI ports on the host level (we recommend to enable this on Mac (e.g. when using docker-machine) and disable on Linux).")
-    private boolean exposedHostPorts = false;
 
     @Parameter(names = "--marathonFile", description = "Marathon JSON app install file location. Either this or --stdin parameter must be used")
     private String marathonFile = null;
@@ -34,7 +29,6 @@ public class CommandInstall implements Command {
      * @return content of the file or standard input
      */
     public String getMarathonJson() throws IOException {
-
         String fileContents = "";
         Scanner scanner;
 
@@ -59,12 +53,10 @@ public class CommandInstall implements Command {
         }
 
         return fileContents;
-
     }
 
     @Override
     public void execute() throws MinimesosException {
-
         String marathonJson;
         try {
             marathonJson = getMarathonJson();
@@ -74,11 +66,10 @@ public class CommandInstall implements Command {
 
         MesosCluster cluster = ClusterRepository.loadCluster();
         if (cluster != null) {
-            cluster.deployMarathonApp(marathonJson);
+            cluster.install(marathonJson);
         } else {
             throw new MinimesosException("Running cluster is not found");
         }
-
     }
 
     @Override
@@ -91,4 +82,7 @@ public class CommandInstall implements Command {
         return CLINAME;
     }
 
+    public void setMarathonFile(String marathonFile) {
+        this.marathonFile = marathonFile;
+    }
 }

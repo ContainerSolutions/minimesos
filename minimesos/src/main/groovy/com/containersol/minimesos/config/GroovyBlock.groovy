@@ -1,5 +1,8 @@
 package com.containersol.minimesos.config;
 
+/**
+ * Contains a collection of properties for a configuration object.
+ */
 class GroovyBlock {
 
     def delegateTo(Object obj, Closure cl) {

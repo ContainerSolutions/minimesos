@@ -1,10 +1,14 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.MesosContainerConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.github.dockerjava.api.DockerClient;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import com.mashape.unirest.request.GetRequest;
 import org.json.JSONObject;
 
 import java.util.TreeMap;
@@ -25,8 +29,8 @@ public abstract class MesosContainer extends AbstractContainer {
         this.config = config;
     }
 
-    protected MesosContainer(DockerClient dockerClient, String clusterId, String uuid, String containerId, MesosContainerConfig config) {
-        super(dockerClient, clusterId, uuid, containerId);
+    protected MesosContainer(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId, MesosContainerConfig config) {
+        super(dockerClient, cluster, uuid, containerId);
         this.config = config;
     }
 
@@ -40,19 +44,16 @@ public abstract class MesosContainer extends AbstractContainer {
     }
 
     public String getMesosImageTag() {
-        return config.getImageTag();
-    }
-
-    public void setMesosImageTag(String mesosImageTag) {
-        this.config.setImageTag(mesosImageTag);
+        String imageTag = config.getImageTag();
+        if (MesosContainerConfig.MESOS_IMAGE_TAG.equalsIgnoreCase(imageTag)) {
+            String mesosVersion = getCluster().getMesosVersion();
+            imageTag = MesosContainerConfig.MESOS_IMAGE_TAGS.get(mesosVersion);
+        }
+        return imageTag;
     }
 
     public String getMesosImageName() {
         return config.getImageName();
-    }
-
-    public void setMesosImageName( String mesosImageName ) {
-        config.setImageName(mesosImageName);
     }
 
     protected String[] createMesosLocalEnvironment() {
@@ -68,7 +69,7 @@ public abstract class MesosContainer extends AbstractContainer {
         envs.put("MESOS_CONTAINERIZERS", "docker,mesos");
         envs.put("MESOS_ISOLATOR", "cgroups/cpu,cgroups/mem");
         envs.put("MESOS_LOG_DIR", "/var/log");
-        envs.put("MESOS_LOGGING_LEVEL", "INFO");
+        envs.put("MESOS_LOGGING_LEVEL", getLoggingLevel());
         envs.put("MESOS_WORK_DIR", "/tmp/mesos");
         return envs;
     }
@@ -90,7 +91,18 @@ public abstract class MesosContainer extends AbstractContainer {
     }
 
     public JSONObject getStateInfoJSON() throws UnirestException {
-        return Unirest.get(getStateUrl()).asJson().getBody().getObject();
+        String stateUrl = getStateUrl();
+        GetRequest request = Unirest.get(stateUrl);
+        HttpResponse<JsonNode> response = request.asJson();
+        return response.getBody().getObject();
+    }
+
+    public String getLoggingLevel() {
+        String level = config.getLoggingLevel();
+        if (MesosContainerConfig.MESOS_LOGGING_LEVEL_INHERIT.equalsIgnoreCase(level)) {
+            level = getCluster().getLoggingLevel();
+        }
+        return level;
     }
 
 }

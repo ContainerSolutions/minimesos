@@ -17,6 +17,34 @@ public class ConfigParserTest {
     }
 
     @Test
+    public void testLoggingLevel() {
+        String config =
+                """
+        minimesos {
+
+            loggingLevel = "WARNING"
+
+        }
+        """
+
+        assertEquals("WARNING", parser.parse(config).getLoggingLevel())
+    }
+
+    @Test
+    public void testLoggingLevel_caseInsensitive() {
+        String config =
+                """
+        minimesos {
+
+            loggingLevel = "warning"
+
+        }
+        """
+
+        assertEquals("WARNING", parser.parse(config).getLoggingLevel())
+    }
+
+    @Test
     public void testClusterName() {
         String config =
                 """
@@ -112,6 +140,32 @@ public class ConfigParserTest {
     }
 
     @Test
+    public void testLoadAgentTwoAgents_loggingLevel() {
+        String config = """
+                minimesos {
+
+                    loggingLevel = "warning"
+
+                    agent {
+                        loggingLevel = "ERROR"
+                    }
+
+                    agent {
+
+                    }
+                }
+        """
+
+        ClusterConfig dsl = parser.parse(config)
+
+        MesosAgentConfig agent1 = dsl.agents.get(0)
+        assertEquals("ERROR", agent1.getLoggingLevel())
+
+        MesosAgentConfig agent2 = dsl.agents.get(1)
+        assertEquals(MesosContainerConfig.MESOS_LOGGING_LEVEL_INHERIT, agent2.getLoggingLevel())
+    }
+
+    @Test
     public void testLoadMaster() {
 
         String config = """
@@ -126,6 +180,68 @@ public class ConfigParserTest {
         assertNotNull(dsl.master)
         assertEquals("another/master", dsl.master.imageName)
 
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testMesosVersion_nonExistentVersion() {
+        String config = """
+                minimesos {
+
+                    mesosVersion = "1.0.0-does-not-exist"
+
+                    master {
+
+                    }
+                }
+        """
+
+        parser.parse(config)
+    }
+
+    @Test
+    public void testMesosVersion_inheritTag() {
+        String config = """
+                minimesos {
+
+                    mesosVersion = "0.26"
+
+                    master {
+
+                    }
+                }
+        """
+
+        ClusterConfig dsl = parser.parse(config)
+        assertNotNull(dsl.master)
+        assertEquals("containersol/mesos-master", dsl.master.imageName)
+        assertEquals( MesosContainerConfig.MESOS_IMAGE_TAG, dsl.master.imageTag)
+    }
+
+    @Test
+    public void testMesosVersion_overrideTag() {
+        String config = """
+                minimesos {
+
+                    mesosVersion = "0.26"
+
+                    master {
+                        imageTag = "0.27"
+                    }
+
+                    agent {
+                        imageTag = "0.28"
+                    }
+                }
+        """
+
+        ClusterConfig dsl = parser.parse(config)
+        assertNotNull(dsl.master)
+        assertEquals("containersol/mesos-master", dsl.master.imageName)
+        assertEquals("0.27", dsl.master.imageTag)
+
+        assertNotNull(dsl.agents.get(0))
+        assertEquals("containersol/mesos-agent", dsl.agents.get(0).imageName)
+        assertEquals("0.28", dsl.agents.get(0).imageTag)
     }
 
     @Test(expected = Exception.class)

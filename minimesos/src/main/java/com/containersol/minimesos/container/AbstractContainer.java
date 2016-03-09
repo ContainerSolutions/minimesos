@@ -1,5 +1,7 @@
 package com.containersol.minimesos.container;
 
+import com.containersol.minimesos.MinimesosException;
+import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -10,14 +12,13 @@ import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.PullResponseItem;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
-import com.jayway.awaitility.Duration;
 import com.jayway.awaitility.core.ConditionTimeoutException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.security.SecureRandom;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import static com.jayway.awaitility.Awaitility.await;
 
@@ -26,26 +27,25 @@ import static com.jayway.awaitility.Awaitility.await;
  */
 public abstract class AbstractContainer {
 
-    private static Logger LOGGER = Logger.getLogger(AbstractContainer.class);
+    private static final int IMAGE_PULL_TIMEOUT_SECS = 5 * 60;
+    private static final Logger LOGGER = Logger.getLogger(AbstractContainer.class);
 
-    private String clusterId;
+    private MesosCluster cluster;
     private String uuid;
     private String containerId;
-
+    private String ipAddress = null;
     private boolean removed;
 
     protected DockerClient dockerClient;
-
-    private String ipAddress = null;
 
     protected AbstractContainer(DockerClient dockerClient) {
         this.dockerClient = dockerClient;
         this.uuid = Integer.toUnsignedString(new SecureRandom().nextInt());
     }
 
-    public AbstractContainer(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
+    public AbstractContainer(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId) {
         this.dockerClient = dockerClient;
-        this.clusterId = clusterId;
+        this.cluster = cluster;
         this.uuid = uuid;
         this.containerId = containerId;
     }
@@ -178,37 +178,54 @@ public abstract class AbstractContainer {
 
         LOGGER.debug("Image [" + imageName + ":" + registryTag + "] not found. Pulling...");
 
-        PullImageResultCallback callback = new PullImageResultCallback() {
-            @Override
-            public void awaitSuccess() {
-                LOGGER.debug("Finished pulling the image: " + imageName + ":" + registryTag);
-            }
+        final CompletableFuture<Void> result = new CompletableFuture<>();
+        dockerClient.pullImageCmd(imageName).withTag(registryTag).exec(new PullImageResultCallback() {
+
             @Override
             public void onNext(PullResponseItem item) {
-                if (item.getStatus() == null) {
-                    String msg = "Error pulling image or image not found in registry: " + imageName + ":" + registryTag;
-                    LOGGER.error( msg );
-                    throw new RuntimeException(msg);
-                }
-                if (!item.getStatus().contains("Downloading") &&
-                        !item.getStatus().contains("Extracting")) {
-                    LOGGER.debug("Status: " + item.getStatus());
+                String status = item.getStatus();
+                if (status == null) {
+                    String msg = String.format("# Error pulling image from registry. Try executing the command below manually\ndocker pull %s:%s", imageName, registryTag);
+                    result.completeExceptionally(new MinimesosException(msg));
                 }
             }
-        };
 
-        dockerClient.pullImageCmd(imageName).withTag(registryTag).exec(callback);
-        await().atMost(Duration.FIVE_MINUTES).until(() -> {
-            return imageExists(imageName, registryTag);
+            @Override
+            public void onComplete() {
+                super.onComplete();
+                result.complete(null);
+            }
+
         });
+
+
+        try {
+            result.get(IMAGE_PULL_TIMEOUT_SECS, TimeUnit.SECONDS);
+        } catch (ExecutionException e) {
+            throw new MinimesosException(e.getCause().getMessage());
+        } catch (InterruptedException|TimeoutException|RuntimeException e) {
+            String msg = "Error pulling image or image not found in registry: " + imageName + ":" + registryTag;
+            throw new MinimesosException(msg, e);
+        }
+
+        if (!imageExists(imageName, registryTag)) {
+            throw new MinimesosException("Pulling of " + imageName + ":" + registryTag + " completed. However the image is not found");
+        }
     }
 
-    public void setClusterId(String clusterId) {
-        this.clusterId = clusterId;
+    public void setCluster(MesosCluster cluster) {
+        this.cluster = cluster;
     }
 
+    public MesosCluster getCluster() {
+        return cluster;
+    }
+
+    /**
+     * @return if set, ID of the cluster the container belongs to
+     */
     public String getClusterId() {
-        return clusterId;
+        return (cluster != null) ? cluster.getClusterId() : null;
     }
 
     private class ContainerIsRunning implements Callable<Boolean> {
@@ -233,7 +250,7 @@ public abstract class AbstractContainer {
 
     @Override
     public String toString() {
-        return String.format(": %s-%s-%s", getRole(), clusterId, uuid);
+        return String.format(": %s-%s-%s", getRole(), getClusterId(), uuid);
     }
 
     public boolean isRemoved() {
@@ -251,15 +268,15 @@ public abstract class AbstractContainer {
 
         AbstractContainer that = (AbstractContainer) o;
 
-        if (!clusterId.equals(that.clusterId)) return false;
+        if (!StringUtils.equals(this.getClusterId(), that.getClusterId())) return false;
+
         if (!uuid.equals(that.uuid)) return false;
         return containerId.equals(that.containerId);
-
     }
 
     @Override
     public int hashCode() {
-        int result = clusterId.hashCode();
+        int result = (cluster != null) ? cluster.hashCode() : 0;
         result = 31 * result + uuid.hashCode();
         result = 31 * result + containerId.hashCode();
         return result;

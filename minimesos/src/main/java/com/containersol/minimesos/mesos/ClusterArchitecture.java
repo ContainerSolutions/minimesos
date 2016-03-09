@@ -58,14 +58,26 @@ import static com.containersol.minimesos.mesos.ClusterContainers.*;
 public class ClusterArchitecture {
 
     private final ClusterContainers clusterContainers = new ClusterContainers();
+    private final ClusterConfig clusterConfig;
+
     public final DockerClient dockerClient;
 
     public ClusterArchitecture(DockerClient dockerClient) {
         this.dockerClient = dockerClient;
+        this.clusterConfig = new ClusterConfig();
+    }
+
+    private ClusterArchitecture(DockerClient dockerClient, ClusterConfig clusterConfig) {
+        this.dockerClient = dockerClient;
+        this.clusterConfig = clusterConfig;
     }
 
     public ClusterContainers getClusterContainers() {
         return clusterContainers;
+    }
+
+    public ClusterConfig getClusterConfig() {
+        return clusterConfig;
     }
 
     /**
@@ -93,6 +105,11 @@ public class ClusterArchitecture {
             this.clusterArchitecture = new ClusterArchitecture(dockerClient);
         }
 
+        private Builder(ClusterConfig clusterConfig) {
+            this.dockerClient = DockerClientFactory.build();
+            this.clusterArchitecture = new ClusterArchitecture(dockerClient, clusterConfig);
+        }
+
         /**
          * Creates architecture for default cluster configuration
          *
@@ -100,8 +117,7 @@ public class ClusterArchitecture {
          * @return reference to the given builder, so the method call can be chained
          */
         static public ClusterArchitecture.Builder createCluster(ClusterConfig clusterConfig) {
-
-            Builder configBuilder = new Builder();
+            Builder configBuilder = new Builder(clusterConfig);
             DockerClient dockerClient = configBuilder.getDockerClient();
 
             configBuilder.withZooKeeper(clusterConfig.getZookeeper());
@@ -121,7 +137,6 @@ public class ClusterArchitecture {
             }
 
             return configBuilder;
-
         }
 
         /**
@@ -208,10 +223,10 @@ public class ClusterArchitecture {
 
         /**
          * All default instance, but with defined resources
-         * @param agentResources definition of resources
+         * @param agentResourcesConfig agent resources configuration
          */
-        public Builder withAgent(String agentResources) {
-            AgentResources resources = AgentResources.fromString(agentResources);
+        public Builder withAgent(String agentResourcesConfig) {
+            AgentResourcesConfig resources = AgentResourcesConfig.fromString(agentResourcesConfig);
             MesosAgentConfig config = new MesosAgentConfig();
             config.setResources(resources);
             return withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper, config));

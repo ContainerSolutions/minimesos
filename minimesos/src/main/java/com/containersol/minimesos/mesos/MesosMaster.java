@@ -1,21 +1,29 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports;
+import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
+import static com.jayway.awaitility.Awaitility.await;
 
 /**
  * Base, unmolested Mesos master class
  */
 public class MesosMaster extends MesosContainer {
 
+    // is here for future extension of Master configuration
     private final MesosMasterConfig config;
 
     public MesosMaster(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
@@ -27,12 +35,12 @@ public class MesosMaster extends MesosContainer {
         this.config = config;
     }
 
-    public MesosMaster(DockerClient dockerClient, String clusterId, String uuid, String containerId) {
-        this(dockerClient, clusterId, uuid, containerId, new MesosMasterConfig());
+    public MesosMaster(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId) {
+        this(dockerClient, cluster, uuid, containerId, new MesosMasterConfig());
     }
 
-    private MesosMaster(DockerClient dockerClient, String clusterId, String uuid, String containerId, MesosMasterConfig config) {
-        super(dockerClient, clusterId, uuid, containerId, config);
+    private MesosMaster(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId, MesosMasterConfig config) {
+        super(dockerClient, cluster, uuid, containerId, config);
         this.config = config;
     }
 
@@ -41,18 +49,15 @@ public class MesosMaster extends MesosContainer {
         return MesosMasterConfig.MESOS_MASTER_PORT;
     }
 
-    public boolean isExposedHostPort() {
-        return config.isExposedHostPort();
-    }
-    public void setExposedHostPort(boolean exposedHostPort) {
-        config.setExposedHostPort(exposedHostPort);
-    }
-
     @Override
     public TreeMap<String, String> getDefaultEnvVars() {
-        TreeMap<String,String> envs = new TreeMap<>();
+        TreeMap<String, String> envs = new TreeMap<>();
         envs.put("MESOS_QUORUM", "1");
         envs.put("MESOS_ZK", getFormattedZKAddress());
+        envs.put("MESOS_LOGGING_LEVEL", getLoggingLevel());
+        if (getCluster() != null) {
+            envs.put("MESOS_CLUSTER", getCluster().getClusterName());
+        }
         return envs;
     }
 
@@ -63,12 +68,11 @@ public class MesosMaster extends MesosContainer {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-
         int port = getPortNumber();
         ExposedPort exposedPort = ExposedPort.tcp(port);
 
         Ports portBindings = new Ports();
-        if (isExposedHostPort()) {
+        if (getCluster().isExposedHostPorts()) {
             portBindings.bind(exposedPort, Ports.Binding(port));
         }
 
@@ -90,4 +94,47 @@ public class MesosMaster extends MesosContainer {
         return flags;
     }
 
+    public void waitFor() {
+        new MesosMaster.MesosClusterStateResponse(getCluster()).waitFor();
+    }
+
+    public static class MesosClusterStateResponse implements Callable<Boolean> {
+
+        private final Logger LOGGER = Logger.getLogger(MesosClusterStateResponse.class);
+
+        private final MesosCluster mesosCluster;
+
+        public MesosClusterStateResponse(MesosCluster mesosCluster) {
+            this.mesosCluster = mesosCluster;
+        }
+
+        @Override
+        public Boolean call() throws Exception {
+            String stateUrl = mesosCluster.getMasterContainer().getStateUrl();
+            try {
+                int activatedAgents = Unirest.get(stateUrl).asJson().getBody().getObject().getInt("activated_slaves");
+                if (activatedAgents != mesosCluster.getAgents().size()) {
+                    LOGGER.debug("Waiting for " + mesosCluster.getAgents().size() + " activated agents - current number of activated agents: " + activatedAgents);
+                    return false;
+                }
+            } catch (UnirestException e) {
+                LOGGER.debug("Polling Mesos Master state on host: \"" + stateUrl + "\"...");
+                return false;
+            } catch (Exception e) {
+                LOGGER.error("An error occured while polling Mesos master", e);
+                return false;
+            }
+
+            return true;
+        }
+
+        public void waitFor() {
+            await()
+                    .atMost( mesosCluster.getClusterConfig().getTimeout(), TimeUnit.SECONDS)
+                    .pollInterval(1, TimeUnit.SECONDS)
+                    .until(this);
+
+            LOGGER.debug("MesosMaster state discovered successfully");
+        }
+    }
 }

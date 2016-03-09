@@ -26,12 +26,8 @@ public class ExposedPortsTest {
     public void beforeTest() {
 
         MesosMasterConfig masterConfig = new MesosMasterConfig();
-        masterConfig.setExposedHostPort(EXPOSED_PORTS);
-
         MesosAgentConfig agentConfig = new MesosAgentConfig();
-
         MarathonConfig marathonConfig = new MarathonConfig();
-        marathonConfig.setExposedHostPort(EXPOSED_PORTS);
 
         ClusterArchitecture architecture = new ClusterArchitecture.Builder(dockerClient)
                 .withZooKeeper()
@@ -41,6 +37,7 @@ public class ExposedPortsTest {
                 .build();
 
         cluster = new MesosCluster(architecture);
+        cluster.setExposedHostPorts(EXPOSED_PORTS);
         cluster.start();
 
     }
