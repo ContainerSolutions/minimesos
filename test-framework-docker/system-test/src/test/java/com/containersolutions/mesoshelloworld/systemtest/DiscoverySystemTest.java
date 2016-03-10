@@ -25,7 +25,7 @@ public class DiscoverySystemTest {
 
     public static final Logger LOGGER = Logger.getLogger(DiscoverySystemTest.class);
 
-    protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder()
+    private static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder()
             .withZooKeeper()
             .withMaster()
             .withAgent("ports(*):[8080-8082]")
