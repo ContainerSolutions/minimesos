@@ -71,6 +71,10 @@ public class ClusterContainers {
             return abstractContainer -> abstractContainer instanceof ZooKeeper;
         }
 
+        public static Predicate<AbstractContainer> consul() {
+            return abstractContainer -> abstractContainer instanceof Consul;
+        }
+
         public static Predicate<AbstractContainer> mesosMaster() {
             return abstractContainer -> abstractContainer instanceof MesosMaster;
         }

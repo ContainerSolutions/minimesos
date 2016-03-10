@@ -44,9 +44,6 @@ public class CommandUp implements Command {
     @Parameter(names = "--num-agents", description = "Number of agents to start")
     private int numAgents = -1;
 
-    @Parameter(names = "--consul", description = "Start consul container")
-    private boolean startConsul = false;
-
     @Parameter(names = "--clusterConfig", description = "Path to file with cluster configuration. Defaults to minimesosFile")
     private String clusterConfigPath = ClusterConfig.DEFAULT_CONFIG_FILE;
 
@@ -107,10 +104,6 @@ public class CommandUp implements Command {
                 return 1;
             }
         }
-    }
-
-    public boolean getStartConsul() {
-        return startConsul;
     }
 
     public String getClusterConfigPath() {
@@ -236,12 +229,19 @@ public class CommandUp implements Command {
         }
         clusterConfig.setAgents(updatedConfigs);
 
-        // Consul (optional)
+        // Consul
         ConsulConfig consulConfig = clusterConfig.getConsul();
-        if (consulConfig == null && getStartConsul()) {
+        if (consulConfig == null) {
             consulConfig = new ConsulConfig();
         }
         clusterConfig.setConsul(consulConfig);
+
+        //Registrator
+        RegistratorConfig registratorConfig = clusterConfig.getRegistrator();
+        if(registratorConfig ==null){
+            registratorConfig = new RegistratorConfig();
+        }
+        clusterConfig.setRegistrator(registratorConfig);
     }
 
     public MesosCluster getCluster() {

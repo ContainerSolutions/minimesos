@@ -28,6 +28,7 @@ class ClusterConfig extends GroovyBlock {
     ZooKeeperConfig zookeeper = null
     MarathonConfig marathon = null
     ConsulConfig consul = null
+    RegistratorConfig registrator = null
 
     def master(@DelegatesTo(MesosMasterConfig) Closure cl) {
         if (master != null) {

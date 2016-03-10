@@ -1,8 +1,10 @@
 package com.containersol.minimesos;
 
+import com.containersol.minimesos.container.AbstractContainer;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.containersol.minimesos.container.AbstractContainer;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.Ports;
 
 /**
  * Test container
@@ -28,8 +30,14 @@ class HelloWorldContainer extends AbstractContainer {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        return dockerClient.createContainerCmd(HELLO_WORLD_IMAGE).withPrivileged(true)
-                .withName( getName() );
+        ExposedPort exposedPort = ExposedPort.tcp(80);
+        Ports portBindings = new Ports();
+        portBindings.bind(exposedPort, Ports.Binding(80));
+        return dockerClient.createContainerCmd(HELLO_WORLD_IMAGE)
+                .withPrivileged(true)
+                .withName(getName())
+                .withPortBindings(portBindings)
+                .withExposedPorts(exposedPort);
     }
 
     @Override
