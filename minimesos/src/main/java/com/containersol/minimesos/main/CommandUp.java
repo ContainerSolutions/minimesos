@@ -29,7 +29,7 @@ public class CommandUp implements Command {
     private String marathonImageTag = null;
 
     @Parameter(names = "--mesosImageTag", description = "The tag of the Mesos master and agent Docker images.")
-    private String mesosImageTag = MesosContainerConfig.MESOS_IMAGE_TAG;
+    private String mesosImageTag = null;
 
     @Parameter(names = "--zooKeeperImageTag", description = "The tag of the ZooKeeper Docker images.")
     private String zooKeeperImageTag = null;
@@ -201,7 +201,7 @@ public class CommandUp implements Command {
             clusterConfig.setTimeout(getTimeout());
         }
 
-        boolean defaultMesosTags = MesosContainerConfig.MESOS_IMAGE_TAG.equals(getMesosImageTag());
+        boolean defaultMesosTags = (getMesosImageTag() == null);
 
         // ZooKeeper
         ZooKeeperConfig zooKeeperConfig = (clusterConfig.getZookeeper() != null) ? clusterConfig.getZookeeper() : new ZooKeeperConfig();
