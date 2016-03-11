@@ -6,7 +6,7 @@ import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.*;
-import com.containersol.minimesos.mesos.*;
+import com.containersol.minimesos.mesos.ClusterArchitecture;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -23,23 +23,19 @@ public class CommandUp implements Command {
     public static final String CLINAME = "up";
 
     @Parameter(names = "--exposedHostPorts", description = "Expose the Mesos and Marathon UI ports on the host level (we recommend to enable this on Mac (e.g. when using docker-machine) and disable on Linux).")
-    private boolean exposedHostPorts = false;
+    private Boolean exposedHostPorts = null;
 
     @Parameter(names = "--marathonImageTag", description = "The tag of the Marathon Docker image.")
-    private String marathonImageTag = MarathonConfig.MARATHON_IMAGE_TAG;
+    private String marathonImageTag = null;
 
     @Parameter(names = "--mesosImageTag", description = "The tag of the Mesos master and agent Docker images.")
     private String mesosImageTag = MesosContainerConfig.MESOS_IMAGE_TAG;
 
     @Parameter(names = "--zooKeeperImageTag", description = "The tag of the ZooKeeper Docker images.")
-    private String zooKeeperImageTag = ZooKeeperConfig.ZOOKEEPER_IMAGE_TAG;
-
-    public String getMarathonImageTag() {
-        return marathonImageTag;
-    }
+    private String zooKeeperImageTag = null;
 
     @Parameter(names = "--timeout", description = "Time to wait for a container to get responsive, in seconds.")
-    private int timeout = ClusterConfig.DEFAULT_TIMEOUT_SECS;
+    private Integer timeout = null;
 
     /**
      * As number of agents can be determined either in config file or command line parameters, it defaults to invalid value.
@@ -71,6 +67,10 @@ public class CommandUp implements Command {
         output = ps;
     }
 
+    public String getMarathonImageTag() {
+        return marathonImageTag;
+    }
+
     public String getMesosImageTag() {
         return mesosImageTag;
     }
@@ -79,11 +79,14 @@ public class CommandUp implements Command {
         return zooKeeperImageTag;
     }
 
-    public boolean isExposedHostPorts() {
+    public Boolean isExposedHostPorts() {
         return exposedHostPorts;
     }
+    public void setExposedHostPorts(Boolean exposedHostPorts) {
+        this.exposedHostPorts = exposedHostPorts;
+    }
 
-    public int getTimeout() {
+    public Integer getTimeout() {
         return timeout;
     }
 
@@ -129,7 +132,7 @@ public class CommandUp implements Command {
         ClusterArchitecture clusterArchitecture = getClusterArchitecture();
 
         startedCluster = new MesosCluster(clusterArchitecture);
-        startedCluster.start(getTimeout());
+        startedCluster.start();
         startedCluster.waitForState(state -> state != null);
 
         startedCluster.printServiceUrls(output);
@@ -189,16 +192,22 @@ public class CommandUp implements Command {
      *
      * @param clusterConfig cluster configuration to update
      */
-    private void updateWithParameters(ClusterConfig clusterConfig) {
+    public void updateWithParameters(ClusterConfig clusterConfig) {
 
-        clusterConfig.setExposePorts(isExposedHostPorts());
-        clusterConfig.setTimeout(getTimeout());
+        if (isExposedHostPorts() != null) {
+            clusterConfig.setExposePorts(isExposedHostPorts());
+        }
+        if (getTimeout() != null) {
+            clusterConfig.setTimeout(getTimeout());
+        }
 
         boolean defaultMesosTags = MesosContainerConfig.MESOS_IMAGE_TAG.equals(getMesosImageTag());
 
         // ZooKeeper
         ZooKeeperConfig zooKeeperConfig = (clusterConfig.getZookeeper() != null) ? clusterConfig.getZookeeper() : new ZooKeeperConfig();
-        zooKeeperConfig.setImageTag(getZooKeeperImageTag());
+        if (getZooKeeperImageTag() != null) {
+            zooKeeperConfig.setImageTag(getZooKeeperImageTag());
+        }
         clusterConfig.setZookeeper(zooKeeperConfig);
 
         // Mesos Master
@@ -210,7 +219,9 @@ public class CommandUp implements Command {
 
         // Marathon
         MarathonConfig marathonConfig = (clusterConfig.getMarathon() != null) ? clusterConfig.getMarathon() : new MarathonConfig();
-        marathonConfig.setImageTag(getMarathonImageTag());
+        if (getMarathonImageTag() != null) {
+            marathonConfig.setImageTag(getMarathonImageTag());
+        }
         clusterConfig.setMarathon(marathonConfig);
 
         // creation of agents
