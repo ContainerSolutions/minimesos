@@ -472,7 +472,7 @@ public class MesosCluster extends ExternalResource {
                     out.println("export MINIMESOS_ZOOKEEPER=" + ZooKeeper.getFormattedZKAddress(ip));
                     break;
                 case "consul":
-                    out.println("export MINIMESOS_CONSUL=http://" + ip + ":" + ConsulConfig.DEFAULT_CONSUL_PORT);
+                    out.println("export MINIMESOS_CONSUL=http://" + ip + ":" + ConsulConfig.CONSUL_HTTP_PORT);
                     out.println("export MINIMESOS_CONSUL_IP=" + ip);
                     break;
             }

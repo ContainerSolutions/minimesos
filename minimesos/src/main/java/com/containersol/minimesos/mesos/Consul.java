@@ -29,15 +29,20 @@ public class Consul extends AbstractContainer {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        ExposedPort exposedPort = ExposedPort.tcp(ConsulConfig.DEFAULT_CONSUL_PORT);
+        ExposedPort consulHTTPPort = ExposedPort.tcp(ConsulConfig.CONSUL_HTTP_PORT);
+        ExposedPort consulDNSPort = ExposedPort.udp(ConsulConfig.CONSUL_DNS_PORT);
+
         Ports portBindings = new Ports();
         if (getCluster().isExposedHostPorts()) {
-            portBindings.bind(exposedPort, Ports.Binding(ConsulConfig.DEFAULT_CONSUL_PORT));
+            portBindings.bind(consulHTTPPort, Ports.Binding(ConsulConfig.CONSUL_HTTP_PORT));
         }
+        // TODO find out docker0's IP instead of hard coding
+        portBindings.bind(consulDNSPort, Ports.Binding("172.17.0.1", 53));
+
         return dockerClient.createContainerCmd(config.getImageName() + ":" + config.getImageTag())
-                .withName( getName() )
+                .withName(getName())
                 .withPortBindings(portBindings)
-                .withExposedPorts(exposedPort);
+                .withExposedPorts(consulHTTPPort, consulDNSPort);
     }
 
     public Consul(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId) {

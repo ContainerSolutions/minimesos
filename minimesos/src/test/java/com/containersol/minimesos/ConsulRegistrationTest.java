@@ -43,7 +43,7 @@ public class ConsulRegistrationTest {
         CLUSTER.addAndStartContainer(new HelloWorldContainer(dockerClient));
         String ipAddress = DockerContainersUtil.getIpAddress(dockerClient, CLUSTER.getConsulContainer().getContainerId());
         String url = String.format("http://%s:%d/v1/catalog/service/%s",
-                ipAddress, Registrator.CONSUL_DEFAULT_PORT, HelloWorldContainer.SERVICE_NAME);
+                ipAddress, ConsulConfig.CONSUL_HTTP_PORT, HelloWorldContainer.SERVICE_NAME);
 
         JSONArray body = Unirest.get(url).asJson().getBody().getArray();
         assertEquals(1, body.length());

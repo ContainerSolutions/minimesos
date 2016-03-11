@@ -1,6 +1,7 @@
 package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.config.RegistratorConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.github.dockerjava.api.DockerClient;
@@ -9,7 +10,6 @@ import com.github.dockerjava.api.model.Bind;
 
 public class Registrator extends AbstractContainer {
 
-    public static final int CONSUL_DEFAULT_PORT = 8500;
     private final RegistratorConfig config;
     private Consul consulContainer;
 
@@ -34,7 +34,7 @@ public class Registrator extends AbstractContainer {
         return dockerClient.createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withNetworkMode("host")
                 .withBinds(Bind.parse("/var/run/docker.sock:/tmp/docker.sock"))
-                .withCmd(String.format("consul://%s:%d", consulContainer.getIpAddress(), CONSUL_DEFAULT_PORT))
+                .withCmd("-internal", String.format("consul://%s:%d", consulContainer.getIpAddress(), ConsulConfig.CONSUL_HTTP_PORT))
                 .withName(getName());
     }
 
