@@ -57,15 +57,16 @@ public class CommandInit implements Command {
             throw new MinimesosException(format("Could not initialize minimesosFile: %s", e.getMessage()), e);
         }
 
+        LOGGER.info("Initialized minimesosFile in this directory");
+
         try {
             UserPrincipalLookupService lookupService = FileSystems.getDefault().getUserPrincipalLookupService();
             UserPrincipal owner = lookupService.lookupPrincipalByName(DEFAULT_HOST_USERID);
             Files.setOwner(minimesosPath, owner);
         } catch (IOException e) {
-            throw new MinimesosException("NOTE: minimesosFile remains owned by root instead of user ID " + DEFAULT_HOST_USERID + ":" + e.getMessage());
+            throw new MinimesosException("NOTE: minimesosFile remains owned by root instead of user ID " + DEFAULT_HOST_USERID + ": " + e.getMessage());
         }
 
-        LOGGER.info("Initialized minimesosFile in this directory");
     }
 
     public String getConfigFileContent() {
