@@ -6,11 +6,10 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports;
 
-/**
- * Test container
- */
 class HelloWorldContainer extends AbstractContainer {
 
+    public static final String SERVICE_NAME = "hello-world-service";
+    public static final int SERVICE_PORT = 80;
     public static final String HELLO_WORLD_IMAGE = "tutum/hello-world";
     public static final String CONTAINER_NAME_PATTERN = "^helloworld-[0-9a-f\\-]*$";
 
@@ -30,10 +29,11 @@ class HelloWorldContainer extends AbstractContainer {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        ExposedPort exposedPort = ExposedPort.tcp(80);
+        ExposedPort exposedPort = ExposedPort.tcp(SERVICE_PORT);
         Ports portBindings = new Ports();
-        portBindings.bind(exposedPort, Ports.Binding(80));
+        portBindings.bind(exposedPort, Ports.Binding(SERVICE_PORT));
         return dockerClient.createContainerCmd(HELLO_WORLD_IMAGE)
+                .withEnv(String.format("SERVICE_%d_NAME=%s", SERVICE_PORT, SERVICE_NAME))
                 .withPrivileged(true)
                 .withName(getName())
                 .withPortBindings(portBindings)

@@ -9,6 +9,7 @@ import com.github.dockerjava.api.model.Bind;
 
 public class Registrator extends AbstractContainer {
 
+    public static final int CONSUL_DEFAULT_PORT = 8500;
     private final RegistratorConfig config;
     private Consul consulContainer;
 
@@ -33,7 +34,7 @@ public class Registrator extends AbstractContainer {
         return dockerClient.createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withNetworkMode("host")
                 .withBinds(Bind.parse("/var/run/docker.sock:/tmp/docker.sock"))
-                .withCmd(String.format("consul://%s:8500", consulContainer.getIpAddress()))
+                .withCmd(String.format("consul://%s:%d", consulContainer.getIpAddress(), CONSUL_DEFAULT_PORT))
                 .withName(getName());
     }
 

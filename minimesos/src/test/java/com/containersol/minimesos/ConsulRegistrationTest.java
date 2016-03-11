@@ -41,13 +41,15 @@ public class ConsulRegistrationTest {
     @Test
     public void testRegisterServiceWithConsul() throws UnirestException {
         CLUSTER.addAndStartContainer(new HelloWorldContainer(dockerClient));
-        String url = String.format("http://%s:8500/v1/catalog/service/hello-world", DockerContainersUtil.getIpAddress(dockerClient, CLUSTER.getConsulContainer().getContainerId()));
+        String ipAddress = DockerContainersUtil.getIpAddress(dockerClient, CLUSTER.getConsulContainer().getContainerId());
+        String url = String.format("http://%s:%d/v1/catalog/service/%s",
+                ipAddress, Registrator.CONSUL_DEFAULT_PORT, HelloWorldContainer.SERVICE_NAME);
 
         JSONArray body = Unirest.get(url).asJson().getBody().getArray();
         assertEquals(1, body.length());
 
         JSONObject service = body.getJSONObject(0);
-        assertEquals(80, service.getInt("ServicePort"));
+        assertEquals(HelloWorldContainer.SERVICE_PORT, service.getInt("ServicePort"));
     }
 
 }
