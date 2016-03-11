@@ -3,6 +3,7 @@ package com.containersol.minimesos.mesos;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.container.AbstractContainer;
+import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -10,6 +11,7 @@ import com.github.dockerjava.api.model.Ports;
 
 public class Consul extends AbstractContainer {
 
+    public static final int DNS_PORT = 53;
     private final ConsulConfig config;
 
     public Consul(DockerClient dockerClient, ConsulConfig config) {
@@ -36,8 +38,10 @@ public class Consul extends AbstractContainer {
         if (getCluster().isExposedHostPorts()) {
             portBindings.bind(consulHTTPPort, Ports.Binding(ConsulConfig.CONSUL_HTTP_PORT));
         }
-        // TODO find out docker0's IP instead of hard coding
-        portBindings.bind(consulDNSPort, Ports.Binding("172.17.0.1", 53));
+
+
+        String gatewayIpAddress = DockerContainersUtil.getGatewayIpAddress(dockerClient);
+        portBindings.bind(consulDNSPort, Ports.Binding(gatewayIpAddress, DNS_PORT));
 
         return dockerClient.createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withName(getName())
