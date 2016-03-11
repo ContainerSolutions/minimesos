@@ -9,8 +9,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.attribute.UserPrincipalLookupService;
 
 import static java.lang.String.format;
 
@@ -23,6 +27,8 @@ public class CommandInit implements Command {
     private static final Logger LOGGER = LoggerFactory.getLogger(CommandInit.class);
 
     public static final String CLINAME = "init";
+
+    public static final String DEFAULT_HOST_USERID = "1000";
 
     @Override
     public boolean validateParameters() {
@@ -44,16 +50,25 @@ public class CommandInit implements Command {
 
         String fileContent = getConfigFileContent();
 
+        Path minimesosPath = Paths.get(minimesosFile.getAbsolutePath());
         try {
-            Files.write(Paths.get(minimesosFile.getAbsolutePath()), fileContent.getBytes());
+            Files.write(minimesosPath, fileContent.getBytes());
         } catch (IOException e) {
             throw new MinimesosException(format("Could not initialize minimesosFile: %s", e.getMessage()), e);
         }
+
+        try {
+            UserPrincipalLookupService lookupService = FileSystems.getDefault().getUserPrincipalLookupService();
+            UserPrincipal owner = lookupService.lookupPrincipalByName(DEFAULT_HOST_USERID);
+            Files.setOwner(minimesosPath, owner);
+        } catch (IOException e) {
+            throw new MinimesosException("NOTE: minimesosFile remains owned by root instead of user ID " + DEFAULT_HOST_USERID + ":" + e.getMessage());
+        }
+
         LOGGER.info("Initialized minimesosFile in this directory");
     }
 
     public String getConfigFileContent() {
-
         ClusterConfig config = new ClusterConfig();
         config.setClusterName("Change Cluster Name in " + ClusterConfig.DEFAULT_CONFIG_FILE + " file");
 
@@ -65,6 +80,5 @@ public class CommandInit implements Command {
         ConfigParser parser = new ConfigParser();
         return parser.toString(config);
     }
-
 
 }
