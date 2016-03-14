@@ -1,6 +1,6 @@
 # minimesos
 
-Testing infrastructure for Mesos frameworks. 
+The experimentation and testing tool for Apache Mesos
 
 [http://minimesos.org/](http://minimesos.org/)
 
