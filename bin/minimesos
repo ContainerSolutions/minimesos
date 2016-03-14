@@ -57,13 +57,13 @@ fi
 
 MINIMESOS_HOST_DIR="$(pwd)"
 MINIMESOS_DIR="$(pwd)/.minimesos"
-if [ ! -d ${MINIMESOS_DIR} ]; then
-    mkdir -p ${MINIMESOS_DIR}
+if [ ! -d "${MINIMESOS_DIR}" ]; then
+    mkdir -p "${MINIMESOS_DIR}"
     echo "# Created minimesos directory at ${MINIMESOS_DIR}."
 fi
 
 DOCKER_RUN_PARAMS="
-       -v ${MINIMESOS_HOST_DIR}:${MINIMESOS_HOST_DIR} \
+       -v \"${MINIMESOS_HOST_DIR}\":\"${MINIMESOS_HOST_DIR}\" \
        -v /var/run/docker.sock:/var/run/docker.sock \
        -v /sys/fs/cgroup:/sys/fs/cgroup \
        -v ${DOCKER_BIN}:/usr/bin/docker \
@@ -71,7 +71,11 @@ DOCKER_RUN_PARAMS="
        --env DOCKER_HOST_IP=$DOCKER_HOST_IP \
        --entrypoint java \
        containersol/minimesos:${MINIMESOS_TAG} \
-       -Dminimesos.host.dir=${MINIMESOS_HOST_DIR} \
+       -Dminimesos.host.dir=\"${MINIMESOS_HOST_DIR}\" \
        -jar /usr/local/share/minimesos/minimesos.jar ${PARAMS}"
+
+echo "----"
+echo $DOCKER_RUN_PARAMS
+echo "----"
 
 docker run --rm $DOCKER_RUN_PARAMS
