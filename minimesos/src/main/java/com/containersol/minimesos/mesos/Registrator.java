@@ -8,6 +8,9 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
 
+/**
+ * Registrator automatically registers and deregisters services for any Docker container by inspecting containers as they come online.
+ */
 public class Registrator extends AbstractContainer {
 
     private final RegistratorConfig config;

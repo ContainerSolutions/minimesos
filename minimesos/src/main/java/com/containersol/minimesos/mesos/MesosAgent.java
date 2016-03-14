@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 /**
- * Base MesosAgent class
+ * Mesos Master adds the "agent" component for Apache Mesos
  */
 public class MesosAgent extends MesosContainer {
 

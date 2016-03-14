@@ -6,6 +6,9 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports;
 
+/**
+ * A container for testing purposes. A small web server on port 80 returns the message "hello world."
+ */
 class HelloWorldContainer extends AbstractContainer {
 
     public static final String SERVICE_NAME = "hello-world-service";

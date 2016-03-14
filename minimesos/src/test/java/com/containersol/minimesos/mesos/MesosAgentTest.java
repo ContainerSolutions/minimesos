@@ -10,7 +10,7 @@ public class MesosAgentTest {
     private static final DockerClient dockerClient = DockerClientFactory.build();
     private static final ZooKeeper zooKeeper = new ZooKeeper(dockerClient);
 
-    @Test(expected= MinimesosException.class, timeout = 30 * 1000)
+    @Test(expected = MinimesosException.class, timeout = 30 * 1000)
     /**
      * It must be possible to detect wrong image within 30 seconds
      */
@@ -19,7 +19,7 @@ public class MesosAgentTest {
         MesosAgentConfig config = new MesosAgentConfig();
         config.setImageTag("non-existing-one");
 
-        MesosAgent agent = new MesosAgent( dockerClient, zooKeeper, config );
+        MesosAgent agent = new MesosAgent(dockerClient, zooKeeper, config);
         agent.pullImage();
 
     }
