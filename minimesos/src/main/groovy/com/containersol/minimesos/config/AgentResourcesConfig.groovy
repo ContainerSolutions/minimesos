@@ -45,7 +45,7 @@ class AgentResourcesConfig extends GroovyBlock {
      */
     static AgentResourcesConfig fromString(String strResources) {
 
-        String pattern = "(\\w+)\\(([A-Za-z0-9_\\*]+)\\):(\\[?[0-9_\\-\\*.]+\\]?)"
+        String pattern = "(\\w+)\\(([A-Za-z0-9_\\*]+)\\):(\\[?[0-9_\\-\\*., ]+\\]?)"
         AgentResourcesConfig resources = new AgentResourcesConfig(false)
 
         String[] split = strResources.split(";")
