@@ -1,5 +1,6 @@
 package com.containersol.minimesos.main;
 
+import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersol.minimesos.mesos.ClusterContainers;
 import com.containersol.minimesos.mesos.MesosAgent;
@@ -67,6 +68,46 @@ public class CommandUpTest {
 
         List<MesosAgent> agents = clusterContainers.getContainers().stream().filter(ClusterContainers.Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
         assertEquals( 2, agents.size() );
+
+    }
+
+    @Test
+    public void testUsingExposedPortsFromConfigFileTrue() {
+
+        ClusterConfig clusterConfig = new ClusterConfig();
+        clusterConfig.setExposePorts(true);
+
+        CommandUp commandUp = new CommandUp();
+        commandUp.updateWithParameters(clusterConfig);
+
+        assertTrue("Exposed port from configuration is expected to remain", clusterConfig.isExposePorts());
+
+    }
+
+    @Test
+    public void testUsingExposedPortsFromConfigFileFalse() {
+
+        ClusterConfig clusterConfig = new ClusterConfig();
+        clusterConfig.setExposePorts(false);
+
+        CommandUp commandUp = new CommandUp();
+        commandUp.updateWithParameters(clusterConfig);
+
+        assertFalse("Exposed port from configuration is expected to remain", clusterConfig.isExposePorts());
+
+    }
+
+    @Test
+    public void testOverwritingExposedPortsFromCommand() {
+
+        ClusterConfig clusterConfig = new ClusterConfig();
+        clusterConfig.setExposePorts(true);
+
+        CommandUp commandUp = new CommandUp();
+        commandUp.setExposedHostPorts(false);
+        commandUp.updateWithParameters(clusterConfig);
+
+        assertFalse("Exposed port should be changed through command parameters", clusterConfig.isExposePorts());
 
     }
 
