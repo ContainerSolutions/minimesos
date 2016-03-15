@@ -60,6 +60,22 @@ class ClusterConfig extends GroovyBlock {
         delegateTo(marathon, cl)
     }
 
+    def consul(@DelegatesTo(ConsulConfig) Closure cl) {
+        if (consul != null) {
+            throw new RuntimeException("Cannot have more than 1 Consul server")
+        }
+        consul = new ConsulConfig()
+        delegateTo(consul, cl)
+    }
+
+    def registrator(@DelegatesTo(RegistratorConfig) Closure cl) {
+        if (registrator != null) {
+            throw new RuntimeException("Cannot have more than 1 registrator")
+        }
+        registrator = new RegistratorConfig()
+        delegateTo(registrator, cl)
+    }
+
     void setLoggingLevel(String loggingLevel) {
         if (!StringUtils.equalsIgnoreCase(loggingLevel, "WARNING") && !StringUtils.equalsIgnoreCase(loggingLevel, "INFO") && !StringUtils.equalsIgnoreCase(loggingLevel, "ERROR")) {
             throw new RuntimeException("Property 'loggingLevel' can only have the values INFO, WARNING or ERROR")

@@ -198,7 +198,7 @@ public abstract class AbstractContainer {
             }
 
         });
-        
+
         try {
             result.get(IMAGE_PULL_TIMEOUT_SECS, TimeUnit.SECONDS);
         } catch (ExecutionException e) {

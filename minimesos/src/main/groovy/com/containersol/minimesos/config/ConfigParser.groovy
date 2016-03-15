@@ -8,8 +8,7 @@ import java.text.DecimalFormatSymbols
 /**
  * Parser for the minimesosFile. Turns minimesosFile with Groovy DSL specification into a {@link ClusterConfig} object.
  *
- * The minimesosFile DSL contains two components: blocks, and properties. A block starts and ends with curly braces: { }
- * and properties are nested inside the block. The main block is minimesos and it contains cluster-wide properties.
+ * The minimesosFile DSL contains two components: blocks, and properties. A block starts and ends with curly braces: {}* and properties are nested inside the block. The main block is minimesos and it contains cluster-wide properties.
  * Other blocks contain properties that only affect the block itself like 'imageName' inside an agent block.
  */
 @Slf4j
@@ -19,8 +18,8 @@ class ConfigParser {
 
     private DecimalFormat format = null;
 
-    private final Map<String, String> propsDictionary = ["agents": "agent", "cpus":"cpu", "mems":"mem", "disks":"disk"]
-    private final List<String> ignoredProperties = ["class", "consul", "format"]
+    private final Map<String, String> propsDictionary = ["agents": "agent", "cpus": "cpu", "mems": "mem", "disks": "disk"]
+    private final List<String> ignoredProperties = ["class", "format"]
 
     public ClusterConfig parse(String config) {
         Binding binding = new Binding();
@@ -43,7 +42,7 @@ class ConfigParser {
      */
     public String toString(ClusterConfig config) {
         StringBuilder buffer = new StringBuilder(CONFIG_VARIABLE).append(" {\n")
-        printProperties( buffer, "    ", config.properties)
+        printProperties(buffer, "    ", config.properties)
         buffer.append("}\n")
 
         buffer.toString()
@@ -124,7 +123,7 @@ class ConfigParser {
         buffer.append("\n")
         for (Object single : values) {
             String strSingle = formatSimpleValue(single)
-            if( strSingle != null ) {
+            if (strSingle != null) {
                 String line = String.format("%s%s = %s\n", intent, propName, strSingle)
                 buffer.append(line)
             } else {

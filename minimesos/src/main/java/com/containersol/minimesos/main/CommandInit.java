@@ -77,6 +77,8 @@ public class CommandInit implements Command {
         config.setZookeeper(new ZooKeeperConfig());
         config.setMarathon(new MarathonConfig());
         config.getAgents().add(new MesosAgentConfig());
+        config.setConsul(new ConsulConfig());
+        config.setRegistrator(new RegistratorConfig());
 
         ConfigParser parser = new ConfigParser();
         return parser.toString(config);
