@@ -18,6 +18,8 @@ import org.apache.log4j.Logger;
 
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.*;
 
 import static com.jayway.awaitility.Awaitility.await;
@@ -37,6 +39,8 @@ public abstract class AbstractContainer {
     private boolean removed;
 
     protected DockerClient dockerClient;
+
+    protected Map<String, String> envVars = new TreeMap<>();
 
     protected AbstractContainer(DockerClient dockerClient) {
         this.dockerClient = dockerClient;
@@ -226,6 +230,10 @@ public abstract class AbstractContainer {
      */
     public String getClusterId() {
         return (cluster != null) ? cluster.getClusterId() : null;
+    }
+
+    protected String[] createEnvironment() {
+        return envVars.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
     }
 
     private class ContainerIsRunning implements Callable<Boolean> {

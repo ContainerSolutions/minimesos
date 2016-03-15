@@ -46,9 +46,12 @@ public class Consul extends AbstractContainer {
         String gatewayIpAddress = DockerContainersUtil.getGatewayIpAddress(dockerClient);
         portBindings.bind(consulDNSPort, Ports.Binding(gatewayIpAddress, DNS_PORT));
 
+        envVars.put("SERVICE_IGNORE", "1");
+
         return dockerClient.createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withName(getName())
                 .withPortBindings(portBindings)
+                .withEnv(createEnvironment())
                 .withExposedPorts(consulHTTPPort, consulDNSPort);
     }
 

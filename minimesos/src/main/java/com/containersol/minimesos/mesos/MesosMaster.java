@@ -50,8 +50,8 @@ public class MesosMaster extends MesosContainer {
     }
 
     @Override
-    public TreeMap<String, String> getDefaultEnvVars() {
-        TreeMap<String, String> envs = new TreeMap<>();
+    public Map<String, String> getDefaultEnvVars() {
+        Map<String, String> envs = new TreeMap<>();
         envs.put("MESOS_QUORUM", "1");
         envs.put("MESOS_ZK", getFormattedZKAddress());
         envs.put("MESOS_LOGGING_LEVEL", getLoggingLevel());

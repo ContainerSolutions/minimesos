@@ -1,8 +1,8 @@
 package com.containersol.minimesos;
 
 import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.mesos.DockerClientFactory;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
+import com.containersol.minimesos.mesos.DockerClientFactory;
 import com.containersol.minimesos.mesos.MesosMaster;
 import com.containersol.minimesos.mesos.ZooKeeper;
 import com.github.dockerjava.api.DockerClient;
@@ -10,8 +10,6 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
-
-import java.util.TreeMap;
 
 public class FlagsTest {
 
@@ -46,11 +44,11 @@ public class FlagsTest {
 
         @Override
         protected String[] createMesosLocalEnvironment() {
-            TreeMap<String, String> envs = getDefaultEnvVars();
-            envs.put("MESOS_AUTHENTICATE", "true");
-            envs.put("MESOS_ACLS", aclExampleJson);
+            envVars.putAll(getDefaultEnvVars());
+            envVars.put("MESOS_AUTHENTICATE", "true");
+            envVars.put("MESOS_ACLS", aclExampleJson);
 
-            return envs.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
+            return createEnvironment();
         }
     }
 }
