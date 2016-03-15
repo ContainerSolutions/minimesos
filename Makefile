@@ -14,8 +14,17 @@ deps:
 	docker pull containersol/consul-server:0.6
 	docker pull gliderlabs/registrator:v6
 
+clean:
+	./gradlew clean
+	docker rmi containersol/minimesos:latest
+	docker rmi containersol/mesos-hello-world-scheduler:latest
+	docker rmi containersol/mesos-hello-world-executor:latest
+
 build:
-	./gradlew clean build --info --stacktrace
+	./gradlew build --info --stacktrace
+
+build-no-tests:
+	./gradlew build --info --stacktrace -x test
 
 test:
 	./gradlew test --info --stacktrace
