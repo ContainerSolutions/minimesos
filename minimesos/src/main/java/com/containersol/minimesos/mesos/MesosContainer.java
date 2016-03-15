@@ -14,7 +14,8 @@ import org.json.JSONObject;
 import java.util.TreeMap;
 
 /**
- * Superclass for Mesos images
+ * Superclass for Mesos master and agent images.
+ * Apache Mesos abstracts CPU, memory, storage, and other compute resources away from machines (physical or virtual), enabling fault-tolerant and elastic distributed systems to easily be built and run effectively.
  */
 public abstract class MesosContainer extends AbstractContainer {
 

@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 import static com.jayway.awaitility.Awaitility.await;
 
 /**
- * Marathon container
+ * Marathon container. Marathon is a cluster-wide init and control system for services in cgroups or Docker containers.
  */
 public class Marathon extends AbstractContainer {
 

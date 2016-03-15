@@ -1,7 +1,10 @@
 package com.containersol.minimesos.cluster;
 
 import com.containersol.minimesos.MinimesosException;
-import com.containersol.minimesos.config.*;
+import com.containersol.minimesos.config.ClusterConfig;
+import com.containersol.minimesos.config.ConsulConfig;
+import com.containersol.minimesos.config.MarathonConfig;
+import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.container.ContainerName;
 import com.containersol.minimesos.marathon.Marathon;
@@ -22,7 +25,10 @@ import org.junit.rules.ExternalResource;
 import java.io.File;
 import java.io.PrintStream;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -75,6 +81,7 @@ public class MesosCluster extends ExternalResource {
 
     /**
      * This constructor is used for deserialization of running cluster
+     *
      * @param clusterId ID of the cluster to deserialize
      */
     private MesosCluster(String clusterId) {
@@ -118,6 +125,12 @@ public class MesosCluster extends ExternalResource {
                         break;
                     case "marathon":
                         this.containers.add(new Marathon(dockerClient, this, uuid, containerId));
+                        break;
+                    case "consul":
+                        this.containers.add(new Consul(dockerClient, this, uuid, containerId));
+                        break;
+                    case "registrator":
+                        this.containers.add(new Registrator(dockerClient, this, uuid, containerId));
                         break;
                 }
 
@@ -207,7 +220,7 @@ public class MesosCluster extends ExternalResource {
     public void stop() {
         LOGGER.debug("Cluster " + getClusterId() + " - stop");
 
-        if (containers.size() > 0 ) {
+        if (containers.size() > 0) {
             for (int i = containers.size() - 1; i >= 0; i--) {
                 AbstractContainer container = containers.get(i);
                 LOGGER.debug("Removing container [" + container.getContainerId() + "]");
@@ -393,6 +406,11 @@ public class MesosCluster extends ExternalResource {
         return marathon.isPresent() ? marathon.get() : null;
     }
 
+    public Consul getConsulContainer() {
+        Optional<Consul> container = getOne(ClusterContainers.Filter.consul());
+        return container.isPresent() ? container.get() : null;
+    }
+
     /**
      * Optionally get one of a certain type of type T. Note, this cast will always work because we are filtering on that type.
      * If it doesn't find that type, the optional is empty so the cast doesn't need to be performed.
@@ -454,7 +472,7 @@ public class MesosCluster extends ExternalResource {
                     out.println("export MINIMESOS_ZOOKEEPER=" + ZooKeeper.getFormattedZKAddress(ip));
                     break;
                 case "consul":
-                    out.println("export MINIMESOS_CONSUL=http://" + ip + ":" + ConsulConfig.DEFAULT_CONSUL_PORT);
+                    out.println("export MINIMESOS_CONSUL=http://" + ip + ":" + ConsulConfig.CONSUL_HTTP_PORT);
                     out.println("export MINIMESOS_CONSUL_IP=" + ip);
                     break;
             }

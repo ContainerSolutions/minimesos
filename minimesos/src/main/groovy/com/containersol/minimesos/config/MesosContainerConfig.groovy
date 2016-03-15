@@ -14,7 +14,7 @@ abstract class MesosContainerConfig extends GroovyBlock implements ContainerConf
     private String loggingLevel = MESOS_LOGGING_LEVEL_INHERIT
 
     public String getLoggingLevel() {
-        return loggingLevel;
+        return loggingLevel
     }
 
     public void setLoggingLevel(String loggingLevel) {

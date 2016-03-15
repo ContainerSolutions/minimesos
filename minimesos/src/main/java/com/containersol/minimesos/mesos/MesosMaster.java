@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 import static com.jayway.awaitility.Awaitility.await;
 
 /**
- * Base, unmolested Mesos master class
+ * Mesos Master adds the "server" component for Apache Mesos
  */
 public class MesosMaster extends MesosContainer {
 

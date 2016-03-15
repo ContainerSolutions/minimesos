@@ -31,6 +31,8 @@ public class CommandInitTest {
         assertTrue("agent section is not found", fileContent.contains("agent {"));
         assertTrue("agent resources section is not found", fileContent.contains("resources {"));
         assertTrue("zookeeper section is not found", fileContent.contains("zookeeper {"));
+        assertTrue("consul section is not found", fileContent.contains("consul {"));
+        assertTrue("registrator section is not found", fileContent.contains("registrator {"));
     }
 
     @Test(expected = MinimesosException.class)

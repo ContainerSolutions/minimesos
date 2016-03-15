@@ -1,10 +1,10 @@
 package com.containersol.minimesos.config
 
-import org.apache.commons.lang.StringUtils
 import org.junit.Before
 import org.junit.Test
 
-import static org.junit.Assert.*
+import static org.junit.Assert.assertEquals
+import static org.junit.Assert.fail
 
 public class ConfigWriterTest {
 
@@ -32,6 +32,8 @@ public class ConfigWriterTest {
         config.zookeeper = new ZooKeeperConfig()
         config.marathon = new MarathonConfig()
         config.agents.add(new MesosAgentConfig())
+        config.consul = new ConsulConfig()
+        config.registrator = new RegistratorConfig()
 
         String strConfig = parser.toString(config)
         ClusterConfig read = parser.parse(strConfig)
@@ -47,8 +49,9 @@ public class ConfigWriterTest {
         assertEquals(first.loggingLevel, second.loggingLevel)
 
         compareContainers(first.marathon, second.marathon)
-        compareContainers(first.consul, second.consul)
         compareContainers(first.zookeeper, second.zookeeper)
+        compareContainers(first.consul, second.consul)
+        compareContainers(first.registrator, second.registrator)
 
         compareMesosContainers(first.master, second.master)
 

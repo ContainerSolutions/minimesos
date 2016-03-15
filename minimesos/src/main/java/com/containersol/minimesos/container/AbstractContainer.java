@@ -66,6 +66,7 @@ public abstract class AbstractContainer {
 
     /**
      * Starts the container and waits until is started
+     *
      * @param timeout in seconds
      */
     public void start(int timeout) {
@@ -121,7 +122,7 @@ public abstract class AbstractContainer {
      * @return the IP address of the container
      */
     public String getIpAddress() {
-        if( ipAddress == null ) {
+        if (ipAddress == null) {
             retrieveIpAddress();
         }
         return ipAddress;
@@ -198,12 +199,11 @@ public abstract class AbstractContainer {
 
         });
 
-
         try {
             result.get(IMAGE_PULL_TIMEOUT_SECS, TimeUnit.SECONDS);
         } catch (ExecutionException e) {
             throw new MinimesosException(e.getCause().getMessage());
-        } catch (InterruptedException|TimeoutException|RuntimeException e) {
+        } catch (InterruptedException | TimeoutException | RuntimeException e) {
             String msg = "Error pulling image or image not found in registry: " + imageName + ":" + registryTag;
             throw new MinimesosException(msg, e);
         }

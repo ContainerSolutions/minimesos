@@ -6,7 +6,6 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.json.JSONObject;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,7 +38,7 @@ public class CommandTest {
 
         assertTrue("Minimesos file at " + minimesosFile + " should exist", minimesosFile.exists());
 
-        assertEquals(4, cluster.getContainers().size());
+        assertEquals(6, cluster.getContainers().size());
 
         CommandDestroy commandDestroy = new CommandDestroy();
         commandDestroy.execute();

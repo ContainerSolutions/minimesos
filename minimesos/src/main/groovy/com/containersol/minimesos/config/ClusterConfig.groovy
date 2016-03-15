@@ -28,6 +28,7 @@ class ClusterConfig extends GroovyBlock {
     ZooKeeperConfig zookeeper = null
     MarathonConfig marathon = null
     ConsulConfig consul = null
+    RegistratorConfig registrator = null
 
     def master(@DelegatesTo(MesosMasterConfig) Closure cl) {
         if (master != null) {
@@ -57,6 +58,22 @@ class ClusterConfig extends GroovyBlock {
         }
         marathon = new MarathonConfig();
         delegateTo(marathon, cl)
+    }
+
+    def consul(@DelegatesTo(ConsulConfig) Closure cl) {
+        if (consul != null) {
+            throw new RuntimeException("Cannot have more than 1 Consul server")
+        }
+        consul = new ConsulConfig()
+        delegateTo(consul, cl)
+    }
+
+    def registrator(@DelegatesTo(RegistratorConfig) Closure cl) {
+        if (registrator != null) {
+            throw new RuntimeException("Cannot have more than 1 registrator")
+        }
+        registrator = new RegistratorConfig()
+        delegateTo(registrator, cl)
     }
 
     void setLoggingLevel(String loggingLevel) {

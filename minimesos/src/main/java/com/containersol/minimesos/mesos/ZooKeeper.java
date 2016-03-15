@@ -8,7 +8,7 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 
 /**
- * Base zookeeper class
+ * ZooKeeper is a centralized service for maintaining configuration information, naming, providing distributed synchronization, and providing group services.
  */
 public class ZooKeeper extends AbstractContainer {
 

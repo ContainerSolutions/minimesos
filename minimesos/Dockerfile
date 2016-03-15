@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM alpine:3.3
 MAINTAINER Container Solutions BV <info@container-solutions.com>
 
 RUN apk --update add openjdk8-jre

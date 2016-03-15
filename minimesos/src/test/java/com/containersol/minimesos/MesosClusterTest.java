@@ -1,9 +1,11 @@
 package com.containersol.minimesos;
 
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.config.ConsulConfig;
+import com.containersol.minimesos.config.RegistratorConfig;
+import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.mesos.*;
-import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.util.ResourceUtil;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -37,6 +39,8 @@ public class MesosClusterTest {
             .withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper))
             .withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper))
             .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper))
+            .withConsul(new Consul(dockerClient, new ConsulConfig()))
+            .withRegistrator(consul -> new Registrator(dockerClient, consul, new RegistratorConfig()))
             .build();
 
     @ClassRule
@@ -48,7 +52,7 @@ public class MesosClusterTest {
         util.getContainers(false).filterByName(HelloWorldContainer.CONTAINER_NAME_PATTERN).kill().remove();
     }
 
-    @Test(expected =  ClusterArchitecture.MesosArchitectureException.class)
+    @Test(expected = ClusterArchitecture.MesosArchitectureException.class)
     public void testConstructor() {
         MesosCluster cluster = new MesosCluster(null);
     }
@@ -64,7 +68,7 @@ public class MesosClusterTest {
         assertEquals(CLUSTER.getZkContainer().getIpAddress(), cluster.getZkContainer().getIpAddress());
         assertEquals(CLUSTER.getMasterContainer().getStateUrl(), cluster.getMasterContainer().getStateUrl());
 
-        assertFalse( "Deserialize cluster is expected to remember exposed ports setting", cluster.isExposedHostPorts() );
+        assertFalse("Deserialize cluster is expected to remember exposed ports setting", cluster.isExposedHostPorts());
     }
 
     @Test(expected = MinimesosException.class)
@@ -85,6 +89,7 @@ public class MesosClusterTest {
         assertTrue(output.contains("export MINIMESOS_ZOOKEEPER=zk://" + CLUSTER.getZkContainer().getIpAddress() + ":2181\n"));
         assertTrue(output.contains("export MINIMESOS_MASTER=http://" + CLUSTER.getMasterContainer().getIpAddress() + ":5050\n"));
         assertTrue(output.contains("export MINIMESOS_MARATHON=http://" + CLUSTER.getMarathonContainer().getIpAddress() + ":8080\n"));
+        assertTrue(output.contains("export MINIMESOS_CONSUL=http://" + CLUSTER.getConsulContainer().getIpAddress() + ":8500\n"));
     }
 
     @Test
@@ -162,9 +167,9 @@ public class MesosClusterTest {
 
             List<Link> links = Arrays.asList(exec.getHostConfig().getLinks());
 
-            assertNotNull( links );
-            assertEquals( "link to zookeeper is expected", 1, links.size() );
-            assertEquals( "minimesos-zookeeper", links.get(0).getAlias() );
+            assertNotNull(links);
+            assertEquals("link to zookeeper is expected", 1, links.size());
+            assertEquals("minimesos-zookeeper", links.get(0).getAlias());
         }
     }
 

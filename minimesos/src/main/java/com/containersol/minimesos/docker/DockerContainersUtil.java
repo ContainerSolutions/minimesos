@@ -34,7 +34,7 @@ public class DockerContainersUtil {
      */
     public DockerContainersUtil getContainers(boolean showAll) {
         Set<Container> containers = new HashSet<>(dockerClient.listContainersCmd().withShowAll(showAll).exec());
-        return new DockerContainersUtil( dockerClient, containers );
+        return new DockerContainersUtil(dockerClient, containers);
     }
 
     public int size() {
@@ -43,6 +43,7 @@ public class DockerContainersUtil {
 
     /**
      * Filters the set based on the constainer name
+     *
      * @param pattern regular expression pattern of the container name
      * @return filtered set
      */
@@ -67,6 +68,7 @@ public class DockerContainersUtil {
 
     /**
      * Filters the set based on the constainer name
+     *
      * @param pattern regular expression pattern of the container name
      * @return filtered set
      */
@@ -77,8 +79,8 @@ public class DockerContainersUtil {
 
         Set<Container> matched = new HashSet<>();
         for (Container container : containers) {
-            if( container.getImage().matches(pattern) ) {
-                matched.add( container );
+            if (container.getImage().matches(pattern)) {
+                matched.add(container);
             }
         }
 
@@ -133,12 +135,26 @@ public class DockerContainersUtil {
 
     /**
      * @param dockerClient docker client to use
-     * @param containerId id of the container to retrieve
+     * @return IP Address of the container's gateway (which would be docker0)
+     */
+    public static String getGatewayIpAddress(DockerClient dockerClient) {
+        List<Container> containers = dockerClient.listContainersCmd().exec();
+        if (containers == null || containers.size() == 0) {
+            throw new IllegalStateException("Cannot get docker0 IP address because no containers are running");
+        }
+
+        InspectContainerResponse response = dockerClient.inspectContainerCmd(containers.get(0).getId()).exec();
+        return response.getNetworkSettings().getGateway();
+    }
+
+    /**
+     * @param dockerClient docker client to use
+     * @param containerId  id of the container to retrieve
      * @return container or null
      */
     public static Container getContainer(DockerClient dockerClient, String containerId) {
-        List<Container> containers = dockerClient.listContainersCmd().withFilters( new Filters().withFilter("id", containerId)).exec();
-        if( containers != null && containers.size() == 1) {
+        List<Container> containers = dockerClient.listContainersCmd().withFilters(new Filters().withFilter("id", containerId)).exec();
+        if (containers != null && containers.size() == 1) {
             return containers.get(0);
         } else {
             return null;

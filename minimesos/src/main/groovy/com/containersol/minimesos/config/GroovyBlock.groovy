@@ -12,7 +12,7 @@ class GroovyBlock {
     }
 
     def methodMissing(String methodName, args) {
-        throw new MissingPropertyException("Block '" + methodName + "' not supported");
+        throw new MissingPropertyException("Block '" + methodName + "' not supported")
     }
 
 }

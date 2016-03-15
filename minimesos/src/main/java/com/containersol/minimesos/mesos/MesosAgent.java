@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 /**
- * Base MesosAgent class
+ * Mesos Master adds the "agent" component for Apache Mesos
  */
 public class MesosAgent extends MesosContainer {
 
@@ -98,6 +98,7 @@ public class MesosAgent extends MesosContainer {
         envs.put("MESOS_MASTER", getFormattedZKAddress());
         envs.put("MESOS_SWITCH_USER", "false");
         envs.put("MESOS_LOGGING_LEVEL", getLoggingLevel());
+        envs.put("SERVICE_IGNORE", "1");
         return envs;
     }
 }
