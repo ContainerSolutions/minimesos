@@ -12,7 +12,7 @@ deps:
 	docker pull mesosphere/marathon:v0.13.0
 	docker pull tutum/hello-world
 	docker pull containersol/consul-server:0.6
-	docker pull gliderlabs/registrator:latest
+	docker pull gliderlabs/registrator:v6
 
 build:
 	./gradlew clean build --info --stacktrace
