@@ -49,8 +49,9 @@ public class ConfigWriterTest {
         assertEquals(first.loggingLevel, second.loggingLevel)
 
         compareContainers(first.marathon, second.marathon)
-        compareContainers(first.consul, second.consul)
         compareContainers(first.zookeeper, second.zookeeper)
+        compareContainers(first.consul, second.consul)
+        compareContainers(first.registrator, second.registrator)
 
         compareMesosContainers(first.master, second.master)
 
