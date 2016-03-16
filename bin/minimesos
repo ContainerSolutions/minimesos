@@ -25,7 +25,6 @@ else
     DOCKER_HOST_IP=""
 fi
 
-
 docker info > /dev/null 2>&1
 if [ "$?" -ne 0 ]; then
     echo "Please make sure docker is set up correctly"
@@ -62,12 +61,19 @@ if [ ! -d "${MINIMESOS_DIR}" ]; then
     echo "# Created minimesos directory at ${MINIMESOS_DIR}."
 fi
 
+CGROUP_MOUNT_HOST=$(cat /proc/mounts | grep ^cgroup | awk '{ print $2 }' | xargs -r dirname | uniq)
+if [ "${CGROUP_MOUNT_HOST}" = "" ]; then
+    echo "Cannot find cgroup mount. On most systems it should be mounted on /sys/fs/cgroup or /cgroup"
+    exit 1
+fi
+
 docker run --rm -v "${MINIMESOS_HOST_DIR}":"${MINIMESOS_HOST_DIR}" \
        -v /var/run/docker.sock:/var/run/docker.sock \
-       -v /sys/fs/cgroup:/sys/fs/cgroup \
+       -v ${CGROUP_MOUNT_HOST}:/sys/fs/cgroup \
        -v ${DOCKER_BIN}:/usr/bin/docker \
        -i \
        --env DOCKER_HOST_IP=${DOCKER_HOST_IP} \
+       --env CGROUP_MOUNT_HOST=${CGROUP_MOUNT_HOST} \
        --entrypoint java \
        containersol/minimesos:${MINIMESOS_TAG} \
        -Dminimesos.host.dir="${MINIMESOS_HOST_DIR}" \

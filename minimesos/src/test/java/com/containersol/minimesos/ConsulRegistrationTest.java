@@ -13,10 +13,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
+@Ignore
 public class ConsulRegistrationTest {
 
     protected static final DockerClient dockerClient = DockerClientFactory.build();

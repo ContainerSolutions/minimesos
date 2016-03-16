@@ -10,6 +10,7 @@ class ClusterConfig extends GroovyBlock {
     public static final String DEFAULT_MESOS_VERSION = "0.25"
     public static final String DEFAULT_CONFIG_FILE = "minimesosFile"
     public static final String DEFAULT_LOGGING_LEVEL = "INFO"
+    public static final String DEFAULT_CGROUP_MOUNT_HOST = "/sys/fs/cgroup"
 
     def call(Closure cl) {
         cl.setDelegate(this);
@@ -22,6 +23,13 @@ class ClusterConfig extends GroovyBlock {
     String mesosVersion = DEFAULT_MESOS_VERSION
     String clusterName = null
     String loggingLevel = DEFAULT_LOGGING_LEVEL
+    String hostCgroupMountPoint = DEFAULT_CGROUP_MOUNT_HOST;
+
+    ClusterConfig() {
+        if (System.getProperty("CGROUP_HOST_MOUNT") != null) {
+            hostCgroupMountPoint = System.getProperty("CGROUP_HOST_MOUNT");
+        }
+    }
 
     MesosMasterConfig master = null
     List<MesosAgentConfig> agents = new ArrayList<>()
@@ -92,5 +100,9 @@ class ClusterConfig extends GroovyBlock {
 
     String getLoggingLevel() {
         return loggingLevel
+    }
+
+    String getHostCgroupMountPoint() {
+        return hostCgroupMountPoint;
     }
 }
