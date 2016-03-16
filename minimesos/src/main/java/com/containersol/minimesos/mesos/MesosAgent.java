@@ -10,9 +10,13 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Link;
 import org.apache.log4j.Logger;
+import org.omg.SendingContext.RunTime;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Mesos Master adds the "agent" component for Apache Mesos
@@ -53,20 +57,42 @@ public class MesosAgent extends MesosContainer {
 
     public CreateContainerCmd getBaseCommand() {
         String hostDir = MesosCluster.getHostDir().getAbsolutePath();
+        String dockerLocation = findDockerBinaryLocation();
 
-        return dockerClient.createContainerCmd( getMesosImageName() + ":" + getMesosImageTag() )
+        CreateContainerCmd containerCmd = dockerClient.createContainerCmd( getMesosImageName() + ":" + getMesosImageTag() )
                 .withName( getName() )
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
                 .withPid("host")
                 .withLinks(new Link(getZooKeeperContainer().getContainerId(), "minimesos-zookeeper"))
                 .withBinds(
-                        Bind.parse("/var/run/docker.sock:/var/run/docker.sock"),
+                        Bind.parse("/var/run/docker.sock:/var/run/docker.sock:ro"),
                         Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),
-                        Bind.parse(hostDir + ":" + hostDir)
+                        Bind.parse(hostDir + ":" + hostDir),
+                        Bind.parse(dockerLocation + ":/usr/local/bin/docker:ro")
                 );
+        return containerCmd;
     }
 
+    /**
+     * Supply mesos agent with local docker binary
+     * @return String docker binary location
+     */
+    public String findDockerBinaryLocation() {
+        String dockerBinEnv = System.getenv("MINIMESOS_DOCKER_BIN");
+        if (dockerBinEnv != null && (new File(dockerBinEnv).canExecute())) {
+            return dockerBinEnv;
+        }
+        String[] locations = {"/usr/bin/docker", "/usr/local/bin/docker"};
+        for (int i = 0; i < locations.length; i++) {
+            File candidate = new File(locations[i]);
+            if (candidate.exists() && candidate.isFile()) {
+                LOGGER.debug(candidate);
+                return locations[i];
+            }
+        }
+        return "";
+    }
     @Override
     public String getRole() {
         return "agent";

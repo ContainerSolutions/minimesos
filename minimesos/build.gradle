@@ -119,7 +119,7 @@ task copyFilesForDocker(type: Copy) {
     }
 }
 
-task copyDockerfile(type: Copy) {
+task copyDockerfile(type: Copy, dependsOn: copyExecutableJar) {
     dependsOn   'copyFilesForDocker'
     from        "Dockerfile"
     into        'build/docker'
