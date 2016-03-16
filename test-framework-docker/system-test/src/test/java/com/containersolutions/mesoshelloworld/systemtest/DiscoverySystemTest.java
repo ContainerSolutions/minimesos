@@ -77,8 +77,8 @@ public class DiscoverySystemTest {
         util.getContainers(false).filterByImage(SchedulerContainer.SCHEDULER_IMAGE).kill().remove();
 
         DockerContainersUtil executors = util.getContainers(false).filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE);
-        LOGGER.info( String.format("Found %d containers to stop and remove", util.size()) );
-        executors.kill().remove();
+        LOGGER.info( String.format("Found %d containers to stop and remove", executors.size()) );
+        executors.kill(true).remove();
 
     }
 
