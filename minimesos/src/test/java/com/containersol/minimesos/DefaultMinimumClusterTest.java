@@ -75,7 +75,7 @@ public class DefaultMinimumClusterTest {
         HelloWorldContainer container = new HelloWorldContainer(dockerClient);
         String containerId = cluster.addAndStartContainer(container);
         String ipAddress = DockerContainersUtil.getIpAddress(dockerClient, containerId);
-        String url = "http://" + ipAddress + ":80";
+        String url = "http://" + ipAddress + ":" + HelloWorldContainer.SERVICE_PORT;
         assertEquals(200, Unirest.get(url).asString().getStatus());
     }
 
