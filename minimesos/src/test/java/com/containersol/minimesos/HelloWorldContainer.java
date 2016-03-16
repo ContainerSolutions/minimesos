@@ -12,7 +12,8 @@ import com.github.dockerjava.api.model.Ports;
 class HelloWorldContainer extends AbstractContainer {
 
     public static final String SERVICE_NAME = "hello-world-service";
-    public static final int SERVICE_PORT = 80;
+    // Port 80 is often busy on hosts
+    public static final int SERVICE_PORT = 92;
     public static final String HELLO_WORLD_IMAGE = "tutum/hello-world";
     public static final String CONTAINER_NAME_PATTERN = "^helloworld-[0-9a-f\\-]*$";
 

@@ -27,7 +27,7 @@ import static org.junit.Assert.assertEquals;
  * Replicates MesosClusterTest with new API
  */
 
-public class NewMesosClusterTest {
+public class DefaultMinimumClusterTest {
 
     private DockerClient dockerClient = DockerClientFactory.build();
 
@@ -78,4 +78,5 @@ public class NewMesosClusterTest {
         String url = "http://" + ipAddress + ":80";
         assertEquals(200, Unirest.get(url).asString().getStatus());
     }
+
 }
