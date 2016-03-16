@@ -12,8 +12,7 @@ import com.github.dockerjava.api.model.Ports;
 class HelloWorldContainer extends AbstractContainer {
 
     public static final String SERVICE_NAME = "hello-world-service";
-    // Port 80 is often busy on hosts
-    public static final int SERVICE_PORT = 92;
+    public static final int SERVICE_PORT = 80;
     public static final String HELLO_WORLD_IMAGE = "tutum/hello-world";
     public static final String CONTAINER_NAME_PATTERN = "^helloworld-[0-9a-f\\-]*$";
 
@@ -34,13 +33,11 @@ class HelloWorldContainer extends AbstractContainer {
     @Override
     protected CreateContainerCmd dockerCommand() {
         ExposedPort exposedPort = ExposedPort.tcp(SERVICE_PORT);
-        Ports portBindings = new Ports();
-        portBindings.bind(exposedPort, Ports.Binding(SERVICE_PORT));
+        // port mapping is not used as port 80 is ofthen occupied on host
         return dockerClient.createContainerCmd(HELLO_WORLD_IMAGE)
                 .withEnv(String.format("SERVICE_%d_NAME=%s", SERVICE_PORT, SERVICE_NAME))
                 .withPrivileged(true)
                 .withName(getName())
-                .withPortBindings(portBindings)
                 .withExposedPorts(exposedPort);
     }
 

@@ -9,6 +9,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.ExposedPort;
 
+import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONObject;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Replicates MesosClusterTest with new API
@@ -75,8 +77,12 @@ public class DefaultMinimumClusterTest {
         HelloWorldContainer container = new HelloWorldContainer(dockerClient);
         String containerId = cluster.addAndStartContainer(container);
         String ipAddress = DockerContainersUtil.getIpAddress(dockerClient, containerId);
+
         String url = "http://" + ipAddress + ":" + HelloWorldContainer.SERVICE_PORT;
-        assertEquals(200, Unirest.get(url).asString().getStatus());
+        HttpResponse<String> response = Unirest.get(url).asString();
+
+        assertEquals(200, response.getStatus());
+        assertTrue("Wrong message is received", response.getBody().contains("<h1>Hello world!</h1>"));
     }
 
 }
