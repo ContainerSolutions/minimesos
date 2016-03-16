@@ -69,7 +69,7 @@ public class MesosAgent extends MesosContainer {
                         Bind.parse("/var/run/docker.sock:/var/run/docker.sock:ro"),
                         Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),
                         Bind.parse(hostDir + ":" + hostDir),
-                        Bind.parse(dockerLocation + ":/usr/bin/docker:ro")
+                        Bind.parse(dockerLocation + ":/usr/local/bin/docker:ro")
                 );
         return containerCmd;
     }

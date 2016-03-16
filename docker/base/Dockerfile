@@ -6,5 +6,3 @@ RUN echo "deb http://ppa.launchpad.net/openjdk-r/ppa/ubuntu trusty main" > /etc/
     apt-get update && \
     apt-get -y install openjdk-8-jre-headless curl unzip iptables && \
     rm -rf /var/lib/apt/lists/*
-
-ADD ./docker /usr/local/bin/docker
