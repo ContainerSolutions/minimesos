@@ -5,6 +5,8 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
+import java.net.InetSocketAddress;
+
 /**
  */
 public class Configuration {
@@ -13,6 +15,7 @@ public class Configuration {
     public static final String DEFAULT_EXECUTOR_IMAGE = "containersol/mesos-hello-world-executor";
     public static final String EXECUTOR_NUMBER = "--executorNumber";
     public static final String EXECUTOR_FORCE_PULL_IMAGE = "--executorForcePullImage";
+    public static final String USE_DOCKER= "--docker";
     @Parameter(names = {MESOS_MASTER}, description = "The Mesos master IP", validateWith = NotEmptyString.class)
     private String mesosMaster = "";
     @Parameter(names = {EXECUTOR_IMAGE}, description = "The docker executor image to use.")
@@ -21,11 +24,15 @@ public class Configuration {
     private Integer executorNumber = 3;
     @Parameter(names = {EXECUTOR_FORCE_PULL_IMAGE}, arity = 1, description = "Option to force pull the executor image.")
     private Boolean executorForcePullImage = false;
+    @Parameter(names = {USE_DOCKER}, arity = 1, description = "Option to use Docker.")
+    private Boolean useDocker = false;
 
     @Parameter(names = {"--frameworkPrincipal"}, description = "The principal to authenticate as")
     private String frameworkPrincipal = null;
     @Parameter(names = {"--frameworkSecret"}, description = "The secret to authenticate with, if authenticating as a principal")
     private String frameworkSecret = null;
+
+    private InetSocketAddress address = new InetSocketAddress(8080);
 
     public Configuration(String[] args) {
         final JCommander jCommander = new JCommander();
@@ -65,6 +72,22 @@ public class Configuration {
 
     public String getFrameworkSecret() {
         return frameworkSecret;
+    }
+
+    public Boolean getUseDocker() {
+        return useDocker;
+    }
+
+    public InetSocketAddress getAddress() {
+        return address;
+    }
+
+    public String getExecutorJarName() {
+        return "mesos-hello-world-executor.jar";
+    }
+
+    public String getExecutorUrl() {
+        return "http://" + getAddress() + "/" + getExecutorJarName();
     }
 
     /**

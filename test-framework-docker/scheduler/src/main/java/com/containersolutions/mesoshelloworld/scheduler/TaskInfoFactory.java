@@ -1,5 +1,6 @@
 package com.containersolutions.mesoshelloworld.scheduler;
 
+import org.apache.mesos.Protos;
 import org.apache.mesos.Protos.*;
 
 import java.util.UUID;
@@ -62,20 +63,29 @@ public class TaskInfoFactory {
     }
 
     private ExecutorInfo.Builder newExecutorInfo(Configuration configuration) {
+        if (configuration.getUseDocker()) {
+            ContainerInfo.DockerInfo.Builder dockerBuilder = ContainerInfo.DockerInfo.newBuilder()
+                    .setNetwork(ContainerInfo.DockerInfo.Network.BRIDGE)
+                    .setImage(configuration.getExecutorImage())
+                    .setForcePullImage(configuration.getExecutorForcePullImage());
 
-        ContainerInfo.DockerInfo.Builder dockerBuilder = ContainerInfo.DockerInfo.newBuilder()
-                .setNetwork(ContainerInfo.DockerInfo.Network.BRIDGE)
-                .setImage(configuration.getExecutorImage())
-                .setForcePullImage(configuration.getExecutorForcePullImage());
-
-        return ExecutorInfo.newBuilder()
-                .setExecutorId(ExecutorID.newBuilder().setValue(UUID.randomUUID().toString()))
-                .setName("hello-world-executor-" + UUID.randomUUID().toString())
-                .setCommand(newCommandInfo(configuration))
-                .setContainer(ContainerInfo.newBuilder()
-                        .setType(ContainerInfo.Type.DOCKER)
-                        .setDocker( dockerBuilder )
-                        .build());
+            return ExecutorInfo.newBuilder()
+                    .setExecutorId(ExecutorID.newBuilder().setValue(UUID.randomUUID().toString()))
+                    .setName("hello-world-executor-" + UUID.randomUUID().toString())
+                    .setCommand(newCommandInfo(configuration))
+                    .setContainer(ContainerInfo.newBuilder()
+                            .setType(ContainerInfo.Type.DOCKER)
+                            .setDocker( dockerBuilder )
+                            .build());
+        } else {
+            return ExecutorInfo.newBuilder()
+                    .setExecutorId(ExecutorID.newBuilder().setValue(UUID.randomUUID().toString()))
+                    .setName("hello-world-executor-" + UUID.randomUUID().toString())
+                    .setCommand(CommandInfo.newBuilder()
+                            .addUris(Protos.CommandInfo.URI.newBuilder().setValue(configuration.getExecutorUrl()))
+                            .setShell(false)
+                            .setValue("java -jar mesos-hello-world-executor.jar").build());
+        }
     }
 
     private CommandInfo.Builder newCommandInfo(Configuration configuration) {

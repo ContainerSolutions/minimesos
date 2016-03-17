@@ -1,6 +1,7 @@
 package com.containersolutions.mesoshelloworld.scheduler;
 
 import com.google.protobuf.ByteString;
+import com.sun.net.httpserver.HttpServer;
 import org.apache.mesos.MesosSchedulerDriver;
 import org.apache.mesos.Protos;
 
@@ -8,8 +9,12 @@ import org.apache.mesos.Protos;
  */
 public class Main {
     public static void main(String[] args) throws Exception {
-
         Configuration configuration = new Configuration(args);
+
+        HttpServer server = HttpServer.create(configuration.getAddress(), 0);
+        server.createContext("/" + configuration.getExecutorJarName(), new ExecutorHandler());
+        server.setExecutor(null); // creates a default executor
+        server.start();
 
         Protos.FrameworkInfo.Builder frameworkBuilder = Protos.FrameworkInfo.newBuilder()
                 .setUser("") // Have Mesos fill in the current user.
