@@ -2,6 +2,7 @@ package com.containersol.minimesos.docker;
 
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Filters;
@@ -102,9 +103,24 @@ public class DockerContainersUtil {
      * Removes all containers in the util object
      */
     public DockerContainersUtil kill() {
+        return kill(false);
+    }
+
+    /**
+     * Removes all containers in the util object
+     *
+     * @param ignoreFailure - use <code>true</code> if you expect containers might be stopped by this time
+     */
+    public DockerContainersUtil kill(boolean ignoreFailure) {
         if (containers != null) {
             for (Container container : containers) {
-                dockerClient.killContainerCmd(container.getId()).exec();
+                try {
+                    dockerClient.killContainerCmd(container.getId()).exec();
+                } catch (DockerException failure) {
+                    if(!ignoreFailure) {
+                        throw failure;
+                    }
+                }
             }
         }
         return this;

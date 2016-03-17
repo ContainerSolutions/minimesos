@@ -33,13 +33,11 @@ class HelloWorldContainer extends AbstractContainer {
     @Override
     protected CreateContainerCmd dockerCommand() {
         ExposedPort exposedPort = ExposedPort.tcp(SERVICE_PORT);
-        Ports portBindings = new Ports();
-        portBindings.bind(exposedPort, Ports.Binding(SERVICE_PORT));
+        // port mapping is not used as port 80 is ofthen occupied on host
         return dockerClient.createContainerCmd(HELLO_WORLD_IMAGE)
                 .withEnv(String.format("SERVICE_%d_NAME=%s", SERVICE_PORT, SERVICE_NAME))
                 .withPrivileged(true)
                 .withName(getName())
-                .withPortBindings(portBindings)
                 .withExposedPorts(exposedPort);
     }
 

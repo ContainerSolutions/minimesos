@@ -155,7 +155,7 @@ public class MesosClusterTest {
         HelloWorldContainer container = new HelloWorldContainer(CONFIG.dockerClient);
         String containerId = CLUSTER.addAndStartContainer(container);
         String ipAddress = DockerContainersUtil.getIpAddress(CONFIG.dockerClient, containerId);
-        String url = "http://" + ipAddress + ":80";
+        String url = "http://" + ipAddress + ":" + HelloWorldContainer.SERVICE_PORT;
         assertEquals(200, Unirest.get(url).asString().getStatus());
     }
 

@@ -22,6 +22,7 @@ repositories {
 
 apply plugin: "groovy"
 apply plugin: 'java'
+apply plugin: 'jacoco'
 apply plugin: 'maven'
 apply plugin: 'application'
 apply plugin: 'com.bmuschko.docker-remote-api'
@@ -80,6 +81,13 @@ jar {
         )
     }
     exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        csv.enabled false
+    }
 }
 
 task executableJar(type: Jar) {

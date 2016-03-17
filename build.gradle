@@ -1,9 +1,13 @@
-
 import com.github.zafarkhaja.semver.UnexpectedCharacterException
-
 import com.github.zafarkhaja.semver.Version
 import org.ajoberstar.grgit.Grgit
 import org.ajoberstar.grgit.Tag
+
+apply plugin: 'sonar-runner'
+
+repositories{
+    mavenCentral()
+}
 
 ext {
     mesosVer = "0.25.0"
@@ -44,6 +48,14 @@ buildscript {
         classpath 'com.bmuschko:gradle-docker-plugin:2.4.1'
     }
 
+}
+
+sonarRunner {
+    sonarProperties {
+        property "sonar.sourceEncoding", "UTF-8"
+        property "sonar.dynamicAnalysis", "reuseReports"
+        property "sonar.jacoco.reportPath", "${buildDir}/jacoco/test.exec"
+    }
 }
 
 def grgit = Grgit.open(project.file('.'))
