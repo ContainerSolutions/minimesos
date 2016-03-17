@@ -46,7 +46,6 @@ public class MesosAgent extends MesosContainer {
         return config.getResources().asMesosString();
     }
 
-
     @Override
     public int getPortNumber() {
         return config.getPortNumber();
@@ -63,7 +62,7 @@ public class MesosAgent extends MesosContainer {
                 .withLinks(new Link(getZooKeeperContainer().getContainerId(), "minimesos-zookeeper"))
                 .withBinds(
                         Bind.parse("/var/run/docker.sock:/var/run/docker.sock"),
-                        Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),
+                        Bind.parse(getCluster().getClusterConfig().getHostCgroupMountPoint() + ":/sys/fs/cgroup"),
                         Bind.parse(hostDir + ":" + hostDir)
                 );
     }
@@ -88,7 +87,6 @@ public class MesosAgent extends MesosContainer {
 
         return getBaseCommand()
                 .withExposedPorts(exposedPorts.toArray(new ExposedPort[exposedPorts.size()]));
-
     }
 
     @Override

@@ -24,7 +24,6 @@ public class ExposedPortsTest {
 
     protected static final DockerClient dockerClient = DockerClientFactory.build();
 
-
     private MesosCluster cluster;
 
     @Before
