@@ -11,6 +11,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
 import org.json.JSONObject;
 
+import java.util.Map;
 import java.util.TreeMap;
 
 /**
@@ -37,7 +38,7 @@ public abstract class MesosContainer extends AbstractContainer {
 
     public abstract int getPortNumber();
 
-    protected abstract TreeMap<String, String> getDefaultEnvVars();
+    protected abstract Map<String, String> getDefaultEnvVars();
 
     @Override
     protected void pullImage() {
@@ -58,13 +59,13 @@ public abstract class MesosContainer extends AbstractContainer {
     }
 
     protected String[] createMesosLocalEnvironment() {
-        TreeMap<String, String> map = getDefaultEnvVars();
-        map.putAll(getSharedEnvVars());
-        return map.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
+        envVars.putAll(getDefaultEnvVars());
+        envVars.putAll(getSharedEnvVars());
+        return createEnvironment();
     }
 
-    protected TreeMap<String, String> getSharedEnvVars() {
-        TreeMap<String,String> envs = new TreeMap<>();
+    protected Map<String, String> getSharedEnvVars() {
+        Map<String, String> envs = new TreeMap<>();
         envs.put("GLOG_v", "1");
         envs.put("MESOS_EXECUTOR_REGISTRATION_TIMEOUT", "5mins");
         envs.put("MESOS_CONTAINERIZERS", "docker,mesos");

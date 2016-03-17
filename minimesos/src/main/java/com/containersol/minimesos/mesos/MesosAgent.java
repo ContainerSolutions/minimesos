@@ -12,6 +12,7 @@ import com.github.dockerjava.api.model.Link;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.TreeMap;
 
 /**
@@ -91,8 +92,8 @@ public class MesosAgent extends MesosContainer {
     }
 
     @Override
-    public TreeMap<String, String> getDefaultEnvVars() {
-        TreeMap<String,String> envs = new TreeMap<>();
+    public Map<String, String> getDefaultEnvVars() {
+        Map<String,String> envs = new TreeMap<>();
         envs.put("MESOS_RESOURCES", getResources());
         envs.put("MESOS_PORT", String.valueOf(getPortNumber()));
         envs.put("MESOS_MASTER", getFormattedZKAddress());

@@ -16,6 +16,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class ConsulRegistrationTest {
 
@@ -50,6 +51,23 @@ public class ConsulRegistrationTest {
 
         JSONObject service = body.getJSONObject(0);
         assertEquals(HelloWorldContainer.SERVICE_PORT, service.getInt("ServicePort"));
+    }
+
+    @Test
+    public void testConsulShouldBeIgnored() throws UnirestException {
+        String ipAddress = DockerContainersUtil.getIpAddress(dockerClient, CLUSTER.getConsulContainer().getContainerId());
+        String url = String.format("http://%s:%d/v1/catalog/services", ipAddress, ConsulConfig.CONSUL_HTTP_PORT);
+
+        JSONArray body = Unirest.get(url).asJson().getBody().getArray();
+        assertEquals(1, body.length());
+
+        JSONObject service = body.getJSONObject(0);
+        assertFalse(service.has("consul-server-8300"));
+        assertFalse(service.has("consul-server-8301"));
+        assertFalse(service.has("consul-server-8302"));
+        assertFalse(service.has("consul-server-8400"));
+        assertFalse(service.has("consul-server-8500"));
+        assertFalse(service.has("consul-server-8600"));
     }
 
 }
