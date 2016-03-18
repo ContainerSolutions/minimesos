@@ -1,5 +1,7 @@
 package com.containersol.minimesos.config
 
+import org.apache.commons.lang.StringUtils
+
 abstract class MesosContainerConfig extends GroovyBlock implements ContainerConfig {
 
     public static final String MESOS_IMAGE_TAG = "# derive from mesos version"

@@ -60,6 +60,7 @@ public class MesosAgent extends MesosContainer {
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
                 .withPid("host")
+                .withNetworkMode(config.getNetworkMode())
                 .withLinks(new Link(getZooKeeperContainer().getContainerId(), "minimesos-zookeeper"))
                 .withBinds(
                         Bind.parse("/var/run/docker.sock:/var/run/docker.sock"),
