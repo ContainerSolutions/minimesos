@@ -28,7 +28,7 @@ class MesosAgentConfig extends MesosContainerConfig {
 
     @Override
     void setNetworkMode(String networkMode) {
-        if (!StringUtils.equalsIgnoreCase(networkMode, "bridge") && !StringUtils.equalsIgnoreCase(loggingLevel, "host")) {
+        if (!StringUtils.equalsIgnoreCase(networkMode, "bridge") && !StringUtils.equalsIgnoreCase(networkMode, "host")) {
             throw new RuntimeException("Property 'networkMode' can only have the values 'bridge' or 'host'")
         }
         this.networkMode = networkMode
