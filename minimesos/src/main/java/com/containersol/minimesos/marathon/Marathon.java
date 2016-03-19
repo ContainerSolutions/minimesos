@@ -71,9 +71,9 @@ public class Marathon extends AbstractContainer {
         }
         return dockerClient.createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withName( getName() )
-                .withExtraHosts("minimesos-zookeeper:" + this.zooKeeper.getIpAddress())
-                .withCmd("--master", "zk://minimesos-zookeeper:2181/mesos", "--zk", "zk://minimesos-zookeeper:2181/marathon")
+                .withCmd("--master", getCluster().getZkContainer().getFormattedZKAddress() + "/mesos", "--zk", getCluster().getZkContainer().getFormattedZKAddress() + "/marathon")
                 .withExposedPorts(exposedPort)
+                .withNetworkMode(config.getNetworkMode())
                 .withPortBindings(portBindings);
     }
 

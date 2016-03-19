@@ -419,4 +419,24 @@ public class ConfigParserTest {
 
     }
 
+    @Test
+    public void testNetworkMode() {
+
+        String config = """
+                minimesos {
+                    agent {
+                        networkMode = "host"
+                    }
+                }
+        """
+
+        ClusterConfig dsl = parser.parse(config)
+        assertEquals(1, dsl.agents.size())
+
+        MesosAgentConfig agent = dsl.agents.get(0)
+
+        assertEquals("host", agent.networkMode)
+
+    }
+
 }

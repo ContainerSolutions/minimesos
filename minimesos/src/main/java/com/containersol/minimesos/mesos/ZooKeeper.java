@@ -44,6 +44,7 @@ public class ZooKeeper extends AbstractContainer {
     protected CreateContainerCmd dockerCommand() {
         return dockerClient.createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withName(getName())
+                .withNetworkMode(config.getNetworkMode())
                 .withExposedPorts(new ExposedPort(DEFAULT_ZOOKEEPER_PORT), new ExposedPort(2888), new ExposedPort(3888));
     }
 

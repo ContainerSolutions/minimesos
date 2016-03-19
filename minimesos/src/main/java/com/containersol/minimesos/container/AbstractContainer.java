@@ -78,7 +78,12 @@ public abstract class AbstractContainer {
 
         CreateContainerCmd createCommand = dockerCommand();
         LOGGER.debug("Creating container [" + createCommand.getName() + "]");
-        containerId = createCommand.exec().getId();
+
+        try {
+            containerId = createCommand.exec().getId();
+        } catch (Exception e) {
+            throw new MinimesosException(e.getMessage());
+        }
 
         dockerClient.startContainerCmd(containerId).exec();
 

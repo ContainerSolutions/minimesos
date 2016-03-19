@@ -12,14 +12,13 @@ class MesosAgentConfig extends MesosContainerConfig {
     int portNumber          = DEFAULT_MESOS_AGENT_PORT
     String imageName        = MESOS_AGENT_IMAGE
     String imageTag         = MESOS_IMAGE_TAG
+    String networkMode      = DEFAULT_NETWORK_MODE
 
     AgentResourcesConfig resources = new AgentResourcesConfig()
 
     def resources(@DelegatesTo(AgentResourcesConfig) Closure cl) {
         delegateTo(resources, cl)
     }
-
-    String networkMode   = DEFAULT_NETWORK_MODE
 
     @Override
     String getNetworkMode() {

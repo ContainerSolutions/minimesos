@@ -6,6 +6,7 @@ import com.containersol.minimesos.mesos.DockerClientFactory;
 import com.containersol.minimesos.mesos.MesosAgent;
 import com.github.dockerjava.api.DockerClient;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -56,17 +57,6 @@ public class ContainerNameTest {
         names[0] = "/minimesos-agent";
 
         assertEquals("minimesos-agent", ContainerName.getFromDockerNames(names));
-    }
-
-    @Test
-    public void testLinkedContainerNames() {
-        String[] names = new String[4];
-        names[0] = "/minimesos-agent0/minimesos-zookeeper";
-        names[1] = "/minimesos-agent1/minimesos-zookeeper";
-        names[2] = "/minimesos-agent2/minimesos-zookeeper";
-        names[3] = "/minimesos-zookeeper";
-
-        assertEquals("minimesos-zookeeper", ContainerName.getFromDockerNames(names));
     }
 
 }
