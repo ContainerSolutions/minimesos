@@ -1,6 +1,7 @@
 package com.containersol.minimesos.cluster;
 
 import com.containersol.minimesos.MinimesosException;
+import com.containersol.minimesos.mesos.ClusterContainers;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
@@ -61,6 +62,7 @@ public class ClusterRepository {
      */
     public static void deleteClusterFile() {
         ClusterRepository.deleteMinimesosFile();
+        ClusterRepository.deleteMesosSandbox();
     }
 
     private static String readClusterId() {
@@ -105,6 +107,15 @@ public class ClusterRepository {
             } catch (IOException e) {
                 // ignore
             }
+        }
+    }
+
+    private static void deleteMesosSandbox() {
+        File mmDirSandbox = new File(getMinimesosDir(), "/tmp");
+        try {
+            FileUtils.forceDelete(mmDirSandbox);
+        } catch (IOException e) {
+            // ignore
         }
     }
 

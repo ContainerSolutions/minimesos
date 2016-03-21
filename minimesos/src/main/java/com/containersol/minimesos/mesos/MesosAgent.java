@@ -24,6 +24,10 @@ public class MesosAgent extends MesosContainer {
 
     private final MesosAgentConfig config;
 
+    private final String MESOS_AGENT_SANDBOX_DIR = "/tmp/mesos/sandbox";
+
+    private final String MINIMESOS_DIR = System.getenv("MINIMESOS_DIR");
+
     public MesosAgent(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
         this(dockerClient, zooKeeperContainer, new MesosAgentConfig());
     }
@@ -55,7 +59,7 @@ public class MesosAgent extends MesosContainer {
     public CreateContainerCmd getBaseCommand() {
         String hostDir = MesosCluster.getHostDir().getAbsolutePath();
 
-        return dockerClient.createContainerCmd( getMesosImageName() + ":" + getMesosImageTag() )
+        CreateContainerCmd containerCmd =  dockerClient.createContainerCmd( getMesosImageName() + ":" + getMesosImageTag() )
                 .withName( getName() )
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
@@ -66,6 +70,12 @@ public class MesosAgent extends MesosContainer {
                         Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),
                         Bind.parse(hostDir + ":" + hostDir)
                 );
+        if (!MINIMESOS_DIR.isEmpty()) {
+            containerCmd.withBinds(
+                    Bind.parse(String.format("%s:%s:rw", MINIMESOS_DIR + "/tmp/" + this.getUuid(), MESOS_AGENT_SANDBOX_DIR))
+            );
+        }
+        return containerCmd;
     }
 
     @Override
@@ -99,6 +109,7 @@ public class MesosAgent extends MesosContainer {
         envs.put("MESOS_MASTER", getFormattedZKAddress());
         envs.put("MESOS_SWITCH_USER", "false");
         envs.put("MESOS_LOGGING_LEVEL", getLoggingLevel());
+        envs.put("MESOS_SANDBOX_DIRECTORY", MESOS_AGENT_SANDBOX_DIR);
         envs.put("SERVICE_IGNORE", "1");
         return envs;
     }
