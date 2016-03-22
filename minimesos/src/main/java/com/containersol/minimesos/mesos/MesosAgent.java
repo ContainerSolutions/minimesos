@@ -24,9 +24,7 @@ public class MesosAgent extends MesosContainer {
 
     private final MesosAgentConfig config;
 
-    private final String MESOS_AGENT_SANDBOX_DIR = "/tmp/mesos/sandbox";
-
-    private final String MINIMESOS_DIR = System.getenv("MINIMESOS_DIR");
+    private final String MESOS_AGENT_SANDBOX_DIR = "/tmp/mesos";
 
     public MesosAgent(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
         this(dockerClient, zooKeeperContainer, new MesosAgentConfig());
@@ -59,23 +57,18 @@ public class MesosAgent extends MesosContainer {
     public CreateContainerCmd getBaseCommand() {
         String hostDir = MesosCluster.getHostDir().getAbsolutePath();
 
-        CreateContainerCmd containerCmd =  dockerClient.createContainerCmd( getMesosImageName() + ":" + getMesosImageTag() )
-                .withName( getName() )
-                .withPrivileged(true)
-                .withEnv(createMesosLocalEnvironment())
-                .withPid("host")
-                .withLinks(new Link(getZooKeeperContainer().getContainerId(), "minimesos-zookeeper"))
-                .withBinds(
-                        Bind.parse("/var/run/docker.sock:/var/run/docker.sock"),
-                        Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),
-                        Bind.parse(hostDir + ":" + hostDir)
-                );
-        if (!MINIMESOS_DIR.isEmpty()) {
-            containerCmd.withBinds(
-                    Bind.parse(String.format("%s:%s:rw", MINIMESOS_DIR + "/tmp/" + this.getUuid(), MESOS_AGENT_SANDBOX_DIR))
-            );
-        }
-        return containerCmd;
+        return dockerClient.createContainerCmd( getMesosImageName() + ":" + getMesosImageTag() )
+	    .withName( getName() )
+	    .withPrivileged(true)
+	    .withEnv(createMesosLocalEnvironment())
+	    .withPid("host")
+	    .withLinks(new Link(getZooKeeperContainer().getContainerId(), "minimesos-zookeeper"))
+	    .withBinds(
+		       Bind.parse("/var/run/docker.sock:/var/run/docker.sock"),
+		       Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),
+		       Bind.parse(String.format("%s:%s:rw", hostDir + "/.minimesos/sandbox-" + getClusterId() + "/" + MesosCluster.SLAVE_MAPPING_DIR + this.getUuid(), MESOS_AGENT_SANDBOX_DIR)),
+		       Bind.parse(hostDir + ":" + hostDir)
+		       );
     }
 
     @Override
@@ -97,7 +90,7 @@ public class MesosAgent extends MesosContainer {
         }
 
         return getBaseCommand()
-                .withExposedPorts(exposedPorts.toArray(new ExposedPort[exposedPorts.size()]));
+	    .withExposedPorts(exposedPorts.toArray(new ExposedPort[exposedPorts.size()]));
 
     }
 
@@ -109,8 +102,8 @@ public class MesosAgent extends MesosContainer {
         envs.put("MESOS_MASTER", getFormattedZKAddress());
         envs.put("MESOS_SWITCH_USER", "false");
         envs.put("MESOS_LOGGING_LEVEL", getLoggingLevel());
-        envs.put("MESOS_SANDBOX_DIRECTORY", MESOS_AGENT_SANDBOX_DIR);
-        envs.put("SERVICE_IGNORE", "1");
+        envs.put("MESOS_WORK_DIR", MESOS_AGENT_SANDBOX_DIR);
+	envs.put("SERVICE_IGNORE", "1");
         return envs;
     }
 }

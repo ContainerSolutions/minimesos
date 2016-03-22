@@ -17,12 +17,14 @@ import com.github.dockerjava.api.NotFoundException;
 import com.github.dockerjava.api.model.Container;
 import com.jayway.awaitility.Awaitility;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -40,6 +42,8 @@ public class MesosCluster extends ExternalResource {
     private static Logger LOGGER = Logger.getLogger(MesosCluster.class);
 
     public static final String MINIMESOS_HOST_DIR_PROPERTY = "minimesos.host.dir";
+
+    public static final String SLAVE_MAPPING_DIR = "agent-uuid-";
 
     private static DockerClient dockerClient = DockerClientFactory.build();
 
@@ -108,6 +112,12 @@ public class MesosCluster extends ExternalResource {
                         this.containers.add(zookeeper);
                         break;
                     case "agent":
+                        File slaveMappingDir = new File(MesosCluster.getHostDir(), ".minimesos/sandbox-" + clusterId + "/" + SLAVE_MAPPING_DIR + "-" + uuid);
+                        try {
+                            FileUtils.forceMkdir(slaveMappingDir);
+                        } catch (IOException e) {
+                            // ignore
+                        }
                         this.containers.add(new MesosAgent(dockerClient, this, uuid, containerId));
                         break;
                     case "master":
@@ -277,6 +287,11 @@ public class MesosCluster extends ExternalResource {
             }
 
             LOGGER.info("Destroyed minimesos cluster " + clusterId);
+            try {
+                FileUtils.forceDelete(new File(getHostDir(), ".minimesos/sandbox-" + clusterId));
+            } catch (IOException e) {
+                // ignore
+            }
         } else {
             LOGGER.info("Minimesos cluster is not running");
         }
