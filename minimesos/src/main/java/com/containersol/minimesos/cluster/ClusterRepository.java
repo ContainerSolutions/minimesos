@@ -62,7 +62,6 @@ public class ClusterRepository {
      */
     public static void deleteClusterFile() {
         ClusterRepository.deleteMinimesosFile();
-        ClusterRepository.deleteMesosSandbox();
     }
 
     private static String readClusterId() {
@@ -109,14 +108,4 @@ public class ClusterRepository {
             }
         }
     }
-
-    private static void deleteMesosSandbox() {
-        File mmDirSandbox = new File(getMinimesosDir(), "/tmp");
-        try {
-            FileUtils.forceDelete(mmDirSandbox);
-        } catch (IOException e) {
-            // ignore
-        }
-    }
-
 }

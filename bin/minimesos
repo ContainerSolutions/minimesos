@@ -58,7 +58,7 @@ fi
 MINIMESOS_HOST_DIR="$(pwd)"
 MINIMESOS_DIR="$(pwd)/.minimesos"
 if [ ! -d "${MINIMESOS_DIR}" ]; then
-    mkdir -p "${MINIMESOS_DIR}/tmp"
+    mkdir -p "${MINIMESOS_DIR}"
     echo "# Created minimesos directory at ${MINIMESOS_DIR}."
 fi
 
@@ -68,7 +68,6 @@ docker run --rm -v "${MINIMESOS_HOST_DIR}":"${MINIMESOS_HOST_DIR}" \
        -v ${DOCKER_BIN}:/usr/bin/docker \
        -i \
        --env DOCKER_HOST_IP=${DOCKER_HOST_IP} \
-       --env MINIMESOS_DIR=${MINIMESOS_DIR} \
        --entrypoint java \
        containersol/minimesos:${MINIMESOS_TAG} \
        -Dminimesos.host.dir="${MINIMESOS_HOST_DIR}" \
