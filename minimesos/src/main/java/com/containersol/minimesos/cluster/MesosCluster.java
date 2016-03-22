@@ -43,8 +43,6 @@ public class MesosCluster extends ExternalResource {
 
     public static final String MINIMESOS_HOST_DIR_PROPERTY = "minimesos.host.dir";
 
-    public static final String SLAVE_MAPPING_DIR = "agent-uuid-";
-
     private static DockerClient dockerClient = DockerClientFactory.build();
 
     private String clusterId;
@@ -112,12 +110,6 @@ public class MesosCluster extends ExternalResource {
                         this.containers.add(zookeeper);
                         break;
                     case "agent":
-                        File slaveMappingDir = new File(MesosCluster.getHostDir(), ".minimesos/sandbox-" + clusterId + "/" + SLAVE_MAPPING_DIR + "-" + uuid);
-                        try {
-                            FileUtils.forceMkdir(slaveMappingDir);
-                        } catch (IOException e) {
-                            // ignore
-                        }
                         this.containers.add(new MesosAgent(dockerClient, this, uuid, containerId));
                         break;
                     case "master":
