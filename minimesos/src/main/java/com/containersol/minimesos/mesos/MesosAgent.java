@@ -103,7 +103,7 @@ public class MesosAgent extends MesosContainer {
         envs.put("MESOS_SWITCH_USER", "false");
         envs.put("MESOS_LOGGING_LEVEL", getLoggingLevel());
         envs.put("MESOS_WORK_DIR", MESOS_AGENT_SANDBOX_DIR);
-	envs.put("SERVICE_IGNORE", "1");
+        envs.put("SERVICE_IGNORE", "1");
         return envs;
     }
 }
