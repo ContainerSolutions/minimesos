@@ -1,30 +1,3 @@
-import com.github.zafarkhaja.semver.UnexpectedCharacterException
-import com.github.zafarkhaja.semver.Version
-import org.ajoberstar.grgit.Grgit
-import org.ajoberstar.grgit.Tag
-
-apply plugin: 'sonar-runner'
-
-repositories{
-    mavenCentral()
-}
-
-ext {
-    mesosVer = "0.25.0"
-    imagePrefix = 'containersol'
-}
-
-allprojects {
-    apply plugin: 'idea'
-}
-
-idea {
-    project {
-        languageLevel = '1.8'
-        vcs = 'Git'
-    }
-}
-
 buildscript {
 
     repositories {
@@ -41,13 +14,33 @@ buildscript {
 
     dependencies {
         classpath "com.bmuschko:gradle-docker-plugin:2.4.1"
-        classpath "com.github.zafarkhaja:java-semver:0.9.0"
         classpath "de.gesellix:gradle-debian-plugin:16"
-        classpath "org.ajoberstar:grgit:1.3.0"
-        classpath "org.ajoberstar:semver-vcs-gradle-grgit:0.1.0-milestone.1"
         classpath 'com.bmuschko:gradle-docker-plugin:2.4.1'
     }
 
+}
+
+plugins {
+    id 'idea'
+    id 'sonar-runner'
+    id 'net.researchgate.release' version '2.3.5'
+}
+
+
+repositories{
+    mavenCentral()
+}
+
+ext {
+    mesosVer = "0.25.0"
+    imagePrefix = 'containersol'
+}
+
+idea {
+    project {
+        languageLevel = '1.8'
+        vcs = 'Git'
+    }
 }
 
 sonarRunner {
@@ -58,58 +51,30 @@ sonarRunner {
     }
 }
 
-def grgit = Grgit.open(project.file('.'))
-def tags = grgit.tag.list()
-def versions = []
-
-tags.each { Tag t ->
-    try {
-        Version version = new Version.Builder(t.name).build()
-        versions << version
-    } catch (UnexpectedCharacterException e) {
-        // Skip, tag is invalid
-    }
-}
-
-Version currentVersion = new Version.Builder("0.0.0").build()
-
-versions.each { Version v ->
-    if (v.greaterThan(currentVersion)) {
-        currentVersion = v
-    }
-}
-
-println "Current version: " + currentVersion
-project.version = currentVersion
-
-task incrementVersion {
-    if (gradle.startParameter.taskNames.contains('release')) {
-        if (project.hasProperty('releaseType')) {
-            if (releaseType == "major") {
-                project.version = currentVersion.incrementMajorVersion()
-            } else if (releaseType == "minor") {
-                project.version = currentVersion.incrementMinorVersion()
-            } else if (releaseType == "patch") {
-                project.version = currentVersion.incrementPatchVersion()
-            }
-        } else {
-            throw new GradleException('releaseType was not provided. Specify -PreleaseType={major,minor,patch}')
-        }
-        println "Next version: " + project.version
-        subprojects { project ->
-            project.version = rootProject.version.toString()
-        }
-    }
-}
-
-task release(dependsOn: [incrementVersion]) << {
-    if (!project.hasProperty('userName')) {
-        throw new GradleException('userName was not provided. Specify -PuserName=<user>')
-    }
-    grgit.tag.add(name: project.version, annotate: true, message: "RELEASE $project.version - by $userName")
-    grgit.push(tags: true)
-}
-
 afterEvaluate {
-    release.dependsOn getTasksByName('publish', true)
 }
+
+task setVersionInBashScript << {
+    println 'Will set version in bash script'
+}
+
+afterReleaseBuild.dependsOn setVersionInBashScript
+
+// working around https://github.com/researchgate/gradle-release/issues/144
+release {
+    buildTasks = ['releaseBuild']
+}
+
+task releaseBuild {
+    dependsOn(
+        'minimesos:clean',
+        'minimesos:build',
+        'test-framework-docker:scheduler:clean',
+        'test-framework-docker:scheduler:build',
+        'test-framework-docker:executor:clean',
+        'test-framework-docker:executor:build',
+        'test-framework-docker:system-test:clean',
+        'test-framework-docker:system-test:build'
+    )
+}
+
