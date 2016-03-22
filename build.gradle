@@ -61,6 +61,14 @@ task setVersionInBashScript << {
 afterReleaseBuild.dependsOn setVersionInBashScript
 
 // working around https://github.com/researchgate/gradle-release/issues/144
-task build << {
+release {
+    buildTasks = ['releaseBuild']
+}
+
+task releaseBuild {
+    dependsOn(
+        'minimesos:clean',
+        'minimesos:build'
+    )
 }
 
