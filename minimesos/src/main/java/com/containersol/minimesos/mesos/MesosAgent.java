@@ -66,7 +66,7 @@ public class MesosAgent extends MesosContainer {
 	    .withBinds(
 		       Bind.parse("/var/run/docker.sock:/var/run/docker.sock"),
 		       Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),
-		       Bind.parse(String.format("%s:%s:rw", hostDir + "/.minimesos/sandbox-" + getClusterId(), MESOS_AGENT_SANDBOX_DIR)),
+		       Bind.parse(String.format("%s:%s:rw", hostDir + "/.minimesos/sandbox-" + getClusterId() + "/agent-" + getUuid(), MESOS_AGENT_SANDBOX_DIR)),
 		       Bind.parse(hostDir + ":" + hostDir)
 		       );
     }
