@@ -67,14 +67,8 @@ release {
 
 task releaseBuild {
     dependsOn(
-        'minimesos:clean',
-        'minimesos:build',
-        'test-framework-docker:scheduler:clean',
-        'test-framework-docker:scheduler:build',
-        'test-framework-docker:executor:clean',
-        'test-framework-docker:executor:build',
-        'test-framework-docker:system-test:clean',
-        'test-framework-docker:system-test:build'
+        'clean',
+        'build'
     )
 }
 
