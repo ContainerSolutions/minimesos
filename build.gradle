@@ -59,18 +59,14 @@ task setVersionInBashScript << {
     println '*** IN setVersionInBashScript'
     ant.replace(file: "bin/minimesos", token: "MINIMESOS_TAG=\"latest\"", value: "MINIMESOS_TAG=\"${project.version}\"")
 
-    def stdout = new ByteArrayOutputStream()
     exec {
         workingDir "${project.rootDir}"
         commandLine "git", "commit", "-a", "-m", "[Release ${project.version}] pre-tag commit"
-        standardOutput = stdout;
     }
-    println "Output:\n$stdout";
 
     exec {
         workingDir "${project.rootDir}"
-        executable "git"
-        args "push"
+        commandLine "git", "push"
     }
 
     println '*** OUT setVersionInBashScript'
