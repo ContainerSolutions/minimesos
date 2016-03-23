@@ -57,8 +57,18 @@ afterEvaluate {
 task setVersionInBashScript << {
     println 'Will set version in bash script'
 }
+task resetVersionInBashScript << {
+    println 'Will REset version in bash script'
+}
 
-afterReleaseBuild.dependsOn setVersionInBashScript
+task releaseMinimesosContainerImage << {
+    println 'Will tag and push minimesos container'
+}
+
+preTagCommit.dependsOn setVersionInBashScript
+commitNewVersion.dependsOn resetVersionInBashScript
+
+updateVersion.dependsOn releaseMinimesosContainerImage
 
 // working around https://github.com/researchgate/gradle-release/issues/144
 release {
