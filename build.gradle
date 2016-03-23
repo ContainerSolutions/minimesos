@@ -74,8 +74,6 @@ task resetVersionInBashScript << {
 
 task releaseMinimesosContainerImage << {
 
-    println "PROJECT VERSION IN releaseMinimesosContainerImage IS ${project.version}"
-
     def command = "docker tag \$(docker images containersol/minimesos | grep 'latest' | awk '{print \$3}') containersol/minimesos:${project.version}"
     // executing via bash, so we can make use of its interpreter of the parameters. Otherwise pipes do not work
     exec {
