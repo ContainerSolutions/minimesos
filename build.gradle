@@ -68,18 +68,31 @@ task setVersionInBashScript << {
 }
 
 task resetVersionInBashScript << {
-    println 'Will REset version in bash script'
     ant.replaceregexp(file: "bin/minimesos", match: "MINIMESOS_TAG=\".*\"", replace: "MINIMESOS_TAG=\"latest\"")
 }
 
 task releaseMinimesosContainerImage << {
-    println 'Will tag and push minimesos container'
+
+    println "PROJECT VERSION IN releaseMinimesosContainerImage IS ${project.version}"
+
+    def command = "docker tag \$(docker images containersol/minimesos | grep 'latest' | awk '{print \$3}') containersol/minimesos:${project.version}"
+    exec {
+        commandLine "bash", "-c", command
+    }
+
+    println "Pushing containersol/minimesos:${project.version} docker image to Docker Hub..."
+    exec {
+        commandLine "docker", "push", "containersol/minimesos:${project.version}"
+    }
+
+    println "Pushing containersol/minimesos:latest docker image to Docker Hub..."
+    exec {
+        commandLine "docker", "push", "containersol/minimesos:latest"
+    }
 }
 
 preTagCommit.dependsOn setVersionInBashScript
-commitNewVersion.dependsOn resetVersionInBashScript
-
-updateVersion.dependsOn releaseMinimesosContainerImage
+commitNewVersion.dependsOn resetVersionInBashScript, releaseMinimesosContainerImage
 
 // working around https://github.com/researchgate/gradle-release/issues/144
 release {
