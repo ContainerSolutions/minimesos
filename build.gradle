@@ -1,3 +1,7 @@
+import org.ajoberstar.grgit.Grgit
+import org.ajoberstar.grgit.operation.OpenOp
+import org.ajoberstar.grgit.operation.CommitOp
+
 buildscript {
 
     repositories {
@@ -16,6 +20,7 @@ buildscript {
         classpath "com.bmuschko:gradle-docker-plugin:2.4.1"
         classpath "de.gesellix:gradle-debian-plugin:16"
         classpath 'com.bmuschko:gradle-docker-plugin:2.4.1'
+        classpath "org.ajoberstar:grgit:1.3.0"
     }
 
 }
@@ -57,6 +62,7 @@ afterEvaluate {
 task setVersionInBashScript << {
     println 'Will set version in bash script'
     ant.replace(file: "bin/minimesos", token: "MINIMESOS_TAG=\"latest\"", value: "MINIMESOS_TAG=\"${project.version}\"")
+
 }
 task resetVersionInBashScript << {
     println 'Will REset version in bash script'
@@ -67,12 +73,16 @@ task releaseMinimesosContainerImage << {
     println 'Will tag and push minimesos container'
 }
 
-task appendSnapshotVersion << {
-    ant.replace(file: "gradle.properties", token: "version=${project.version}", value: "version=${project.version}-SNAPSHOT")
+task preTagCommitReplacement << {
+    println 'Will set version in bash script'
+    ant.replace(file: "bin/minimesos", token: "MINIMESOS_TAG=\"latest\"", value: "MINIMESOS_TAG=\"${project.version}\"")
+
+    def grgit = new OpenOp().call()
+    grgit.commit(message: '[Release] pre-tag commit', all: true)
+    grgit.push(all: false)
 }
 
-unSnapshotVersion.dependsOn appendSnapshotVersion
-preTagCommit.dependsOn setVersionInBashScript
+preTagCommit.dependsOn preTagCommitReplacement
 commitNewVersion.dependsOn resetVersionInBashScript
 
 updateVersion.dependsOn releaseMinimesosContainerImage
