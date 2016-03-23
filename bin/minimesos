@@ -4,6 +4,7 @@ MINIMESOS_TAG="latest"
 MESOS_TAG="0.25.0-0.2.70.ubuntu1404"
 ZOOKEEPER_TAG="3.4.6"
 DOCKER_BIN="$(command -v docker)"
+MINIMESOS_MAP_AGENT_SANDBOX="true"
 PARAMS="$@"
 
 command_exists() {
@@ -68,6 +69,7 @@ docker run --rm -v "${MINIMESOS_HOST_DIR}":"${MINIMESOS_HOST_DIR}" \
        -v ${DOCKER_BIN}:/usr/bin/docker \
        -i \
        --env DOCKER_HOST_IP=${DOCKER_HOST_IP} \
+       --env MINIMESOS_MAP_AGENT_SANDBOX=${MINIMESOS_MAP_AGENT_SANDBOX} \
        --entrypoint java \
        containersol/minimesos:${MINIMESOS_TAG} \
        -Dminimesos.host.dir="${MINIMESOS_HOST_DIR}" \

@@ -45,6 +45,8 @@ public class MesosCluster extends ExternalResource {
 
     private static DockerClient dockerClient = DockerClientFactory.build();
 
+    public static final Boolean MAP_AGENT_SANDBOX = Boolean.parseBoolean(System.getenv("MINIMESOS_MAP_AGENT_SANDBOX"));
+
     private String clusterId;
 
     private final ClusterConfig clusterConfig;
@@ -277,12 +279,16 @@ public class MesosCluster extends ExternalResource {
                     dockerClient.removeContainerCmd(container.getId()).withForce().withRemoveVolumes(true).exec();
                 }
             }
-
             LOGGER.info("Destroyed minimesos cluster " + clusterId);
-            try {
-                FileUtils.forceDelete(new File(getHostDir(), ".minimesos/sandbox-" + clusterId));
-            } catch (IOException e) {
-                // ignore
+            if (MAP_AGENT_SANDBOX == true) {
+                File sandboxLocation = new File(getHostDir(), ".minimesos/sandbox-" + clusterId);
+                try {
+                    FileUtils.forceDelete(sandboxLocation);
+                } catch (IOException e) {
+                    String msg = String.format("Failed to force delete the cluster sandbox at %s", sandboxLocation.getAbsolutePath());
+                    LOGGER.error(msg, e);
+                    throw new MinimesosException(msg, e);
+                }
             }
         } else {
             LOGGER.info("Minimesos cluster is not running");

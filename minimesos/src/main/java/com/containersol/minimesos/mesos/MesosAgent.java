@@ -12,6 +12,7 @@ import com.github.dockerjava.api.model.Link;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -56,19 +57,20 @@ public class MesosAgent extends MesosContainer {
 
     public CreateContainerCmd getBaseCommand() {
         String hostDir = MesosCluster.getHostDir().getAbsolutePath();
-
+        List<Bind> binds = new ArrayList<>();
+        binds.add(Bind.parse("/var/run/docker.sock:/var/run/docker.sock"));
+        binds.add(Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"));
+        binds.add(Bind.parse(hostDir + ":" + hostDir));
+        if (MesosCluster.MAP_AGENT_SANDBOX == true) {
+            binds.add(Bind.parse(String.format("%s:%s:rw", hostDir + "/.minimesos/sandbox-" + getClusterId() + "/agent-" + getUuid(), MESOS_AGENT_SANDBOX_DIR)));
+        }
         return dockerClient.createContainerCmd( getMesosImageName() + ":" + getMesosImageTag() )
 	    .withName( getName() )
 	    .withPrivileged(true)
 	    .withEnv(createMesosLocalEnvironment())
 	    .withPid("host")
 	    .withLinks(new Link(getZooKeeperContainer().getContainerId(), "minimesos-zookeeper"))
-	    .withBinds(
-		       Bind.parse("/var/run/docker.sock:/var/run/docker.sock"),
-		       Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"),
-		       Bind.parse(String.format("%s:%s:rw", hostDir + "/.minimesos/sandbox-" + getClusterId() + "/agent-" + getUuid(), MESOS_AGENT_SANDBOX_DIR)),
-		       Bind.parse(hostDir + ":" + hostDir)
-		       );
+	    .withBinds(binds.stream().toArray(Bind[]::new));
     }
 
     @Override
