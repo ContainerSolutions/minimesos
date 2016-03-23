@@ -94,9 +94,9 @@ task releaseMinimesosContainerImage << {
 }
 
 preTagCommit.dependsOn setVersionInBashScript
-// project.version changes after execution of updateNewVersion. Time to tag and to push container
-updateNewVersion.dependsOn releaseMinimesosContainerImage
-// project.version changes after execution of updateNewVersion
+// project.version changes after execution of updateVersion. Time to tag and to push container
+updateVersion.dependsOn releaseMinimesosContainerImage
+// project.version changes after execution of updateVersion
 commitNewVersion.dependsOn resetVersionInBashScript
 
 // working around https://github.com/researchgate/gradle-release/issues/144
