@@ -49,6 +49,9 @@ public class MesosAgent extends MesosContainer {
         return config.getResources().asMesosString();
     }
 
+    public MesosAgentConfig getConfig() {
+        return config;
+    }
 
     @Override
     public int getPortNumber() {
@@ -61,7 +64,7 @@ public class MesosAgent extends MesosContainer {
         binds.add(Bind.parse("/var/run/docker.sock:/var/run/docker.sock"));
         binds.add(Bind.parse("/sys/fs/cgroup:/sys/fs/cgroup"));
         binds.add(Bind.parse(hostDir + ":" + hostDir));
-        if (MesosCluster.MAP_AGENT_SANDBOX == true) {
+        if (getCluster().getMapAgentSandboxVolume()) {
             binds.add(Bind.parse(String.format("%s:%s:rw", hostDir + "/.minimesos/sandbox-" + getClusterId() + "/agent-" + getUuid(), MESOS_AGENT_SANDBOX_DIR)));
         }
         return dockerClient.createContainerCmd( getMesosImageName() + ":" + getMesosImageTag() )

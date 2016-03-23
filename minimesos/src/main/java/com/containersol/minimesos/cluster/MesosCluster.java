@@ -8,7 +8,15 @@ import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.container.ContainerName;
 import com.containersol.minimesos.marathon.Marathon;
-import com.containersol.minimesos.mesos.*;
+import com.containersol.minimesos.mesos.ClusterArchitecture;
+import com.containersol.minimesos.mesos.ClusterContainers;
+import com.containersol.minimesos.mesos.ClusterUtil;
+import com.containersol.minimesos.mesos.Consul;
+import com.containersol.minimesos.mesos.DockerClientFactory;
+import com.containersol.minimesos.mesos.MesosAgent;
+import com.containersol.minimesos.mesos.MesosMaster;
+import com.containersol.minimesos.mesos.Registrator;
+import com.containersol.minimesos.mesos.ZooKeeper;
 import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.Predicate;
 import com.github.dockerjava.api.DockerClient;
@@ -44,8 +52,6 @@ public class MesosCluster extends ExternalResource {
     public static final String MINIMESOS_HOST_DIR_PROPERTY = "minimesos.host.dir";
 
     private static DockerClient dockerClient = DockerClientFactory.build();
-
-    public static final Boolean MAP_AGENT_SANDBOX = Boolean.parseBoolean(System.getenv("MINIMESOS_MAP_AGENT_SANDBOX"));
 
     private String clusterId;
 
@@ -279,9 +285,8 @@ public class MesosCluster extends ExternalResource {
                     dockerClient.removeContainerCmd(container.getId()).withForce().withRemoveVolumes(true).exec();
                 }
             }
-            LOGGER.info("Destroyed minimesos cluster " + clusterId);
-            if (MAP_AGENT_SANDBOX == true) {
-                File sandboxLocation = new File(getHostDir(), ".minimesos/sandbox-" + clusterId);
+            File sandboxLocation = new File(getHostDir(), ".minimesos/sandbox-" + clusterId);
+            if (sandboxLocation.exists()) {
                 try {
                     FileUtils.forceDelete(sandboxLocation);
                 } catch (IOException e) {
@@ -443,6 +448,10 @@ public class MesosCluster extends ExternalResource {
 
     public boolean isExposedHostPorts() {
         return clusterConfig.getExposePorts();
+    }
+
+    public boolean getMapAgentSandboxVolume() {
+        return clusterConfig.getMapAgentSandboxVolume();
     }
 
     public void setExposedHostPorts(boolean exposedHostPorts) {
