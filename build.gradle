@@ -56,25 +56,20 @@ afterEvaluate {
 }
 
 task setVersionInBashScript << {
-    println '*** IN setVersionInBashScript'
     ant.replace(file: "bin/minimesos", token: "MINIMESOS_TAG=\"latest\"", value: "MINIMESOS_TAG=\"${project.version}\"")
-
     exec {
         workingDir "${project.rootDir}"
         commandLine "git", "commit", "-a", "-m", "[Release ${project.version}] pre-tag commit"
     }
-
     exec {
         workingDir "${project.rootDir}"
         commandLine "git", "push"
     }
-
-    println '*** OUT setVersionInBashScript'
 }
 
 task resetVersionInBashScript << {
     println 'Will REset version in bash script'
-    ant.replace(file: "bin/minimesos", token: "MINIMESOS_TAG=\"${project.version}\"", value: "MINIMESOS_TAG=\"latest\"")
+    ant.replaceregexp(file: "bin/minimesos", match: "MINIMESOS_TAG=\".*\"", replace: "MINIMESOS_TAG=\"latest\"")
 }
 
 task releaseMinimesosContainerImage << {
