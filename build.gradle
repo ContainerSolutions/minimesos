@@ -67,6 +67,11 @@ task releaseMinimesosContainerImage << {
     println 'Will tag and push minimesos container'
 }
 
+task appendSnapshotVersion << {
+    ant.replace(file: "gradle.properties", token: "version=${project.version}", value: "version=${project.version}-SNAPSHOT")
+}
+
+unSnapshotVersion.dependsOn appendSnapshotVersion
 preTagCommit.dependsOn setVersionInBashScript
 commitNewVersion.dependsOn resetVersionInBashScript
 
