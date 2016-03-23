@@ -59,12 +59,15 @@ task setVersionInBashScript << {
     println '*** IN setVersionInBashScript'
     ant.replace(file: "bin/minimesos", token: "MINIMESOS_TAG=\"latest\"", value: "MINIMESOS_TAG=\"${project.version}\"")
 
-    if ("git commit -a -m '[Release ${project.version}] pre-tag commit'".execute().waitFor() != 0) {
-        throw new GradleException("Failed to commit updated bin/minimesos file")
+    exec {
+        executable "git"
+        args "-a", "-m", "[Release ${project.version}] pre-tag commit"
     }
-    if ("git push".execute().waitFor() != 0) {
-        throw new GradleException("Failed to push updated bin/minimesos file")
+    exec {
+        executable "git"
+        args "push"
     }
+
     println '*** OUT setVersionInBashScript'
 }
 
