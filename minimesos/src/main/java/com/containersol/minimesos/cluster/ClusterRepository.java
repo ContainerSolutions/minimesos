@@ -1,7 +1,6 @@
 package com.containersol.minimesos.cluster;
 
 import com.containersol.minimesos.MinimesosException;
-import com.containersol.minimesos.mesos.ClusterContainers;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
