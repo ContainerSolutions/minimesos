@@ -68,6 +68,7 @@ task setVersionInBashScript << {
 }
 
 task resetVersionInBashScript << {
+    // have to use regular expression because the project version has changed and the previous is not kept
     ant.replaceregexp(file: "bin/minimesos", match: "MINIMESOS_TAG=\".*\"", replace: "MINIMESOS_TAG=\"latest\"")
 }
 
@@ -93,7 +94,10 @@ task releaseMinimesosContainerImage << {
 }
 
 preTagCommit.dependsOn setVersionInBashScript
-commitNewVersion.dependsOn resetVersionInBashScript, releaseMinimesosContainerImage
+// project.version changes after execution of updateNewVersion. Time to tag and to push container
+updateNewVersion.dependsOn releaseMinimesosContainerImage
+// project.version changes after execution of updateNewVersion
+commitNewVersion.dependsOn resetVersionInBashScript
 
 // working around https://github.com/researchgate/gradle-release/issues/144
 release {
