@@ -8,9 +8,17 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.*;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
 
+import javax.net.ssl.HttpsURLConnection;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +27,8 @@ import java.util.List;
  */
 @Parameters(separators = "=", commandDescription = "Create a minimesos cluster")
 public class CommandUp implements Command {
+
+    private static Logger LOGGER = Logger.getLogger(CommandUp.class);
 
     public static final String CLINAME = "up";
 
@@ -54,8 +64,8 @@ public class CommandUp implements Command {
     private ClusterConfig clusterConfig = null;
 
     private MesosCluster startedCluster = null;
-    private PrintStream output = System.out;
 
+    private PrintStream output = System.out;
 
     public CommandUp() {
     }
@@ -127,6 +137,31 @@ public class CommandUp implements Command {
         startedCluster = new MesosCluster(clusterArchitecture);
         startedCluster.start();
         startedCluster.waitForState(state -> state != null);
+
+        MarathonConfig marathon = clusterArchitecture.getClusterConfig().getMarathon();
+        if (marathon != null) {
+            List<AppConfig> apps = marathon.getApps();
+            for (AppConfig app : apps) {
+                try {
+                    URL marathonUrl = new URL(app.getMarathonFile());
+                    HttpsURLConnection con = (HttpsURLConnection) marathonUrl.openConnection();
+                    InputStream ins = con.getInputStream();
+                    InputStreamReader isr = new InputStreamReader(ins);
+                    BufferedReader in = new BufferedReader(isr);
+                    StringBuilder builder = new StringBuilder();
+                    String inputLine;
+                    while ((inputLine = in.readLine()) != null) {
+                        builder.append(inputLine);
+                    }
+                    in.close();
+                    startedCluster.getMarathonContainer().deployApp(builder.toString());
+                } catch (MalformedURLException e) {
+                    throw new MinimesosException("Invalid URL at: " + app.getMarathonFile());
+                } catch (IOException e) {
+                    throw new MinimesosException("Could not read JSON string from URL: " + app.getMarathonFile());
+                }
+            }
+        }
 
         startedCluster.printServiceUrls(output);
 

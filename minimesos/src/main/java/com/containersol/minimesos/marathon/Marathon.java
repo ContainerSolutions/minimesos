@@ -13,11 +13,15 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
 
@@ -76,32 +80,34 @@ public class Marathon extends AbstractContainer {
                 .withExposedPorts(exposedPort)
                 .withPortBindings(portBindings);
     }
+//
+//    public void deployApp(URL jsonFileUrl) {
+//            URL marathonUrl = new URL(app.getMarathonFile());
+//            startedCluster.getMarathonContainer().deployApp(IOUtils.toString(marathonUrl));
+//    }
 
     /**
      * Deploy a Marathon app or a framework
      *
-     * @param appJson JSON string
+     * @param jsonString JSON string
      */
-    public void deployApp(String appJson) {
+    public void deployApp(String jsonString) {
         String marathonEndpoint = getMarathonEndpoint();
         try {
-            byte[] app = appJson.getBytes(Charset.forName("UTF-8"));
-
+            byte[] app = jsonString.getBytes(Charset.forName("UTF-8"));
             HttpResponse<JsonNode> response = Unirest.post(marathonEndpoint + "/v2/apps").header("accept", "application/json").body(app).asJson();
             JSONObject deployResponse = response.getBody().getObject();
-
             if (response.getStatus() == HttpStatus.SC_CREATED) {
                 LOGGER.debug(deployResponse);
             } else {
                 throw new MinimesosException("Marathon did not accept the app: " + deployResponse);
             }
-
         } catch (UnirestException e) {
             String msg = "Could not deploy app on Marathon at " + marathonEndpoint + " => " + e.getMessage();
             LOGGER.error(msg);
             throw new MinimesosException(msg, e);
         }
-        LOGGER.info(String.format("Installing an app on marathon %s", getMarathonEndpoint()));
+        LOGGER.debug(String.format("Installing an app on marathon %s", getMarathonEndpoint()));
     }
 
     /**

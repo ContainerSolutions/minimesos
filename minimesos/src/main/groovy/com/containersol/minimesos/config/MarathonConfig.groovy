@@ -9,4 +9,12 @@ public class MarathonConfig extends GroovyBlock implements ContainerConfig {
     String imageName     = MARATHON_IMAGE
     String imageTag      = MARATHON_IMAGE_TAG
 
+    List<AppConfig> apps = new ArrayList<>();
+
+    def app(@DelegatesTo(AppConfig) Closure cl) {
+        def app = new AppConfig()
+        delegateTo(app, cl)
+        apps.add(app)
+    }
+
 }
