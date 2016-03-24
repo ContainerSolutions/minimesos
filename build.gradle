@@ -52,9 +52,6 @@ sonarRunner {
     }
 }
 
-afterEvaluate {
-}
-
 task setVersionInBashScript << {
     ant.replace(file: "bin/minimesos", token: "MINIMESOS_TAG=\"latest\"", value: "MINIMESOS_TAG=\"${project.version}\"")
     exec {
