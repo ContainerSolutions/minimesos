@@ -8,7 +8,15 @@ import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.container.ContainerName;
 import com.containersol.minimesos.marathon.Marathon;
-import com.containersol.minimesos.mesos.*;
+import com.containersol.minimesos.mesos.ClusterArchitecture;
+import com.containersol.minimesos.mesos.ClusterContainers;
+import com.containersol.minimesos.mesos.ClusterUtil;
+import com.containersol.minimesos.mesos.Consul;
+import com.containersol.minimesos.mesos.DockerClientFactory;
+import com.containersol.minimesos.mesos.MesosAgent;
+import com.containersol.minimesos.mesos.MesosMaster;
+import com.containersol.minimesos.mesos.Registrator;
+import com.containersol.minimesos.mesos.ZooKeeper;
 import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.Predicate;
 import com.github.dockerjava.api.DockerClient;
@@ -17,12 +25,14 @@ import com.github.dockerjava.api.NotFoundException;
 import com.github.dockerjava.api.model.Container;
 import com.jayway.awaitility.Awaitility;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -275,8 +285,16 @@ public class MesosCluster extends ExternalResource {
                     dockerClient.removeContainerCmd(container.getId()).withForce().withRemoveVolumes(true).exec();
                 }
             }
-
-            LOGGER.info("Destroyed minimesos cluster " + clusterId);
+            File sandboxLocation = new File(getHostDir(), ".minimesos/sandbox-" + clusterId);
+            if (sandboxLocation.exists()) {
+                try {
+                    FileUtils.forceDelete(sandboxLocation);
+                } catch (IOException e) {
+                    String msg = String.format("Failed to force delete the cluster sandbox at %s", sandboxLocation.getAbsolutePath());
+                    LOGGER.error(msg, e);
+                    throw new MinimesosException(msg, e);
+                }
+            }
         } else {
             LOGGER.info("Minimesos cluster is not running");
         }
@@ -430,6 +448,10 @@ public class MesosCluster extends ExternalResource {
 
     public boolean isExposedHostPorts() {
         return clusterConfig.getExposePorts();
+    }
+
+    public boolean getMapAgentSandboxVolume() {
+        return clusterConfig.getMapAgentSandboxVolume();
     }
 
     public void setExposedHostPorts(boolean exposedHostPorts) {
