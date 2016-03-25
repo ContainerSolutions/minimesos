@@ -4,11 +4,10 @@ dependencies {
 
     compile project(':test-framework-docker:scheduler')
     compile project(':test-framework-docker:executor')
+    compile project(':minimesos')
 
     compile 'com.github.docker-java:docker-java:1.3.0'
     compile 'com.jayway.awaitility:awaitility:1.6.3'
-
-    compile project(':minimesos')
 
     compile 'org.slf4j:jcl-over-slf4j:1.7.12'
     compile 'org.slf4j:log4j-over-slf4j:1.7.12'
