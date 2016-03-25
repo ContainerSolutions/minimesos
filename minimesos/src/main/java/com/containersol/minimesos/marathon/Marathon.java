@@ -14,9 +14,10 @@ import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.http.HttpStatus;
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
@@ -26,6 +27,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.await;
@@ -35,7 +37,7 @@ import static com.jayway.awaitility.Awaitility.await;
  */
 public class Marathon extends AbstractContainer {
 
-    private static Logger LOGGER = Logger.getLogger(Marathon.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(Marathon.class);
 
     private final MarathonConfig config;
 
@@ -86,14 +88,14 @@ public class Marathon extends AbstractContainer {
     }
 
     /**
-     * Deploys a Marathon app by JSON file path or URL.
+     * Deploys a Marathon app via a URL to the JSON file
      *
-     * @param marathonJsonFile either a file path relative to Mesos cluster host dir or a fully qualified URL
+     * @param marathonJsonUrl URL to a JSON file
      */
-    public void deployByJsonFile(String marathonJsonFile) {
+    public void deployApp(URL marathonJsonUrl) {
+        LOGGER.debug("Deploying app ");
         try {
-            URL marathonUrl = new URL(marathonJsonFile);
-            HttpsURLConnection con = (HttpsURLConnection) marathonUrl.openConnection();
+            HttpsURLConnection con = (HttpsURLConnection) marathonJsonUrl.openConnection();
             InputStream ins = con.getInputStream();
             InputStreamReader isr = new InputStreamReader(ins);
             BufferedReader in = new BufferedReader(isr);
@@ -103,11 +105,11 @@ public class Marathon extends AbstractContainer {
                 builder.append(inputLine);
             }
             in.close();
-            getCluster().getMarathonContainer().deployByJsonFile(builder.toString());
+            getCluster().getMarathonContainer().deployApp(builder.toString());
         } catch (MalformedURLException e) {
-            throw new MinimesosException("Invalid URL at: " + marathonJsonFile);
+            throw new MinimesosException("Invalid Marathon JSON URL at: " + marathonJsonUrl);
         } catch (IOException e) {
-            throw new MinimesosException("Could not read JSON string from URL: " + marathonJsonFile);
+            throw new MinimesosException("Could not read Marathon JSON string from URL: " + marathonJsonUrl);
         }
     }
 
@@ -116,14 +118,14 @@ public class Marathon extends AbstractContainer {
      *
      * @param jsonString JSON string
      */
-    public void deployByJsonString(String jsonString) {
+    public void deployApp(String jsonString) {
         String marathonEndpoint = getMarathonEndpoint();
         try {
             byte[] app = jsonString.getBytes(Charset.forName("UTF-8"));
             HttpResponse<JsonNode> response = Unirest.post(marathonEndpoint + "/v2/apps").header("accept", "application/json").body(app).asJson();
             JSONObject deployResponse = response.getBody().getObject();
             if (response.getStatus() == HttpStatus.SC_CREATED) {
-                LOGGER.debug(deployResponse);
+                LOGGER.debug(deployResponse.toString());
             } else {
                 throw new MinimesosException("Marathon did not accept the app: " + deployResponse);
             }
@@ -168,20 +170,21 @@ public class Marathon extends AbstractContainer {
     }
 
     public void waitFor() {
-        await("Marathon did not start responding").atMost(getCluster().getClusterConfig().getTimeout(), TimeUnit.SECONDS).until(this::isReady);
+        LOGGER.debug("Waiting for Marathon to be ready");
+        await("Marathon did not start responding").atMost(getCluster().getClusterConfig().getTimeout(), TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new MarathonApiIsReady());
     }
 
-    public boolean isReady() {
-        JSONObject appsResponse;
-        try {
-            appsResponse = Unirest.get(getMarathonEndpoint() + "/v2/apps").header("accept", "application/json").asJson().getBody().getObject();
-            if (appsResponse.length() == 0) {
+    private class MarathonApiIsReady implements Callable<Boolean> {
+
+        @Override
+        public Boolean call() throws Exception {
+            try {
+                Unirest.get(getMarathonEndpoint() + "/v2/apps").header("accept", "application/json").asJson().getBody().getObject();
+            } catch (UnirestException e) {
                 return false;
             }
-        } catch (UnirestException e) {
-            return false;
+            return true;
         }
-
-        return true;
     }
+
 }

@@ -9,7 +9,8 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Link;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.TreeMap;
  */
 public class MesosAgent extends MesosContainer {
 
-    private static final Logger LOGGER = Logger.getLogger(MesosAgent.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MesosAgent.class);
 
     private final MesosAgentConfig config;
 

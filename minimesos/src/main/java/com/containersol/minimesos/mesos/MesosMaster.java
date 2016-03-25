@@ -8,8 +8,9 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import org.apache.log4j.Logger;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -100,7 +101,7 @@ public class MesosMaster extends MesosContainer {
 
     public static class MesosClusterStateResponse implements Callable<Boolean> {
 
-        private final Logger LOGGER = Logger.getLogger(MesosClusterStateResponse.class);
+        private final Logger LOGGER = LoggerFactory.getLogger(MesosClusterStateResponse.class);
 
         private final MesosCluster mesosCluster;
 
