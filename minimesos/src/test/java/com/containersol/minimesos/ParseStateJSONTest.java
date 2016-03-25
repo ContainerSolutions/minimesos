@@ -4,10 +4,12 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.containersol.minimesos.state.Framework;
 import com.containersol.minimesos.state.State;
-import org.junit.Assert;
 import org.junit.Test;
 
+import static org.junit.Assert.*;
+
 public class ParseStateJSONTest {
+
     public final String EXAMPLE_STATE_JSON = "{" +
         "\"activated_slaves\": 3," +
         "\"build_date\": \"2015-05-05 06:15:50\"," +
@@ -290,17 +292,16 @@ public class ParseStateJSONTest {
     @Test
     public void exampleStateJSONIsParsedCorrectly() throws JsonParseException, JsonMappingException {
         State parsedState = State.fromJSON(EXAMPLE_STATE_JSON);
-        Assert.assertEquals(1, parsedState.getFrameworks().size());
+        assertEquals(1, parsedState.getFrameworks().size());
         Framework framework = parsedState.getFramework("elasticsearch");
-        Assert.assertNotNull(framework);
-        Assert.assertEquals("elasticsearch", framework.getName());
-        Assert.assertEquals(true, framework.isActive());
-        Assert.assertEquals(true, framework.isCheckpoint());
-        Assert.assertEquals(2592000, framework.getFailoverTimeout());
-        Assert.assertEquals("0f43d2f7606a", framework.getHostname());
-        Assert.assertEquals("20150907-122934-3858764204-5050-23-0000", framework.getId());
-        Assert.assertEquals("elasticsearch", framework.getName());
-        Assert.assertEquals("*", framework.getRole());
-        // TODO test other properties of the parsed Framework
+        assertNotNull(framework);
+        assertEquals("elasticsearch", framework.getName());
+        assertEquals(true, framework.isActive());
+        assertEquals(true, framework.isCheckpoint());
+        assertEquals(2592000, framework.getFailoverTimeout());
+        assertEquals("0f43d2f7606a", framework.getHostname());
+        assertEquals("20150907-122934-3858764204-5050-23-0000", framework.getId());
+        assertEquals("elasticsearch", framework.getName());
+        assertEquals("*", framework.getRole());
     }
 }

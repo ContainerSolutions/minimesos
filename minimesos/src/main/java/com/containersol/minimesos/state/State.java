@@ -10,21 +10,16 @@ import java.util.ArrayList;
 
 /**
  * This class is populated with the results from a GET request to /state.json on a mesos-master.
- * Created by peldan on 09/07/15.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class State {
-
-    // TODO this class should contain every field that is present in the JSON
-    // add missing ones as needed
-
 
     public static State fromJSON(String jsonString) throws JsonParseException, JsonMappingException {
         ObjectMapper mapper = new ObjectMapper();
         try {
             return mapper.readValue(jsonString, State.class);
         } catch (IOException e) {
-            throw new RuntimeException(e); // TODO throw something useful..
+            throw new RuntimeException(e);
         }
     }
 
