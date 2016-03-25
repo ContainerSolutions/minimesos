@@ -99,10 +99,21 @@ task releaseMinimesosContainerImage << {
     }
 }
 
+task createGitHubRelease << {
+    // use GitHub API
+    exec {
+        commandLine "curl", "-H", "Content-Type: application/json", "-H", "Authorization: token ${githubAuthToken}", "-XPOST", "-d", "{\"tag_name\":\"${project.version}\"}", "https://api.github.com/repos/ContainerSolutions/minimesos/releases"
+    }
+}
+
 task updateReleaseDocs << {
     // update online documentation
     exec {
-        commandLine "curl",  "-XPOST", "https://readthedocs.org/build/minimesos"
+        commandLine "curl", "-XPOST", "https://readthedocs.org/build/minimesos"
+    }
+    // trigger update of minimesos.org
+    exec {
+        commandLine "curl", "-H", "x-api-key: GwnTYxWZI663avt8zcaPf4ayNhpY73rXaYhkHubH", "-XPOST", "https://nc65as9rm2.execute-api.us-east-1.amazonaws.com/prod/RunHugoGit"
     }
 }
 
@@ -111,7 +122,7 @@ checkUpdateNeeded.dependsOn checkDockerAuthentication
 // set explicit version in minimesos bash script
 preTagCommit.dependsOn setVersionInBashScript
 // project.version changes after execution of updateVersion. Time to tag and to push container
-updateVersion.dependsOn releaseMinimesosContainerImage
+updateVersion.dependsOn releaseMinimesosContainerImage, createGitHubRelease
 // project.version changes after execution of updateVersion
 commitNewVersion.dependsOn resetVersionInBashScript, updateReleaseDocs
 
