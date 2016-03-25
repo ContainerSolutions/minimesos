@@ -40,10 +40,4 @@ class HelloWorldContainer extends AbstractContainer {
                 .withName(getName())
                 .withExposedPorts(exposedPort);
     }
-
-    @Override
-    public String getName() {
-        return "helloworld-" + getUuid();
-    }
-
 }
