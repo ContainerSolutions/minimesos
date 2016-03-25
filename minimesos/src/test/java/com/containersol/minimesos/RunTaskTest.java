@@ -27,13 +27,11 @@ public class RunTaskTest {
                     .withMaster()
                     .withAgent()
                     .withAgent()
-                    . build());
+                    .build());
 
     @After
     public void after() {
-        DockerContainersUtil util = new DockerContainersUtil(dockerClient);
-        // kill() is not used because containers are expected to exit by this time
-        util.getContainers(true).filterByName("^minimesos-" + TASK_CLUSTER_ROLE + "-[0-9a-f\\-]*$").remove();
+        cluster.destroy();
     }
 
 

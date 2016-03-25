@@ -44,12 +44,11 @@ public class MesosClusterTest {
             .build();
 
     @ClassRule
-    public static final MesosCluster CLUSTER = new MesosCluster(CONFIG);
+    public static final MesosCluster cluster = new MesosCluster(CONFIG);
 
     @After
     public void after() {
-        DockerContainersUtil util = new DockerContainersUtil(CONFIG.dockerClient);
-        util.getContainers(false).filterByName(HelloWorldContainer.CONTAINER_NAME_PATTERN).kill().remove();
+        cluster.destroy();
     }
 
     @Test(expected = ClusterArchitecture.MesosArchitectureException.class)
@@ -59,14 +58,14 @@ public class MesosClusterTest {
 
     @Test
     public void testLoadCluster() {
-        String clusterId = CLUSTER.getClusterId();
+        String clusterId = cluster.getClusterId();
 
         MesosCluster cluster = MesosCluster.loadCluster(clusterId);
 
-        assertArrayEquals(CLUSTER.getContainers().toArray(), cluster.getContainers().toArray());
+        assertArrayEquals(MesosClusterTest.cluster.getContainers().toArray(), cluster.getContainers().toArray());
 
-        assertEquals(CLUSTER.getZkContainer().getIpAddress(), cluster.getZkContainer().getIpAddress());
-        assertEquals(CLUSTER.getMasterContainer().getStateUrl(), cluster.getMasterContainer().getStateUrl());
+        assertEquals(MesosClusterTest.cluster.getZkContainer().getIpAddress(), cluster.getZkContainer().getIpAddress());
+        assertEquals(MesosClusterTest.cluster.getMasterContainer().getStateUrl(), cluster.getMasterContainer().getStateUrl());
 
         assertFalse("Deserialize cluster is expected to remember exposed ports setting", cluster.isExposedHostPorts());
     }
@@ -81,27 +80,27 @@ public class MesosClusterTest {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         PrintStream printStream = new PrintStream(byteArrayOutputStream);
 
-        CLUSTER.info(printStream);
+        cluster.info(printStream);
 
         String output = byteArrayOutputStream.toString();
 
-        assertTrue(output.contains("Minimesos cluster is running: " + CLUSTER.getClusterId() + "\n"));
-        assertTrue(output.contains("export MINIMESOS_ZOOKEEPER=zk://" + CLUSTER.getZkContainer().getIpAddress() + ":2181\n"));
-        assertTrue(output.contains("export MINIMESOS_MASTER=http://" + CLUSTER.getMasterContainer().getIpAddress() + ":5050\n"));
-        assertTrue(output.contains("export MINIMESOS_MARATHON=http://" + CLUSTER.getMarathonContainer().getIpAddress() + ":8080\n"));
-        assertTrue(output.contains("export MINIMESOS_CONSUL=http://" + CLUSTER.getConsulContainer().getIpAddress() + ":8500\n"));
+        assertTrue(output.contains("Minimesos cluster is running: " + cluster.getClusterId() + "\n"));
+        assertTrue(output.contains("export MINIMESOS_ZOOKEEPER=zk://" + cluster.getZkContainer().getIpAddress() + ":2181\n"));
+        assertTrue(output.contains("export MINIMESOS_MASTER=http://" + cluster.getMasterContainer().getIpAddress() + ":5050\n"));
+        assertTrue(output.contains("export MINIMESOS_MARATHON=http://" + cluster.getMarathonContainer().getIpAddress() + ":8080\n"));
+        assertTrue(output.contains("export MINIMESOS_CONSUL=http://" + cluster.getConsulContainer().getIpAddress() + ":8500\n"));
     }
 
     @Test
     public void mesosAgentStateInfoJSONMatchesSchema() throws UnirestException, JsonParseException, JsonMappingException {
-        String agentId = CLUSTER.getAgents().get(0).getContainerId();
-        JSONObject state = CLUSTER.getAgentStateInfo(agentId);
+        String agentId = cluster.getAgents().get(0).getContainerId();
+        JSONObject state = cluster.getAgentStateInfo(agentId);
         assertNotNull(state);
     }
 
     @Test
     public void mesosClusterCanBeStarted() throws Exception {
-        MesosMaster master = CLUSTER.getMasterContainer();
+        MesosMaster master = cluster.getMasterContainer();
         JSONObject stateInfo = master.getStateInfoJSON();
 
         assertEquals(3, stateInfo.getInt("activated_slaves"));
@@ -109,7 +108,7 @@ public class MesosClusterTest {
 
     @Test
     public void mesosResourcesCorrect() throws Exception {
-        JSONObject stateInfo = CLUSTER.getMasterContainer().getStateInfoJSON();
+        JSONObject stateInfo = cluster.getMasterContainer().getStateInfoJSON();
         for (int i = 0; i < 3; i++) {
             assertEquals((long) 0.2, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getLong("cpus"));
             assertEquals(256, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getInt("mem"));
@@ -118,7 +117,7 @@ public class MesosClusterTest {
 
     @Test
     public void testAgentStateRetrieval() {
-        List<MesosAgent> agents = CLUSTER.getAgents();
+        List<MesosAgent> agents = cluster.getAgents();
         assertNotNull(agents);
         assertTrue(agents.size() > 0);
 
@@ -128,7 +127,7 @@ public class MesosClusterTest {
 
         String cliContainerId = agent.getContainerId().substring(0, 11);
 
-        CLUSTER.state(ps, cliContainerId);
+        cluster.state(ps, cliContainerId);
 
         String state = outputStream.toString();
         assertTrue(state.contains("frameworks"));
@@ -138,7 +137,7 @@ public class MesosClusterTest {
     @Test
     public void dockerExposeResourcesPorts() throws Exception {
         DockerClient docker = CONFIG.dockerClient;
-        List<MesosAgent> containers = CLUSTER.getAgents();
+        List<MesosAgent> containers = cluster.getAgents();
 
         for (MesosAgent container : containers) {
             ArrayList<Integer> ports = ResourceUtil.parsePorts(container.getResources());
@@ -153,7 +152,7 @@ public class MesosClusterTest {
     @Test
     public void testPullAndStartContainer() throws UnirestException {
         HelloWorldContainer container = new HelloWorldContainer(CONFIG.dockerClient);
-        String containerId = CLUSTER.addAndStartContainer(container);
+        String containerId = cluster.addAndStartContainer(container);
         String ipAddress = DockerContainersUtil.getIpAddress(CONFIG.dockerClient, containerId);
         String url = "http://" + ipAddress + ":" + HelloWorldContainer.SERVICE_PORT;
         assertEquals(200, Unirest.get(url).asString().getStatus());
@@ -161,7 +160,7 @@ public class MesosClusterTest {
 
     @Test
     public void testMasterLinkedToAgents() throws UnirestException {
-        List<MesosAgent> containers = CLUSTER.getAgents();
+        List<MesosAgent> containers = cluster.getAgents();
         for (MesosAgent container : containers) {
             InspectContainerResponse exec = CONFIG.dockerClient.inspectContainerCmd(container.getContainerId()).exec();
 
@@ -175,12 +174,12 @@ public class MesosClusterTest {
 
     @Test(expected = MinimesosException.class)
     public void testInstall() {
-        CLUSTER.install(null);
+        cluster.install(null);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testStartingClusterSecondTime() {
-        CLUSTER.start(30);
+        cluster.start(30);
     }
 
 }

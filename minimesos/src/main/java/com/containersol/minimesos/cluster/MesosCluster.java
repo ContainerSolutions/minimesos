@@ -406,7 +406,7 @@ public class MesosCluster extends ExternalResource {
 
     @Override
     protected void after() {
-        stop();
+        destroy();
     }
 
     public MesosMaster getMasterContainer() {

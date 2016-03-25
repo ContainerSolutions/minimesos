@@ -31,20 +31,19 @@ public class ConsulRegistrationTest {
             .build();
 
     @ClassRule
-    public static final MesosCluster CLUSTER = new MesosCluster(CONFIG);
+    public static final MesosCluster cluster = new MesosCluster(CONFIG);
 
     @After
     public void after() {
-        DockerContainersUtil util = new DockerContainersUtil(CONFIG.dockerClient);
-        util.getContainers(false).filterByName(HelloWorldContainer.CONTAINER_NAME_PATTERN).kill().remove();
+        cluster.destroy();
     }
 
     @Test
     public void testRegisterServiceWithConsul() throws UnirestException {
-        CLUSTER.addAndStartContainer(new HelloWorldContainer(dockerClient));
-        String ipAddress = DockerContainersUtil.getIpAddress(dockerClient, CLUSTER.getConsulContainer().getContainerId());
+        cluster.addAndStartContainer(new HelloWorldContainer(dockerClient));
+        String ipAddress = DockerContainersUtil.getIpAddress(dockerClient, cluster.getConsulContainer().getContainerId());
         String url = String.format("http://%s:%d/v1/catalog/service/%s",
-                ipAddress, ConsulConfig.CONSUL_HTTP_PORT, HelloWorldContainer.SERVICE_NAME);
+				   ipAddress, ConsulConfig.CONSUL_HTTP_PORT, HelloWorldContainer.SERVICE_NAME);
 
         JSONArray body = Unirest.get(url).asJson().getBody().getArray();
         assertEquals(1, body.length());
@@ -55,7 +54,7 @@ public class ConsulRegistrationTest {
 
     @Test
     public void testConsulShouldBeIgnored() throws UnirestException {
-        String ipAddress = DockerContainersUtil.getIpAddress(dockerClient, CLUSTER.getConsulContainer().getContainerId());
+        String ipAddress = DockerContainersUtil.getIpAddress(dockerClient, cluster.getConsulContainer().getContainerId());
         String url = String.format("http://%s:%d/v1/catalog/services", ipAddress, ConsulConfig.CONSUL_HTTP_PORT);
 
         JSONArray body = Unirest.get(url).asJson().getBody().getArray();

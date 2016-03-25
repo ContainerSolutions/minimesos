@@ -38,8 +38,7 @@ public class DefaultMinimumClusterTest {
 
     @After
     public void after() {
-        DockerContainersUtil util = new DockerContainersUtil(dockerClient);
-        util.getContainers(false).filterByName(HelloWorldContainer.CONTAINER_NAME_PATTERN).kill().remove();
+        cluster.destroy();
     }
 
     @Test
