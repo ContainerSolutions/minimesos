@@ -1,15 +1,23 @@
 <configuration debug="false">
 
+    <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender" >
+        <target>System.err</target>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <!-- encoders are  by default assigned the type
-             ch.qos.logback.classic.encoder.PatternLayoutEncoder -->
         <encoder>
             <pattern>%msg%n</pattern>
         </encoder>
     </appender>
 
-    <root level="info">
+    <logger name="com.containersol.minimesos.main" level="INFO">
         <appender-ref ref="STDOUT" />
-    </root>
+    </logger>
 
+    <root level="info">
+        <appender-ref ref="STDERR" />
+    </root>
 </configuration>

@@ -15,7 +15,6 @@ public class FlagsTest {
 
     public static final String aclExampleJson = "{ \"run_tasks\": [ { \"principals\": { \"values\": [\"foo\", \"bar\"] }, \"users\": { \"values\": [\"alice\"] } } ] }";
 
-    // TODO (jhf@trifork.com): https://issues.apache.org/jira/browse/MESOS-3792
     public static final String aclExampleUnknownSyntaxUsedInStateJson = "run_tasks {\n  principals {\n    values: \"foo\"\n    values: \"bar\"\n  }\n  users {\n    values: \"alice\"\n  }\n}\n";
 
     @ClassRule
@@ -30,6 +29,10 @@ public class FlagsTest {
         Assert.assertEquals("zk://" + cluster.getZkContainer().getIpAddress() + ":2181/mesos", cluster.getMasterContainer().getFlags().get("zk"));
     }
 
+    /**
+     * See https://issues.apache.org/jira/browse/MESOS-3792. Because of this bug the  acl values are represented
+     * as separate key value pairs.
+     */
     @Test
     public void extraEnvironmentVariablesPassedToMesosMaster() throws UnirestException {
         Assert.assertEquals("true", cluster.getMasterContainer().getFlags().get("authenticate"));
