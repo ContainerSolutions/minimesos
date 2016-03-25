@@ -2,8 +2,6 @@ import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
 
-version = '0.1.0-SNAPSHOT'
-
 ext {
     imageName = imagePrefix + '/minimesos'
 }
