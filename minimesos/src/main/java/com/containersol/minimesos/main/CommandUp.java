@@ -88,6 +88,7 @@ public class CommandUp implements Command {
     public Boolean isExposedHostPorts() {
         return exposedHostPorts;
     }
+
     public void setExposedHostPorts(Boolean exposedHostPorts) {
         this.exposedHostPorts = exposedHostPorts;
     }
@@ -129,7 +130,7 @@ public class CommandUp implements Command {
             LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
             Logger rootLogger = loggerContext.getLogger(Logger.ROOT_LOGGER_NAME);
             rootLogger.setLevel(Level.DEBUG);
-            rootLogger.debug("Initialized debug logging");
+            LOGGER.debug("Initialized debug logging");
         }
 
         MesosCluster cluster = getCluster();
