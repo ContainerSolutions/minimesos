@@ -51,12 +51,24 @@ sonarRunner {
     }
 }
 
+task checkDockerAuthentication << {
+    // command below return 1 when user is not logged in to Docker Hub
+    def command = "docker info | grep \"Username:\"; rc=\$?; if [[ \$rc != 0 ]]; then exit 1; fi"
+    // executing via bash, so we can make use of its interpreter of the parameters. Otherwise pipes do not work
+    exec {
+        commandLine "bash", "-c", command
+    }
+}
+
 task setVersionInBashScript << {
+    // set explicit version in bash script
     ant.replace(file: "bin/minimesos", token: "MINIMESOS_TAG=\"latest\"", value: "MINIMESOS_TAG=\"${project.version}\"")
+    // commit modified files
     exec {
         workingDir "${project.rootDir}"
         commandLine "git", "commit", "-a", "-m", "[Release ${project.version}] pre-tag commit"
     }
+    // push update to repository
     exec {
         workingDir "${project.rootDir}"
         commandLine "git", "push"
@@ -87,11 +99,21 @@ task releaseMinimesosContainerImage << {
     }
 }
 
+task updateReleaseDocs << {
+    // update online documentation
+    exec {
+        commandLine "curl",  "-XPOST", "https://readthedocs.org/build/minimesos"
+    }
+}
+
+// fail the build early if user is not logged in to docker
+checkUpdateNeeded.dependsOn checkDockerAuthentication
+// set explicit version in minimesos bash script
 preTagCommit.dependsOn setVersionInBashScript
 // project.version changes after execution of updateVersion. Time to tag and to push container
 updateVersion.dependsOn releaseMinimesosContainerImage
 // project.version changes after execution of updateVersion
-commitNewVersion.dependsOn resetVersionInBashScript
+commitNewVersion.dependsOn resetVersionInBashScript, updateReleaseDocs
 
 // working around https://github.com/researchgate/gradle-release/issues/144
 release {
