@@ -1,5 +1,8 @@
 package com.containersol.minimesos.main;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MinimesosException;
@@ -8,6 +11,7 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.*;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -19,6 +23,8 @@ import java.util.List;
  */
 @Parameters(separators = "=", commandDescription = "Create a minimesos cluster")
 public class CommandUp implements Command {
+
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CommandUp.class);
 
     public static final String CLINAME = "up";
 
@@ -36,6 +42,9 @@ public class CommandUp implements Command {
 
     @Parameter(names = "--timeout", description = "Time to wait for a container to get responsive, in seconds.")
     private Integer timeout = null;
+
+    @Parameter(names = "--debug", description = "Enable debug logging.")
+    private Boolean debug = null;
 
     /**
      * As number of agents can be determined either in config file or command line parameters, it defaults to invalid value.
@@ -79,6 +88,7 @@ public class CommandUp implements Command {
     public Boolean isExposedHostPorts() {
         return exposedHostPorts;
     }
+
     public void setExposedHostPorts(Boolean exposedHostPorts) {
         this.exposedHostPorts = exposedHostPorts;
     }
@@ -116,6 +126,13 @@ public class CommandUp implements Command {
 
     @Override
     public void execute() {
+        if (debug != null) {
+            LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+            Logger rootLogger = loggerContext.getLogger(Logger.ROOT_LOGGER_NAME);
+            rootLogger.setLevel(Level.DEBUG);
+            LOGGER.debug("Initialized debug logging");
+        }
+
         MesosCluster cluster = getCluster();
         if (cluster != null) {
             output.println("Cluster " + cluster.getClusterId() + " is already running");
