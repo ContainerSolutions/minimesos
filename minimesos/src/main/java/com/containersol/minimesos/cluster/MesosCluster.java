@@ -263,7 +263,7 @@ public class MesosCluster extends ExternalResource {
         String marathonIp = marathon.getIpAddress();
         LOGGER.debug(String.format("Installing %s app on marathon %s", marathonJson, marathonIp));
 
-        marathon.deployApp(marathonJson);
+        marathon.deployByJsonFile(marathonJson);
     }
 
     /**

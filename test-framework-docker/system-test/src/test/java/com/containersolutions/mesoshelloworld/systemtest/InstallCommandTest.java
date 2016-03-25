@@ -81,7 +81,7 @@ public class InstallCommandTest {
         try (FileInputStream fis = new FileInputStream(taskFile)) {
             String appJson = IOUtils.toString(fis);
             appJson = appJson.replace(MESOS_MASTER_IP_TOKEN, CLUSTER.getMasterContainer().getIpAddress());
-            CLUSTER.getMarathonContainer().deployApp(appJson);
+            CLUSTER.getMarathonContainer().deployByJsonFile(appJson);
         }
     }
 

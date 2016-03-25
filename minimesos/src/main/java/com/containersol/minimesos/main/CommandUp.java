@@ -10,15 +10,8 @@ import com.containersol.minimesos.mesos.ClusterArchitecture;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
-import javax.net.ssl.HttpsURLConnection;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,6 +54,7 @@ public class CommandUp implements Command {
      * Indicates is configurationFile was found
      */
     private Boolean configFileFound = null;
+
     private ClusterConfig clusterConfig = null;
 
     private MesosCluster startedCluster = null;
@@ -138,28 +132,11 @@ public class CommandUp implements Command {
         startedCluster.start();
         startedCluster.waitForState(state -> state != null);
 
-        MarathonConfig marathon = clusterArchitecture.getClusterConfig().getMarathon();
-        if (marathon != null) {
-            List<AppConfig> apps = marathon.getApps();
+        MarathonConfig marathonConfig = clusterArchitecture.getClusterConfig().getMarathon();
+        if (marathonConfig != null) {
+            List<AppConfig> apps = marathonConfig.getApps();
             for (AppConfig app : apps) {
-                try {
-                    URL marathonUrl = new URL(app.getMarathonFile());
-                    HttpsURLConnection con = (HttpsURLConnection) marathonUrl.openConnection();
-                    InputStream ins = con.getInputStream();
-                    InputStreamReader isr = new InputStreamReader(ins);
-                    BufferedReader in = new BufferedReader(isr);
-                    StringBuilder builder = new StringBuilder();
-                    String inputLine;
-                    while ((inputLine = in.readLine()) != null) {
-                        builder.append(inputLine);
-                    }
-                    in.close();
-                    startedCluster.getMarathonContainer().deployApp(builder.toString());
-                } catch (MalformedURLException e) {
-                    throw new MinimesosException("Invalid URL at: " + app.getMarathonFile());
-                } catch (IOException e) {
-                    throw new MinimesosException("Could not read JSON string from URL: " + app.getMarathonFile());
-                }
+                startedCluster.getMarathonContainer().deployByJsonFile(app.getMarathonFile());
             }
         }
 
@@ -221,7 +198,6 @@ public class CommandUp implements Command {
      * @param clusterConfig cluster configuration to update
      */
     public void updateWithParameters(ClusterConfig clusterConfig) {
-
         if (isExposedHostPorts() != null) {
             clusterConfig.setExposePorts(isExposedHostPorts());
         }
@@ -294,5 +270,3 @@ public class CommandUp implements Command {
     }
 
 }
-
-

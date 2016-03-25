@@ -13,13 +13,16 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.net.ssl.HttpsURLConnection;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -32,9 +35,10 @@ import static com.jayway.awaitility.Awaitility.await;
  */
 public class Marathon extends AbstractContainer {
 
-    private static Logger LOGGER = Logger.getLogger(MesosCluster.class);
+    private static Logger LOGGER = Logger.getLogger(Marathon.class);
 
     private final MarathonConfig config;
+
     private ZooKeeper zooKeeper;
 
     public Marathon(DockerClient dockerClient, ZooKeeper zooKeeper) {
@@ -80,18 +84,39 @@ public class Marathon extends AbstractContainer {
                 .withExposedPorts(exposedPort)
                 .withPortBindings(portBindings);
     }
-//
-//    public void deployApp(URL jsonFileUrl) {
-//            URL marathonUrl = new URL(app.getMarathonFile());
-//            startedCluster.getMarathonContainer().deployApp(IOUtils.toString(marathonUrl));
-//    }
 
     /**
-     * Deploy a Marathon app or a framework
+     * Deploys a Marathon app by JSON file path or URL.
+     *
+     * @param marathonJsonFile either a file path relative to Mesos cluster host dir or a fully qualified URL
+     */
+    public void deployByJsonFile(String marathonJsonFile) {
+        try {
+            URL marathonUrl = new URL(marathonJsonFile);
+            HttpsURLConnection con = (HttpsURLConnection) marathonUrl.openConnection();
+            InputStream ins = con.getInputStream();
+            InputStreamReader isr = new InputStreamReader(ins);
+            BufferedReader in = new BufferedReader(isr);
+            StringBuilder builder = new StringBuilder();
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                builder.append(inputLine);
+            }
+            in.close();
+            getCluster().getMarathonContainer().deployByJsonFile(builder.toString());
+        } catch (MalformedURLException e) {
+            throw new MinimesosException("Invalid URL at: " + marathonJsonFile);
+        } catch (IOException e) {
+            throw new MinimesosException("Could not read JSON string from URL: " + marathonJsonFile);
+        }
+    }
+
+    /**
+     * Deploys a Marathon app by JSON string
      *
      * @param jsonString JSON string
      */
-    public void deployApp(String jsonString) {
+    public void deployByJsonString(String jsonString) {
         String marathonEndpoint = getMarathonEndpoint();
         try {
             byte[] app = jsonString.getBytes(Charset.forName("UTF-8"));
