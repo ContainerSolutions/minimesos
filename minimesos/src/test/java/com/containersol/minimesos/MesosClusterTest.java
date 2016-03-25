@@ -18,6 +18,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.json.JSONObject;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -46,8 +47,8 @@ public class MesosClusterTest {
     @ClassRule
     public static final MesosCluster cluster = new MesosCluster(CONFIG);
 
-    @After
-    public void after() {
+    @AfterClass
+    public static void after() {
         cluster.destroy();
     }
 

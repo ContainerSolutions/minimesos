@@ -14,6 +14,7 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONObject;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -36,8 +37,8 @@ public class DefaultMinimumClusterTest {
     @ClassRule
     public static final MesosCluster cluster = new MesosCluster(new ClusterArchitecture.Builder().build());
 
-    @After
-    public void after() {
+    @AfterClass
+    public static void after() {
         cluster.destroy();
     }
 

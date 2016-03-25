@@ -13,6 +13,7 @@ import com.containersol.minimesos.mesos.MesosAgent;
 import com.containersol.minimesos.mesos.MesosMaster;
 import com.github.dockerjava.api.DockerClient;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,7 +26,7 @@ public class ExposedPortsTest {
     protected static final DockerClient dockerClient = DockerClientFactory.build();
 
 
-    private MesosCluster cluster;
+    private static MesosCluster cluster;
 
     @Before
     public void beforeTest() {
@@ -49,8 +50,8 @@ public class ExposedPortsTest {
 
     }
 
-    @After
-    public void afterTest() {
+    @AfterClass
+    public static void afterTest() {
         cluster.destroy();
     }
 
