@@ -1,5 +1,7 @@
 package com.containersol.minimesos.config
 
+import com.containersol.minimesos.MinimesosException
+import com.containersol.minimesos.cluster.MesosCluster
 import org.junit.Before;
 import org.junit.Test;
 
@@ -86,7 +88,6 @@ public class ConfigParserTest {
         parser.parse(config)
     }
 
-
     @Test(expected = MissingPropertyException.class)
     public void testUnsupportedBlock() {
         String config =
@@ -103,10 +104,8 @@ public class ConfigParserTest {
         parser.parse(config)
     }
 
-
     @Test
     public void testLoadSingleAgent() {
-
         String config = """
                 minimesos {
                     agent {
@@ -119,13 +118,11 @@ public class ConfigParserTest {
 
         MesosAgentConfig agent = dsl.agents.get(0)
         assertNotNull(agent)
-
     }
 
     @Test
     public void testLoadTwoAgents() {
-
-        String config = """
+    String config = """
                 minimesos {
                     agent {
                     }
@@ -136,7 +133,6 @@ public class ConfigParserTest {
 
         ClusterConfig dsl = parser.parse(config)
         assertEquals(2, dsl.agents.size())
-
     }
 
     @Test
@@ -167,7 +163,6 @@ public class ConfigParserTest {
 
     @Test
     public void testLoadMaster() {
-
         String config = """
                 minimesos {
                     master {
@@ -179,7 +174,6 @@ public class ConfigParserTest {
         ClusterConfig dsl = parser.parse(config)
         assertNotNull(dsl.master)
         assertEquals("another/master", dsl.master.imageName)
-
     }
 
     @Test(expected = RuntimeException.class)
@@ -246,7 +240,6 @@ public class ConfigParserTest {
 
     @Test(expected = Exception.class)
     public void testFailureToLoadTwoMaster() {
-
         String config = """
                 minimesos {
                     master {
@@ -258,7 +251,6 @@ public class ConfigParserTest {
         """
 
         parser.parse(config)
-
     }
 
     @Test
@@ -270,8 +262,6 @@ public class ConfigParserTest {
                     }
                 }
         """
-
-        parser.parse(config)
 
         ClusterConfig dsl = parser.parse(config)
         assertNotNull(dsl.zookeeper)
@@ -290,8 +280,6 @@ public class ConfigParserTest {
                 }
         """
 
-        parser.parse(config)
-
         ClusterConfig dsl = parser.parse(config)
         assertNotNull(dsl.zookeeper)
         assertEquals("containersol/zookeeper", dsl.zookeeper.imageName)
@@ -308,14 +296,11 @@ public class ConfigParserTest {
                 }
         """
 
-        parser.parse(config)
-
         ClusterConfig dsl = parser.parse(config)
         assertNotNull(dsl.marathon)
         assertEquals("mesosphere/marathon", dsl.marathon.imageName)
         assertEquals("v0.15.3", dsl.marathon.imageTag)
     }
-
 
     @Test
     public void testMarathon_properties() {
@@ -328,8 +313,6 @@ public class ConfigParserTest {
                 }
         """
 
-        parser.parse(config)
-
         ClusterConfig dsl = parser.parse(config)
         assertNotNull(dsl.marathon)
         assertEquals("containersol/marathon", dsl.marathon.imageName)
@@ -337,8 +320,39 @@ public class ConfigParserTest {
     }
 
     @Test
-    public void testLoadSingleAgentResourcesNumbers() {
+    public void testMarathonApp() {
+        String config = """
+                minimesos {
+                    marathon {
+                        app {
+                            marathonJsonPath = "src/test/resources/app.json"
+                        }
+                    }
+                }
+        """
 
+        ClusterConfig dsl = parser.parse(config)
+        assertNotNull(dsl.marathon)
+        assertEquals(MesosCluster.getHostDir().getAbsolutePath() + "/src/test/resources/app.json", dsl.marathon.getApps().get(0).marathonJsonFile.getAbsolutePath())
+    }
+
+    @Test(expected = MinimesosException.class)
+    public void testMarathonApp_incorrectPath() {
+        String config = """
+                minimesos {
+                    marathon {
+                        app {
+                            marathonJsonPath = "nonExistingFile.json"
+                        }
+                    }
+                }
+        """
+
+        parser.parse(config)
+    }
+
+    @Test
+    public void testLoadSingleAgentResourcesNumbers() {
         String config = """
                 minimesos {
                     agent {
@@ -373,7 +387,6 @@ public class ConfigParserTest {
 
         assertNotNull(agent.resources.ports["*"])
         assertEquals("[514-514]", agent.resources.ports["logstash"].value)
-
     }
 
     @Test
@@ -381,7 +394,6 @@ public class ConfigParserTest {
      * Explicit test for surrounding numbers with ""
      */
     public void testLoadSingleAgentResourcesStrings() {
-
         String config = """
                 minimesos {
                     agent {
@@ -416,7 +428,6 @@ public class ConfigParserTest {
 
         assertNotNull(agent.resources.ports["*"])
         assertEquals("[514-514]", agent.resources.ports["logstash"].value)
-
     }
 
 }

@@ -15,8 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.PrintStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -150,48 +148,12 @@ public class CommandUp implements Command {
         startedCluster.start();
         startedCluster.waitForState(state -> state != null);
 
-        MarathonConfig marathonConfig = clusterArchitecture.getClusterConfig().getMarathon();
-        if (marathonConfig != null) {
-            LOGGER.debug("");
-            startedCluster.getMarathonContainer().waitFor();
-            List<AppConfig> apps = marathonConfig.getApps();
-            for (AppConfig app : apps) {
-                URL url = toUrl(app.getMarathonFile());
-                startedCluster.getMarathonContainer().deployApp(url);
-            }
-        }
-
         startedCluster.printServiceUrls(output);
 
         ClusterRepository.saveClusterFile(startedCluster);
     }
 
-    private URL toUrl(String marathonJsonPath) {
-        URL url;
-        try {
-            LOGGER.debug("Converting '" + marathonJsonPath + "' to http(s) URL");
-            url = new URL(marathonJsonPath);
-        } catch (MalformedURLException e) {
-            LOGGER.debug("Converting '" + marathonJsonPath + "' to file URL");
-            url = toFileUrl(marathonJsonPath);
-        }
-        return url;
-    }
-
-    private URL toFileUrl(String marathonJsonPath) {
-        File file = new File(MesosCluster.getHostDir(), marathonJsonPath);
-        if (!file.exists()) {
-            throw new MinimesosException("Invalid file path or URI for Marathon app: " + marathonJsonPath);
-        } else {
-            try {
-                return file.toURI().toURL();
-            } catch (MalformedURLException e) {
-                throw new MinimesosException("Invalid file path or URI for Marathon app: " + marathonJsonPath);
-            }
-        }
-    }
-
-    /**
+   /**
      * Getter for Cluster Config with caching logic.
      * This implementation cannot be used in multi-threaded mode
      *

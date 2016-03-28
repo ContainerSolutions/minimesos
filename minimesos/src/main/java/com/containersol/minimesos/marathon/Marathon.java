@@ -2,6 +2,7 @@ package com.containersol.minimesos.marathon;
 
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.config.AppConfig;
 import com.containersol.minimesos.config.MarathonConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.mesos.ZooKeeper;
@@ -13,20 +14,17 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.HttpsURLConnection;
-import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -87,29 +85,28 @@ public class Marathon extends AbstractContainer {
                 .withPortBindings(portBindings);
     }
 
+    @Override
+    public void start(int timeout) {
+        super.start(timeout);
+
+        List<AppConfig> apps = getConfig().getApps();
+        for (AppConfig app : apps) {
+            deployApp(app.getMarathonJsonFile());
+        }
+    }
+
     /**
-     * Deploys a Marathon app via a URL to the JSON file
+     * Deploys a Marathon app via a file
      *
-     * @param marathonJsonUrl URL to a JSON file
+     * @param marathonJsonFile Marathon JSON file
      */
-    public void deployApp(URL marathonJsonUrl) {
-        LOGGER.debug("Deploying app ");
+    public void deployApp(File marathonJsonFile) {
+        LOGGER.debug("Deploying app from '" + marathonJsonFile.getAbsolutePath() + "'");
         try {
-            HttpsURLConnection con = (HttpsURLConnection) marathonJsonUrl.openConnection();
-            InputStream ins = con.getInputStream();
-            InputStreamReader isr = new InputStreamReader(ins);
-            BufferedReader in = new BufferedReader(isr);
-            StringBuilder builder = new StringBuilder();
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                builder.append(inputLine);
-            }
-            in.close();
-            getCluster().getMarathonContainer().deployApp(builder.toString());
-        } catch (MalformedURLException e) {
-            throw new MinimesosException("Invalid Marathon JSON URL at: " + marathonJsonUrl);
+            String jsonString = FileUtils.readFileToString(marathonJsonFile);
+            deployApp(jsonString);
         } catch (IOException e) {
-            throw new MinimesosException("Could not read Marathon JSON string from URL: " + marathonJsonUrl);
+            throw new MinimesosException("Could not read Marathon JSON file: '" +  marathonJsonFile.getAbsolutePath() + "'. " + e.getMessage());
         }
     }
 
@@ -174,8 +171,11 @@ public class Marathon extends AbstractContainer {
         await("Marathon did not start responding").atMost(getCluster().getClusterConfig().getTimeout(), TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new MarathonApiIsReady());
     }
 
-    private class MarathonApiIsReady implements Callable<Boolean> {
+    public MarathonConfig getConfig() {
+        return config;
+    }
 
+    private class MarathonApiIsReady implements Callable<Boolean> {
         @Override
         public Boolean call() throws Exception {
             try {
@@ -186,5 +186,4 @@ public class Marathon extends AbstractContainer {
             return true;
         }
     }
-
 }

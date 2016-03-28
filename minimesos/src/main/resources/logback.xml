@@ -13,11 +13,12 @@
         </encoder>
     </appender>
 
-    <logger name="com.containersol.minimesos.main" level="INFO">
+    <logger name="com.containersol.minimesos.main" level="info">
         <appender-ref ref="CLI" />
     </logger>
 
-    <root level="info">
+    <logger name="com.containersol.minimesos" level="info">
         <appender-ref ref="JAVA" />
-    </root>
+    </logger>
+
 </configuration>

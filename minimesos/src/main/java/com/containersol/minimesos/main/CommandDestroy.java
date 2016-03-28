@@ -22,6 +22,7 @@ public class CommandDestroy implements Command {
         if (cluster != null) {
             cluster.destroy();
             ClusterRepository.deleteClusterFile();
+            LOGGER.info("Destroyed minimesos cluster with ID " + cluster.getClusterId());
         } else {
             LOGGER.info("Minimesos cluster is not running");
         }
