@@ -1,6 +1,7 @@
 package com.containersol.minimesos.cluster;
 
 import com.containersol.minimesos.MinimesosException;
+import com.containersol.minimesos.config.AppConfig;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.config.MarathonConfig;
@@ -186,8 +187,13 @@ public class MesosCluster extends ExternalResource {
         this.containers.forEach((container) -> container.start(timeoutSeconds));
         // wait until the given number of agents are registered
         getMasterContainer().waitFor();
-        if (getMarathonContainer() != null) {
-            getMarathonContainer().waitFor();
+        Marathon marathon = getMarathonContainer();
+        if (marathon != null) {
+            marathon.waitFor();
+            List<AppConfig> apps = marathon.getConfig().getApps();
+            for (AppConfig app : apps) {
+                marathon.deployApp(app.getMarathonJsonFile());
+            }
         }
 
         running = true;

@@ -2,7 +2,6 @@ package com.containersol.minimesos.marathon;
 
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.config.AppConfig;
 import com.containersol.minimesos.config.MarathonConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.mesos.ZooKeeper;
@@ -24,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -83,16 +81,6 @@ public class Marathon extends AbstractContainer {
                 .withCmd("--master", "zk://minimesos-zookeeper:2181/mesos", "--zk", "zk://minimesos-zookeeper:2181/marathon")
                 .withExposedPorts(exposedPort)
                 .withPortBindings(portBindings);
-    }
-
-    @Override
-    public void start(int timeout) {
-        super.start(timeout);
-
-        List<AppConfig> apps = getConfig().getApps();
-        for (AppConfig app : apps) {
-            deployApp(app.getMarathonJsonFile());
-        }
     }
 
     /**
@@ -167,7 +155,7 @@ public class Marathon extends AbstractContainer {
     }
 
     public void waitFor() {
-        LOGGER.debug("Waiting for Marathon to be ready");
+        LOGGER.debug("Waiting for Marathon to be ready at " + getMarathonEndpoint());
         await("Marathon did not start responding").atMost(getCluster().getClusterConfig().getTimeout(), TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new MarathonApiIsReady());
     }
 

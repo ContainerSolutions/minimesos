@@ -1,0 +1,69 @@
+minimesos {
+    clusterName = "minimesos-test"
+    exposePorts = false
+    loggingLevel = "INFO"
+    mapAgentSandboxVolume = false
+    mesosVersion = "0.25"
+    timeout = 60
+
+    agent {
+        imageName = "containersol/mesos-agent"
+        imageTag = "# derive from mesos version"
+        loggingLevel = "# INHERIT FROM CLUSTER"
+        portNumber = 5051
+
+        resources {
+
+            cpu {
+                role = "*"
+                value = 8
+            }
+
+            disk {
+                role = "*"
+                value = 10000
+            }
+
+            mem {
+                role = "*"
+                value = 1024
+            }
+
+            ports {
+                role = "*"
+                value = "[31000-32000]"
+            }
+        }
+    }
+
+    consul {
+        imageName = "containersol/consul-server"
+        imageTag = "0.6"
+    }
+
+    marathon {
+        imageName = "mesosphere/marathon"
+        imageTag = "v0.15.3"
+
+        app {
+          marathonJsonPath = "src/test/resources/app.json"
+        }
+     
+    }
+
+    master {
+        imageName = "containersol/mesos-master"
+        imageTag = "# derive from mesos version"
+        loggingLevel = "# INHERIT FROM CLUSTER"
+    }
+
+    registrator {
+        imageName = "gliderlabs/registrator"
+        imageTag = "v6"
+    }
+
+    zookeeper {
+        imageName = "jplock/zookeeper"
+        imageTag = "3.4.6"
+    }
+}

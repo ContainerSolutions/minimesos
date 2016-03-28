@@ -129,7 +129,7 @@ public class CommandUp implements Command {
     public void execute() {
         if (debug != null) {
             LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-            Logger rootLogger = loggerContext.getLogger(Logger.ROOT_LOGGER_NAME);
+            Logger rootLogger = loggerContext.getLogger("com.containersol.minimesos");
             rootLogger.setLevel(Level.DEBUG);
             LOGGER.debug("Initialized debug logging");
         }
@@ -277,4 +277,7 @@ public class CommandUp implements Command {
         return CLINAME;
     }
 
+    public void setDebug() {
+        this.debug = true;
+    }
 }
