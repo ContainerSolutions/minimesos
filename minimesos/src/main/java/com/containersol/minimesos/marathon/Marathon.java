@@ -2,6 +2,7 @@ package com.containersol.minimesos.marathon;
 
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.config.AppConfig;
 import com.containersol.minimesos.config.MarathonConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.mesos.ZooKeeper;
@@ -20,8 +21,14 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.HttpsURLConnection;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -161,6 +168,69 @@ public class Marathon extends AbstractContainer {
 
     public MarathonConfig getConfig() {
         return config;
+    }
+
+    public void deployApp(AppConfig app) {
+        if (app.getFile() != null) {
+            deployApp(app.getFile());
+        } else {
+            URL url = app.getUrl();
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(getInputStream(url)))) {
+                StringBuilder jsonBuilder = new StringBuilder();
+                String inputLine;
+                while ((inputLine = in.readLine()) != null) {
+                    jsonBuilder.append(inputLine);
+                }
+                in.close();
+                deployApp(jsonBuilder.toString());
+            } catch (IOException e) {
+                throw new MinimesosException("Could not deploy Marathon application '" + app.getUrl() + "' :" + e.getCause());
+            }
+//
+//            try {
+//
+//
+//                } catch (MalformedURLException e) {
+//                    throw new MinimesosException("Invalid Marathon JSON URL at: " + url);
+//                } catch (IOException e) {
+//                    throw new MinimesosException("Could not read Marathon JSON string from URL: " + url);
+//                }
+//            } else {
+//                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+//                connection.setRequestMethod("GET");
+//
+//                // uncomment this if you want to write output to this url
+//                //connection.setDoOutput(true);
+//
+//                // give it 15 seconds to respond
+//                connection.setReadTimeout(15*1000);
+//                connection.connect();
+//
+//                // read the output from the server
+//
+//                stringBuilder = new StringBuilder();
+//
+//                String line = null;
+//                while ((line = reader.readLine()) != null)
+//                {
+//                    stringBuilder.append(line + "\n");
+//                }
+//                return stringBuilder.toString();
+//            }
+        }
+    }
+
+    private InputStream getInputStream(URL url) throws IOException {
+        switch (url.getProtocol()) {
+            case "https":
+                HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+                return con.getInputStream();
+            case "http":
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                return connection.getInputStream();
+            default:
+                throw new MinimesosException("Unsupported protocol '" + url.getProtocol() + "' in URL " + url);
+        }
     }
 
     private class MarathonApiIsReady implements Callable<Boolean> {

@@ -192,7 +192,7 @@ public class MesosCluster extends ExternalResource {
             marathon.waitFor();
             List<AppConfig> apps = marathon.getConfig().getApps();
             for (AppConfig app : apps) {
-                marathon.deployApp(app.getMarathonJsonFile());
+                marathon.deployApp(app);
             }
         }
 

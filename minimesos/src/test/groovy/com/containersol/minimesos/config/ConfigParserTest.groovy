@@ -319,8 +319,23 @@ public class ConfigParserTest {
         assertEquals("v0.14.0", dsl.marathon.imageTag)
     }
 
+    @Test(expected = MinimesosException.class)
+    public void testMarathonApp_noUrlOrPath() {
+        String config = """
+                minimesos {
+                    marathon {
+                        app {
+    
+                        }
+                    }
+                }
+        """
+
+        parser.parse(config)
+    }
+
     @Test
-    public void testMarathonApp() {
+    public void testMarathonApp_path() {
         String config = """
                 minimesos {
                     marathon {
@@ -333,7 +348,7 @@ public class ConfigParserTest {
 
         ClusterConfig dsl = parser.parse(config)
         assertNotNull(dsl.marathon)
-        assertEquals(MesosCluster.getHostDir().getAbsolutePath() + "/src/test/resources/app.json", dsl.marathon.getApps().get(0).marathonJsonFile.getAbsolutePath())
+        assertEquals(MesosCluster.getHostDir().getAbsolutePath() + "/src/test/resources/app.json", dsl.marathon.getApps().get(0).file.getAbsolutePath())
     }
 
     @Test(expected = MinimesosException.class)
@@ -343,6 +358,54 @@ public class ConfigParserTest {
                     marathon {
                         app {
                             marathonJsonPath = "nonExistingFile.json"
+                        }
+                    }
+                }
+        """
+
+        parser.parse(config)
+    }
+
+    @Test
+    public void testMarathonApp_url() {
+        String config = """
+                minimesos {
+                    marathon {
+                        app {
+                            marathonJsonUrl = "https://www.github.com/organization/repo/app.json"
+                        }
+                    }
+                }
+        """
+
+        ClusterConfig dsl = parser.parse(config)
+        assertNotNull(dsl.marathon)
+        assertEquals("https://www.github.com/organization/repo/app.json", dsl.marathon.getApps().get(0).url.toString())
+    }
+
+    @Test(expected = MinimesosException.class)
+    public void testMarathonApp_incorrectUrl() {
+        String config = """
+                minimesos {
+                    marathon {
+                        app {
+                            marathonJsonUrl = "incorrectUrl"
+                        }
+                    }
+                }
+        """
+
+        parser.parse(config)
+    }
+
+    @Test(expected = MinimesosException.class)
+    public void testMarathonApp_urlOrPath() {
+        String config = """
+                minimesos {
+                    marathon {
+                        app {
+                            marathonJsonUrl     = "https://www.github.com/organization/repo/app.json"
+                            marathonJsonPath    = "src/test/resources/app.json"
                         }
                     }
                 }

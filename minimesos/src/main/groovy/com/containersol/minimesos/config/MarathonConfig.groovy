@@ -1,4 +1,6 @@
-package com.containersol.minimesos.config;
+package com.containersol.minimesos.config
+
+import com.containersol.minimesos.MinimesosException;
 
 public class MarathonConfig extends GroovyBlock implements ContainerConfig {
 
@@ -14,6 +16,11 @@ public class MarathonConfig extends GroovyBlock implements ContainerConfig {
     def app(@DelegatesTo(AppConfig) Closure cl) {
         def app = new AppConfig()
         delegateTo(app, cl)
+
+        if (app.getFile() == null && app.getUrl() == null) {
+            throw new MinimesosException("App config must have either a 'marathonJsonUrl' or a 'marathonJsonPath' property")
+        }
+
         apps.add(app)
     }
 
