@@ -40,13 +40,18 @@ public class ConfigWriterTest {
         appConfig.setMarathonJson("http://www.google.com")
         config.marathon.apps.add(appConfig)
 
+        AppConfig fileAppConfig = new AppConfig()
+        fileAppConfig.setMarathonJson("/temp/fileA")
+        config.marathon.apps.add(fileAppConfig)
+
         String strConfig = parser.toString(config)
         ClusterConfig read = parser.parse(strConfig)
 
         compareClusters(config, read)
         assertNotNull("Marathon container must be set", read.marathon)
         assertEquals(config.marathon.apps.size(), read.marathon.apps.size())
-        assertEquals(config.marathon.apps[0].marathonJson, read.marathon.apps[0].marathonJson)
+        assertEquals("http://www.google.com", read.marathon.apps[0].marathonJson)
+        assertEquals("/temp/fileA", read.marathon.apps[1].marathonJson)
 
     }
 
