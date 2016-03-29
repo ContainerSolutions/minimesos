@@ -53,7 +53,7 @@ The configuration file is a list of blocks, logically grouped by curly brackets 
 Scalar values are simple key-value strings.
 
 | Option name           | type    | Meaning                                                                            |
-|-----------------------+---------+------------------------------------------------------------------------------------|
+|-----------------------|---------|------------------------------------------------------------------------------------|
 | clusterName           | String  | The name of the Mesos cluster                                                      |
 | exposePorts           | Boolean | Whether to expose docker bind ports on the host                                    |
 | loggingLevel          | String  | Debug level in the terminal output                                                 |
