@@ -18,7 +18,7 @@ public class MarathonConfig extends GroovyBlock implements ContainerConfig {
         delegateTo(app, cl)
 
         if (app.getMarathonJson() == null) {
-            throw new MinimesosException("App config must have either a 'marathonJson' property")
+            throw new MinimesosException("App config must have a 'marathonJson' property")
         }
 
         apps.add(app)
