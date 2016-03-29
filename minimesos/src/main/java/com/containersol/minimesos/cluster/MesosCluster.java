@@ -27,6 +27,7 @@ import com.github.dockerjava.api.model.Container;
 import com.jayway.awaitility.Awaitility;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
@@ -34,8 +35,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URI;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -187,13 +190,37 @@ public class MesosCluster extends ExternalResource {
         this.containers.forEach((container) -> container.start(timeoutSeconds));
         // wait until the given number of agents are registered
         getMasterContainer().waitFor();
+
         Marathon marathon = getMarathonContainer();
         if (marathon != null) {
+
             marathon.waitFor();
+
             List<AppConfig> apps = marathon.getConfig().getApps();
             for (AppConfig app : apps) {
-                marathon.deployApp(app);
+                try {
+
+                    String json;
+                    URI uri = app.asAbsoluteUri();
+                    if (uri != null) {
+                        json = IOUtils.toString(uri);
+                    } else {
+
+                        File jsonFile = getHostFile(app.getMarathonJson());
+                        if (jsonFile.exists()) {
+                            json = IOUtils.toString( new FileInputStream(jsonFile));
+                        } else {
+                            throw new MinimesosException(app.getMarathonJson() + " file is not found");
+                        }
+                    }
+
+                    marathon.deployApp(json);
+
+                } catch (IOException ioe) {
+                    throw new MinimesosException("Failed to load JSON from " + app.getMarathonJson(), ioe);
+                }
             }
+
         }
 
         running = true;

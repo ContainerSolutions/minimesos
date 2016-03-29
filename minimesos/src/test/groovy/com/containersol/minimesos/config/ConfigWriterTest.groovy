@@ -9,10 +9,7 @@ import static org.junit.Assert.fail
 
 public class ConfigWriterTest {
 
-    private static final String TEST_FILE_PATH = "/temp/FileA"
-
     private ConfigParser parser
-
 
     @Before
     public void before() {
@@ -40,7 +37,7 @@ public class ConfigWriterTest {
         config.registrator = new RegistratorConfig()
 
         AppConfig appConfig = new AppConfig()
-        appConfig.setMarathonJsonUrl("http://www.google.com")
+        appConfig.setMarathonJson("http://www.google.com")
         config.marathon.apps.add(appConfig)
 
         String strConfig = parser.toString(config)
@@ -49,7 +46,7 @@ public class ConfigWriterTest {
         compareClusters(config, read)
         assertNotNull("Marathon container must be set", read.marathon)
         assertEquals(config.marathon.apps.size(), read.marathon.apps.size())
-        assertEquals(config.marathon.apps[0].marathonJsonPath, read.marathon.apps[0].marathonJsonPath)
+        assertEquals(config.marathon.apps[0].marathonJson, read.marathon.apps[0].marathonJson)
 
     }
 

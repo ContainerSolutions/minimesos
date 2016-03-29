@@ -1,51 +1,40 @@
 package com.containersol.minimesos.config
 
-import com.containersol.minimesos.MinimesosException
-import com.containersol.minimesos.cluster.MesosCluster
-
 /**
  * Configuration for a Marathon app. Path is relative to the minimesosFile.
  */
 class AppConfig {
 
-    String marathonJsonPath
+    private String marathonJson
 
-    String marathonJsonUrl
-
-    private URL url
-
-    private File file
-
-    void setMarathonJsonPath(String marathonJsonPath) {
-        if (this.url != null) {
-            throw new MinimesosException("Set either 'marathonJsonPath' or 'marathonJsonUrl' but not both")
-        }
-
-        File file = new File(MesosCluster.getHostDir(), marathonJsonPath)
-        if (!file.exists()) {
-            throw new MinimesosException("File in Marathon config does not exist: '" + file.getAbsolutePath() + "'")
-        } else {
-            this.file = file
-        }
+    public void setMarathonJson(String marathonJson) {
+        this.marathonJson = marathonJson
     }
 
-    void setMarathonJsonUrl(String urlString) {
-        if (this.file != null) {
-            throw new MinimesosException("Set either 'marathonJsonPath' or 'marathonJsonUrl' but not both")
+    public String getMarathonJson() {
+        return marathonJson
+    }
+
+    /**
+     * @return URI, if <code>marathonJson</code> represents an absolute URI; otherwise - null
+     */
+    public URI asAbsoluteUri() {
+
+        URI uri = null
+
+        if (marathonJson != null) {
+            try {
+                uri = URI.create(marathonJson)
+                if (!uri.isAbsolute()) {
+                    uri = null
+                }
+            } catch (IllegalArgumentException ignored) {
+                // means this is not a valid URI
+            }
         }
 
-        try {
-            this.url = new URL(urlString);
-        } catch (MalformedURLException ignored) {
-            throw new MinimesosException("Malformed URL: " + urlString)
-        }
+        return uri
+
     }
 
-    File getFile() {
-        return file
-    }
-
-    URL getUrl() {
-        return url
-    }
 }

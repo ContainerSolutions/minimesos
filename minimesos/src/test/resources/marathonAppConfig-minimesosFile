@@ -9,7 +9,6 @@ minimesos {
     agent {
         imageName = "containersol/mesos-agent"
         imageTag = "# derive from mesos version"
-        loggingLevel = "# INHERIT FROM CLUSTER"
         portNumber = 5051
 
         resources {
@@ -46,7 +45,7 @@ minimesos {
         imageTag = "v0.15.3"
 
         app {
-          marathonJsonPath = "src/test/resources/app.json"
+          marathonJson = "src/test/resources/app.json"
         }
      
     }
@@ -54,7 +53,6 @@ minimesos {
     master {
         imageName = "containersol/mesos-master"
         imageTag = "# derive from mesos version"
-        loggingLevel = "# INHERIT FROM CLUSTER"
     }
 
     registrator {
