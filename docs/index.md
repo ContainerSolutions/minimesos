@@ -43,6 +43,78 @@ Once the installation has been successful, let's try running ```minimesos --help
 This should print the list of all possible commands and command line arguments.
 
 
+These are the options you might want to change to configure your cluster.
+
+## Command line interface
+
+```
+Usage: minimesos [options] [command] [command options]
+  Options:
+    --help, -help, -?, -h
+       Show help
+       Default: false
+  Commands:
+    help      Display help
+      Usage: help [options]
+
+    init      Initialize a minimesosFile
+      Usage: init [options]
+
+    install      Install a framework with Marathon
+      Usage: install [options]
+        Options:
+          --marathonFile
+             Marathon JSON app install file location. Either this or --stdin
+             parameter must be used
+          --stdin
+             Use JSON from standard import. Allow piping JSON from other
+             processes. Either this or --marathonFile parameter must be used
+             Default: false
+
+    destroy      Destroy a minimesos cluster
+      Usage: destroy [options]
+
+    up      Create a minimesos cluster
+      Usage: up [options]
+        Options:
+          --clusterConfig
+             Path to file with cluster configuration. Defaults to minimesosFile
+             Default: minimesosFile
+          --consul
+             Start consul container
+             Default: false
+          --exposedHostPorts
+             Expose the Mesos and Marathon UI ports on the host level (we
+             recommend to enable this on Mac (e.g. when using docker-machine) and disable
+             on Linux).
+             Default: false
+          --marathonImageTag
+             The tag of the Marathon Docker image.
+             Default: v0.15.3
+          --mesosImageTag
+             The tag of the Mesos master and agent Docker images.
+             Default: INHERIT
+          --num-agents
+             Number of agents to start
+             Default: -1
+          --timeout
+             Time to wait for a container to get responsive, in seconds.
+             Default: 60
+          --zooKeeperImageTag
+             The tag of the ZooKeeper Docker images.
+             Default: 3.4.6
+
+    state      Display state.json file of a master or an agent
+      Usage: state [options]
+        Options:
+          --agent
+             Specify an agent to query, otherwise query a master
+             Default: <empty string>
+
+    info      Display cluster information
+      Usage: info [options]
+```
+
 ## minimesosFile and ```minimesos init```
 minimesos config is stored in minimesosFile, the file that is generated with sensible defaults when running ```minimesos init```
 
@@ -65,8 +137,6 @@ Scalar values are simple key-value strings.
 | agent resources cpu   | Block   | Describes CPU resources                                                            |
 | agent resources mem   | Block   | Describes memory resources                                                         |
 | agent resources ports | Block   | Describes network ports resources                                                  |
-
-These are the options you might want to change to configure your cluster.
 
 ## Consul and registrator
 By default, minimesos starts consul and registrator containers giving you ability to configure service discovery.
