@@ -80,6 +80,9 @@ public class CommandInit implements Command {
         config.setRegistrator(new RegistratorConfig());
 
         MarathonConfig marathonConfig = new MarathonConfig();
+        AppConfig appConfig = new AppConfig();
+        appConfig.setMarathonJson("https://raw.githubusercontent.com/ContainerSolutions/minimesos/master/apps/weave-scope.json");
+        marathonConfig.getApps().add(appConfig);
         config.setMarathon(marathonConfig);
 
         ConfigParser parser = new ConfigParser();
