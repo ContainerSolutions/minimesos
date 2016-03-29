@@ -1,19 +1,14 @@
 # minimesos introduction
 
-The experimentation and testing tool for Mesos. 
-minimesos is a tool created for a quick and easy creation of a Mesos cluster.
-This is achieved by running Mesos processes in Docker containers.
-minimesos implements simple to remember and discover CLI commands that allow creating and destroying local Mesos cluster in seconds.
+The experimentation and testing tool for Mesos. `minimesos` is a tool created for a quick and easy creation of a Mesos cluster. This is achieved by running Mesos processes in Docker containers. `minimesos` implements simple to remember and discover CLI commands that allow creating and destroying local Mesos cluster in seconds.
 
 If you have used Vagrant and Docker before, the set of the commands will be very familiar to you, if you have not - don't worry! We will walk you through them.
 
 ## Resources
 
- - https://minimesos.org/
- - https://minimesos.org/blog
- 
-If you want to quickly try out minimesos without installing anything on your machine, please navigate to our minimesos experimentation page:
- - https://minimesos.org/try
+ - Website https://minimesos.org/
+ - Blog https://minimesos.org/blog
+ - Interactive tutorial https://minimesos.org/try
 
 
 ## System Requirements
@@ -116,7 +111,7 @@ Usage: minimesos [options] [command] [command options]
 ```
 
 ## minimesosFile and ```minimesos init```
-minimesos config is stored in minimesosFile, the file that is generated with sensible defaults when running ```minimesos init```
+minimesos config is stored in `minimesosFile`, the file that is generated with sensible defaults when running ```minimesos init```
 
 Again, you might notice similarity with ```vagrant init``` and Vagrantfile.
 Open the minimesosFile and let's look at the list of the blocks.
