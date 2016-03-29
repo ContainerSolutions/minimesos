@@ -4,11 +4,15 @@ import org.junit.Before
 import org.junit.Test
 
 import static org.junit.Assert.assertEquals
+import static org.junit.Assert.assertNotNull
 import static org.junit.Assert.fail
 
 public class ConfigWriterTest {
 
+    private static final String TEST_FILE_PATH = "/temp/FileA"
+
     private ConfigParser parser
+
 
     @Before
     public void before() {
@@ -35,10 +39,18 @@ public class ConfigWriterTest {
         config.consul = new ConsulConfig()
         config.registrator = new RegistratorConfig()
 
+        AppConfig appConfig = new AppConfig()
+        appConfig.setMarathonJsonUrl("http://www.google.com")
+        config.marathon.apps.add(appConfig)
+
         String strConfig = parser.toString(config)
         ClusterConfig read = parser.parse(strConfig)
 
         compareClusters(config, read)
+        assertNotNull("Marathon container must be set", read.marathon)
+        assertEquals(config.marathon.apps.size(), read.marathon.apps.size())
+        assertEquals(config.marathon.apps[0].marathonJsonPath, read.marathon.apps[0].marathonJsonPath)
+
     }
 
     static private void compareClusters(ClusterConfig first, ClusterConfig second) {
@@ -49,6 +61,7 @@ public class ConfigWriterTest {
         assertEquals(first.loggingLevel, second.loggingLevel)
 
         compareContainers(first.marathon, second.marathon)
+
         compareContainers(first.zookeeper, second.zookeeper)
         compareContainers(first.consul, second.consul)
         compareContainers(first.registrator, second.registrator)

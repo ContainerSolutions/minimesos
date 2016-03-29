@@ -75,10 +75,12 @@ public class CommandInit implements Command {
 
         config.setMaster(new MesosMasterConfig());
         config.setZookeeper(new ZooKeeperConfig());
-        config.setMarathon(new MarathonConfig());
         config.getAgents().add(new MesosAgentConfig());
         config.setConsul(new ConsulConfig());
         config.setRegistrator(new RegistratorConfig());
+
+        MarathonConfig marathonConfig = new MarathonConfig();
+        config.setMarathon(marathonConfig);
 
         ConfigParser parser = new ConfigParser();
         return parser.toString(config);
