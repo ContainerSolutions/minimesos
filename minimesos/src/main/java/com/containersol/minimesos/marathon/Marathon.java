@@ -14,11 +14,13 @@ import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.http.HttpStatus;
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.charset.Charset;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.await;
@@ -28,9 +30,10 @@ import static com.jayway.awaitility.Awaitility.await;
  */
 public class Marathon extends AbstractContainer {
 
-    private static Logger LOGGER = Logger.getLogger(MesosCluster.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(Marathon.class);
 
     private final MarathonConfig config;
+
     private ZooKeeper zooKeeper;
 
     public Marathon(DockerClient dockerClient, ZooKeeper zooKeeper) {
@@ -78,30 +81,27 @@ public class Marathon extends AbstractContainer {
     }
 
     /**
-     * Deploy a Marathon app or a framework
+     * Deploys a Marathon app by JSON string
      *
-     * @param appJson JSON string
+     * @param jsonString JSON string
      */
-    public void deployApp(String appJson) {
+    public void deployApp(String jsonString) {
         String marathonEndpoint = getMarathonEndpoint();
         try {
-            byte[] app = appJson.getBytes(Charset.forName("UTF-8"));
-
+            byte[] app = jsonString.getBytes(Charset.forName("UTF-8"));
             HttpResponse<JsonNode> response = Unirest.post(marathonEndpoint + "/v2/apps").header("accept", "application/json").body(app).asJson();
             JSONObject deployResponse = response.getBody().getObject();
-
             if (response.getStatus() == HttpStatus.SC_CREATED) {
-                LOGGER.debug(deployResponse);
+                LOGGER.debug(deployResponse.toString());
             } else {
                 throw new MinimesosException("Marathon did not accept the app: " + deployResponse);
             }
-
         } catch (UnirestException e) {
             String msg = "Could not deploy app on Marathon at " + marathonEndpoint + " => " + e.getMessage();
             LOGGER.error(msg);
             throw new MinimesosException(msg, e);
         }
-        LOGGER.info(String.format("Installing an app on marathon %s", getMarathonEndpoint()));
+        LOGGER.debug(String.format("Installing an app on marathon %s", getMarathonEndpoint()));
     }
 
     /**
@@ -137,20 +137,23 @@ public class Marathon extends AbstractContainer {
     }
 
     public void waitFor() {
-        await("Marathon did not start responding").atMost(getCluster().getClusterConfig().getTimeout(), TimeUnit.SECONDS).until(this::isReady);
+        LOGGER.debug("Waiting for Marathon to be ready at " + getMarathonEndpoint());
+        await("Marathon did not start responding").atMost(getCluster().getClusterConfig().getTimeout(), TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new MarathonApiIsReady());
     }
 
-    public boolean isReady() {
-        JSONObject appsResponse;
-        try {
-            appsResponse = Unirest.get(getMarathonEndpoint() + "/v2/apps").header("accept", "application/json").asJson().getBody().getObject();
-            if (appsResponse.length() == 0) {
+    public MarathonConfig getConfig() {
+        return config;
+    }
+
+    private class MarathonApiIsReady implements Callable<Boolean> {
+        @Override
+        public Boolean call() throws Exception {
+            try {
+                Unirest.get(getMarathonEndpoint() + "/v2/apps").header("accept", "application/json").asJson().getBody().getObject();
+            } catch (UnirestException e) {
                 return false;
             }
-        } catch (UnirestException e) {
-            return false;
+            return true;
         }
-
-        return true;
     }
 }

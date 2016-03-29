@@ -9,7 +9,8 @@ import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.marathon.Marathon;
 import com.github.dockerjava.api.DockerClient;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
@@ -90,7 +91,7 @@ public class ClusterArchitecture {
      */
     public static class Builder {
 
-        private static final Logger LOGGER = Logger.getLogger(ClusterArchitecture.class);
+        private static final Logger LOGGER = LoggerFactory.getLogger(ClusterArchitecture.class);
 
         private final ClusterArchitecture clusterArchitecture;
         private final DockerClient dockerClient;

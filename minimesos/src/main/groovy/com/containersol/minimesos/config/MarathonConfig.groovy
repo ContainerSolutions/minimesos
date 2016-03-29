@@ -1,4 +1,6 @@
-package com.containersol.minimesos.config;
+package com.containersol.minimesos.config
+
+import com.containersol.minimesos.MinimesosException;
 
 public class MarathonConfig extends GroovyBlock implements ContainerConfig {
 
@@ -8,5 +10,18 @@ public class MarathonConfig extends GroovyBlock implements ContainerConfig {
 
     String imageName     = MARATHON_IMAGE
     String imageTag      = MARATHON_IMAGE_TAG
+
+    List<AppConfig> apps = new ArrayList<>();
+
+    def app(@DelegatesTo(AppConfig) Closure cl) {
+        def app = new AppConfig()
+        delegateTo(app, cl)
+
+        if (app.getMarathonJson() == null) {
+            throw new MinimesosException("App config must have a 'marathonJson' property")
+        }
+
+        apps.add(app)
+    }
 
 }

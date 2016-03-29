@@ -60,11 +60,12 @@ public class CommandUp implements Command {
      * Indicates is configurationFile was found
      */
     private Boolean configFileFound = null;
+
     private ClusterConfig clusterConfig = null;
 
     private MesosCluster startedCluster = null;
-    private PrintStream output = System.out;
 
+    private PrintStream output = System.out;
 
     public CommandUp() {
     }
@@ -128,10 +129,12 @@ public class CommandUp implements Command {
     public void execute() {
         if (debug != null) {
             LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-            Logger rootLogger = loggerContext.getLogger(Logger.ROOT_LOGGER_NAME);
+            Logger rootLogger = loggerContext.getLogger("com.containersol.minimesos.container");
             rootLogger.setLevel(Level.DEBUG);
             LOGGER.debug("Initialized debug logging");
         }
+
+        LOGGER.debug("Executing up command");
 
         MesosCluster cluster = getCluster();
         if (cluster != null) {
@@ -150,7 +153,7 @@ public class CommandUp implements Command {
         ClusterRepository.saveClusterFile(startedCluster);
     }
 
-    /**
+   /**
      * Getter for Cluster Config with caching logic.
      * This implementation cannot be used in multi-threaded mode
      *
@@ -203,7 +206,6 @@ public class CommandUp implements Command {
      * @param clusterConfig cluster configuration to update
      */
     public void updateWithParameters(ClusterConfig clusterConfig) {
-
         if (isExposedHostPorts() != null) {
             clusterConfig.setExposePorts(isExposedHostPorts());
         }
@@ -275,6 +277,7 @@ public class CommandUp implements Command {
         return CLINAME;
     }
 
+    public void setDebug() {
+        this.debug = true;
+    }
 }
-
-

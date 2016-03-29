@@ -18,11 +18,21 @@ class ConfigParser {
 
     private DecimalFormat format = null;
 
-    private final Map<String, String> propsDictionary = ["agents": "agent", "cpus": "cpu", "mems": "mem", "disks": "disk"]
+    private final Map<String, String> propsDictionary = [
+            "agents": "agent",
+            "cpus": "cpu",
+            "mems": "mem",
+            "disks": "disk",
+            "apps": "app"
+    ]
     private final List<String> ignoredProperties = ["class", "format"]
 
+    private final Map<String, String> comments = [
+            "minimesos.marathon.apps": "Add 'app { marathonJson=\"<path or URL to JSON file>\" }' for every task you want to execute"
+    ]
+
     public ClusterConfig parse(String config) {
-        Binding binding = new Binding();
+        Binding binding = new Binding()
 
         ClusterConfig minimesosDsl = new ClusterConfig()
         binding.setVariable(CONFIG_VARIABLE, minimesosDsl)
@@ -41,14 +51,18 @@ class ConfigParser {
      * @return string representation of the cluster configuration
      */
     public String toString(ClusterConfig config) {
-        StringBuilder buffer = new StringBuilder(CONFIG_VARIABLE).append(" {\n")
-        printProperties(buffer, "    ", config.properties)
+        String dslPath = CONFIG_VARIABLE
+        StringBuilder buffer = new StringBuilder()
+        appendPathDescription(buffer, "", dslPath)
+        buffer.append(CONFIG_VARIABLE).append(" {\n")
+        printProperties(buffer, "    ", config.properties, dslPath)
         buffer.append("}\n")
 
         buffer.toString()
     }
 
-    private void printProperties(StringBuilder buffer, String intent, Map properties) {
+    private void printProperties(StringBuilder buffer, String intent, Map properties, String dslPath) {
+
         List<String> propNames = properties.keySet().sort()
         List<String> complexProps = new ArrayList<>()
 
@@ -59,6 +73,7 @@ class ConfigParser {
                 String strValue = formatSimpleValue(value)
 
                 if (strValue != null) {
+                    appendPathDescription(buffer, intent, dslPath + "." + propName)
                     String line = String.format("%s%s = %s\n", intent, propName, strValue)
                     buffer.append(line)
                 } else {
@@ -80,19 +95,26 @@ class ConfigParser {
                 if (Collection.class.isAssignableFrom(value.getClass())) {
 
                     Collection values = (Collection) value
-                    printCollection(buffer, intent, propToPrint, values)
+                    printCollection(buffer, intent, propToPrint, values, dslPath + "." + propName)
 
                 } else if (Map.class.isAssignableFrom(value.getClass())) {
 
                     Map values = (Map) value
-                    printCollection(buffer, intent, propToPrint, values.values())
+                    printCollection(buffer, intent, propToPrint, values.values(), dslPath + "." + propName)
 
                 } else {
                     buffer.append("\n").append(intent).append(propToPrint).append(" {\n")
-                    printProperties(buffer, intent + "    ", value.properties)
+                    printProperties(buffer, intent + "    ", value.properties, dslPath + "." + propName)
                     buffer.append(intent).append("}\n")
                 }
             }
+        }
+    }
+
+    private void appendPathDescription(StringBuilder buffer, String intent, String dslPath) {
+        String comment = comments[dslPath]
+        if (comment != null) {
+            buffer.append(intent).append("// ").append(comment).append("\n")
         }
     }
 
@@ -119,8 +141,9 @@ class ConfigParser {
         strValue
     }
 
-    private void printCollection(StringBuilder buffer, String intent, String propName, Collection values) {
+    private void printCollection(StringBuilder buffer, String intent, String propName, Collection values, String dslPath) {
         buffer.append("\n")
+        appendPathDescription(buffer, intent, dslPath)
         for (Object single : values) {
             String strSingle = formatSimpleValue(single)
             if (strSingle != null) {
@@ -128,7 +151,7 @@ class ConfigParser {
                 buffer.append(line)
             } else {
                 buffer.append(intent).append(propName).append(" {\n")
-                printProperties(buffer, intent + "    ", single.properties)
+                printProperties(buffer, intent + "    ", single.properties, dslPath)
             }
             buffer.append(intent).append("}\n")
         }

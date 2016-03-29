@@ -32,6 +32,7 @@ import static org.junit.Assert.*;
 public class MesosClusterTest {
 
     protected static final DockerClient dockerClient = DockerClientFactory.build();
+
     protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder(dockerClient)
             .withZooKeeper()
             .withMaster()

@@ -1,6 +1,7 @@
 package com.containersol.minimesos.cluster;
 
 import com.containersol.minimesos.MinimesosException;
+import com.containersol.minimesos.config.AppConfig;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.config.MarathonConfig;
@@ -26,14 +27,18 @@ import com.github.dockerjava.api.model.Container;
 import com.jayway.awaitility.Awaitility;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URI;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,7 +52,7 @@ import java.util.stream.Collectors;
  */
 public class MesosCluster extends ExternalResource {
 
-    private static Logger LOGGER = Logger.getLogger(MesosCluster.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(MesosCluster.class);
 
     public static final String MINIMESOS_HOST_DIR_PROPERTY = "minimesos.host.dir";
 
@@ -185,8 +190,37 @@ public class MesosCluster extends ExternalResource {
         this.containers.forEach((container) -> container.start(timeoutSeconds));
         // wait until the given number of agents are registered
         getMasterContainer().waitFor();
-        if (getMarathonContainer() != null) {
-            getMarathonContainer().waitFor();
+
+        Marathon marathon = getMarathonContainer();
+        if (marathon != null) {
+
+            marathon.waitFor();
+
+            List<AppConfig> apps = marathon.getConfig().getApps();
+            for (AppConfig app : apps) {
+                try {
+
+                    String json;
+                    URI uri = app.asAbsoluteUri();
+                    if (uri != null) {
+                        json = IOUtils.toString(uri);
+                    } else {
+
+                        File jsonFile = getHostFile(app.getMarathonJson());
+                        if (jsonFile.exists()) {
+                            json = IOUtils.toString( new FileInputStream(jsonFile));
+                        } else {
+                            throw new MinimesosException(app.getMarathonJson() + " file is not found");
+                        }
+                    }
+
+                    marathon.deployApp(json);
+
+                } catch (IOException ioe) {
+                    throw new MinimesosException("Failed to load JSON from " + app.getMarathonJson(), ioe);
+                }
+            }
+
         }
 
         running = true;
@@ -271,32 +305,26 @@ public class MesosCluster extends ExternalResource {
      */
     public void destroy() {
         LOGGER.debug("Cluster " + getClusterId() + " - destroy");
+        Marathon marathon = getMarathonContainer();
+        if (marathon != null) {
+            marathon.killAllApps();
+        }
 
-        if (clusterId != null) {
-
-            Marathon marathon = getMarathonContainer();
-            if (marathon != null) {
-                marathon.killAllApps();
+        List<Container> containers = dockerClient.listContainersCmd().exec();
+        for (Container container : containers) {
+            if (ContainerName.belongsToCluster(container.getNames(), clusterId)) {
+                dockerClient.removeContainerCmd(container.getId()).withForce().withRemoveVolumes(true).exec();
             }
-
-            List<Container> containers = dockerClient.listContainersCmd().exec();
-            for (Container container : containers) {
-                if (ContainerName.belongsToCluster(container.getNames(), clusterId)) {
-                    dockerClient.removeContainerCmd(container.getId()).withForce().withRemoveVolumes(true).exec();
-                }
+        }
+        File sandboxLocation = new File(getHostDir(), ".minimesos/sandbox-" + clusterId);
+        if (sandboxLocation.exists()) {
+            try {
+                FileUtils.forceDelete(sandboxLocation);
+            } catch (IOException e) {
+                String msg = String.format("Failed to force delete the cluster sandbox at %s", sandboxLocation.getAbsolutePath());
+                LOGGER.error(msg, e);
+                throw new MinimesosException(msg, e);
             }
-            File sandboxLocation = new File(getHostDir(), ".minimesos/sandbox-" + clusterId);
-            if (sandboxLocation.exists()) {
-                try {
-                    FileUtils.forceDelete(sandboxLocation);
-                } catch (IOException e) {
-                    String msg = String.format("Failed to force delete the cluster sandbox at %s", sandboxLocation.getAbsolutePath());
-                    LOGGER.error(msg, e);
-                    throw new MinimesosException(msg, e);
-                }
-            }
-        } else {
-            LOGGER.info("Minimesos cluster is not running");
         }
     }
 
@@ -463,7 +491,7 @@ public class MesosCluster extends ExternalResource {
             try {
                 return predicate.test(State.fromJSON(getMasterContainer().getStateInfoJSON().toString()));
             } catch (InternalServerErrorException e) {
-                LOGGER.error(e);
+                LOGGER.error(e.toString());
                 // This probably means that the mesos cluster isn't ready yet..
                 return false;
             }
