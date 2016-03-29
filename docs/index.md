@@ -1,6 +1,25 @@
-# minimesos
+# minimesos introduction
 
-The experimentation and testing tool for Mesos. 
+The experimentation and testing tool for Mesos. `minimesos` is a tool created for a quick and easy creation of a Mesos cluster. This is achieved by running Mesos processes in Docker containers. `minimesos` implements simple to remember and discover CLI commands that allow creating and destroying local Mesos cluster in seconds.
+
+If you have used Vagrant and Docker before, the set of the commands will be very familiar to you, if you have not - don't worry! We will walk you through them.
+
+## Resources
+
+ - Website https://minimesos.org/
+ - Blog https://minimesos.org/blog
+ - Interactive tutorial https://minimesos.org/try
+
+
+## System Requirements
+
+minimesos runs Docker containers with a configurable version version of Mesos. See the [minimesos-docker](https://github.com/ContainerSolutions/minimesos-docker) repository
+with an overview of the images supported by minimesos.
+
+The Docker client in these Mesos images should be able to talk to Docker daemon on your host machine. The Docker daemon is expected to run version 1.10 or higher 
+of Docker or Docker Machine. See Docker [API compatibility](https://docs.docker.com/engine/reference/api/docker_remote_api/) table. 
+
+
 
 ## Installing
 
@@ -15,13 +34,11 @@ You can add it to your executables search path using following command:
 $ export PATH=$PATH:$HOME/.minimesos/bin
 ```
 
-## System Requirements
+Once the installation has been successful, let's try running ```minimesos --help```
+This should print the list of all possible commands and command line arguments.
 
-minimesos runs Docker containers with a configurable version version of Mesos. See the [minimesos-docker](https://github.com/ContainerSolutions/minimesos-docker) repository
-with an overview of the images supported by minimesos.
 
-The Docker client in these Mesos images should be able to talk to Docker daemon on your host machine. The Docker daemon is expected to run version 1.10 or higher 
-of Docker or Docker Machine. See Docker [API compatibility](https://docs.docker.com/engine/reference/api/docker_remote_api/) table. 
+These are the options you might want to change to configure your cluster.
 
 ## Command line interface
 
@@ -93,6 +110,32 @@ Usage: minimesos [options] [command] [command options]
       Usage: info [options]
 ```
 
+## minimesosFile and ```minimesos init```
+minimesos config is stored in `minimesosFile`, the file that is generated with sensible defaults when running ```minimesos init```
+
+Again, you might notice similarity with ```vagrant init``` and Vagrantfile.
+Open the minimesosFile and let's look at the list of the blocks.
+
+The configuration file is a list of blocks, logically grouped by curly brackets ```{ }```
+Scalar values are simple key-value strings.
+
+| Option name           | type    | Meaning                                                                            |
+|-----------------------|---------|------------------------------------------------------------------------------------|
+| clusterName           | String  | The name of the Mesos cluster                                                      |
+| exposePorts           | Boolean | Whether to expose docker bind ports on the host                                    |
+| loggingLevel          | String  | Debug level in the terminal output                                                 |
+| mapAgentSandboxVolume | Boolean | Creates a volume mapping to the agent sandbox under ${PWD}/.minimesos/sandbox-.../ |
+| mesosVersion          | String  | Mesos version                                                                      |
+| timeout               | Integer | Amount of seconds to wait for the cluster to become alive before giving up         |
+| agent                 | Block   | Describes a single instance of a mesos agent                                       |
+| agent resources       | Block   | Describes resources of the mesos agent                                             |
+| agent resources cpu   | Block   | Describes CPU resources                                                            |
+| agent resources mem   | Block   | Describes memory resources                                                         |
+| agent resources ports | Block   | Describes network ports resources                                                  |
+
+## Consul and registrator
+By default, minimesos starts consul and registrator containers giving you ability to configure service discovery.
+
 ## Java API
 
 In this snippet we're configuring the Mesos cluster to start 3 agents with different resources. 
@@ -150,7 +193,7 @@ When VM is ready you can either *build latest version* of minimesos or *install 
 
 ### Building latest version of minimesos
 
-In CLI
+In a terminal window, run the following commands:
 
 ```
 # changing route is required to let Java process on host to find minimesos in virtual machine.
@@ -179,7 +222,7 @@ Running ```./gradlew install``` will make latest version of minimesos script ava
 ### Running minimesos from CLI
 
 To create minimesos cluster execute ```minimesos up```. It will create temporary container with minimesos process, which will start other containers and will exit.
-When cluster is started ```.minimesos/minimesos.cluster``` file with cluster ID is created in local directory. This file is destroyed with ```minimesos destroy```
+When cluster is started ```.minimesos/minimesos.cluster``` file with cluster ID is created in local directory. This cluster is destroyed with ```minimesos destroy```
 
 ```
 $ minimesos up 
@@ -207,7 +250,7 @@ Minimesos tries to choose the appropriate configuration for your system automati
 
 The table below is an attempt to summarize mappings, which enable execution of minimesos
 
-| MAC Host        | boot2docker VM        | minimesos container           |
+| OSX Host        | boot2docker VM        | minimesos container           |
 | --------------- | --------------------- | ----------------------------- |
 | $PWD/.minimesos | $PWD/.minimesos       | /tmp/.minimesos               |
 |                 | /var/lib/docker       | /var/lib/docker               |
