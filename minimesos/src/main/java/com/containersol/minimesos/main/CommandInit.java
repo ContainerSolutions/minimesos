@@ -79,10 +79,11 @@ public class CommandInit implements Command {
         config.setConsul(new ConsulConfig());
         config.setRegistrator(new RegistratorConfig());
 
+        AppConfig weaveConfig = new AppConfig();
+        weaveConfig.setMarathonJson("https://raw.githubusercontent.com/ContainerSolutions/minimesos/27744df7071fb2d4ab15562bf2654ec37f4d539d/apps/weave-scope.json");
+
         MarathonConfig marathonConfig = new MarathonConfig();
-        AppConfig appConfig = new AppConfig();
-        appConfig.setMarathonJson("https://raw.githubusercontent.com/ContainerSolutions/minimesos/master/apps/weave-scope.json");
-        marathonConfig.getApps().add(appConfig);
+        marathonConfig.getApps().add(weaveConfig);
         config.setMarathon(marathonConfig);
 
         ConfigParser parser = new ConfigParser();
