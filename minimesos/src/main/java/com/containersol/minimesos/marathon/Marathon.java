@@ -4,8 +4,8 @@ import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.MarathonConfig;
 import com.containersol.minimesos.container.AbstractContainer;
+import com.containersol.minimesos.mesos.DockerClientFactory;
 import com.containersol.minimesos.mesos.ZooKeeper;
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports;
@@ -36,18 +36,18 @@ public class Marathon extends AbstractContainer {
 
     private ZooKeeper zooKeeper;
 
-    public Marathon(DockerClient dockerClient, ZooKeeper zooKeeper) {
-        this(dockerClient, zooKeeper, new MarathonConfig());
+    public Marathon(ZooKeeper zooKeeper) {
+        this(zooKeeper, new MarathonConfig());
     }
 
-    public Marathon(DockerClient dockerClient, ZooKeeper zooKeeper, MarathonConfig config) {
-        super(dockerClient);
+    public Marathon(ZooKeeper zooKeeper, MarathonConfig config) {
+        super();
         this.zooKeeper = zooKeeper;
         this.config = config;
     }
 
-    public Marathon(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId) {
-        super(dockerClient, cluster, uuid, containerId);
+    public Marathon(MesosCluster cluster, String uuid, String containerId) {
+        super(cluster, uuid, containerId);
         this.config = new MarathonConfig();
     }
 
@@ -72,7 +72,7 @@ public class Marathon extends AbstractContainer {
         if (getCluster().isExposedHostPorts()) {
             portBindings.bind(exposedPort, Ports.Binding(MarathonConfig.MARATHON_PORT));
         }
-        return dockerClient.createContainerCmd(config.getImageName() + ":" + config.getImageTag())
+        return DockerClientFactory.build().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withName( getName() )
                 .withExtraHosts("minimesos-zookeeper:" + this.zooKeeper.getIpAddress())
                 .withCmd("--master", "zk://minimesos-zookeeper:2181/mesos", "--zk", "zk://minimesos-zookeeper:2181/marathon")

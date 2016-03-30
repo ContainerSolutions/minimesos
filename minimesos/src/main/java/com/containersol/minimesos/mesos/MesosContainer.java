@@ -3,7 +3,6 @@ package com.containersol.minimesos.mesos;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.MesosContainerConfig;
 import com.containersol.minimesos.container.AbstractContainer;
-import com.github.dockerjava.api.DockerClient;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -25,14 +24,14 @@ public abstract class MesosContainer extends AbstractContainer {
     private ZooKeeper zooKeeperContainer;
     private final MesosContainerConfig config;
 
-    protected MesosContainer(DockerClient dockerClient, ZooKeeper zooKeeperContainer, MesosContainerConfig config) {
-        super(dockerClient);
+    protected MesosContainer(ZooKeeper zooKeeperContainer, MesosContainerConfig config) {
+        super();
         this.zooKeeperContainer = zooKeeperContainer;
         this.config = config;
     }
 
-    protected MesosContainer(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId, MesosContainerConfig config) {
-        super(dockerClient, cluster, uuid, containerId);
+    protected MesosContainer(MesosCluster cluster, String uuid, String containerId, MesosContainerConfig config) {
+        super(cluster, uuid, containerId);
         this.config = config;
     }
 
