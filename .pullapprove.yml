@@ -1,8 +1,8 @@
 approve_by_comment: true
-approve_regex: ^(Approved|LGTM)
+approve_regex: ^(Approved|LGTM|:\+1:)
 author_approval: ignored
 reject_regex: ^Rejected
-reset_on_push: false
+reset_on_push: true
 reviewers:
   members:
   - alex-glv
