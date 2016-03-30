@@ -2,10 +2,8 @@ package com.containersol.minimesos;
 
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
-import com.containersol.minimesos.mesos.DockerClientFactory;
 import com.containersol.minimesos.mesos.MesosMaster;
 import com.containersol.minimesos.mesos.ZooKeeper;
-import com.github.dockerjava.api.DockerClient;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -21,7 +19,7 @@ public class FlagsTest {
     public static final MesosCluster cluster = new MesosCluster(
             new ClusterArchitecture.Builder()
                     .withZooKeeper()
-                    .withMaster(zooKeeper -> new MesosMasterEnvVars(DockerClientFactory.build(), zooKeeper)).build()
+                    .withMaster(zooKeeper -> new MesosMasterEnvVars(zooKeeper)).build()
     );
 
     @Test
@@ -41,8 +39,8 @@ public class FlagsTest {
 
     public static class MesosMasterEnvVars extends MesosMaster {
 
-        protected MesosMasterEnvVars(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
-            super(dockerClient, zooKeeperContainer);
+        protected MesosMasterEnvVars(ZooKeeper zooKeeperContainer) {
+            super(zooKeeperContainer);
         }
 
         @Override

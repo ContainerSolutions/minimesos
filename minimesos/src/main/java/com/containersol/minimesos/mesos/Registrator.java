@@ -16,8 +16,8 @@ public class Registrator extends AbstractContainer {
     private final RegistratorConfig config;
     private Consul consulContainer;
 
-    public Registrator(DockerClient dockerClient, Consul consulContainer, RegistratorConfig config) {
-        super(dockerClient);
+    public Registrator(Consul consulContainer, RegistratorConfig config) {
+        super();
         this.consulContainer = consulContainer;
         this.config = config;
     }
@@ -34,7 +34,7 @@ public class Registrator extends AbstractContainer {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        return dockerClient.createContainerCmd(config.getImageName() + ":" + config.getImageTag())
+        return DockerClientFactory.get().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withNetworkMode("host")
                 .withBinds(Bind.parse("/var/run/docker.sock:/tmp/docker.sock"))
                 .withCmd("-internal", String.format("consul://%s:%d", consulContainer.getIpAddress(), ConsulConfig.CONSUL_HTTP_PORT))
@@ -46,7 +46,7 @@ public class Registrator extends AbstractContainer {
     }
 
     private Registrator(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId, RegistratorConfig config) {
-        super(dockerClient, cluster, uuid, containerId);
+        super(cluster, uuid, containerId);
         this.config = config;
     }
 

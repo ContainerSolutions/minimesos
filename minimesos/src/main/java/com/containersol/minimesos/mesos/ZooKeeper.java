@@ -3,7 +3,6 @@ package com.containersol.minimesos.mesos;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.container.AbstractContainer;
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 
@@ -16,17 +15,17 @@ public class ZooKeeper extends AbstractContainer {
 
     private final ZooKeeperConfig config;
 
-    public ZooKeeper(DockerClient dockerClient, ZooKeeperConfig config) {
-        super(dockerClient);
+    public ZooKeeper(ZooKeeperConfig config) {
+        super();
         this.config = config;
     }
 
-    protected ZooKeeper(DockerClient dockerClient) {
-        this(dockerClient, new ZooKeeperConfig());
+    protected ZooKeeper() {
+        this(new ZooKeeperConfig());
     }
 
-    public ZooKeeper(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId) {
-        super(dockerClient, cluster, uuid, containerId);
+    public ZooKeeper(MesosCluster cluster, String uuid, String containerId) {
+        super(cluster, uuid, containerId);
         this.config = new ZooKeeperConfig();
     }
 
@@ -42,7 +41,7 @@ public class ZooKeeper extends AbstractContainer {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        return dockerClient.createContainerCmd(config.getImageName() + ":" + config.getImageTag())
+        return DockerClientFactory.get().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withName(getName())
                 .withExposedPorts(new ExposedPort(DEFAULT_ZOOKEEPER_PORT), new ExposedPort(2888), new ExposedPort(3888));
     }

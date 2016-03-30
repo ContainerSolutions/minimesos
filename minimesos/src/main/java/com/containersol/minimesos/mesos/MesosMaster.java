@@ -2,7 +2,6 @@ package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.MesosMasterConfig;
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports;
@@ -27,21 +26,21 @@ public class MesosMaster extends MesosContainer {
     // is here for future extension of Master configuration
     private final MesosMasterConfig config;
 
-    public MesosMaster(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
-        this(dockerClient, zooKeeperContainer, new MesosMasterConfig());
+    public MesosMaster(ZooKeeper zooKeeperContainer) {
+        this(zooKeeperContainer, new MesosMasterConfig());
     }
 
-    public MesosMaster(DockerClient dockerClient, ZooKeeper zooKeeperContainer, MesosMasterConfig config) {
-        super(dockerClient, zooKeeperContainer, config);
+    public MesosMaster(ZooKeeper zooKeeperContainer, MesosMasterConfig config) {
+        super(zooKeeperContainer, config);
         this.config = config;
     }
 
-    public MesosMaster(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId) {
-        this(dockerClient, cluster, uuid, containerId, new MesosMasterConfig());
+    public MesosMaster(MesosCluster cluster, String uuid, String containerId) {
+        this(cluster, uuid, containerId, new MesosMasterConfig());
     }
 
-    private MesosMaster(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId, MesosMasterConfig config) {
-        super(dockerClient, cluster, uuid, containerId, config);
+    private MesosMaster(MesosCluster cluster, String uuid, String containerId, MesosMasterConfig config) {
+        super(cluster, uuid, containerId, config);
         this.config = config;
     }
 
@@ -77,8 +76,8 @@ public class MesosMaster extends MesosContainer {
             portBindings.bind(exposedPort, Ports.Binding(port));
         }
 
-        return dockerClient.createContainerCmd(getMesosImageName() + ":" + getMesosImageTag())
-                .withName( getName() )
+        return DockerClientFactory.get().createContainerCmd(getMesosImageName() + ":" + getMesosImageTag())
+                .withName(getName())
                 .withExposedPorts(new ExposedPort(getPortNumber()))
                 .withEnv(createMesosLocalEnvironment())
                 .withPortBindings(portBindings);
@@ -131,7 +130,7 @@ public class MesosMaster extends MesosContainer {
 
         public void waitFor() {
             await()
-                    .atMost( mesosCluster.getClusterConfig().getTimeout(), TimeUnit.SECONDS)
+                    .atMost(mesosCluster.getClusterConfig().getTimeout(), TimeUnit.SECONDS)
                     .pollInterval(1, TimeUnit.SECONDS)
                     .until(this);
 

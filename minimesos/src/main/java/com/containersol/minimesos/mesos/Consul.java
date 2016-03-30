@@ -17,8 +17,8 @@ public class Consul extends AbstractContainer {
     public static final int DNS_PORT = 53;
     private final ConsulConfig config;
 
-    public Consul(DockerClient dockerClient, ConsulConfig config) {
-        super(dockerClient);
+    public Consul(ConsulConfig config) {
+        super();
         this.config = config;
     }
 
@@ -43,12 +43,12 @@ public class Consul extends AbstractContainer {
         }
 
 
-        String gatewayIpAddress = DockerContainersUtil.getGatewayIpAddress(dockerClient);
+        String gatewayIpAddress = DockerContainersUtil.getGatewayIpAddress();
         portBindings.bind(consulDNSPort, Ports.Binding(gatewayIpAddress, DNS_PORT));
 
         envVars.put("SERVICE_IGNORE", "1");
 
-        return dockerClient.createContainerCmd(config.getImageName() + ":" + config.getImageTag())
+        return DockerClientFactory.get().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withName(getName())
                 .withPortBindings(portBindings)
                 .withEnv(createEnvironment())
@@ -60,7 +60,7 @@ public class Consul extends AbstractContainer {
     }
 
     private Consul(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId, ConsulConfig config) {
-        super(dockerClient, cluster, uuid, containerId);
+        super(cluster, uuid, containerId);
         this.config = config;
     }
 
