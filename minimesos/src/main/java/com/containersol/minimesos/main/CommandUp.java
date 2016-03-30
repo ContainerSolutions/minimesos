@@ -145,12 +145,14 @@ public class CommandUp implements Command {
         ClusterArchitecture clusterArchitecture = getClusterArchitecture();
 
         startedCluster = new MesosCluster(clusterArchitecture);
+        // save cluster ID first, so it becomes available for 'destroy' even if its part failed to start
+        ClusterRepository.saveClusterFile(startedCluster);
+
         startedCluster.start();
         startedCluster.waitForState(state -> state != null);
 
         startedCluster.printServiceUrls(output);
 
-        ClusterRepository.saveClusterFile(startedCluster);
     }
 
    /**
