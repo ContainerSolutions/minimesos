@@ -31,7 +31,7 @@ fi
 
 # invoking versioned installation script
 SCRIPT_PATH=https://raw.githubusercontent.com/ContainerSolutions/minimesos/$VERSION
-httpcode=$(curl -s -o /dev/null -I -w '%{http_code}' --max-time 1 $SCRIPT_PATH/bin/install-version || echo "404" )
+httpcode=$(curl -s -o /dev/null -I -w '%{http_code}' --max-time 10 --retry-delay 2 --retry 3 $SCRIPT_PATH/bin/install-version || echo "404" )
 if [ $httpcode -eq 200 ]; then
     install_version $SCRIPT_PATH/bin/install-version $VERSION
 else
