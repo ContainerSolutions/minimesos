@@ -1,14 +1,8 @@
 package com.containersol.minimesos.mesos;
 
-import com.containersol.minimesos.config.AgentResourcesConfig;
-import com.containersol.minimesos.config.ClusterConfig;
-import com.containersol.minimesos.config.ConsulConfig;
-import com.containersol.minimesos.config.MesosAgentConfig;
-import com.containersol.minimesos.config.RegistratorConfig;
-import com.containersol.minimesos.config.ZooKeeperConfig;
+import com.containersol.minimesos.config.*;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.marathon.Marathon;
-import com.github.dockerjava.api.DockerClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,15 +60,11 @@ public class ClusterArchitecture {
     private final ClusterContainers clusterContainers = new ClusterContainers();
     private final ClusterConfig clusterConfig;
 
-    public final DockerClient dockerClient;
-
-    public ClusterArchitecture(DockerClient dockerClient) {
-        this.dockerClient = dockerClient;
+    public ClusterArchitecture() {
         this.clusterConfig = new ClusterConfig();
     }
 
-    private ClusterArchitecture(DockerClient dockerClient, ClusterConfig clusterConfig) {
-        this.dockerClient = dockerClient;
+    private ClusterArchitecture(ClusterConfig clusterConfig) {
         this.clusterConfig = clusterConfig;
     }
 
@@ -94,26 +84,16 @@ public class ClusterArchitecture {
         private static final Logger LOGGER = LoggerFactory.getLogger(ClusterArchitecture.class);
 
         private final ClusterArchitecture clusterArchitecture;
-        private final DockerClient dockerClient;
-
-        /**
-         * Create a new builder with the default docker client
-         */
-        public Builder() {
-            this(DockerClientFactory.build());
-        }
 
         /**
          * Create a new builder with the provided docker client
          */
-        public Builder(DockerClient dockerClient) {
-            this.dockerClient = dockerClient;
-            this.clusterArchitecture = new ClusterArchitecture(dockerClient);
+        public Builder() {
+            this.clusterArchitecture = new ClusterArchitecture();
         }
 
         private Builder(ClusterConfig clusterConfig) {
-            this.dockerClient = DockerClientFactory.build();
-            this.clusterArchitecture = new ClusterArchitecture(dockerClient, clusterConfig);
+            this.clusterArchitecture = new ClusterArchitecture(clusterConfig);
         }
 
         /**
@@ -124,27 +104,26 @@ public class ClusterArchitecture {
          */
         static public ClusterArchitecture.Builder createCluster(ClusterConfig clusterConfig) {
             Builder configBuilder = new Builder(clusterConfig);
-            DockerClient dockerClient = configBuilder.getDockerClient();
 
             configBuilder.withZooKeeper(clusterConfig.getZookeeper());
-            configBuilder.withMaster(zooKeeper -> new MesosMaster(dockerClient, zooKeeper, clusterConfig.getMaster()));
-            configBuilder.withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper, clusterConfig.getMarathon()));
+            configBuilder.withMaster(zooKeeper -> new MesosMaster(zooKeeper, clusterConfig.getMaster()));
+            configBuilder.withMarathon(zooKeeper -> new Marathon(zooKeeper, clusterConfig.getMarathon()));
 
             // creation of agents
             List<MesosAgentConfig> agentConfigs = clusterConfig.getAgents();
             for (MesosAgentConfig agentConfig : agentConfigs) {
-                configBuilder.withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper, agentConfig));
+                configBuilder.withAgent(zooKeeper -> new MesosAgent(zooKeeper, agentConfig));
             }
 
             // Consul (optional)
             ConsulConfig consulConfig = clusterConfig.getConsul();
             if (consulConfig != null) {
-                configBuilder.withConsul(new Consul(dockerClient, consulConfig));
+                configBuilder.withConsul(new Consul(consulConfig));
             }
 
             RegistratorConfig registratorConfig = clusterConfig.getRegistrator();
             if (registratorConfig != null) {
-                configBuilder.withRegistrator(consul -> new Registrator(dockerClient, consul, registratorConfig));
+                configBuilder.withRegistrator(consul -> new Registrator(consul, registratorConfig));
             }
 
             return configBuilder;
@@ -170,15 +149,6 @@ public class ClusterArchitecture {
         }
 
         /**
-         * Docker client getter
-         *
-         * @return docker client
-         */
-        public DockerClient getDockerClient() {
-            return dockerClient;
-        }
-
-        /**
          * Includes the default {@link ZooKeeper} instance in the cluster
          */
         public Builder withZooKeeper() {
@@ -189,7 +159,7 @@ public class ClusterArchitecture {
          * Be explicit about the version of the image to use.
          */
         public Builder withZooKeeper(ZooKeeperConfig zooKeeperConfig) {
-            return withZooKeeper(new ZooKeeper(dockerClient, zooKeeperConfig));
+            return withZooKeeper(new ZooKeeper(zooKeeperConfig));
         }
 
         /**
@@ -216,14 +186,14 @@ public class ClusterArchitecture {
          * Includes the default {@link MesosMaster} instance in the cluster
          */
         public Builder withMaster() {
-            return withMaster(zooKeeper -> new MesosMaster(dockerClient, zooKeeper));
+            return withMaster(zooKeeper -> new MesosMaster(zooKeeper));
         }
 
         /**
          * Includes the default {@link MesosAgent} instance in the cluster
          */
         public Builder withAgent() {
-            return withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper));
+            return withAgent(zooKeeper -> new MesosAgent(zooKeeper));
         }
 
         /**
@@ -235,7 +205,7 @@ public class ClusterArchitecture {
             AgentResourcesConfig resources = AgentResourcesConfig.fromString(agentResourcesConfig);
             MesosAgentConfig config = new MesosAgentConfig();
             config.setResources(resources);
-            return withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper, config));
+            return withAgent(zooKeeper -> new MesosAgent(zooKeeper, config));
         }
 
         /**

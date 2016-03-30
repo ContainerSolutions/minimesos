@@ -5,8 +5,10 @@ import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.config.RegistratorConfig;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.marathon.Marathon;
-import com.containersol.minimesos.mesos.*;
-import com.github.dockerjava.api.DockerClient;
+import com.containersol.minimesos.mesos.ClusterArchitecture;
+import com.containersol.minimesos.mesos.Consul;
+import com.containersol.minimesos.mesos.MesosAgent;
+import com.containersol.minimesos.mesos.Registrator;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONArray;
@@ -19,15 +21,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 public class ConsulRegistrationTest {
-
-    protected static final DockerClient dockerClient = DockerClientFactory.build();
-    protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder(dockerClient)
+    protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder()
             .withZooKeeper()
             .withMaster()
-            .withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper))
-            .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper))
-            .withConsul(new Consul(dockerClient, new ConsulConfig()))
-            .withRegistrator(consul -> new Registrator(dockerClient, consul, new RegistratorConfig()))
+            .withAgent(MesosAgent::new)
+            .withMarathon(Marathon::new)
+            .withConsul(new Consul(new ConsulConfig()))
+            .withRegistrator(consul -> new Registrator(consul, new RegistratorConfig()))
             .build();
 
     @ClassRule
@@ -35,14 +35,14 @@ public class ConsulRegistrationTest {
 
     @After
     public void after() {
-        DockerContainersUtil util = new DockerContainersUtil(CONFIG.dockerClient);
+        DockerContainersUtil util = new DockerContainersUtil();
         util.getContainers(false).filterByName(HelloWorldContainer.CONTAINER_NAME_PATTERN).kill().remove();
     }
 
     @Test
     public void testRegisterServiceWithConsul() throws UnirestException {
-        CLUSTER.addAndStartContainer(new HelloWorldContainer(dockerClient));
-        String ipAddress = DockerContainersUtil.getIpAddress(dockerClient, CLUSTER.getConsulContainer().getContainerId());
+        CLUSTER.addAndStartContainer(new HelloWorldContainer());
+        String ipAddress = DockerContainersUtil.getIpAddress(CLUSTER.getConsulContainer().getContainerId());
         String url = String.format("http://%s:%d/v1/catalog/service/%s",
                 ipAddress, ConsulConfig.CONSUL_HTTP_PORT, HelloWorldContainer.SERVICE_NAME);
 
@@ -55,7 +55,7 @@ public class ConsulRegistrationTest {
 
     @Test
     public void testConsulShouldBeIgnored() throws UnirestException {
-        String ipAddress = DockerContainersUtil.getIpAddress(dockerClient, CLUSTER.getConsulContainer().getContainerId());
+        String ipAddress = DockerContainersUtil.getIpAddress(CLUSTER.getConsulContainer().getContainerId());
         String url = String.format("http://%s:%d/v1/catalog/services", ipAddress, ConsulConfig.CONSUL_HTTP_PORT);
 
         JSONArray body = Unirest.get(url).asJson().getBody().getArray();
