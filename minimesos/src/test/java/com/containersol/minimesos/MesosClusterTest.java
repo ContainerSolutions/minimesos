@@ -9,7 +9,6 @@ import com.containersol.minimesos.mesos.*;
 import com.containersol.minimesos.util.ResourceUtil;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Link;
@@ -30,18 +29,15 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 public class MesosClusterTest {
-
-    protected static final DockerClient dockerClient = DockerClientFactory.build();
-
-    protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder(dockerClient)
+    protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder()
             .withZooKeeper()
             .withMaster()
-            .withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper))
-            .withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper))
-            .withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper))
-            .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper))
-            .withConsul(new Consul(dockerClient, new ConsulConfig()))
-            .withRegistrator(consul -> new Registrator(dockerClient, consul, new RegistratorConfig()))
+            .withAgent(zooKeeper -> new MesosAgent(zooKeeper))
+            .withAgent(zooKeeper -> new MesosAgent(zooKeeper))
+            .withAgent(zooKeeper -> new MesosAgent(zooKeeper))
+            .withMarathon(zooKeeper -> new Marathon(zooKeeper))
+            .withConsul(new Consul(new ConsulConfig()))
+            .withRegistrator(consul -> new Registrator(consul, new RegistratorConfig()))
             .build();
 
     @ClassRule
@@ -49,7 +45,7 @@ public class MesosClusterTest {
 
     @After
     public void after() {
-        DockerContainersUtil util = new DockerContainersUtil(CONFIG.dockerClient);
+        DockerContainersUtil util = new DockerContainersUtil();
         util.getContainers(false).filterByName(HelloWorldContainer.CONTAINER_NAME_PATTERN).kill().remove();
     }
 
@@ -138,12 +134,11 @@ public class MesosClusterTest {
 
     @Test
     public void dockerExposeResourcesPorts() throws Exception {
-        DockerClient docker = CONFIG.dockerClient;
         List<MesosAgent> containers = CLUSTER.getAgents();
 
         for (MesosAgent container : containers) {
             ArrayList<Integer> ports = ResourceUtil.parsePorts(container.getResources());
-            InspectContainerResponse response = docker.inspectContainerCmd(container.getContainerId()).exec();
+            InspectContainerResponse response = DockerClientFactory.build().inspectContainerCmd(container.getContainerId()).exec();
             Map bindings = response.getNetworkSettings().getPorts().getBindings();
             for (Integer port : ports) {
                 assertTrue(bindings.containsKey(new ExposedPort(port)));
@@ -153,9 +148,9 @@ public class MesosClusterTest {
 
     @Test
     public void testPullAndStartContainer() throws UnirestException {
-        HelloWorldContainer container = new HelloWorldContainer(CONFIG.dockerClient);
+        HelloWorldContainer container = new HelloWorldContainer();
         String containerId = CLUSTER.addAndStartContainer(container);
-        String ipAddress = DockerContainersUtil.getIpAddress(CONFIG.dockerClient, containerId);
+        String ipAddress = DockerContainersUtil.getIpAddress(containerId);
         String url = "http://" + ipAddress + ":" + HelloWorldContainer.SERVICE_PORT;
         assertEquals(200, Unirest.get(url).asString().getStatus());
     }
@@ -164,7 +159,7 @@ public class MesosClusterTest {
     public void testMasterLinkedToAgents() throws UnirestException {
         List<MesosAgent> containers = CLUSTER.getAgents();
         for (MesosAgent container : containers) {
-            InspectContainerResponse exec = CONFIG.dockerClient.inspectContainerCmd(container.getContainerId()).exec();
+            InspectContainerResponse exec = DockerClientFactory.build().inspectContainerCmd(container.getContainerId()).exec();
 
             List<Link> links = Arrays.asList(exec.getHostConfig().getLinks());
 

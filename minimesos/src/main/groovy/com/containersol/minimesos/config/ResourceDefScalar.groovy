@@ -2,8 +2,6 @@ package com.containersol.minimesos.config
 
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
-import java.text.NumberFormat
-
 /**
  * Check http://mesos.apache.org/documentation/latest/attributes-resources/ for possible types of values
  */
