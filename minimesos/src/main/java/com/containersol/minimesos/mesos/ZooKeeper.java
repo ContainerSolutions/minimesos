@@ -41,7 +41,7 @@ public class ZooKeeper extends AbstractContainer {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        return DockerClientFactory.get().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
+        return DockerClientFactory.build().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withName(getName())
                 .withExposedPorts(new ExposedPort(DEFAULT_ZOOKEEPER_PORT), new ExposedPort(2888), new ExposedPort(3888));
     }

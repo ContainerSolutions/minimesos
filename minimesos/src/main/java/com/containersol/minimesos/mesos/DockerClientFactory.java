@@ -12,7 +12,7 @@ public class DockerClientFactory {
 
     private static DockerClient dockerClient;
 
-    public static DockerClient get() {
+    public static DockerClient build() {
         if (dockerClient == null) {
             DockerClientConfig.DockerClientConfigBuilder builder = DockerClientConfig.createDefaultConfigBuilder();
             builder.withVersion("");

@@ -30,7 +30,7 @@ public class DockerContainersUtil {
      * @return set of docker containers
      */
     public DockerContainersUtil getContainers(boolean showAll) {
-        Set<Container> containers = new HashSet<>(DockerClientFactory.get().listContainersCmd().withShowAll(showAll).exec());
+        Set<Container> containers = new HashSet<>(DockerClientFactory.build().listContainersCmd().withShowAll(showAll).exec());
         return new DockerContainersUtil(containers);
     }
 
@@ -90,7 +90,7 @@ public class DockerContainersUtil {
     public void remove() {
         if (containers != null) {
             for (Container container : containers) {
-                DockerClientFactory.get().removeContainerCmd(container.getId()).withForce(true).withRemoveVolumes(true).exec();
+                DockerClientFactory.build().removeContainerCmd(container.getId()).withForce(true).withRemoveVolumes(true).exec();
             }
         }
     }
@@ -111,7 +111,7 @@ public class DockerContainersUtil {
         if (containers != null) {
             for (Container container : containers) {
                 try {
-                    DockerClientFactory.get().killContainerCmd(container.getId()).exec();
+                    DockerClientFactory.build().killContainerCmd(container.getId()).exec();
                 } catch (DockerException failure) {
                     if (!ignoreFailure) {
                         throw failure;
@@ -140,7 +140,7 @@ public class DockerContainersUtil {
      * @return IP Address of the container
      */
     public static String getIpAddress(String containerId) {
-        InspectContainerResponse response = DockerClientFactory.get().inspectContainerCmd(containerId).exec();
+        InspectContainerResponse response = DockerClientFactory.build().inspectContainerCmd(containerId).exec();
         return response.getNetworkSettings().getIpAddress();
     }
 
@@ -148,12 +148,12 @@ public class DockerContainersUtil {
      * @return IP Address of the container's gateway (which would be docker0)
      */
     public static String getGatewayIpAddress() {
-        List<Container> containers = DockerClientFactory.get().listContainersCmd().exec();
+        List<Container> containers = DockerClientFactory.build().listContainersCmd().exec();
         if (containers == null || containers.size() == 0) {
             throw new IllegalStateException("Cannot get docker0 IP address because no containers are running");
         }
 
-        InspectContainerResponse response = DockerClientFactory.get().inspectContainerCmd(containers.get(0).getId()).exec();
+        InspectContainerResponse response = DockerClientFactory.build().inspectContainerCmd(containers.get(0).getId()).exec();
         return response.getNetworkSettings().getGateway();
     }
 
@@ -162,7 +162,7 @@ public class DockerContainersUtil {
      * @return container or null
      */
     public static Container getContainer(String containerId) {
-        List<Container> containers = DockerClientFactory.get().listContainersCmd().withFilters(new Filters().withFilter("id", containerId)).exec();
+        List<Container> containers = DockerClientFactory.build().listContainersCmd().withFilters(new Filters().withFilter("id", containerId)).exec();
         if (containers != null && containers.size() == 1) {
             return containers.get(0);
         } else {

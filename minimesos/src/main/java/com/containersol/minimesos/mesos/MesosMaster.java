@@ -76,7 +76,7 @@ public class MesosMaster extends MesosContainer {
             portBindings.bind(exposedPort, Ports.Binding(port));
         }
 
-        return DockerClientFactory.get().createContainerCmd(getMesosImageName() + ":" + getMesosImageTag())
+        return DockerClientFactory.build().createContainerCmd(getMesosImageName() + ":" + getMesosImageTag())
                 .withName(getName())
                 .withExposedPorts(new ExposedPort(getPortNumber()))
                 .withEnv(createMesosLocalEnvironment())

@@ -4,7 +4,6 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports;
@@ -19,6 +18,15 @@ public class Consul extends AbstractContainer {
 
     public Consul(ConsulConfig config) {
         super();
+        this.config = config;
+    }
+
+    public Consul(MesosCluster cluster, String uuid, String containerId) {
+        this(cluster, uuid, containerId, new ConsulConfig());
+    }
+
+    private Consul(MesosCluster cluster, String uuid, String containerId, ConsulConfig config) {
+        super(cluster, uuid, containerId);
         this.config = config;
     }
 
@@ -48,20 +56,11 @@ public class Consul extends AbstractContainer {
 
         envVars.put("SERVICE_IGNORE", "1");
 
-        return DockerClientFactory.get().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
+        return DockerClientFactory.build().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withName(getName())
                 .withPortBindings(portBindings)
                 .withEnv(createEnvironment())
                 .withExposedPorts(consulHTTPPort, consulDNSPort);
-    }
-
-    public Consul(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId) {
-        this(dockerClient, cluster, uuid, containerId, new ConsulConfig());
-    }
-
-    private Consul(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId, ConsulConfig config) {
-        super(cluster, uuid, containerId);
-        this.config = config;
     }
 
 }

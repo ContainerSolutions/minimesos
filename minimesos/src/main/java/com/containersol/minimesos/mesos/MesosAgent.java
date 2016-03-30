@@ -67,7 +67,7 @@ public class MesosAgent extends MesosContainer {
         if (getCluster().getMapAgentSandboxVolume()) {
             binds.add(Bind.parse(String.format("%s:%s:rw", hostDir + "/.minimesos/sandbox-" + getClusterId() + "/agent-" + getUuid(), MESOS_AGENT_SANDBOX_DIR)));
         }
-        return DockerClientFactory.get().createContainerCmd(getMesosImageName() + ":" + getMesosImageTag())
+        return DockerClientFactory.build().createContainerCmd(getMesosImageName() + ":" + getMesosImageTag())
                 .withName(getName())
                 .withPrivileged(true)
 	    .withEnv(createMesosLocalEnvironment())

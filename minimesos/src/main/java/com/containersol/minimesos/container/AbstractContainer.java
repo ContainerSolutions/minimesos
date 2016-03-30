@@ -78,7 +78,7 @@ public abstract class AbstractContainer {
         LOGGER.debug("Creating container [" + createCommand.getName() + "]");
         containerId = createCommand.exec().getId();
 
-        DockerClientFactory.get().startContainerCmd(containerId).exec();
+        DockerClientFactory.build().startContainerCmd(containerId).exec();
 
         try {
             await().atMost(timeout, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new ContainerIsRunning(containerId));
@@ -86,7 +86,7 @@ public abstract class AbstractContainer {
             LOGGER.error(String.format("Container [" + createCommand.getName() + "] did not start within %d seconds.", timeout));
 
             try {
-                LogContainerCmd logContainerCmd = DockerClientFactory.get().logContainerCmd(containerId);
+                LogContainerCmd logContainerCmd = DockerClientFactory.build().logContainerCmd(containerId);
                 logContainerCmd.withStdOut().withStdErr();
                 logContainerCmd.exec(new LogContainerResultCallback() {
                     @Override
@@ -108,7 +108,7 @@ public abstract class AbstractContainer {
     public String getHostname() {
         String res = "";
         if (!getContainerId().isEmpty()) {
-            res = DockerClientFactory.get().inspectContainerCmd(containerId).exec().getConfig().getHostName();
+            res = DockerClientFactory.build().inspectContainerCmd(containerId).exec().getConfig().getHostName();
         }
         return res;
     }
@@ -153,7 +153,7 @@ public abstract class AbstractContainer {
     public void remove() {
         try {
             if (DockerContainersUtil.getContainer(containerId) != null) {
-                DockerClientFactory.get().removeContainerCmd(containerId).withForce().withRemoveVolumes(true).exec();
+                DockerClientFactory.build().removeContainerCmd(containerId).withForce().withRemoveVolumes(true).exec();
             }
             this.removed = true;
         } catch (Exception e) {
@@ -162,7 +162,7 @@ public abstract class AbstractContainer {
     }
 
     protected Boolean imageExists(String imageName, String registryTag) {
-        List<Image> images = DockerClientFactory.get().listImagesCmd().exec();
+        List<Image> images = DockerClientFactory.build().listImagesCmd().exec();
         for (Image image : images) {
             for (String repoTag : image.getRepoTags()) {
                 if (repoTag.equals(imageName + ":" + registryTag)) {
@@ -182,7 +182,7 @@ public abstract class AbstractContainer {
         LOGGER.debug("Image [" + imageName + ":" + registryTag + "] not found. Pulling...");
 
         final CompletableFuture<Void> result = new CompletableFuture<>();
-        DockerClientFactory.get().pullImageCmd(imageName).withTag(registryTag).exec(new PullImageResultCallback() {
+        DockerClientFactory.build().pullImageCmd(imageName).withTag(registryTag).exec(new PullImageResultCallback() {
 
             @Override
             public void onNext(PullResponseItem item) {
@@ -244,7 +244,7 @@ public abstract class AbstractContainer {
 
         @Override
         public Boolean call() throws Exception {
-            List<Container> containers = DockerClientFactory.get().listContainersCmd().exec();
+            List<Container> containers = DockerClientFactory.build().listContainersCmd().exec();
             for (Container container : containers) {
                 if (container.getId().equals(containerId)) {
                     return true;

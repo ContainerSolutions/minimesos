@@ -88,7 +88,7 @@ public class MesosCluster extends ExternalResource {
         this.clusterId = clusterId;
         this.clusterConfig = new ClusterConfig();
 
-        List<Container> dockerContainers = DockerClientFactory.get().listContainersCmd().exec();
+        List<Container> dockerContainers = DockerClientFactory.build().listContainersCmd().exec();
         Collections.sort(dockerContainers, (c1, c2) -> Long.compare(c1.getCreated(), c2.getCreated()));
 
         ZooKeeper zookeeper = null;
@@ -127,10 +127,10 @@ public class MesosCluster extends ExternalResource {
                         this.containers.add(new Marathon(this, uuid, containerId));
                         break;
                     case "consul":
-                        this.containers.add(new Consul(DockerClientFactory.get(), this, uuid, containerId));
+                        this.containers.add(new Consul(this, uuid, containerId));
                         break;
                     case "registrator":
-                        this.containers.add(new Registrator(DockerClientFactory.get(), this, uuid, containerId));
+                        this.containers.add(new Registrator(this, uuid, containerId));
                         break;
                 }
 
@@ -295,10 +295,10 @@ public class MesosCluster extends ExternalResource {
             marathon.killAllApps();
         }
 
-        List<Container> containers = DockerClientFactory.get().listContainersCmd().exec();
+        List<Container> containers = DockerClientFactory.build().listContainersCmd().exec();
         for (Container container : containers) {
             if (ContainerName.belongsToCluster(container.getNames(), clusterId)) {
-                DockerClientFactory.get().removeContainerCmd(container.getId()).withForce().withRemoveVolumes(true).exec();
+                DockerClientFactory.build().removeContainerCmd(container.getId()).withForce().withRemoveVolumes(true).exec();
             }
         }
         File sandboxLocation = new File(getHostDir(), ".minimesos/sandbox-" + clusterId);
@@ -399,10 +399,10 @@ public class MesosCluster extends ExternalResource {
     }
 
     private static void destroyContainers(String clusterId) {
-        List<Container> containers = DockerClientFactory.get().listContainersCmd().exec();
+        List<Container> containers = DockerClientFactory.build().listContainersCmd().exec();
         for (Container container : containers) {
             if (ContainerName.belongsToCluster(container.getNames(), clusterId)) {
-                DockerClientFactory.get().removeContainerCmd(container.getId()).withForce().withRemoveVolumes(true).exec();
+                DockerClientFactory.build().removeContainerCmd(container.getId()).withForce().withRemoveVolumes(true).exec();
             }
         }
         LOGGER.info("Destroyed minimesos cluster " + clusterId);

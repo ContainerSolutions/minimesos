@@ -35,12 +35,12 @@ public class SchedulerContainer extends AbstractContainer {
 
     @Override
     protected void pullImage() {
-        DockerClientFactory.get().pullImageCmd(SCHEDULER_IMAGE);
+        DockerClientFactory.build().pullImageCmd(SCHEDULER_IMAGE);
     }
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        return DockerClientFactory.get()
+        return DockerClientFactory.build()
                 .createContainerCmd(SCHEDULER_IMAGE)
                 .withName( getName() )
                 .withEnv("JAVA_OPTS=-Xms128m -Xmx256m")
