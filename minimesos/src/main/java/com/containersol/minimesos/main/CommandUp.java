@@ -166,7 +166,7 @@ public class CommandUp implements Command {
             return clusterConfig;
         }
 
-        InputStream clusterConfigFile = MesosCluster.getSourceStream(getClusterConfigPath());
+        InputStream clusterConfigFile = MesosCluster.getInputStream(getClusterConfigPath());
         if (clusterConfigFile != null) {
             configFileFound = true;
             ConfigParser configParser = new ConfigParser();

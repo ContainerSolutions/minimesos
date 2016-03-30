@@ -206,7 +206,7 @@ public class MesosCluster extends ExternalResource {
             for (AppConfig app : apps) {
                 try {
 
-                    InputStream json = getSourceStream(app.getMarathonJson());
+                    InputStream json = getInputStream(app.getMarathonJson());
                     if (json != null) {
                         marathon.deployApp(IOUtils.toString(json, "UTF-8"));
                     } else {
@@ -546,7 +546,7 @@ public class MesosCluster extends ExternalResource {
      *
      * @return input stream with location content or null
      */
-    public static InputStream getSourceStream(String location) {
+    public static InputStream getInputStream(String location) {
 
         InputStream is = null;
 

@@ -35,7 +35,7 @@ public class CommandInstall implements Command {
 
         if (marathonFile != null && !marathonFile.isEmpty()) {
 
-            InputStream json = MesosCluster.getSourceStream(marathonFile);
+            InputStream json = MesosCluster.getInputStream(marathonFile);
             if (json == null) {
                 throw new MinimesosException("Failed to find content of " + marathonFile);
             }
