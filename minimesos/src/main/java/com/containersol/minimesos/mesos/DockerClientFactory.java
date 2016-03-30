@@ -10,17 +10,22 @@ import org.apache.commons.lang.StringUtils;
  */
 public class DockerClientFactory {
 
+    private static DockerClient dockerClient;
+
     public static DockerClient build() {
+        if (dockerClient == null) {
+            DockerClientConfig.DockerClientConfigBuilder builder = DockerClientConfig.createDefaultConfigBuilder();
+            builder.withVersion("");
 
-        DockerClientConfig.DockerClientConfigBuilder builder = DockerClientConfig.createDefaultConfigBuilder();
-        builder.withVersion("");
+            String dockerHostEnv = System.getenv("DOCKER_HOST");
+            if (StringUtils.isBlank(dockerHostEnv)) {
+                builder.withUri("unix:///var/run/docker.sock");
+            }
 
-        String dockerHostEnv = System.getenv("DOCKER_HOST");
-        if (StringUtils.isBlank(dockerHostEnv)) {
-            builder.withUri("unix:///var/run/docker.sock");
+            DockerClientConfig config = builder.build();
+            dockerClient = DockerClientBuilder.getInstance(config).build();
         }
-
-        DockerClientConfig config = builder.build();
-        return DockerClientBuilder.getInstance(config).build();
+        return dockerClient;
     }
+
 }

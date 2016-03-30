@@ -4,7 +4,6 @@ import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.util.ResourceUtil;
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -28,21 +27,21 @@ public class MesosAgent extends MesosContainer {
 
     private final String MESOS_AGENT_SANDBOX_DIR = "/tmp/mesos";
 
-    public MesosAgent(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
-        this(dockerClient, zooKeeperContainer, new MesosAgentConfig());
+    public MesosAgent(ZooKeeper zooKeeperContainer) {
+        this(zooKeeperContainer, new MesosAgentConfig());
     }
 
-    public MesosAgent(DockerClient dockerClient, ZooKeeper zooKeeperContainer, MesosAgentConfig config) {
-        super(dockerClient, zooKeeperContainer, config);
+    public MesosAgent(ZooKeeper zooKeeperContainer, MesosAgentConfig config) {
+        super(zooKeeperContainer, config);
         this.config = config;
     }
 
-    public MesosAgent(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId) {
-        this(dockerClient, cluster, uuid, containerId, new MesosAgentConfig());
+    public MesosAgent(MesosCluster cluster, String uuid, String containerId) {
+        this(cluster, uuid, containerId, new MesosAgentConfig());
     }
 
-    private MesosAgent(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId, MesosAgentConfig config) {
-        super(dockerClient, cluster, uuid, containerId, config);
+    private MesosAgent(MesosCluster cluster, String uuid, String containerId, MesosAgentConfig config) {
+        super(cluster, uuid, containerId, config);
         this.config = config;
     }
 
@@ -68,9 +67,9 @@ public class MesosAgent extends MesosContainer {
         if (getCluster().getMapAgentSandboxVolume()) {
             binds.add(Bind.parse(String.format("%s:%s:rw", hostDir + "/.minimesos/sandbox-" + getClusterId() + "/agent-" + getUuid(), MESOS_AGENT_SANDBOX_DIR)));
         }
-        return dockerClient.createContainerCmd( getMesosImageName() + ":" + getMesosImageTag() )
-	    .withName( getName() )
-	    .withPrivileged(true)
+        return DockerClientFactory.build().createContainerCmd(getMesosImageName() + ":" + getMesosImageTag())
+                .withName(getName())
+                .withPrivileged(true)
 	    .withEnv(createMesosLocalEnvironment())
 	    .withPid("host")
 	    .withLinks(new Link(getZooKeeperContainer().getContainerId(), "minimesos-zookeeper"))

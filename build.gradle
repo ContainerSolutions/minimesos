@@ -113,7 +113,7 @@ task updateReleaseDocs << {
     }
     // trigger update of minimesos.org
     exec {
-        commandLine "curl", "-H", "x-api-key: GwnTYxWZI663avt8zcaPf4ayNhpY73rXaYhkHubH", "-XPOST", "https://nc65as9rm2.execute-api.us-east-1.amazonaws.com/prod/RunHugoGit"
+        commandLine "curl", "-H", "x-api-key: ${awsMinimesosOrgApiKey}", "https://kilt52ydsk.execute-api.us-east-1.amazonaws.com/prod/RunHugoGit"
     }
 }
 

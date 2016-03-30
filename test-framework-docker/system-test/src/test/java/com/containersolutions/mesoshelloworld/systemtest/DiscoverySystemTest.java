@@ -42,7 +42,7 @@ public class DiscoverySystemTest {
         String ipAddress = CLUSTER.getMasterContainer().getIpAddress();
 
         LOGGER.info("Starting Scheduler, connected to " + ipAddress);
-        SchedulerContainer scheduler = new SchedulerContainer(CONFIG.dockerClient, ipAddress);
+        SchedulerContainer scheduler = new SchedulerContainer(ipAddress);
 
         // Cluster now has responsibility to shut down container
         CLUSTER.addAndStartContainer(scheduler);
@@ -54,7 +54,7 @@ public class DiscoverySystemTest {
     public void testNodeDiscoveryRest() {
 
         long timeout = 120;
-        DockerContainersUtil util = new DockerContainersUtil(CONFIG.dockerClient);
+        DockerContainersUtil util = new DockerContainersUtil();
 
         final Set<String> ipAddresses = new HashSet<>();
         Awaitility.await("9 expected executors did not come up").atMost(timeout, TimeUnit.SECONDS).until(() -> {
@@ -71,7 +71,7 @@ public class DiscoverySystemTest {
     @AfterClass
     public static void removeExecutors() {
 
-        DockerContainersUtil util = new DockerContainersUtil(CONFIG.dockerClient);
+        DockerContainersUtil util = new DockerContainersUtil();
 
         // stop scheduler, otherwise it keeps on scheduling new executors as soon as they are stopped
         util.getContainers(false).filterByImage(SchedulerContainer.SCHEDULER_IMAGE).kill().remove();

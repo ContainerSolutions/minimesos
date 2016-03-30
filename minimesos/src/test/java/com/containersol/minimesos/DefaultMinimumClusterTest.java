@@ -3,12 +3,12 @@ package com.containersol.minimesos;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.AgentResourcesConfig;
 import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.containersol.minimesos.mesos.*;
+import com.containersol.minimesos.mesos.ClusterArchitecture;
+import com.containersol.minimesos.mesos.DockerClientFactory;
+import com.containersol.minimesos.mesos.MesosAgent;
 import com.containersol.minimesos.util.ResourceUtil;
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.ExposedPort;
-
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -30,15 +30,12 @@ import static org.junit.Assert.assertTrue;
  */
 
 public class DefaultMinimumClusterTest {
-
-    private DockerClient dockerClient = DockerClientFactory.build();
-
     @ClassRule
     public static final MesosCluster cluster = new MesosCluster(new ClusterArchitecture.Builder().build());
 
     @After
     public void after() {
-        DockerContainersUtil util = new DockerContainersUtil(dockerClient);
+        DockerContainersUtil util = new DockerContainersUtil();
         util.getContainers(false).filterByName(HelloWorldContainer.CONTAINER_NAME_PATTERN).kill().remove();
     }
 
@@ -64,7 +61,7 @@ public class DefaultMinimumClusterTest {
         ArrayList<Integer> ports = ResourceUtil.parsePorts(mesosResourceString);
         List<MesosAgent> containers = cluster.getAgents();
         for (MesosAgent container : containers) {
-            InspectContainerResponse response = dockerClient.inspectContainerCmd(container.getContainerId()).exec();
+            InspectContainerResponse response = DockerClientFactory.build().inspectContainerCmd(container.getContainerId()).exec();
             Map bindings = response.getNetworkSettings().getPorts().getBindings();
             for (Integer port : ports) {
                 Assert.assertTrue(bindings.containsKey(new ExposedPort(port)));
@@ -74,9 +71,9 @@ public class DefaultMinimumClusterTest {
 
     @Test
     public void testPullAndStartContainer() throws UnirestException {
-        HelloWorldContainer container = new HelloWorldContainer(dockerClient);
+        HelloWorldContainer container = new HelloWorldContainer();
         String containerId = cluster.addAndStartContainer(container);
-        String ipAddress = DockerContainersUtil.getIpAddress(dockerClient, containerId);
+        String ipAddress = DockerContainersUtil.getIpAddress(containerId);
 
         String url = "http://" + ipAddress + ":" + HelloWorldContainer.SERVICE_PORT;
         HttpResponse<String> response = Unirest.get(url).asString();
