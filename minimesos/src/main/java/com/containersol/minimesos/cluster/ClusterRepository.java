@@ -26,11 +26,11 @@ public class ClusterRepository {
      *
      * @return representation of the cluster, which ID is found in the file
      */
-    public static MesosCluster loadCluster() {
+    public static MesosCluster loadCluster(MesosClusterFactory factory) {
         String clusterId = ClusterRepository.readClusterId();
         if (clusterId != null) {
             try {
-                return MesosCluster.loadCluster(clusterId);
+                return MesosCluster.loadCluster(clusterId, factory);
             } catch (RuntimeException e) {
                 ClusterRepository.deleteMinimesosFile();
             }

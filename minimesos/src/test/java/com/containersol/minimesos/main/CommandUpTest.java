@@ -106,7 +106,6 @@ public class CommandUpTest {
     @Test
     public void testMarathonAppConfig() throws InterruptedException {
         CommandUp commandUp = new CommandUp();
-        commandUp.setDebug();
         commandUp.setClusterConfigPath("src/test/resources/marathonAppConfig-minimesosFile");
 
         commandUp.execute();

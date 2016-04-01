@@ -1,6 +1,6 @@
 package com.containersolutions.mesoshelloworld.systemtest;
 
-import com.containersol.minimesos.container.AbstractContainer;
+import com.containersol.minimesos.container.AbstractContainerImpl;
 import com.containersol.minimesos.mesos.DockerClientFactory;
 import com.containersolutions.mesoshelloworld.scheduler.Configuration;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -10,7 +10,8 @@ import java.util.stream.IntStream;
 /**
  * Container for the Scheduler
  */
-public class SchedulerContainer extends AbstractContainer {
+public class SchedulerContainer extends AbstractContainerImpl {
+
     public static final String SCHEDULER_IMAGE = "containersol/mesos-hello-world-scheduler";
     public static final String SCHEDULER_NAME = "hello-world-scheduler";
 

@@ -4,7 +4,7 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.config.RegistratorConfig;
 import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.containersol.minimesos.marathon.Marathon;
+import com.containersol.minimesos.marathon.MarathonContainer;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersol.minimesos.mesos.Consul;
 import com.containersol.minimesos.mesos.MesosAgent;
@@ -25,7 +25,7 @@ public class ConsulRegistrationTest {
             .withZooKeeper()
             .withMaster()
             .withAgent(MesosAgent::new)
-            .withMarathon(Marathon::new)
+            .withMarathon(MarathonContainer::new)
             .withConsul(new Consul(new ConsulConfig()))
             .withRegistrator(consul -> new Registrator(consul, new RegistratorConfig()))
             .build();

@@ -1,6 +1,7 @@
 package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -21,7 +22,7 @@ import static com.jayway.awaitility.Awaitility.await;
 /**
  * Mesos Master adds the "server" component for Apache Mesos
  */
-public class MesosMaster extends MesosContainer {
+public class MesosMaster extends MesosContainerImpl {
 
     // is here for future extension of Master configuration
     private final MesosMasterConfig config;

@@ -5,7 +5,8 @@ import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.config.MarathonConfig;
 import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.config.MesosMasterConfig;
-import com.containersol.minimesos.marathon.Marathon;
+import com.containersol.minimesos.main.factory.MesosClusterContainersFactory;
+import com.containersol.minimesos.marathon.MarathonContainer;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersol.minimesos.mesos.Consul;
 import com.containersol.minimesos.mesos.MesosAgent;
@@ -33,7 +34,7 @@ public class ExposedPortsTest {
                 .withZooKeeper()
                 .withMaster(zooKeeper -> new MesosMaster(zooKeeper, masterConfig))
                 .withAgent(zooKeeper -> new MesosAgent(zooKeeper, agentConfig))
-                .withMarathon(zooKeeper -> new Marathon(zooKeeper, marathonConfig))
+                .withMarathon(zooKeeper -> new MarathonContainer(zooKeeper, marathonConfig))
                 .withConsul(new Consul(consulConfig))
                 .build();
 
@@ -53,7 +54,7 @@ public class ExposedPortsTest {
     @Test
     public void testLoadCluster() {
         String clusterId = cluster.getClusterId();
-        MesosCluster cluster = MesosCluster.loadCluster(clusterId);
+        MesosCluster cluster = MesosCluster.loadCluster(clusterId, new MesosClusterContainersFactory());
 
         assertTrue("Deserialize cluster is expected to remember exposed ports setting", cluster.isExposedHostPorts());
     }

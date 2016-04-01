@@ -2,7 +2,7 @@ package com.containersolutions.mesoshelloworld.systemtest;
 
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.containersol.minimesos.marathon.Marathon;
+import com.containersol.minimesos.marathon.MarathonContainer;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersolutions.mesoshelloworld.executor.Executor;
 import com.containersolutions.mesoshelloworld.scheduler.Configuration;
@@ -31,7 +31,7 @@ public class InstallCommandTest {
             .withZooKeeper()
             .withMaster()
             .withAgent("ports(*):[8081-8082]")
-            .withMarathon(Marathon::new)
+            .withMarathon(MarathonContainer::new)
             .build();
 
     @ClassRule

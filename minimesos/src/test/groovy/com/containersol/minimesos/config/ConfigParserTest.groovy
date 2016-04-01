@@ -348,7 +348,7 @@ public class ConfigParserTest {
         ClusterConfig dsl = parser.parse(config)
         assertNotNull(dsl.marathon)
         assertEquals("src/test/resources/app.json", dsl.marathon.apps[0].marathonJson)
-        assertNull(dsl.marathon.apps[0].asAbsoluteUri())
+
     }
 
     @Test

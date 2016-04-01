@@ -1,9 +1,9 @@
 package com.containersol.minimesos;
 
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersol.minimesos.mesos.MesosMaster;
-import com.containersol.minimesos.mesos.ZooKeeper;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -19,7 +19,7 @@ public class FlagsTest {
     public static final MesosCluster cluster = new MesosCluster(
             new ClusterArchitecture.Builder()
                     .withZooKeeper()
-                    .withMaster(zooKeeper -> new MesosMasterEnvVars(zooKeeper)).build()
+                    .withMaster(MesosMasterEnvVars::new).build()
     );
 
     @Test

@@ -5,6 +5,7 @@ import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.main.factory.MesosClusterContainersFactory;
 
 import java.io.*;
 import java.util.Scanner;
@@ -64,7 +65,7 @@ public class CommandInstall implements Command {
             throw new MinimesosException("Failed to read JSON", e);
         }
 
-        MesosCluster cluster = ClusterRepository.loadCluster();
+        MesosCluster cluster = ClusterRepository.loadCluster(new MesosClusterContainersFactory());
         if (cluster != null) {
             cluster.install(marathonJson);
         } else {

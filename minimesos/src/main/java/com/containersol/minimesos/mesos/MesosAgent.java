@@ -2,6 +2,7 @@ package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.util.ResourceUtil;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -19,7 +20,7 @@ import java.util.TreeMap;
 /**
  * Mesos Master adds the "agent" component for Apache Mesos
  */
-public class MesosAgent extends MesosContainer {
+public class MesosAgent extends MesosContainerImpl {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MesosAgent.class);
 
@@ -70,10 +71,10 @@ public class MesosAgent extends MesosContainer {
         return DockerClientFactory.build().createContainerCmd(getMesosImageName() + ":" + getMesosImageTag())
                 .withName(getName())
                 .withPrivileged(true)
-	    .withEnv(createMesosLocalEnvironment())
-	    .withPid("host")
-	    .withLinks(new Link(getZooKeeperContainer().getContainerId(), "minimesos-zookeeper"))
-	    .withBinds(binds.stream().toArray(Bind[]::new));
+                .withEnv(createMesosLocalEnvironment())
+                .withPid("host")
+                .withLinks(new Link(getZooKeeper().getContainerId(), "minimesos-zookeeper"))
+                .withBinds(binds.stream().toArray(Bind[]::new));
     }
 
     @Override
@@ -83,7 +84,7 @@ public class MesosAgent extends MesosContainer {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        ArrayList<ExposedPort> exposedPorts= new ArrayList<>();
+        ArrayList<ExposedPort> exposedPorts = new ArrayList<>();
         exposedPorts.add(new ExposedPort(getPortNumber()));
         try {
             ArrayList<Integer> resourcePorts = ResourceUtil.parsePorts(getResources());
@@ -95,13 +96,13 @@ public class MesosAgent extends MesosContainer {
         }
 
         return getBaseCommand()
-	    .withExposedPorts(exposedPorts.toArray(new ExposedPort[exposedPorts.size()]));
+                .withExposedPorts(exposedPorts.toArray(new ExposedPort[exposedPorts.size()]));
 
     }
 
     @Override
     public Map<String, String> getDefaultEnvVars() {
-        Map<String,String> envs = new TreeMap<>();
+        Map<String, String> envs = new TreeMap<>();
         envs.put("MESOS_RESOURCES", getResources());
         envs.put("MESOS_PORT", String.valueOf(getPortNumber()));
         envs.put("MESOS_MASTER", getFormattedZKAddress());

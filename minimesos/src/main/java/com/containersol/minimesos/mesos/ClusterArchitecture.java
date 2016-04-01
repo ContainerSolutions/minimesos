@@ -1,8 +1,11 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.cluster.AbstractContainer;
+import com.containersol.minimesos.cluster.Marathon;
+import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.*;
-import com.containersol.minimesos.container.AbstractContainer;
-import com.containersol.minimesos.marathon.Marathon;
+import com.containersol.minimesos.container.AbstractContainerImpl;
+import com.containersol.minimesos.marathon.MarathonContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +27,7 @@ import static com.containersol.minimesos.mesos.ClusterContainers.Filter;
  * <p>
  * Which would create a cluster comprising of ZooKeeper, a Mesos Master and a single Mesos agent. This is the minimum viable cluster.
  * These three items are always added if they are not present, because they are required by Mesos. You can add your own simple containers
- * like this (where MyContainer extends from {@link AbstractContainer}):
+ * like this (where MyContainer extends from {@link AbstractContainerImpl}):
  * <p><p>
  * <code>
  * new ClusterArchitecture.Builder().withContainer(new MyContainer(...)).build();
@@ -107,7 +110,7 @@ public class ClusterArchitecture {
 
             configBuilder.withZooKeeper(clusterConfig.getZookeeper());
             configBuilder.withMaster(zooKeeper -> new MesosMaster(zooKeeper, clusterConfig.getMaster()));
-            configBuilder.withMarathon(zooKeeper -> new Marathon(zooKeeper, clusterConfig.getMarathon()));
+            configBuilder.withMarathon(zooKeeper -> new MarathonContainer(zooKeeper, clusterConfig.getMarathon()));
 
             // creation of agents
             List<MesosAgentConfig> agentConfigs = clusterConfig.getAgents();
@@ -149,7 +152,7 @@ public class ClusterArchitecture {
         }
 
         /**
-         * Includes the default {@link ZooKeeper} instance in the cluster
+         * Includes the default {@link ZooKeeperContainer} instance in the cluster
          */
         public Builder withZooKeeper() {
             return withZooKeeper(new ZooKeeperConfig());
@@ -159,7 +162,7 @@ public class ClusterArchitecture {
          * Be explicit about the version of the image to use.
          */
         public Builder withZooKeeper(ZooKeeperConfig zooKeeperConfig) {
-            return withZooKeeper(new ZooKeeper(zooKeeperConfig));
+            return withZooKeeper(new ZooKeeperContainer(zooKeeperConfig));
         }
 
         /**
@@ -186,14 +189,14 @@ public class ClusterArchitecture {
          * Includes the default {@link MesosMaster} instance in the cluster
          */
         public Builder withMaster() {
-            return withMaster(zooKeeper -> new MesosMaster(zooKeeper));
+            return withMaster(MesosMaster::new);
         }
 
         /**
          * Includes the default {@link MesosAgent} instance in the cluster
          */
         public Builder withAgent() {
-            return withAgent(zooKeeper -> new MesosAgent(zooKeeper));
+            return withAgent(MesosAgent::new);
         }
 
         /**

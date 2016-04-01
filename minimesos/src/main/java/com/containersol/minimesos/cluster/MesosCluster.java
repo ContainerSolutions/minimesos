@@ -2,9 +2,7 @@ package com.containersol.minimesos.cluster;
 
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.config.*;
-import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.container.ContainerName;
-import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.mesos.*;
 import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.Predicate;
@@ -14,7 +12,6 @@ import com.github.dockerjava.api.model.Container;
 import com.jayway.awaitility.Awaitility;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
 import org.junit.rules.ExternalResource;
@@ -72,8 +69,8 @@ public class MesosCluster extends ExternalResource {
      *
      * @param clusterId the cluster ID of the cluster that is already running
      */
-    public static MesosCluster loadCluster(String clusterId) {
-        return new MesosCluster(clusterId);
+    public static MesosCluster loadCluster(String clusterId, MesosClusterFactory factory) {
+        return new MesosCluster(clusterId, factory);
     }
 
     /**
@@ -81,7 +78,8 @@ public class MesosCluster extends ExternalResource {
      *
      * @param clusterId ID of the cluster to deserialize
      */
-    private MesosCluster(String clusterId) {
+    private MesosCluster(String clusterId, MesosClusterFactory factory) {
+
         this.clusterId = clusterId;
         this.clusterConfig = new ClusterConfig();
 
@@ -101,14 +99,14 @@ public class MesosCluster extends ExternalResource {
 
                 switch (role) {
                     case "zookeeper":
-                        zookeeper = new ZooKeeper(this, uuid, containerId);
+                        zookeeper = factory.createZooKeeper(this, uuid, containerId);
                         this.containers.add(zookeeper);
                         break;
                     case "agent":
-                        this.containers.add(new MesosAgent(this, uuid, containerId));
+                        this.containers.add(factory.createMesosAgent(this, uuid, containerId));
                         break;
                     case "master":
-                        MesosMaster master = new MesosMaster(this, uuid, containerId);
+                        MesosMaster master = factory.createMesosMaster(this, uuid, containerId);
                         this.containers.add(master);
                         // restore "exposed ports" attribute
                         Container.Port[] ports = container.getPorts();
@@ -121,13 +119,13 @@ public class MesosCluster extends ExternalResource {
                         }
                         break;
                     case "marathon":
-                        this.containers.add(new Marathon(this, uuid, containerId));
+                        this.containers.add(factory.createMarathon(this, uuid, containerId));
                         break;
                     case "consul":
-                        this.containers.add(new Consul(this, uuid, containerId));
+                        this.containers.add(factory.createConsul(this, uuid, containerId));
                         break;
                     case "registrator":
-                        this.containers.add(new Registrator(this, uuid, containerId));
+                        this.containers.add(factory.createRegistrator(this, uuid, containerId));
                         break;
                 }
 
@@ -141,9 +139,9 @@ public class MesosCluster extends ExternalResource {
 
         if (zookeeper != null) {
             for (MesosAgent mesosAgent : getAgents()) {
-                mesosAgent.setZooKeeperContainer(zookeeper);
+                mesosAgent.setZooKeeper(zookeeper);
             }
-            getMasterContainer().setZooKeeperContainer(zookeeper);
+            getMasterContainer().setZooKeeper(zookeeper);
             getMarathonContainer().setZooKeeper(zookeeper);
         }
 
@@ -173,39 +171,13 @@ public class MesosCluster extends ExternalResource {
         // wait until the given number of agents are registered
         getMasterContainer().waitFor();
 
-        installMarathonApps();
+        Marathon marathon = getMarathonContainer();
+        if (marathon != null) {
+            marathon.installMarathonApps();
+        }
 
         running = true;
     }
-
-    /**
-     * If Marathon configuration requires, installs the applications
-     */
-    protected void installMarathonApps() {
-        Marathon marathon = getMarathonContainer();
-        if (marathon != null) {
-
-            marathon.waitFor();
-
-            List<AppConfig> apps = marathon.getConfig().getApps();
-            for (AppConfig app : apps) {
-                try {
-
-                    InputStream json = getInputStream(app.getMarathonJson());
-                    if (json != null) {
-                        marathon.deployApp(IOUtils.toString(json, "UTF-8"));
-                    } else {
-                        throw new MinimesosException("Failed to find content of " + app.getMarathonJson());
-                    }
-
-                } catch (IOException ioe) {
-                    throw new MinimesosException("Failed to load JSON from " + app.getMarathonJson(), ioe);
-                }
-            }
-
-        }
-    }
-
 
     /**
      * Print cluster info
@@ -499,7 +471,7 @@ public class MesosCluster extends ExternalResource {
                     out.println("export MINIMESOS_MARATHON=http://" + ip + ":" + MarathonConfig.MARATHON_PORT);
                     break;
                 case "zookeeper":
-                    out.println("export MINIMESOS_ZOOKEEPER=" + ZooKeeper.getFormattedZKAddress(ip));
+                    out.println("export MINIMESOS_ZOOKEEPER=" + getFormattedZKAddress(ip));
                     break;
                 case "consul":
                     out.println("export MINIMESOS_CONSUL=http://" + ip + ":" + ConsulConfig.CONSUL_HTTP_PORT);
@@ -508,6 +480,14 @@ public class MesosCluster extends ExternalResource {
             }
 
         }
+    }
+
+    /**
+     * @param ipAddress overwrites real IP of ZooKeeper container
+     * @return ZooKeeper URL based on given IP address
+     */
+    public static String getFormattedZKAddress(String ipAddress) {
+        return "zk://" + ipAddress + ":" + ZooKeeperConfig.DEFAULT_ZOOKEEPER_PORT;
     }
 
     /**

@@ -9,6 +9,7 @@ import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.*;
+import com.containersol.minimesos.main.factory.MesosClusterContainersFactory;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
@@ -42,9 +43,6 @@ public class CommandUp implements Command {
 
     @Parameter(names = "--timeout", description = "Time to wait for a container to get responsive, in seconds.")
     private Integer timeout = null;
-
-    @Parameter(names = "--debug", description = "Enable debug logging.")
-    private Boolean debug = null;
 
     /**
      * As number of agents can be determined either in config file or command line parameters, it defaults to invalid value.
@@ -127,12 +125,6 @@ public class CommandUp implements Command {
 
     @Override
     public void execute() {
-        if (debug != null) {
-            LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-            Logger rootLogger = loggerContext.getLogger("com.containersol.minimesos.container");
-            rootLogger.setLevel(Level.DEBUG);
-            LOGGER.debug("Initialized debug logging");
-        }
 
         LOGGER.debug("Executing up command");
 
@@ -266,7 +258,7 @@ public class CommandUp implements Command {
     }
 
     public MesosCluster getCluster() {
-        return (startedCluster != null) ? startedCluster : ClusterRepository.loadCluster();
+        return (startedCluster != null) ? startedCluster : ClusterRepository.loadCluster(new MesosClusterContainersFactory());
     }
 
     @Override
@@ -279,7 +271,4 @@ public class CommandUp implements Command {
         return CLINAME;
     }
 
-    public void setDebug() {
-        this.debug = true;
-    }
 }

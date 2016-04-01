@@ -4,7 +4,8 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.config.RegistratorConfig;
 import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.containersol.minimesos.marathon.Marathon;
+import com.containersol.minimesos.main.factory.MesosClusterContainersFactory;
+import com.containersol.minimesos.marathon.MarathonContainer;
 import com.containersol.minimesos.mesos.*;
 import com.containersol.minimesos.util.ResourceUtil;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -32,10 +33,10 @@ public class MesosClusterTest {
     protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder()
             .withZooKeeper()
             .withMaster()
-            .withAgent(zooKeeper -> new MesosAgent(zooKeeper))
-            .withAgent(zooKeeper -> new MesosAgent(zooKeeper))
-            .withAgent(zooKeeper -> new MesosAgent(zooKeeper))
-            .withMarathon(zooKeeper -> new Marathon(zooKeeper))
+            .withAgent(MesosAgent::new)
+            .withAgent(MesosAgent::new)
+            .withAgent(MesosAgent::new)
+            .withMarathon(MarathonContainer::new)
             .withConsul(new Consul(new ConsulConfig()))
             .withRegistrator(consul -> new Registrator(consul, new RegistratorConfig()))
             .build();
@@ -51,14 +52,14 @@ public class MesosClusterTest {
 
     @Test(expected = ClusterArchitecture.MesosArchitectureException.class)
     public void testConstructor() {
-        MesosCluster cluster = new MesosCluster(null);
+        new MesosCluster(null);
     }
 
     @Test
     public void testLoadCluster() {
         String clusterId = CLUSTER.getClusterId();
 
-        MesosCluster cluster = MesosCluster.loadCluster(clusterId);
+        MesosCluster cluster = MesosCluster.loadCluster(clusterId, new MesosClusterContainersFactory());
 
         assertArrayEquals(CLUSTER.getContainers().toArray(), cluster.getContainers().toArray());
 
@@ -70,7 +71,7 @@ public class MesosClusterTest {
 
     @Test(expected = MinimesosException.class)
     public void testLoadCluster_noContainersFound() {
-        MesosCluster cluster = MesosCluster.loadCluster("nonexistent");
+        MesosCluster.loadCluster("nonexistent", new MesosClusterContainersFactory());
     }
 
     @Test

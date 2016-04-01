@@ -1,6 +1,7 @@
 package com.containersol.minimesos.mesos;
 
-import com.containersol.minimesos.container.AbstractContainer;
+import com.containersol.minimesos.cluster.AbstractContainer;
+import com.containersol.minimesos.cluster.ZooKeeper;
 import org.junit.Test;
 
 import static com.containersol.minimesos.mesos.ClusterContainers.Filter;

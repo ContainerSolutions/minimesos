@@ -1,12 +1,12 @@
 package com.containersol.minimesos;
 
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersol.minimesos.mesos.MesosAgent;
 import com.containersol.minimesos.mesos.MesosMaster;
-import com.containersol.minimesos.mesos.ZooKeeper;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;

@@ -1,5 +1,7 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.cluster.ZooKeeper;
+
 import java.util.function.Function;
 import java.util.stream.IntStream;
 

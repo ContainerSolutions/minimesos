@@ -1,15 +1,16 @@
 package com.containersol.minimesos.mesos;
 
-import com.containersol.minimesos.container.AbstractContainer;
+import com.containersol.minimesos.cluster.AbstractContainer;
+import com.containersol.minimesos.cluster.ZooKeeper;
 import org.junit.Test;
-
-import static com.containersol.minimesos.mesos.ClusterContainers.*;
-import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static com.containersol.minimesos.mesos.ClusterContainers.Filter;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 /**
  * Tests
