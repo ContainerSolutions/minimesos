@@ -155,7 +155,7 @@ public class CommandUp implements Command {
 
     }
 
-   /**
+    /**
      * Getter for Cluster Config with caching logic.
      * This implementation cannot be used in multi-threaded mode
      *
@@ -196,7 +196,6 @@ public class CommandUp implements Command {
         }
         updateWithParameters(clusterConfig);
 
-
         ClusterArchitecture.Builder configBuilder = ClusterArchitecture.Builder.createCluster(clusterConfig);
 
         return configBuilder.build();
@@ -231,12 +230,14 @@ public class CommandUp implements Command {
         }
         clusterConfig.setMaster(masterConfig);
 
-        // Marathon
-        MarathonConfig marathonConfig = (clusterConfig.getMarathon() != null) ? clusterConfig.getMarathon() : new MarathonConfig();
-        if (getMarathonImageTag() != null) {
-            marathonConfig.setImageTag(getMarathonImageTag());
+        // Marathon (optional)
+        if (clusterConfig.getMarathon() != null) {
+            MarathonConfig marathonConfig = clusterConfig.getMarathon();
+            if (getMarathonImageTag() != null) {
+                marathonConfig.setImageTag(getMarathonImageTag());
+            }
+            clusterConfig.setMarathon(marathonConfig);
         }
-        clusterConfig.setMarathon(marathonConfig);
 
         // creation of agents
         List<MesosAgentConfig> agentConfigs = clusterConfig.getAgents();
@@ -250,19 +251,23 @@ public class CommandUp implements Command {
         }
         clusterConfig.setAgents(updatedConfigs);
 
-        // Consul
-        ConsulConfig consulConfig = clusterConfig.getConsul();
-        if (consulConfig == null) {
-            consulConfig = new ConsulConfig();
+        // Consul (optional)
+        if (clusterConfig.getConsul() != null) {
+            ConsulConfig consulConfig = clusterConfig.getConsul();
+            if (consulConfig == null) {
+                consulConfig = new ConsulConfig();
+            }
+            clusterConfig.setConsul(consulConfig);
         }
-        clusterConfig.setConsul(consulConfig);
 
-        //Registrator
-        RegistratorConfig registratorConfig = clusterConfig.getRegistrator();
-        if(registratorConfig ==null){
-            registratorConfig = new RegistratorConfig();
+        // Registrator (optional)
+        if (clusterConfig.getRegistrator() != null) {
+            RegistratorConfig registratorConfig = clusterConfig.getRegistrator();
+            if (registratorConfig == null) {
+                registratorConfig = new RegistratorConfig();
+            }
+            clusterConfig.setRegistrator(registratorConfig);
         }
-        clusterConfig.setRegistrator(registratorConfig);
     }
 
     public MesosCluster getCluster() {

@@ -1,11 +1,23 @@
 package com.containersol.minimesos.cluster;
 
 import com.containersol.minimesos.MinimesosException;
-import com.containersol.minimesos.config.*;
+import com.containersol.minimesos.config.AppConfig;
+import com.containersol.minimesos.config.ClusterConfig;
+import com.containersol.minimesos.config.ConsulConfig;
+import com.containersol.minimesos.config.MarathonConfig;
+import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.container.ContainerName;
 import com.containersol.minimesos.marathon.Marathon;
-import com.containersol.minimesos.mesos.*;
+import com.containersol.minimesos.mesos.ClusterArchitecture;
+import com.containersol.minimesos.mesos.ClusterContainers;
+import com.containersol.minimesos.mesos.ClusterUtil;
+import com.containersol.minimesos.mesos.Consul;
+import com.containersol.minimesos.mesos.DockerClientFactory;
+import com.containersol.minimesos.mesos.MesosAgent;
+import com.containersol.minimesos.mesos.MesosMaster;
+import com.containersol.minimesos.mesos.Registrator;
+import com.containersol.minimesos.mesos.ZooKeeper;
 import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.Predicate;
 import com.github.dockerjava.api.InternalServerErrorException;
@@ -21,7 +33,12 @@ import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URI;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -144,7 +161,10 @@ public class MesosCluster extends ExternalResource {
                 mesosAgent.setZooKeeperContainer(zookeeper);
             }
             getMasterContainer().setZooKeeperContainer(zookeeper);
-            getMarathonContainer().setZooKeeper(zookeeper);
+
+            if (getMarathonContainer() != null) {
+                getMarathonContainer().setZooKeeper(zookeeper);
+            }
         }
 
         running = true;

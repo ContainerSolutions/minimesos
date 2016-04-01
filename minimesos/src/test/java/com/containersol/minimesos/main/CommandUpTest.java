@@ -2,9 +2,7 @@ package com.containersol.minimesos.main;
 
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ClusterConfig;
-import com.containersol.minimesos.mesos.ClusterArchitecture;
-import com.containersol.minimesos.mesos.ClusterContainers;
-import com.containersol.minimesos.mesos.MesosAgent;
+import com.containersol.minimesos.mesos.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -104,10 +102,24 @@ public class CommandUpTest {
     }
 
     @Test
+    public void testMinimalConfig() throws InterruptedException {
+        CommandUp commandUp = new CommandUp();
+        commandUp.setDebug();
+        commandUp.setClusterConfigPath("src/test/resources/configFiles/minimal-minimesosFile");
+
+        ClusterArchitecture clusterArchitecture = commandUp.getClusterArchitecture();
+
+        assertEquals(1, clusterArchitecture.getClusterContainers().getContainers().stream().filter(c -> c instanceof ZooKeeper).count());
+        assertEquals(1, clusterArchitecture.getClusterContainers().getContainers().stream().filter(c -> c instanceof MesosMaster).count());
+        assertEquals(1, clusterArchitecture.getClusterContainers().getContainers().stream().filter(c -> c instanceof MesosAgent).count());
+        assertEquals(3, clusterArchitecture.getClusterContainers().getContainers().size());
+    }
+
+    @Test
     public void testMarathonAppConfig() throws InterruptedException {
         CommandUp commandUp = new CommandUp();
         commandUp.setDebug();
-        commandUp.setClusterConfigPath("src/test/resources/marathonAppConfig-minimesosFile");
+        commandUp.setClusterConfigPath("src/test/resources/configFiles/marathonAppConfig-minimesosFile");
 
         commandUp.execute();
 
