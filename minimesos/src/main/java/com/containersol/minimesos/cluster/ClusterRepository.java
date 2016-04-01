@@ -31,7 +31,7 @@ public class ClusterRepository {
         if (clusterId != null) {
             try {
                 return MesosCluster.loadCluster(clusterId, factory);
-            } catch (RuntimeException e) {
+            } catch (MinimesosException e) {
                 ClusterRepository.deleteMinimesosFile();
             }
         }

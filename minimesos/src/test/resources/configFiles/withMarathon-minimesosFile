@@ -1,0 +1,13 @@
+minimesos {
+    clusterName = "minimesos-test"
+    exposePorts = false
+    loggingLevel = "INFO"
+    mapAgentSandboxVolume = false
+    mesosVersion = "0.25"
+    timeout = 60
+
+    marathon {
+        imageName = "mesosphere/marathon"
+        imageTag = "v0.15.3"
+    }
+}

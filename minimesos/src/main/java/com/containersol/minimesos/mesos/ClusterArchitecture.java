@@ -106,12 +106,16 @@ public class ClusterArchitecture {
 
             configBuilder.withZooKeeper(clusterConfig.getZookeeper());
             configBuilder.withMaster(zooKeeper -> new MesosMasterContainer(zooKeeper, clusterConfig.getMaster()));
-            configBuilder.withMarathon(zooKeeper -> new MarathonContainer(zooKeeper, clusterConfig.getMarathon()));
 
             // creation of agents
             List<MesosAgentConfig> agentConfigs = clusterConfig.getAgents();
             for (MesosAgentConfig agentConfig : agentConfigs) {
                 configBuilder.withAgent(zooKeeper -> new MesosAgentContainer(zooKeeper, agentConfig));
+            }
+
+            // Marathon (optional)
+            if (clusterConfig.getMarathon() != null) {
+                configBuilder.withMarathon(zooKeeper -> new Marathon(zooKeeper, clusterConfig.getMarathon()));
             }
 
             // Consul (optional)
@@ -120,6 +124,7 @@ public class ClusterArchitecture {
                 configBuilder.withConsul(new ConsulContainer(consulConfig));
             }
 
+            // Registrator (optional)
             RegistratorConfig registratorConfig = clusterConfig.getRegistrator();
             if (registratorConfig != null) {
                 configBuilder.withRegistrator(consul -> new RegistratorContainer(consul, registratorConfig));
