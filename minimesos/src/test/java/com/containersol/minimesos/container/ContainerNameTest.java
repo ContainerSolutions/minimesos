@@ -14,7 +14,10 @@ public class ContainerNameTest {
 
     @Before
     public void before() {
-        cluster = new MesosCluster(new ClusterArchitecture());
+
+        ClusterArchitecture architecture = new ClusterArchitecture();
+        cluster = new MesosCluster(architecture.getClusterConfig(), architecture.getClusterContainers().getContainers());
+
         clusterId = cluster.getClusterId();
     }
 

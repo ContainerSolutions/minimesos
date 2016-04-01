@@ -14,7 +14,7 @@ import org.junit.runners.model.Statement;
 public class MesosClusterResource extends MesosCluster implements TestRule {
 
     public MesosClusterResource(ClusterArchitecture clusterArchitecture) {
-        super(clusterArchitecture);
+        super(clusterArchitecture.getClusterConfig(), clusterArchitecture.getClusterContainers().getContainers());
     }
 
     public Statement apply(Statement base, Description description) {

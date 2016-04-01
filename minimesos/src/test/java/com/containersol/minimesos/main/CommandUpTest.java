@@ -1,5 +1,6 @@
 package com.containersol.minimesos.main;
 
+import com.containersol.minimesos.cluster.Filter;
 import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ClusterConfig;
@@ -29,8 +30,8 @@ public class CommandUpTest {
         ClusterContainers clusterContainers = architecture.getClusterContainers();
         assertNotNull("cluster containers are not loaded", clusterContainers);
 
-        assertTrue("ZooKeeper is required component of cluster", clusterContainers.isPresent(ClusterContainers.Filter.zooKeeper()));
-        assertTrue("Mesos Master is required component of cluster", clusterContainers.isPresent(ClusterContainers.Filter.mesosMaster()));
+        assertTrue("ZooKeeper is required component of cluster", clusterContainers.isPresent(Filter.zooKeeper()));
+        assertTrue("Mesos Master is required component of cluster", clusterContainers.isPresent(Filter.mesosMaster()));
     }
 
     @Test
@@ -44,10 +45,10 @@ public class CommandUpTest {
         ClusterContainers clusterContainers = architecture.getClusterContainers();
         assertNotNull("cluster containers are not loaded", clusterContainers);
 
-        assertTrue("ZooKeeper is required component of cluster", clusterContainers.isPresent(ClusterContainers.Filter.zooKeeper()));
-        assertTrue("Mesos Master is required component of cluster", clusterContainers.isPresent(ClusterContainers.Filter.mesosMaster()));
+        assertTrue("ZooKeeper is required component of cluster", clusterContainers.isPresent(Filter.zooKeeper()));
+        assertTrue("Mesos Master is required component of cluster", clusterContainers.isPresent(Filter.mesosMaster()));
 
-        List<MesosAgent> agents = clusterContainers.getContainers().stream().filter(ClusterContainers.Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
+        List<MesosAgent> agents = clusterContainers.getContainers().stream().filter(Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
         assertEquals(1, agents.size());
     }
 
@@ -62,10 +63,10 @@ public class CommandUpTest {
         ClusterContainers clusterContainers = architecture.getClusterContainers();
         assertNotNull("cluster containers are not loaded", clusterContainers);
 
-        assertTrue("ZooKeeper is required component of cluster", clusterContainers.isPresent(ClusterContainers.Filter.zooKeeper()));
-        assertTrue("Mesos Master is required component of cluster", clusterContainers.isPresent(ClusterContainers.Filter.mesosMaster()));
+        assertTrue("ZooKeeper is required component of cluster", clusterContainers.isPresent(Filter.zooKeeper()));
+        assertTrue("Mesos Master is required component of cluster", clusterContainers.isPresent(Filter.mesosMaster()));
 
-        List<MesosAgent> agents = clusterContainers.getContainers().stream().filter(ClusterContainers.Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
+        List<MesosAgent> agents = clusterContainers.getContainers().stream().filter(Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
         assertEquals(2, agents.size());
     }
 

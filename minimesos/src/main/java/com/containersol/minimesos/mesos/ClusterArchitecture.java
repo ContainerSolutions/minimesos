@@ -213,17 +213,17 @@ public class ClusterArchitecture {
          * @param master must extend from {@link MesosMaster}. Functional, to allow you to inject a reference to the {@link ZooKeeper} container.
          */
         public Builder withMaster(Function<ZooKeeper, MesosMaster> master) {
-            if (!isPresent(ClusterContainers.Filter.zooKeeper())) {
+            if (!isPresent(Filter.zooKeeper())) {
                 throw new MesosArchitectureException("ZooKeeper is required by Mesos. You cannot add a Mesos node until you have created a ZooKeeper node. Please add a ZooKeeper node first.");
             }
-            return withContainer(master::apply, ClusterContainers.Filter.zooKeeper());
+            return withContainer(master::apply, Filter.zooKeeper());
         }
 
         public Builder withRegistrator(Function<Consul, Registrator> registrator) {
-            if (!isPresent(ClusterContainers.Filter.consul())) {
+            if (!isPresent(Filter.consul())) {
                 throw new MesosArchitectureException("Consul is required by Registrator. You cannot add a Registrator node until you have created a Consul node. Please add a Consul node first.");
             }
-            return withContainer(registrator::apply, ClusterContainers.Filter.consul());
+            return withContainer(registrator::apply, Filter.consul());
         }
 
         /**
@@ -232,17 +232,17 @@ public class ClusterArchitecture {
          * @param agent must extend from {@link MesosAgent}. Functional, to allow you to inject a reference to the {@link ZooKeeper} container.
          */
         public Builder withAgent(Function<ZooKeeper, MesosAgent> agent) {
-            if (!isPresent(ClusterContainers.Filter.zooKeeper())) {
+            if (!isPresent(Filter.zooKeeper())) {
                 throw new MesosArchitectureException("ZooKeeper is required by Mesos. You cannot add a Mesos agent until you have created a ZooKeeper node. Please add a ZooKeeper node first.");
             }
-            return withContainer(agent::apply, ClusterContainers.Filter.zooKeeper());
+            return withContainer(agent::apply, Filter.zooKeeper());
         }
 
         public Builder withMarathon(Function<ZooKeeper, Marathon> marathon) {
-            if (!isPresent(ClusterContainers.Filter.zooKeeper())) {
+            if (!isPresent(Filter.zooKeeper())) {
                 throw new MesosArchitectureException("ZooKeeper is required by Mesos. You cannot add a Mesos agent until you have created a ZooKeeper node. Please add a ZooKeeper node first.");
             }
-            return withContainer(marathon::apply, ClusterContainers.Filter.zooKeeper());
+            return withContainer(marathon::apply, Filter.zooKeeper());
         }
 
         /**
@@ -271,15 +271,15 @@ public class ClusterArchitecture {
         }
 
         private void checkMinimumViableCluster() {
-            if (!isPresent(ClusterContainers.Filter.zooKeeper())) { // Must check for zk first, as it is required by the master
+            if (!isPresent(Filter.zooKeeper())) { // Must check for zk first, as it is required by the master
                 LOGGER.info("Instance of ZooKeeper not found. Adding ZooKeeper.");
                 withZooKeeper();
             }
-            if (!isPresent(ClusterContainers.Filter.mesosMaster())) {
+            if (!isPresent(Filter.mesosMaster())) {
                 LOGGER.info("Instance of MesosMaster not found. Adding MesosMaster.");
                 withMaster();
             }
-            if (!isPresent(ClusterContainers.Filter.mesosAgent())) {
+            if (!isPresent(Filter.mesosAgent())) {
                 LOGGER.info("Instance of MesosAgent not found. Adding MesosAgent.");
                 withAgent();
             }

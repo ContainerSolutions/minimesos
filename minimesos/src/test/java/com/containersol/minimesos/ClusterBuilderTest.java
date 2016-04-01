@@ -26,7 +26,8 @@ public class ClusterBuilderTest {
         ClusterConfig dsl = parser.parse(config);
 
         ClusterArchitecture.Builder builder = ClusterArchitecture.Builder.createCluster(dsl);
-        MesosCluster cluster = new MesosCluster(builder.build());
+        ClusterArchitecture architecture = builder.build();
+        MesosCluster cluster = new MesosCluster(architecture.getClusterConfig(), architecture.getClusterContainers().getContainers());
 
         List<MesosAgent> agents = cluster.getAgents();
         assertEquals(2, agents.size());
@@ -46,8 +47,8 @@ public class ClusterBuilderTest {
         ConfigParser parser = new ConfigParser();
         ClusterConfig dsl = parser.parse(config);
 
-        ClusterArchitecture.Builder builder = ClusterArchitecture.Builder.createCluster(dsl);
-        MesosCluster cluster = new MesosCluster(builder.build());
+        ClusterArchitecture architecture = ClusterArchitecture.Builder.createCluster(dsl).build();
+        MesosCluster cluster = new MesosCluster(architecture.getClusterConfig(), architecture.getClusterContainers().getContainers());
 
         List<MesosAgent> agents = cluster.getAgents();
         assertEquals(2, agents.size());
@@ -67,8 +68,8 @@ public class ClusterBuilderTest {
         ConfigParser parser = new ConfigParser();
         ClusterConfig dsl = parser.parse(config);
 
-        ClusterArchitecture.Builder builder = ClusterArchitecture.Builder.createCluster(dsl);
-        MesosCluster cluster = new MesosCluster(builder.build());
+        ClusterArchitecture architecture = ClusterArchitecture.Builder.createCluster(dsl).build();
+        MesosCluster cluster = new MesosCluster(architecture.getClusterConfig(), architecture.getClusterContainers().getContainers());
 
         List<MesosAgent> agents = cluster.getAgents();
         assertEquals(2, agents.size());

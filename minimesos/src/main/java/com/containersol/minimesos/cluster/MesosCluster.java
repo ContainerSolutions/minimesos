@@ -2,8 +2,6 @@ package com.containersol.minimesos.cluster;
 
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.config.*;
-import com.containersol.minimesos.mesos.ClusterArchitecture;
-import com.containersol.minimesos.mesos.ClusterContainers;
 
 import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.Predicate;
@@ -44,18 +42,13 @@ public class MesosCluster {
 
     private boolean running = false;
 
+
     /**
      * Create a new MesosCluster with a specified cluster architecture.
-     *
-     * @param clusterArchitecture Represents the layout of the cluster. See {@link ClusterArchitecture}
      */
-    public MesosCluster(ClusterArchitecture clusterArchitecture) {
-        if (clusterArchitecture == null) {
-            throw new ClusterArchitecture.MesosArchitectureException("No cluster architecture specified");
-        }
-
-        this.containers = clusterArchitecture.getClusterContainers().getContainers();
-        this.clusterConfig = clusterArchitecture.getClusterConfig();
+    public MesosCluster(ClusterConfig clusterConfig, List<AbstractContainer> containers) {
+        this.containers = containers;
+        this.clusterConfig = clusterConfig;
 
         clusterId = Integer.toUnsignedString(new SecureRandom().nextInt());
         for (AbstractContainer container : containers) {
@@ -308,26 +301,26 @@ public class MesosCluster {
     }
 
     public List<MesosAgent> getAgents() {
-        return containers.stream().filter(ClusterContainers.Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
+        return containers.stream().filter(Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
     }
 
     public MesosMaster getMasterContainer() {
-        Optional<MesosMaster> master = getOne(ClusterContainers.Filter.mesosMaster());
+        Optional<MesosMaster> master = getOne(Filter.mesosMaster());
         return master.isPresent() ? master.get() : null;
     }
 
     public ZooKeeper getZkContainer() {
-        Optional<ZooKeeper> zooKeeper = getOne(ClusterContainers.Filter.zooKeeper());
+        Optional<ZooKeeper> zooKeeper = getOne(Filter.zooKeeper());
         return zooKeeper.isPresent() ? zooKeeper.get() : null;
     }
 
     public Marathon getMarathonContainer() {
-        Optional<Marathon> marathon = getOne(ClusterContainers.Filter.marathon());
+        Optional<Marathon> marathon = getOne(Filter.marathon());
         return marathon.isPresent() ? marathon.get() : null;
     }
 
     public Consul getConsulContainer() {
-        Optional<Consul> container = getOne(ClusterContainers.Filter.consul());
+        Optional<Consul> container = getOne(Filter.consul());
         return container.isPresent() ? container.get() : null;
     }
 

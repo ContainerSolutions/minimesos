@@ -38,7 +38,8 @@ public class ExposedPortsTest {
                 .withConsul(new ConsulContainer(consulConfig))
                 .build();
 
-        cluster = new MesosCluster(architecture);
+        cluster = new MesosCluster(architecture.getClusterConfig(), architecture.getClusterContainers().getContainers());
+
         cluster.setExposedHostPorts(EXPOSED_PORTS);
         cluster.start();
 

@@ -56,11 +56,6 @@ public class MesosClusterTest {
         util.getContainers(false).filterByName(HelloWorldContainer.CONTAINER_NAME_PATTERN).kill().remove();
     }
 
-    @Test(expected = ClusterArchitecture.MesosArchitectureException.class)
-    public void testConstructor() {
-        new MesosCluster(null);
-    }
-
     @Test
     public void testLoadCluster() {
         String clusterId = CLUSTER.getClusterId();
