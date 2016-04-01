@@ -17,7 +17,7 @@ public class CommandInstall implements Command {
 
     public static final String CLINAME = "install";
 
-    @Parameter(names = "--marathonFile", description = "Marathon JSON app install file location. Either this or --stdin parameter must be used")
+    @Parameter(names = "--marathonFile", description = "Marathon JSON app install file path or URL. Either this or --stdin parameter must be used")
     private String marathonFile = null;
 
     @Parameter(names = "--stdin", description = "Use JSON from standard import. Allow piping JSON from other processes. Either this or --marathonFile parameter must be used")
@@ -29,18 +29,18 @@ public class CommandInstall implements Command {
      * @return content of the file or standard input
      */
     public String getMarathonJson() throws IOException {
+
         String fileContents = "";
         Scanner scanner;
 
         if (marathonFile != null && !marathonFile.isEmpty()) {
 
-            File jsonFile = MesosCluster.getHostFile(marathonFile);
-            if (!jsonFile.exists()) {
-                String msg = String.format("Neither %s nor %s exist", new File(marathonFile).getAbsolutePath(), jsonFile.getAbsolutePath());
-                throw new MinimesosException(msg);
+            InputStream json = MesosCluster.getInputStream(marathonFile);
+            if (json == null) {
+                throw new MinimesosException("Failed to find content of " + marathonFile);
             }
 
-            scanner = new Scanner(new FileReader(jsonFile));
+            scanner = new Scanner(json);
 
         } else if (stdin) {
             scanner = new Scanner(System.in);

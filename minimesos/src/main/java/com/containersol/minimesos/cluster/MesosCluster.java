@@ -21,10 +21,7 @@ import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.URI;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -176,6 +173,15 @@ public class MesosCluster extends ExternalResource {
         // wait until the given number of agents are registered
         getMasterContainer().waitFor();
 
+        installMarathonApps();
+
+        running = true;
+    }
+
+    /**
+     * If Marathon configuration requires, installs the applications
+     */
+    protected void installMarathonApps() {
         Marathon marathon = getMarathonContainer();
         if (marathon != null) {
 
@@ -185,21 +191,12 @@ public class MesosCluster extends ExternalResource {
             for (AppConfig app : apps) {
                 try {
 
-                    String json;
-                    URI uri = app.asAbsoluteUri();
-                    if (uri != null) {
-                        json = IOUtils.toString(uri);
+                    InputStream json = getInputStream(app.getMarathonJson());
+                    if (json != null) {
+                        marathon.deployApp(IOUtils.toString(json, "UTF-8"));
                     } else {
-
-                        File jsonFile = getHostFile(app.getMarathonJson());
-                        if (jsonFile.exists()) {
-                            json = IOUtils.toString( new FileInputStream(jsonFile));
-                        } else {
-                            throw new MinimesosException(app.getMarathonJson() + " file is not found");
-                        }
+                        throw new MinimesosException("Failed to find content of " + app.getMarathonJson());
                     }
-
-                    marathon.deployApp(json);
 
                 } catch (IOException ioe) {
                     throw new MinimesosException("Failed to load JSON from " + app.getMarathonJson(), ioe);
@@ -207,9 +204,8 @@ public class MesosCluster extends ExternalResource {
             }
 
         }
-
-        running = true;
     }
+
 
     /**
      * Print cluster info
@@ -527,12 +523,56 @@ public class MesosCluster extends ExternalResource {
         return new File(sp);
     }
 
-    public static File getHostFile(String hostFilePath) {
-        File file = new File(hostFilePath);
-        if (!file.exists()) {
-            file = new File(getHostDir(), hostFilePath);
+    /**
+     * Taking either URI or path to a file, returns string with its content
+     *
+     * @param location either absolute URI or path to a file
+     *
+     * @return input stream with location content or null
+     */
+    public static InputStream getInputStream(String location) {
+
+        InputStream is = null;
+
+        if (location != null) {
+
+            URI uri = null;
+            try {
+                uri = URI.create(location);
+                if (!uri.isAbsolute()) {
+                    uri = null;
+                }
+            } catch (IllegalArgumentException ignored) {
+                // means this is not a valid URI
+            }
+
+            if (uri != null) {
+
+                try {
+                    is = uri.toURL().openStream();
+                } catch (IOException e) {
+                    throw new MinimesosException("Failed to open " + location + " as URL", e);
+                }
+
+            } else {
+                // location is not an absolute URI, therefore treat it as relative or absolute path
+                File file = new File(location);
+                if (!file.exists()) {
+                    file = new File(getHostDir(), location);
+                }
+
+                if (file.exists()) {
+                    try {
+                        is = new FileInputStream(file);
+                    } catch (FileNotFoundException e) {
+                        throw new MinimesosException("Failed to open " + file.getAbsolutePath() + " file", e);
+                    }
+                }
+            }
+
         }
-        return file;
+
+        return is;
     }
 
     /**

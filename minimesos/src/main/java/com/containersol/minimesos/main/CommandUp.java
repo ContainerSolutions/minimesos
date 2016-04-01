@@ -10,10 +10,10 @@ import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.*;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -166,12 +166,12 @@ public class CommandUp implements Command {
             return clusterConfig;
         }
 
-        File clusterConfigFile = MesosCluster.getHostFile(getClusterConfigPath());
-        if (clusterConfigFile.exists()) {
+        InputStream clusterConfigFile = MesosCluster.getInputStream(getClusterConfigPath());
+        if (clusterConfigFile != null) {
             configFileFound = true;
             ConfigParser configParser = new ConfigParser();
             try {
-                clusterConfig = configParser.parse(FileUtils.readFileToString(clusterConfigFile));
+                clusterConfig = configParser.parse(IOUtils.toString(clusterConfigFile));
             } catch (Exception e) {
                 String msg = String.format("Failed to load cluster configuration from %s: %s", getClusterConfigPath(), e.getMessage());
                 throw new MinimesosException(msg, e);
