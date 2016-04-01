@@ -344,7 +344,6 @@ public class MesosCluster extends ExternalResource {
                 } else {
                     throw new MinimesosException("Provided ID " + containerId + " is not enough to uniquely identify container");
                 }
-
             }
         }
 

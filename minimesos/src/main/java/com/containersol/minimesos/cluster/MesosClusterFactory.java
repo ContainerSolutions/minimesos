@@ -1,8 +1,6 @@
 package com.containersol.minimesos.cluster;
 
 import com.containersol.minimesos.mesos.Consul;
-import com.containersol.minimesos.mesos.MesosAgent;
-import com.containersol.minimesos.mesos.MesosMaster;
 import com.containersol.minimesos.mesos.Registrator;
 
 /**

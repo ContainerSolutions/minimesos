@@ -1,6 +1,8 @@
 package com.containersol.minimesos;
 
+import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.cluster.MesosMaster;
 import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.config.RegistratorConfig;
 import com.containersol.minimesos.docker.DockerContainersUtil;
@@ -33,9 +35,9 @@ public class MesosClusterTest {
     protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder()
             .withZooKeeper()
             .withMaster()
-            .withAgent(MesosAgent::new)
-            .withAgent(MesosAgent::new)
-            .withAgent(MesosAgent::new)
+            .withAgent(MesosAgentContainer::new)
+            .withAgent(MesosAgentContainer::new)
+            .withAgent(MesosAgentContainer::new)
             .withMarathon(MarathonContainer::new)
             .withConsul(new Consul(new ConsulConfig()))
             .withRegistrator(consul -> new Registrator(consul, new RegistratorConfig()))

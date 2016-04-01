@@ -7,7 +7,7 @@ import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.marathon.MarathonContainer;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersol.minimesos.mesos.Consul;
-import com.containersol.minimesos.mesos.MesosAgent;
+import com.containersol.minimesos.mesos.MesosAgentContainer;
 import com.containersol.minimesos.mesos.Registrator;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -24,7 +24,7 @@ public class ConsulRegistrationTest {
     protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder()
             .withZooKeeper()
             .withMaster()
-            .withAgent(MesosAgent::new)
+            .withAgent(MesosAgentContainer::new)
             .withMarathon(MarathonContainer::new)
             .withConsul(new Consul(new ConsulConfig()))
             .withRegistrator(consul -> new Registrator(consul, new RegistratorConfig()))

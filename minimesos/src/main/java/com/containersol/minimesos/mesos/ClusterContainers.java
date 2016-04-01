@@ -1,8 +1,6 @@
 package com.containersol.minimesos.mesos;
 
-import com.containersol.minimesos.cluster.AbstractContainer;
-import com.containersol.minimesos.cluster.Marathon;
-import com.containersol.minimesos.cluster.ZooKeeper;
+import com.containersol.minimesos.cluster.*;
 
 import java.util.ArrayList;
 import java.util.List;

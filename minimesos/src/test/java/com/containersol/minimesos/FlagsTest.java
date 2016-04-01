@@ -3,7 +3,7 @@ package com.containersol.minimesos;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
-import com.containersol.minimesos.mesos.MesosMaster;
+import com.containersol.minimesos.mesos.MesosMasterContainer;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -37,7 +37,7 @@ public class FlagsTest {
         Assert.assertEquals(aclExampleUnknownSyntaxUsedInStateJson, cluster.getMasterContainer().getFlags().get("acls"));
     }
 
-    public static class MesosMasterEnvVars extends MesosMaster {
+    public static class MesosMasterEnvVars extends MesosMasterContainer {
 
         protected MesosMasterEnvVars(ZooKeeper zooKeeperContainer) {
             super(zooKeeperContainer);

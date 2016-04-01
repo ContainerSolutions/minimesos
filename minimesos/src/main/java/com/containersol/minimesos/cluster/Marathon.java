@@ -3,7 +3,7 @@ package com.containersol.minimesos.cluster;
 /**
  * Functionality, which is expected from Marathon
  */
-public interface Marathon extends MesosContainer {
+public interface Marathon extends AbstractContainer {
 
     /**
      * If Marathon configuration requires, installs the applications
@@ -21,5 +21,7 @@ public interface Marathon extends MesosContainer {
      * Kill all apps that are currently running.
      */
     void killAllApps();
+
+    void setZooKeeper(ZooKeeper zookeeper);
 
 }

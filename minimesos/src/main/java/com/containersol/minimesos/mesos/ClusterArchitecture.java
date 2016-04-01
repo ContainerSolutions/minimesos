@@ -1,8 +1,6 @@
 package com.containersol.minimesos.mesos;
 
-import com.containersol.minimesos.cluster.AbstractContainer;
-import com.containersol.minimesos.cluster.Marathon;
-import com.containersol.minimesos.cluster.ZooKeeper;
+import com.containersol.minimesos.cluster.*;
 import com.containersol.minimesos.config.*;
 import com.containersol.minimesos.container.AbstractContainerImpl;
 import com.containersol.minimesos.marathon.MarathonContainer;
@@ -109,13 +107,13 @@ public class ClusterArchitecture {
             Builder configBuilder = new Builder(clusterConfig);
 
             configBuilder.withZooKeeper(clusterConfig.getZookeeper());
-            configBuilder.withMaster(zooKeeper -> new MesosMaster(zooKeeper, clusterConfig.getMaster()));
+            configBuilder.withMaster(zooKeeper -> new MesosMasterContainer(zooKeeper, clusterConfig.getMaster()));
             configBuilder.withMarathon(zooKeeper -> new MarathonContainer(zooKeeper, clusterConfig.getMarathon()));
 
             // creation of agents
             List<MesosAgentConfig> agentConfigs = clusterConfig.getAgents();
             for (MesosAgentConfig agentConfig : agentConfigs) {
-                configBuilder.withAgent(zooKeeper -> new MesosAgent(zooKeeper, agentConfig));
+                configBuilder.withAgent(zooKeeper -> new MesosAgentContainer(zooKeeper, agentConfig));
             }
 
             // Consul (optional)
@@ -189,14 +187,14 @@ public class ClusterArchitecture {
          * Includes the default {@link MesosMaster} instance in the cluster
          */
         public Builder withMaster() {
-            return withMaster(MesosMaster::new);
+            return withMaster(MesosMasterContainer::new);
         }
 
         /**
          * Includes the default {@link MesosAgent} instance in the cluster
          */
         public Builder withAgent() {
-            return withAgent(MesosAgent::new);
+            return withAgent(MesosAgentContainer::new);
         }
 
         /**
@@ -208,7 +206,7 @@ public class ClusterArchitecture {
             AgentResourcesConfig resources = AgentResourcesConfig.fromString(agentResourcesConfig);
             MesosAgentConfig config = new MesosAgentConfig();
             config.setResources(resources);
-            return withAgent(zooKeeper -> new MesosAgent(zooKeeper, config));
+            return withAgent(zooKeeper -> new MesosAgentContainer(zooKeeper, config));
         }
 
         /**

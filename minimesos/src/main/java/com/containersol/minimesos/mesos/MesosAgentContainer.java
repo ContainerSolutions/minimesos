@@ -1,6 +1,7 @@
 package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.MinimesosException;
+import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.MesosAgentConfig;
@@ -20,32 +21,33 @@ import java.util.TreeMap;
 /**
  * Mesos Master adds the "agent" component for Apache Mesos
  */
-public class MesosAgent extends MesosContainerImpl {
+public class MesosAgentContainer extends MesosContainerImpl implements MesosAgent {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MesosAgent.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MesosAgentContainer.class);
 
     private final MesosAgentConfig config;
 
     private final String MESOS_AGENT_SANDBOX_DIR = "/tmp/mesos";
 
-    public MesosAgent(ZooKeeper zooKeeperContainer) {
+    public MesosAgentContainer(ZooKeeper zooKeeperContainer) {
         this(zooKeeperContainer, new MesosAgentConfig());
     }
 
-    public MesosAgent(ZooKeeper zooKeeperContainer, MesosAgentConfig config) {
+    public MesosAgentContainer(ZooKeeper zooKeeperContainer, MesosAgentConfig config) {
         super(zooKeeperContainer, config);
         this.config = config;
     }
 
-    public MesosAgent(MesosCluster cluster, String uuid, String containerId) {
+    public MesosAgentContainer(MesosCluster cluster, String uuid, String containerId) {
         this(cluster, uuid, containerId, new MesosAgentConfig());
     }
 
-    private MesosAgent(MesosCluster cluster, String uuid, String containerId, MesosAgentConfig config) {
+    private MesosAgentContainer(MesosCluster cluster, String uuid, String containerId, MesosAgentConfig config) {
         super(cluster, uuid, containerId, config);
         this.config = config;
     }
 
+    @Override
     public String getResources() {
         return config.getResources().asMesosString();
     }

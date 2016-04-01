@@ -1,9 +1,6 @@
 package com.containersol.minimesos.main.factory;
 
-import com.containersol.minimesos.cluster.Marathon;
-import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.cluster.MesosClusterFactory;
-import com.containersol.minimesos.cluster.ZooKeeper;
+import com.containersol.minimesos.cluster.*;
 import com.containersol.minimesos.marathon.MarathonContainer;
 import com.containersol.minimesos.mesos.*;
 
@@ -19,12 +16,12 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
 
     @Override
     public MesosAgent createMesosAgent(MesosCluster mesosCluster, String uuid, String containerId) {
-        return new MesosAgent(mesosCluster, uuid, containerId);
+        return new MesosAgentContainer(mesosCluster, uuid, containerId);
     }
 
     @Override
     public MesosMaster createMesosMaster(MesosCluster mesosCluster, String uuid, String containerId) {
-        return new MesosMaster(mesosCluster, uuid, containerId);
+        return new MesosMasterContainer(mesosCluster, uuid, containerId);
     }
 
     @Override

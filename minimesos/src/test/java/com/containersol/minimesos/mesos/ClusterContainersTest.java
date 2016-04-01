@@ -1,6 +1,8 @@
 package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.cluster.AbstractContainer;
+import com.containersol.minimesos.cluster.MesosAgent;
+import com.containersol.minimesos.cluster.MesosMaster;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import org.junit.Test;
 
