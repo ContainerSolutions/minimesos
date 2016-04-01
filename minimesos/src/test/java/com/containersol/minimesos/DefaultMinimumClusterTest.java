@@ -1,11 +1,11 @@
 package com.containersol.minimesos;
 
 import com.containersol.minimesos.cluster.MesosAgent;
-import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.AgentResourcesConfig;
 import com.containersol.minimesos.docker.DockerContainersUtil;
+import com.containersol.minimesos.junit.MesosClusterResource;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
-import com.containersol.minimesos.mesos.DockerClientFactory;
+import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.util.ResourceUtil;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -30,8 +30,9 @@ import static org.junit.Assert.assertTrue;
  */
 
 public class DefaultMinimumClusterTest {
+
     @ClassRule
-    public static final MesosCluster cluster = new MesosCluster(new ClusterArchitecture.Builder().build());
+    public static final MesosClusterResource cluster = new MesosClusterResource(new ClusterArchitecture.Builder().build());
 
     @After
     public void after() {

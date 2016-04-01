@@ -1,7 +1,7 @@
 package com.containersolutions.mesoshelloworld.systemtest;
 
 import com.containersol.minimesos.container.AbstractContainerImpl;
-import com.containersol.minimesos.mesos.DockerClientFactory;
+import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersolutions.mesoshelloworld.scheduler.Configuration;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 

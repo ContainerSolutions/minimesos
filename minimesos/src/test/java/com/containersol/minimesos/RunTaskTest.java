@@ -1,11 +1,11 @@
 package com.containersol.minimesos;
 
 import com.containersol.minimesos.cluster.AbstractContainer;
-import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.container.AbstractContainerImpl;
 import com.containersol.minimesos.docker.DockerContainersUtil;
+import com.containersol.minimesos.junit.MesosClusterResource;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
-import com.containersol.minimesos.mesos.DockerClientFactory;
+import com.containersol.minimesos.docker.DockerClientFactory;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
@@ -20,7 +20,7 @@ public class RunTaskTest {
     private static final String TASK_CLUSTER_ROLE = "test";
 
     @ClassRule
-    public static final MesosCluster cluster = new MesosCluster(
+    public static final MesosClusterResource cluster = new MesosClusterResource(
             new ClusterArchitecture.Builder()
                     .withZooKeeper()
                     .withMaster()

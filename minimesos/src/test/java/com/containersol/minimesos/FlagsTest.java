@@ -1,7 +1,7 @@
 package com.containersol.minimesos;
 
-import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.ZooKeeper;
+import com.containersol.minimesos.junit.MesosClusterResource;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersol.minimesos.mesos.MesosMasterContainer;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -16,7 +16,7 @@ public class FlagsTest {
     public static final String aclExampleUnknownSyntaxUsedInStateJson = "run_tasks {\n  principals {\n    values: \"foo\"\n    values: \"bar\"\n  }\n  users {\n    values: \"alice\"\n  }\n}\n";
 
     @ClassRule
-    public static final MesosCluster cluster = new MesosCluster(
+    public static final MesosClusterResource cluster = new MesosClusterResource(
             new ClusterArchitecture.Builder()
                     .withZooKeeper()
                     .withMaster(MesosMasterEnvVars::new).build()

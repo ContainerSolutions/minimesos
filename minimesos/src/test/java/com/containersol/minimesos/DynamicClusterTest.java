@@ -5,7 +5,10 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.containersol.minimesos.mesos.*;
+import com.containersol.minimesos.junit.MesosClusterResource;
+import com.containersol.minimesos.mesos.ClusterArchitecture;
+import com.containersol.minimesos.mesos.MesosAgentContainer;
+import com.containersol.minimesos.mesos.MesosMasterContainer;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
@@ -26,7 +29,7 @@ public class DynamicClusterTest {
                 .withAgent(MesosAgentContainer::new)
                 .build();
 
-        MesosCluster cluster = new MesosCluster(config);
+        MesosClusterResource cluster = new MesosClusterResource(config);
         cluster.setExposedHostPorts(EXPOSED_PORTS);
 
         cluster.start();

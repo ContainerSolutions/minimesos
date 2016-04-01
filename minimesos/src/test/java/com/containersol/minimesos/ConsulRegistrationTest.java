@@ -1,14 +1,14 @@
 package com.containersol.minimesos;
 
-import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.config.RegistratorConfig;
 import com.containersol.minimesos.docker.DockerContainersUtil;
+import com.containersol.minimesos.junit.MesosClusterResource;
 import com.containersol.minimesos.marathon.MarathonContainer;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
-import com.containersol.minimesos.mesos.Consul;
+import com.containersol.minimesos.mesos.ConsulContainer;
 import com.containersol.minimesos.mesos.MesosAgentContainer;
-import com.containersol.minimesos.mesos.Registrator;
+import com.containersol.minimesos.mesos.RegistratorContainer;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONArray;
@@ -26,12 +26,12 @@ public class ConsulRegistrationTest {
             .withMaster()
             .withAgent(MesosAgentContainer::new)
             .withMarathon(MarathonContainer::new)
-            .withConsul(new Consul(new ConsulConfig()))
-            .withRegistrator(consul -> new Registrator(consul, new RegistratorConfig()))
+            .withConsul(new ConsulContainer(new ConsulConfig()))
+            .withRegistrator(consul -> new RegistratorContainer(consul, new RegistratorConfig()))
             .build();
 
     @ClassRule
-    public static final MesosCluster CLUSTER = new MesosCluster(CONFIG);
+    public static final MesosClusterResource CLUSTER = new MesosClusterResource(CONFIG);
 
     @After
     public void after() {

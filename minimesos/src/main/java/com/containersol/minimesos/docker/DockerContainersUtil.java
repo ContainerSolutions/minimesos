@@ -1,7 +1,6 @@
 package com.containersol.minimesos.docker;
 
 
-import com.containersol.minimesos.mesos.DockerClientFactory;
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.Container;

@@ -8,7 +8,7 @@ import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.main.factory.MesosClusterContainersFactory;
 import com.containersol.minimesos.marathon.MarathonContainer;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
-import com.containersol.minimesos.mesos.Consul;
+import com.containersol.minimesos.mesos.ConsulContainer;
 import com.containersol.minimesos.mesos.MesosAgentContainer;
 import com.containersol.minimesos.mesos.MesosMasterContainer;
 import org.junit.After;
@@ -35,7 +35,7 @@ public class ExposedPortsTest {
                 .withMaster(zooKeeper -> new MesosMasterContainer(zooKeeper, masterConfig))
                 .withAgent(zooKeeper -> new MesosAgentContainer(zooKeeper, agentConfig))
                 .withMarathon(zooKeeper -> new MarathonContainer(zooKeeper, marathonConfig))
-                .withConsul(new Consul(consulConfig))
+                .withConsul(new ConsulContainer(consulConfig))
                 .build();
 
         cluster = new MesosCluster(architecture);

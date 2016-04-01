@@ -1,8 +1,10 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.cluster.Consul;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.container.AbstractContainerImpl;
+import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -11,21 +13,21 @@ import com.github.dockerjava.api.model.Ports;
 /**
  * This is the Consul-in-a-container container. Consul adds service discovery through DNS, and a distributed k/v store.
  */
-public class Consul extends AbstractContainerImpl {
+public class ConsulContainer extends AbstractContainerImpl implements Consul {
 
     public static final int DNS_PORT = 53;
     private final ConsulConfig config;
 
-    public Consul(ConsulConfig config) {
+    public ConsulContainer(ConsulConfig config) {
         super();
         this.config = config;
     }
 
-    public Consul(MesosCluster cluster, String uuid, String containerId) {
+    public ConsulContainer(MesosCluster cluster, String uuid, String containerId) {
         this(cluster, uuid, containerId, new ConsulConfig());
     }
 
-    private Consul(MesosCluster cluster, String uuid, String containerId, ConsulConfig config) {
+    private ConsulContainer(MesosCluster cluster, String uuid, String containerId, ConsulConfig config) {
         super(cluster, uuid, containerId);
         this.config = config;
     }

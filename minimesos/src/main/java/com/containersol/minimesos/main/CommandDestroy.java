@@ -19,9 +19,12 @@ public class CommandDestroy implements Command {
 
     @Override
     public void execute() {
-        MesosCluster cluster = ClusterRepository.loadCluster(new MesosClusterContainersFactory());
+
+        MesosClusterContainersFactory clusterFactory = new MesosClusterContainersFactory();
+
+        MesosCluster cluster = ClusterRepository.loadCluster(clusterFactory);
         if (cluster != null) {
-            cluster.destroy();
+            cluster.destroy(clusterFactory);
             ClusterRepository.deleteClusterFile();
             LOGGER.info("Destroyed minimesos cluster with ID " + cluster.getClusterId());
         } else {

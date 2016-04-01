@@ -1,7 +1,7 @@
 package com.containersolutions.mesoshelloworld.systemtest;
 
-import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.docker.DockerContainersUtil;
+import com.containersol.minimesos.junit.MesosClusterResource;
 import com.containersol.minimesos.marathon.MarathonContainer;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersolutions.mesoshelloworld.executor.Executor;
@@ -35,7 +35,7 @@ public class InstallCommandTest {
             .build();
 
     @ClassRule
-    public static final MesosCluster CLUSTER = new MesosCluster(CONFIG);
+    public static final MesosClusterResource CLUSTER = new MesosClusterResource(CONFIG);
 
     @Test
     public void testMesosInstall() throws IOException {

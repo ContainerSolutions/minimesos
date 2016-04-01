@@ -1,11 +1,14 @@
 package com.containersol.minimesos;
 
+import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosMaster;
 import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.config.RegistratorConfig;
+import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.docker.DockerContainersUtil;
+import com.containersol.minimesos.junit.MesosClusterResource;
 import com.containersol.minimesos.main.factory.MesosClusterContainersFactory;
 import com.containersol.minimesos.marathon.MarathonContainer;
 import com.containersol.minimesos.mesos.*;
@@ -32,6 +35,7 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 public class MesosClusterTest {
+
     protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder()
             .withZooKeeper()
             .withMaster()
@@ -39,12 +43,12 @@ public class MesosClusterTest {
             .withAgent(MesosAgentContainer::new)
             .withAgent(MesosAgentContainer::new)
             .withMarathon(MarathonContainer::new)
-            .withConsul(new Consul(new ConsulConfig()))
-            .withRegistrator(consul -> new Registrator(consul, new RegistratorConfig()))
+            .withConsul(new ConsulContainer(new ConsulConfig()))
+            .withRegistrator(consul -> new RegistratorContainer(consul, new RegistratorConfig()))
             .build();
 
     @ClassRule
-    public static final MesosCluster CLUSTER = new MesosCluster(CONFIG);
+    public static final MesosClusterResource CLUSTER = new MesosClusterResource(CONFIG);
 
     @After
     public void after() {
