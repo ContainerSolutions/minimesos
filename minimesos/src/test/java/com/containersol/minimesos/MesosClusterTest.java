@@ -8,7 +8,7 @@ import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.config.RegistratorConfig;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.containersol.minimesos.junit.MesosClusterResource;
+import com.containersol.minimesos.junit.MesosClusterTestRule;
 import com.containersol.minimesos.main.factory.MesosClusterContainersFactory;
 import com.containersol.minimesos.marathon.MarathonContainer;
 import com.containersol.minimesos.mesos.*;
@@ -48,7 +48,7 @@ public class MesosClusterTest {
             .build();
 
     @ClassRule
-    public static final MesosClusterResource CLUSTER = new MesosClusterResource(CONFIG);
+    public static final MesosClusterTestRule CLUSTER = new MesosClusterTestRule(CONFIG);
 
     @After
     public void after() {

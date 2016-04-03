@@ -11,9 +11,9 @@ import org.junit.runners.model.Statement;
 /**
  * JUnit Rule wrapper of Mesos Cluster
  */
-public class MesosClusterResource extends MesosCluster implements TestRule {
+public class MesosClusterTestRule extends MesosCluster implements TestRule {
 
-    public MesosClusterResource(ClusterArchitecture clusterArchitecture) {
+    public MesosClusterTestRule(ClusterArchitecture clusterArchitecture) {
         super(clusterArchitecture.getClusterConfig(), clusterArchitecture.getClusterContainers().getContainers());
     }
 

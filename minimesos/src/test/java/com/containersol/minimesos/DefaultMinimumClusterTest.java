@@ -3,7 +3,7 @@ package com.containersol.minimesos;
 import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.config.AgentResourcesConfig;
 import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.containersol.minimesos.junit.MesosClusterResource;
+import com.containersol.minimesos.junit.MesosClusterTestRule;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.util.ResourceUtil;
@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 public class DefaultMinimumClusterTest {
 
     @ClassRule
-    public static final MesosClusterResource cluster = new MesosClusterResource(new ClusterArchitecture.Builder().build());
+    public static final MesosClusterTestRule cluster = new MesosClusterTestRule(new ClusterArchitecture.Builder().build());
 
     @After
     public void after() {

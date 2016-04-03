@@ -3,7 +3,7 @@ package com.containersol.minimesos;
 import com.containersol.minimesos.cluster.AbstractContainer;
 import com.containersol.minimesos.container.AbstractContainerImpl;
 import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.containersol.minimesos.junit.MesosClusterResource;
+import com.containersol.minimesos.junit.MesosClusterTestRule;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -20,7 +20,7 @@ public class RunTaskTest {
     private static final String TASK_CLUSTER_ROLE = "test";
 
     @ClassRule
-    public static final MesosClusterResource cluster = new MesosClusterResource(
+    public static final MesosClusterTestRule cluster = new MesosClusterTestRule(
             new ClusterArchitecture.Builder()
                     .withZooKeeper()
                     .withMaster()

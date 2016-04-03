@@ -1,7 +1,7 @@
 package com.containersolutions.mesoshelloworld.systemtest;
 
 import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.containersol.minimesos.junit.MesosClusterResource;
+import com.containersol.minimesos.junit.MesosClusterTestRule;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersolutions.mesoshelloworld.scheduler.Configuration;
 import com.jayway.awaitility.Awaitility;
@@ -34,7 +34,7 @@ public class DiscoverySystemTest {
             .build();
 
     @ClassRule
-    public static final MesosClusterResource CLUSTER = new MesosClusterResource(CONFIG);
+    public static final MesosClusterTestRule CLUSTER = new MesosClusterTestRule(CONFIG);
 
     @BeforeClass
     public static void startScheduler() throws Exception {
