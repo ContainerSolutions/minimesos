@@ -115,7 +115,7 @@ public class ClusterArchitecture {
 
             // Marathon (optional)
             if (clusterConfig.getMarathon() != null) {
-                configBuilder.withMarathon(zooKeeper -> new Marathon(zooKeeper, clusterConfig.getMarathon()));
+                configBuilder.withMarathon(zooKeeper -> new MarathonContainer(zooKeeper, clusterConfig.getMarathon()));
             }
 
             // Consul (optional)

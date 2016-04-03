@@ -1,10 +1,9 @@
 package com.containersol.minimesos.main;
 
-import com.containersol.minimesos.cluster.Filter;
-import com.containersol.minimesos.cluster.MesosAgent;
-import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.cluster.*;
 import com.containersol.minimesos.config.ClusterConfig;
-import com.containersol.minimesos.mesos.*;
+import com.containersol.minimesos.mesos.ClusterArchitecture;
+import com.containersol.minimesos.mesos.ClusterContainers;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
