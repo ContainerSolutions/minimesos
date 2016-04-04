@@ -66,13 +66,13 @@ public class ClusterArchitectureTest {
 
     @Test
     public void shouldBeAbleToAddContainer() {
-        ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder().withContainer(mock(ClusterMember.class));
+        ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder().withContainer(mock(ClusterProcess.class));
         assertEquals(minimumViableClusterSize() + 1, builder.build().getClusterContainers().getContainers().size());
     }
 
     @Test
     public void plainContainerOrderingShouldNotMatter() {
-        ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder().withContainer(mock(ClusterMember.class)).withZooKeeper().withContainer(mock(ClusterMember.class)).withMaster();
+        ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder().withContainer(mock(ClusterProcess.class)).withZooKeeper().withContainer(mock(ClusterProcess.class)).withMaster();
         assertEquals(minimumViableClusterSize() + 2, builder.build().getClusterContainers().getContainers().size());
     }
 

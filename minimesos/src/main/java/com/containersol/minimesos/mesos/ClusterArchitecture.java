@@ -253,9 +253,9 @@ public class ClusterArchitecture {
         /**
          * Includes your own container in the cluster
          *
-         * @param container must extend from {@link ClusterMember}
+         * @param container must extend from {@link ClusterProcess}
          */
-        public Builder withContainer(ClusterMember container) {
+        public Builder withContainer(ClusterProcess container) {
             getContainers().add(container); // A simple container may not need any injection. But is available if required.
             return this;
         }
@@ -263,10 +263,10 @@ public class ClusterArchitecture {
         /**
          * Includes your own container in the cluster with a reference to another container of type T
          *
-         * @param container container must extend from {@link ClusterMember}. Functional, to allow you to inject a reference to another {@link ClusterMember}.
-         * @param filter    A predicate that returns true if the {@link ClusterMember} is of type T
+         * @param container container must extend from {@link ClusterProcess}. Functional, to allow you to inject a reference to another {@link ClusterProcess}.
+         * @param filter    A predicate that returns true if the {@link ClusterProcess} is of type T
          */
-        public <T extends ClusterMember> Builder withContainer(Function<T, ClusterMember> container, Predicate<ClusterMember> filter) {
+        public <T extends ClusterProcess> Builder withContainer(Function<T, ClusterProcess> container, Predicate<ClusterProcess> filter) {
             // Dev note: It is not possible to use generics to find the requested type due to generic type erasure. This is why we are explicitly passing a user provided filter.
             Optional<T> foundContainer = getContainers().getOne(filter);
             if (!foundContainer.isPresent()) {
@@ -290,7 +290,7 @@ public class ClusterArchitecture {
             }
         }
 
-        private Boolean isPresent(Predicate<ClusterMember> filter) {
+        private Boolean isPresent(Predicate<ClusterProcess> filter) {
             return getContainers().isPresent(filter);
         }
 

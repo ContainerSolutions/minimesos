@@ -3,23 +3,23 @@ package com.containersol.minimesos.cluster;
 import java.util.function.Predicate;
 
 public class Filter {
-    public static Predicate<ClusterMember> zooKeeper() {
+    public static Predicate<ClusterProcess> zooKeeper() {
         return abstractContainer -> abstractContainer instanceof ZooKeeper;
     }
 
-    public static Predicate<ClusterMember> consul() {
+    public static Predicate<ClusterProcess> consul() {
         return abstractContainer -> abstractContainer instanceof Consul;
     }
 
-    public static Predicate<ClusterMember> mesosMaster() {
+    public static Predicate<ClusterProcess> mesosMaster() {
         return abstractContainer -> abstractContainer instanceof MesosMaster;
     }
 
-    public static Predicate<ClusterMember> mesosAgent() {
+    public static Predicate<ClusterProcess> mesosAgent() {
         return abstractContainer -> abstractContainer instanceof MesosAgent;
     }
 
-    public static Predicate<ClusterMember> marathon() {
+    public static Predicate<ClusterProcess> marathon() {
         return abstractContainer -> abstractContainer instanceof Marathon;
     }
 }

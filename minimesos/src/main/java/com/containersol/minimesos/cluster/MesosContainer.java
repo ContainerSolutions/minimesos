@@ -6,7 +6,7 @@ import org.json.JSONObject;
 /**
  * Functionality of Mesos Cluster core members
  */
-public interface MesosContainer extends ClusterMember {
+public interface MesosContainer extends ClusterProcess {
 
     void setZooKeeper(ZooKeeper zookeeper);
     JSONObject getStateInfoJSON() throws UnirestException;

@@ -1,7 +1,7 @@
 package com.containersol.minimesos.container;
 
 import com.containersol.minimesos.MinimesosException;
-import com.containersol.minimesos.cluster.ClusterMember;
+import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.docker.DockerClientFactory;
@@ -29,7 +29,7 @@ import static com.jayway.awaitility.Awaitility.await;
 /**
  * Extend this class to start and manage your own containers
  */
-public abstract class AbstractContainer implements ClusterMember {
+public abstract class AbstractContainer implements ClusterProcess {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractContainer.class);
 
