@@ -37,7 +37,7 @@ public class MesosCluster {
 
     private final ClusterConfig clusterConfig;
 
-    private List<ClusterMember> containers = Collections.synchronizedList(new ArrayList<>());
+    private List<ClusterMember> members = Collections.synchronizedList(new ArrayList<>());
 
     private boolean running = false;
 
@@ -45,12 +45,12 @@ public class MesosCluster {
     /**
      * Create a new MesosCluster with a specified cluster architecture.
      */
-    public MesosCluster(ClusterConfig clusterConfig, List<ClusterMember> containers) {
-        this.containers = containers;
+    public MesosCluster(ClusterConfig clusterConfig, List<ClusterMember> members) {
+        this.members = members;
         this.clusterConfig = clusterConfig;
 
         clusterId = Integer.toUnsignedString(new SecureRandom().nextInt());
-        for (ClusterMember container : containers) {
+        for (ClusterMember container : members) {
             container.setCluster(this);
         }
     }
@@ -76,19 +76,19 @@ public class MesosCluster {
 
         factory.loadRunningCluster(this);
 
-        if (containers.isEmpty()) {
+        if (members.isEmpty()) {
             throw new MinimesosException("No containers found for cluster ID " + clusterId);
         }
 
-        ZooKeeper zookeeper = getZkContainer();
+        ZooKeeper zookeeper = getZooKeeper();
 
         if (zookeeper != null) {
             for (MesosAgent mesosAgent : getAgents()) {
                 mesosAgent.setZooKeeper(zookeeper);
             }
-            getMasterContainer().setZooKeeper(zookeeper);
-            if (getMarathonContainer() != null) {
-                getMarathonContainer().setZooKeeper(zookeeper);
+            getMaster().setZooKeeper(zookeeper);
+            if (getMarathon() != null) {
+                getMarathon().setZooKeeper(zookeeper);
             }
         }
 
@@ -114,11 +114,11 @@ public class MesosCluster {
         }
 
         LOGGER.debug("Cluster " + getClusterId() + " - start");
-        this.containers.forEach((container) -> container.start(timeoutSeconds));
+        this.members.forEach((container) -> container.start(timeoutSeconds));
         // wait until the given number of agents are registered
-        getMasterContainer().waitFor();
+        getMaster().waitFor();
 
-        Marathon marathon = getMarathonContainer();
+        Marathon marathon = getMarathon();
         if (marathon != null) {
             marathon.installMarathonApps();
         }
@@ -164,9 +164,9 @@ public class MesosCluster {
     public void stop() {
         LOGGER.debug("Cluster " + getClusterId() + " - stop");
 
-        if (containers.size() > 0) {
-            for (int i = containers.size() - 1; i >= 0; i--) {
-                ClusterMember container = containers.get(i);
+        if (members.size() > 0) {
+            for (int i = members.size() - 1; i >= 0; i--) {
+                ClusterMember container = members.get(i);
                 LOGGER.debug("Removing container [" + container.getContainerId() + "]");
                 try {
                     container.remove();
@@ -176,7 +176,7 @@ public class MesosCluster {
             }
         }
         this.running = false;
-        this.containers.clear();
+        this.members.clear();
     }
 
     /**
@@ -189,7 +189,7 @@ public class MesosCluster {
             throw new MinimesosException("Specify a Marathon JSON app definition");
         }
 
-        Marathon marathon = getMarathonContainer();
+        Marathon marathon = getMarathon();
         if (marathon == null) {
             throw new MinimesosException("Marathon container is not found in cluster " + clusterId);
         }
@@ -205,7 +205,7 @@ public class MesosCluster {
      */
     public void destroy(MesosClusterFactory factory) {
         LOGGER.debug("Cluster " + getClusterId() + " - destroy");
-        Marathon marathon = getMarathonContainer();
+        Marathon marathon = getMarathon();
         if (marathon != null) {
             marathon.killAllApps();
         }
@@ -233,7 +233,7 @@ public class MesosCluster {
      */
     public String addAndStartContainer(ClusterMember container, int timeout) {
         container.setCluster(this);
-        containers.add(container);
+        members.add(container);
 
         LOGGER.debug(String.format("Starting %s (%s) container", container.getName(), container.getContainerId()));
 
@@ -266,7 +266,7 @@ public class MesosCluster {
      */
     public JSONObject getClusterStateInfo() {
         try {
-            return getMasterContainer().getStateInfoJSON();
+            return getMaster().getStateInfoJSON();
         } catch (UnirestException e) {
             throw new MinimesosException("Failed to retrieve state from Mesos Master", e);
         }
@@ -297,30 +297,30 @@ public class MesosCluster {
         }
     }
 
-    public List<ClusterMember> getContainers() {
-        return containers;
+    public List<ClusterMember> getMembers() {
+        return members;
     }
 
     public List<MesosAgent> getAgents() {
-        return containers.stream().filter(Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
+        return members.stream().filter(Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
     }
 
-    public MesosMaster getMasterContainer() {
+    public MesosMaster getMaster() {
         Optional<MesosMaster> master = getOne(Filter.mesosMaster());
         return master.isPresent() ? master.get() : null;
     }
 
-    public ZooKeeper getZkContainer() {
+    public ZooKeeper getZooKeeper() {
         Optional<ZooKeeper> zooKeeper = getOne(Filter.zooKeeper());
         return zooKeeper.isPresent() ? zooKeeper.get() : null;
     }
 
-    public Marathon getMarathonContainer() {
+    public Marathon getMarathon() {
         Optional<Marathon> marathon = getOne(Filter.marathon());
         return marathon.isPresent() ? marathon.get() : null;
     }
 
-    public Consul getConsulContainer() {
+    public Consul getConsul() {
         Optional<Consul> container = getOne(Filter.consul());
         return container.isPresent() ? container.get() : null;
     }
@@ -335,7 +335,7 @@ public class MesosCluster {
      */
     @SuppressWarnings("unchecked")
     public <T extends ClusterMember> Optional<T> getOne(java.util.function.Predicate<ClusterMember> filter) {
-        return (Optional<T>) getContainers().stream().filter(filter).findFirst();
+        return (Optional<T>) getMembers().stream().filter(filter).findFirst();
     }
 
     public String getClusterId() {
@@ -357,7 +357,7 @@ public class MesosCluster {
     public void waitForState(final Predicate<State> predicate) {
         Awaitility.await().atMost(clusterConfig.getTimeout(), TimeUnit.SECONDS).until(() -> {
             try {
-                return predicate.test(State.fromJSON(getMasterContainer().getStateInfoJSON().toString()));
+                return predicate.test(State.fromJSON(getMaster().getStateInfoJSON().toString()));
             } catch (InternalServerErrorException e) {
                 LOGGER.error(e.toString());
                 // This probably means that the mesos cluster isn't ready yet..
@@ -370,7 +370,7 @@ public class MesosCluster {
         boolean exposedHostPorts = isExposedHostPorts();
         String dockerHostIp = System.getenv("DOCKER_HOST_IP");
 
-        for (ClusterMember container : getContainers()) {
+        for (ClusterMember container : getMembers()) {
 
             String ip;
             if (!exposedHostPorts || StringUtils.isEmpty(dockerHostIp)) {
@@ -520,7 +520,7 @@ public class MesosCluster {
     public String toString() {
         return "MesosCluster{" +
                 "clusterId='" + clusterId + '\'' +
-                ", containers=" + containers +
+                ", members=" + members +
                 '}';
     }
 

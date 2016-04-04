@@ -16,32 +16,26 @@ import java.util.List;
  */
 public class MesosClusterContainersFactory extends MesosClusterFactory {
 
-    @Override
     public ZooKeeper createZooKeeper(MesosCluster mesosCluster, String uuid, String containerId) {
         return new ZooKeeperContainer(mesosCluster, uuid, containerId);
     }
 
-    @Override
     public MesosAgent createMesosAgent(MesosCluster mesosCluster, String uuid, String containerId) {
         return new MesosAgentContainer(mesosCluster, uuid, containerId);
     }
 
-    @Override
     public MesosMaster createMesosMaster(MesosCluster mesosCluster, String uuid, String containerId) {
         return new MesosMasterContainer(mesosCluster, uuid, containerId);
     }
 
-    @Override
     public Marathon createMarathon(MesosCluster mesosCluster, String uuid, String containerId) {
         return new MarathonContainer(mesosCluster, uuid, containerId);
     }
 
-    @Override
     public Consul createConsul(MesosCluster mesosCluster, String uuid, String containerId) {
         return new ConsulContainer(mesosCluster, uuid, containerId);
     }
 
-    @Override
     public Registrator createRegistrator(MesosCluster mesosCluster, String uuid, String containerId) {
         return new RegistratorContainer(mesosCluster, uuid, containerId);
     }
@@ -50,7 +44,7 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
     public void loadRunningCluster(MesosCluster cluster) {
 
         String clusterId = cluster.getClusterId();
-        List<ClusterMember> containers = cluster.getContainers();
+        List<ClusterMember> containers = cluster.getMembers();
 
         List<Container> dockerContainers = DockerClientFactory.build().listContainersCmd().exec();
         Collections.sort(dockerContainers, (c1, c2) -> Long.compare(c1.getCreated(), c2.getCreated()));

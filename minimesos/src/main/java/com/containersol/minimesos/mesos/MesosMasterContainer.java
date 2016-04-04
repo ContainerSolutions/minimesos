@@ -113,7 +113,7 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
 
         @Override
         public Boolean call() throws Exception {
-            String stateUrl = mesosCluster.getMasterContainer().getStateUrl();
+            String stateUrl = mesosCluster.getMaster().getStateUrl();
             try {
                 int activatedAgents = Unirest.get(stateUrl).asJson().getBody().getObject().getInt("activated_slaves");
                 if (activatedAgents != mesosCluster.getAgents().size()) {

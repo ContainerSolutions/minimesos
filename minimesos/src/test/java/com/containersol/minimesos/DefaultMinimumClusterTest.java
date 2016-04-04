@@ -42,14 +42,14 @@ public class DefaultMinimumClusterTest {
 
     @Test
     public void mesosClusterCanBeStarted() throws Exception {
-        JSONObject stateInfo = cluster.getMasterContainer().getStateInfoJSON();
+        JSONObject stateInfo = cluster.getMaster().getStateInfoJSON();
 
         assertEquals(1, stateInfo.getInt("activated_slaves")); // Only one agent is actually _required_ to have a cluster
     }
 
     @Test
     public void mesosResourcesCorrect() throws Exception {
-        JSONObject stateInfo = cluster.getMasterContainer().getStateInfoJSON();
+        JSONObject stateInfo = cluster.getMaster().getStateInfoJSON();
         for (int i = 0; i < 3; i++) {
             assertEquals(AgentResourcesConfig.DEFAULT_CPU.getValue(), stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getDouble("cpus"), 0.0001);
             assertEquals(256, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getInt("mem"));

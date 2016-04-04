@@ -57,7 +57,7 @@ public class DynamicClusterTest {
         cluster.setExposedHostPorts(EXPOSED_PORTS);
         cluster.start();
 
-        ZooKeeper zooKeeper = cluster.getZkContainer();
+        ZooKeeper zooKeeper = cluster.getZooKeeper();
         MesosAgent extraAgent = new MesosAgentContainer(zooKeeper);
 
         String containerId = cluster.addAndStartContainer(extraAgent);

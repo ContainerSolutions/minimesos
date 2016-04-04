@@ -39,7 +39,7 @@ public class DiscoverySystemTest {
     @BeforeClass
     public static void startScheduler() throws Exception {
 
-        String ipAddress = CLUSTER.getMasterContainer().getIpAddress();
+        String ipAddress = CLUSTER.getMaster().getIpAddress();
 
         LOGGER.info("Starting Scheduler, connected to " + ipAddress);
         SchedulerContainer scheduler = new SchedulerContainer(ipAddress);

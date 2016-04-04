@@ -70,7 +70,7 @@ public class RunTaskTest {
                         .withName( getName() )
                         .withEntrypoint(
                                 "mesos-execute",
-                                "--master=" + cluster.getMasterContainer().getIpAddress() + ":5050",
+                                "--master=" + cluster.getMaster().getIpAddress() + ":5050",
                                 "--command=echo 1",
                                 "--name=test-cmd",
                                 "--resources=cpus:0.1;mem:128"

@@ -62,10 +62,10 @@ public class MesosClusterTest {
 
         MesosCluster cluster = MesosCluster.loadCluster(clusterId, new MesosClusterContainersFactory());
 
-        assertArrayEquals(CLUSTER.getContainers().toArray(), cluster.getContainers().toArray());
+        assertArrayEquals(CLUSTER.getMembers().toArray(), cluster.getMembers().toArray());
 
-        assertEquals(CLUSTER.getZkContainer().getIpAddress(), cluster.getZkContainer().getIpAddress());
-        assertEquals(CLUSTER.getMasterContainer().getStateUrl(), cluster.getMasterContainer().getStateUrl());
+        assertEquals(CLUSTER.getZooKeeper().getIpAddress(), cluster.getZooKeeper().getIpAddress());
+        assertEquals(CLUSTER.getMaster().getStateUrl(), cluster.getMaster().getStateUrl());
 
         assertFalse("Deserialize cluster is expected to remember exposed ports setting", cluster.isExposedHostPorts());
     }
@@ -85,10 +85,10 @@ public class MesosClusterTest {
         String output = byteArrayOutputStream.toString();
 
         assertTrue(output.contains("Minimesos cluster is running: " + CLUSTER.getClusterId() + "\n"));
-        assertTrue(output.contains("export MINIMESOS_ZOOKEEPER=zk://" + CLUSTER.getZkContainer().getIpAddress() + ":2181\n"));
-        assertTrue(output.contains("export MINIMESOS_MASTER=http://" + CLUSTER.getMasterContainer().getIpAddress() + ":5050\n"));
-        assertTrue(output.contains("export MINIMESOS_MARATHON=http://" + CLUSTER.getMarathonContainer().getIpAddress() + ":8080\n"));
-        assertTrue(output.contains("export MINIMESOS_CONSUL=http://" + CLUSTER.getConsulContainer().getIpAddress() + ":8500\n"));
+        assertTrue(output.contains("export MINIMESOS_ZOOKEEPER=zk://" + CLUSTER.getZooKeeper().getIpAddress() + ":2181\n"));
+        assertTrue(output.contains("export MINIMESOS_MASTER=http://" + CLUSTER.getMaster().getIpAddress() + ":5050\n"));
+        assertTrue(output.contains("export MINIMESOS_MARATHON=http://" + CLUSTER.getMarathon().getIpAddress() + ":8080\n"));
+        assertTrue(output.contains("export MINIMESOS_CONSUL=http://" + CLUSTER.getConsul().getIpAddress() + ":8500\n"));
     }
 
     @Test
@@ -100,7 +100,7 @@ public class MesosClusterTest {
 
     @Test
     public void mesosClusterCanBeStarted() throws Exception {
-        MesosMaster master = CLUSTER.getMasterContainer();
+        MesosMaster master = CLUSTER.getMaster();
         JSONObject stateInfo = master.getStateInfoJSON();
 
         assertEquals(3, stateInfo.getInt("activated_slaves"));
@@ -108,7 +108,7 @@ public class MesosClusterTest {
 
     @Test
     public void mesosResourcesCorrect() throws Exception {
-        JSONObject stateInfo = CLUSTER.getMasterContainer().getStateInfoJSON();
+        JSONObject stateInfo = CLUSTER.getMaster().getStateInfoJSON();
         for (int i = 0; i < 3; i++) {
             assertEquals((long) 1, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getLong("cpus"));
             assertEquals(256, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getInt("mem"));
