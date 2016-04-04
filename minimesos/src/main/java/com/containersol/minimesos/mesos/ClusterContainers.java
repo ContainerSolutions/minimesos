@@ -12,7 +12,7 @@ import java.util.function.Predicate;
  */
 public class ClusterContainers {
 
-    private final List<AbstractContainer> containers;
+    private final List<ClusterMember> containers;
 
     /**
      * Create a container List from scratch
@@ -23,23 +23,23 @@ public class ClusterContainers {
 
     /**
      * Create a container List from another List
-     * @param containers another List of {@link AbstractContainer}
+     * @param containers another List of {@link ClusterMember}
      */
-    public ClusterContainers(List<AbstractContainer> containers) {
+    public ClusterContainers(List<ClusterMember> containers) {
         this.containers = containers;
     }
 
     /**
      * Add a container to the list of containers.
-     * @param container of type {@link AbstractContainer}
+     * @param container of type {@link ClusterMember}
      * @return this, for fluent adding.
      */
-    public ClusterContainers add(AbstractContainer container) {
+    public ClusterContainers add(ClusterMember container) {
         containers.add(container);
         return this;
     }
 
-    public List<AbstractContainer> getContainers() {
+    public List<ClusterMember> getContainers() {
         return containers;
     }
 
@@ -47,21 +47,21 @@ public class ClusterContainers {
      * Optionally get one of a certain type of type T. Note, this cast will always work because we are filtering on that type.
      * If it doesn't find that type, the optional is empty so the cast doesn't need to be performed.
      *
-     * @param filter A predicate that is true when an {@link AbstractContainer} in the list is of type T
-     * @param <T> A container of type T that extends {@link AbstractContainer}
+     * @param filter A predicate that is true when an {@link ClusterMember} in the list is of type T
+     * @param <T> A container of type T that extends {@link ClusterMember}
      * @return the first container it comes across.
      */
     @SuppressWarnings("unchecked")
-    public <T extends AbstractContainer> Optional<T> getOne(Predicate<AbstractContainer> filter) {
+    public <T extends ClusterMember> Optional<T> getOne(Predicate<ClusterMember> filter) {
         return (Optional<T>) getContainers().stream().filter(filter).findFirst();
     }
 
     /**
      * Checks to see whether a container exists
-     * @param filter A predicate that is true when an {@link AbstractContainer} in the list is of type T
+     * @param filter A predicate that is true when an {@link ClusterMember} in the list is of type T
      * @return true if it exists
      */
-    public Boolean isPresent(Predicate<AbstractContainer> filter) {
+    public Boolean isPresent(Predicate<ClusterMember> filter) {
         return getOne(filter).isPresent();
     }
 

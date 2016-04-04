@@ -21,16 +21,16 @@ public class ClusterContainersTest {
 
     @Test
     public void shouldAllowInjection() {
-        List<AbstractContainer> dummyList = new ArrayList<>();
+        List<ClusterMember> dummyList = new ArrayList<>();
         assertEquals(dummyList, new ClusterContainers(dummyList).getContainers());
     }
 
     @Test
     public void shouldFilterZooKeeper() {
         ZooKeeper mock = mock(ZooKeeper.class);
-        AbstractContainer abstractContainer = mock(AbstractContainer.class);
+        ClusterMember clusterMember = mock(ClusterMember.class);
         ClusterContainers clusterContainers = new ClusterContainers();
-        clusterContainers.add(mock).add(abstractContainer);
+        clusterContainers.add(mock).add(clusterMember);
 
         assertTrue(clusterContainers.isPresent(Filter.zooKeeper()));
     }
@@ -38,9 +38,9 @@ public class ClusterContainersTest {
     @Test
     public void shouldFilterMesosMaster() {
         MesosMaster mock = mock(MesosMaster.class);
-        AbstractContainer abstractContainer = mock(AbstractContainer.class);
+        ClusterMember clusterMember = mock(ClusterMember.class);
         ClusterContainers clusterContainers = new ClusterContainers();
-        clusterContainers.add(mock).add(abstractContainer);
+        clusterContainers.add(mock).add(clusterMember);
 
         assertTrue(clusterContainers.isPresent(Filter.mesosMaster()));
     }
@@ -48,9 +48,9 @@ public class ClusterContainersTest {
     @Test
     public void shouldFilterMesosAgent() {
         MesosAgent mock = mock(MesosAgent.class);
-        AbstractContainer abstractContainer = mock(AbstractContainer.class);
+        ClusterMember clusterMember = mock(ClusterMember.class);
         ClusterContainers clusterContainers = new ClusterContainers();
-        clusterContainers.add(mock).add(abstractContainer);
+        clusterContainers.add(mock).add(clusterMember);
 
         assertTrue(clusterContainers.isPresent(Filter.mesosAgent()));
     }

@@ -3,7 +3,7 @@ package com.containersol.minimesos.mesos;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.ZooKeeperConfig;
-import com.containersol.minimesos.container.AbstractContainerImpl;
+import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -11,7 +11,7 @@ import com.github.dockerjava.api.model.ExposedPort;
 /**
  * ZooKeeper is a centralized service for maintaining configuration information, naming, providing distributed synchronization, and providing group services.
  */
-public class ZooKeeperContainer extends AbstractContainerImpl implements ZooKeeper {
+public class ZooKeeperContainer extends AbstractContainer implements ZooKeeper {
 
     private final ZooKeeperConfig config;
 

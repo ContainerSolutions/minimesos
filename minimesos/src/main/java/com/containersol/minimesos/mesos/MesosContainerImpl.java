@@ -4,7 +4,7 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosContainer;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.MesosContainerConfig;
-import com.containersol.minimesos.container.AbstractContainerImpl;
+import com.containersol.minimesos.container.AbstractContainer;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -19,7 +19,7 @@ import java.util.TreeMap;
  * Superclass for Mesos master and agent images.
  * Apache Mesos abstracts CPU, memory, storage, and other compute resources away from machines (physical or virtual), enabling fault-tolerant and elastic distributed systems to easily be built and run effectively.
  */
-public abstract class MesosContainerImpl extends AbstractContainerImpl implements MesosContainer {
+public abstract class MesosContainerImpl extends AbstractContainer implements MesosContainer {
 
     public static final String DEFAULT_MESOS_ZK_PATH = "/mesos";
 

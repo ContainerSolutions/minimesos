@@ -2,7 +2,7 @@ package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.cluster.*;
 import com.containersol.minimesos.config.*;
-import com.containersol.minimesos.container.AbstractContainerImpl;
+import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.marathon.MarathonContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +23,7 @@ import java.util.function.Predicate;
  * <p>
  * Which would create a cluster comprising of ZooKeeper, a Mesos Master and a single Mesos agent. This is the minimum viable cluster.
  * These three items are always added if they are not present, because they are required by Mesos. You can add your own simple containers
- * like this (where MyContainer extends from {@link AbstractContainerImpl}):
+ * like this (where MyContainer extends from {@link AbstractContainer}):
  * <p><p>
  * <code>
  * new ClusterArchitecture.Builder().withContainer(new MyContainer(...)).build();
@@ -253,9 +253,9 @@ public class ClusterArchitecture {
         /**
          * Includes your own container in the cluster
          *
-         * @param container must extend from {@link AbstractContainer}
+         * @param container must extend from {@link ClusterMember}
          */
-        public Builder withContainer(AbstractContainer container) {
+        public Builder withContainer(ClusterMember container) {
             getContainers().add(container); // A simple container may not need any injection. But is available if required.
             return this;
         }
@@ -263,10 +263,10 @@ public class ClusterArchitecture {
         /**
          * Includes your own container in the cluster with a reference to another container of type T
          *
-         * @param container container must extend from {@link AbstractContainer}. Functional, to allow you to inject a reference to another {@link AbstractContainer}.
-         * @param filter    A predicate that returns true if the {@link AbstractContainer} is of type T
+         * @param container container must extend from {@link ClusterMember}. Functional, to allow you to inject a reference to another {@link ClusterMember}.
+         * @param filter    A predicate that returns true if the {@link ClusterMember} is of type T
          */
-        public <T extends AbstractContainer> Builder withContainer(Function<T, AbstractContainer> container, Predicate<AbstractContainer> filter) {
+        public <T extends ClusterMember> Builder withContainer(Function<T, ClusterMember> container, Predicate<ClusterMember> filter) {
             // Dev note: It is not possible to use generics to find the requested type due to generic type erasure. This is why we are explicitly passing a user provided filter.
             Optional<T> foundContainer = getContainers().getOne(filter);
             if (!foundContainer.isPresent()) {
@@ -290,7 +290,7 @@ public class ClusterArchitecture {
             }
         }
 
-        private Boolean isPresent(Predicate<AbstractContainer> filter) {
+        private Boolean isPresent(Predicate<ClusterMember> filter) {
             return getContainers().isPresent(filter);
         }
 

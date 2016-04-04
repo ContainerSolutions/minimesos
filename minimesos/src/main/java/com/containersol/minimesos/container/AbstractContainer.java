@@ -1,7 +1,7 @@
 package com.containersol.minimesos.container;
 
 import com.containersol.minimesos.MinimesosException;
-import com.containersol.minimesos.cluster.AbstractContainer;
+import com.containersol.minimesos.cluster.ClusterMember;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.docker.DockerClientFactory;
@@ -29,9 +29,9 @@ import static com.jayway.awaitility.Awaitility.await;
 /**
  * Extend this class to start and manage your own containers
  */
-public abstract class AbstractContainerImpl implements AbstractContainer {
+public abstract class AbstractContainer implements ClusterMember {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractContainerImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractContainer.class);
 
     private static final int IMAGE_PULL_TIMEOUT_SECS = 5 * 60;
 
@@ -43,11 +43,11 @@ public abstract class AbstractContainerImpl implements AbstractContainer {
 
     protected Map<String, String> envVars = new TreeMap<>();
 
-    protected AbstractContainerImpl() {
+    protected AbstractContainer() {
         this.uuid = Integer.toUnsignedString(new SecureRandom().nextInt());
     }
 
-    public AbstractContainerImpl(MesosCluster cluster, String uuid, String containerId) {
+    public AbstractContainer(MesosCluster cluster, String uuid, String containerId) {
         this.cluster = cluster;
         this.uuid = uuid;
         this.containerId = containerId;
@@ -277,7 +277,7 @@ public abstract class AbstractContainerImpl implements AbstractContainer {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        AbstractContainerImpl that = (AbstractContainerImpl) o;
+        AbstractContainer that = (AbstractContainer) o;
 
         if (!StringUtils.equals(this.getClusterId(), that.getClusterId())) return false;
 

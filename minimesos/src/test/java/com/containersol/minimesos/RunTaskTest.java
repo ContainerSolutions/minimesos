@@ -1,7 +1,7 @@
 package com.containersol.minimesos;
 
-import com.containersol.minimesos.cluster.AbstractContainer;
-import com.containersol.minimesos.container.AbstractContainerImpl;
+import com.containersol.minimesos.cluster.ClusterMember;
+import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.junit.MesosClusterTestRule;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
@@ -54,7 +54,7 @@ public class RunTaskTest {
     @Test
     public void testMesosExecuteContainerSuccess() throws InterruptedException {
 
-        AbstractContainer mesosAgent = new AbstractContainerImpl() {
+        ClusterMember mesosAgent = new AbstractContainer() {
 
             @Override
             public String getRole() {

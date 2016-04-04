@@ -6,7 +6,7 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.AppConfig;
 import com.containersol.minimesos.config.MarathonConfig;
-import com.containersol.minimesos.container.AbstractContainerImpl;
+import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -34,7 +34,7 @@ import static com.jayway.awaitility.Awaitility.await;
 /**
  * Marathon container. Marathon is a cluster-wide init and control system for services in cgroups or Docker containers.
  */
-public class MarathonContainer extends AbstractContainerImpl implements Marathon {
+public class MarathonContainer extends AbstractContainer implements Marathon {
 
     private static Logger LOGGER = LoggerFactory.getLogger(MarathonContainer.class);
 

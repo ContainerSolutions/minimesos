@@ -5,7 +5,7 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.Registrator;
 import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.config.RegistratorConfig;
-import com.containersol.minimesos.container.AbstractContainerImpl;
+import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
@@ -13,7 +13,7 @@ import com.github.dockerjava.api.model.Bind;
 /**
  * Registrator automatically registers and deregisters services for any Docker container by inspecting containers as they come online.
  */
-public class RegistratorContainer extends AbstractContainerImpl implements Registrator {
+public class RegistratorContainer extends AbstractContainer implements Registrator {
 
     private final RegistratorConfig config;
     private Consul consulContainer;

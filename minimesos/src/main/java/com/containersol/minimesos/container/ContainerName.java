@@ -13,7 +13,7 @@ public class ContainerName {
      * @param container to build the name for
      * @return name of the container
      */
-    public static String get(AbstractContainerImpl container) {
+    public static String get(AbstractContainer container) {
         return String.format("minimesos-%s-%s-%s", container.getRole(), container.getClusterId(), container.getUuid());
     }
 

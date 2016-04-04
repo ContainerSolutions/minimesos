@@ -37,7 +37,7 @@ public class MesosCluster {
 
     private final ClusterConfig clusterConfig;
 
-    private List<AbstractContainer> containers = Collections.synchronizedList(new ArrayList<>());
+    private List<ClusterMember> containers = Collections.synchronizedList(new ArrayList<>());
 
     private boolean running = false;
 
@@ -45,12 +45,12 @@ public class MesosCluster {
     /**
      * Create a new MesosCluster with a specified cluster architecture.
      */
-    public MesosCluster(ClusterConfig clusterConfig, List<AbstractContainer> containers) {
+    public MesosCluster(ClusterConfig clusterConfig, List<ClusterMember> containers) {
         this.containers = containers;
         this.clusterConfig = clusterConfig;
 
         clusterId = Integer.toUnsignedString(new SecureRandom().nextInt());
-        for (AbstractContainer container : containers) {
+        for (ClusterMember container : containers) {
             container.setCluster(this);
         }
     }
@@ -166,7 +166,7 @@ public class MesosCluster {
 
         if (containers.size() > 0) {
             for (int i = containers.size() - 1; i >= 0; i--) {
-                AbstractContainer container = containers.get(i);
+                ClusterMember container = containers.get(i);
                 LOGGER.debug("Removing container [" + container.getContainerId() + "]");
                 try {
                     container.remove();
@@ -231,7 +231,7 @@ public class MesosCluster {
      * @param timeout   in seconds
      * @return container ID
      */
-    public String addAndStartContainer(AbstractContainer container, int timeout) {
+    public String addAndStartContainer(ClusterMember container, int timeout) {
         container.setCluster(this);
         containers.add(container);
 
@@ -255,7 +255,7 @@ public class MesosCluster {
      * @param container container to be started
      * @return container ID
      */
-    public String addAndStartContainer(AbstractContainer container) {
+    public String addAndStartContainer(ClusterMember container) {
         return addAndStartContainer(container, clusterConfig.getTimeout());
     }
 
@@ -297,7 +297,7 @@ public class MesosCluster {
         }
     }
 
-    public List<AbstractContainer> getContainers() {
+    public List<ClusterMember> getContainers() {
         return containers;
     }
 
@@ -329,12 +329,12 @@ public class MesosCluster {
      * Optionally get one of a certain type of type T. Note, this cast will always work because we are filtering on that type.
      * If it doesn't find that type, the optional is empty so the cast doesn't need to be performed.
      *
-     * @param filter A predicate that is true when an {@link AbstractContainer} in the list is of type T
-     * @param <T>    A container of type T that extends {@link AbstractContainer}
+     * @param filter A predicate that is true when an {@link ClusterMember} in the list is of type T
+     * @param <T>    A container of type T that extends {@link ClusterMember}
      * @return the first container it comes across.
      */
     @SuppressWarnings("unchecked")
-    public <T extends AbstractContainer> Optional<T> getOne(java.util.function.Predicate<AbstractContainer> filter) {
+    public <T extends ClusterMember> Optional<T> getOne(java.util.function.Predicate<ClusterMember> filter) {
         return (Optional<T>) getContainers().stream().filter(filter).findFirst();
     }
 
@@ -370,7 +370,7 @@ public class MesosCluster {
         boolean exposedHostPorts = isExposedHostPorts();
         String dockerHostIp = System.getenv("DOCKER_HOST_IP");
 
-        for (AbstractContainer container : getContainers()) {
+        for (ClusterMember container : getContainers()) {
 
             String ip;
             if (!exposedHostPorts || StringUtils.isEmpty(dockerHostIp)) {

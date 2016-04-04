@@ -3,7 +3,7 @@ package com.containersol.minimesos.cluster;
 /**
  * Functionality, which is expected from Marathon
  */
-public interface Marathon extends AbstractContainer {
+public interface Marathon extends ClusterMember {
 
     /**
      * If Marathon configuration requires, installs the applications

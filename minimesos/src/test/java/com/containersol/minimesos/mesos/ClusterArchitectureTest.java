@@ -3,7 +3,6 @@ package com.containersol.minimesos.mesos;
 import com.containersol.minimesos.cluster.*;
 import org.junit.Test;
 
-import static com.containersol.minimesos.cluster.Filter.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -67,13 +66,13 @@ public class ClusterArchitectureTest {
 
     @Test
     public void shouldBeAbleToAddContainer() {
-        ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder().withContainer(mock(AbstractContainer.class));
+        ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder().withContainer(mock(ClusterMember.class));
         assertEquals(minimumViableClusterSize() + 1, builder.build().getClusterContainers().getContainers().size());
     }
 
     @Test
     public void plainContainerOrderingShouldNotMatter() {
-        ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder().withContainer(mock(AbstractContainer.class)).withZooKeeper().withContainer(mock(AbstractContainer.class)).withMaster();
+        ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder().withContainer(mock(ClusterMember.class)).withZooKeeper().withContainer(mock(ClusterMember.class)).withMaster();
         assertEquals(minimumViableClusterSize() + 2, builder.build().getClusterContainers().getContainers().size());
     }
 

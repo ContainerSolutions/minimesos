@@ -1,6 +1,6 @@
 package com.containersol.minimesos;
 
-import com.containersol.minimesos.container.AbstractContainerImpl;
+import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -8,7 +8,7 @@ import com.github.dockerjava.api.model.ExposedPort;
 /**
  * A container for testing purposes. A small web server on port 80 returns the message "hello world."
  */
-class HelloWorldContainer extends AbstractContainerImpl {
+class HelloWorldContainer extends AbstractContainer {
     public static final String SERVICE_NAME = "hello-world-service";
     public static final int SERVICE_PORT = 80;
     public static final String HELLO_WORLD_IMAGE = "tutum/hello-world";

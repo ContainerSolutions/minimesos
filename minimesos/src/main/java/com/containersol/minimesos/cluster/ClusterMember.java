@@ -3,7 +3,7 @@ package com.containersol.minimesos.cluster;
 /**
  * Generic functionality of every cluster member
  */
-public interface AbstractContainer {
+public interface ClusterMember {
 
     MesosCluster getCluster();
     void setCluster(MesosCluster mesosCluster);

@@ -3,5 +3,5 @@ package com.containersol.minimesos.cluster;
 /**
  * Consul functionality
  */
-public interface Registrator extends AbstractContainer {
+public interface Registrator extends ClusterMember {
 }
