@@ -81,22 +81,28 @@ public abstract class AbstractContainer implements ClusterProcess {
         DockerClientFactory.build().startContainerCmd(containerId).exec();
 
         try {
-            await().atMost(timeout, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new ContainerIsRunning(containerId));
-        } catch (ConditionTimeoutException cte) {
-            LOGGER.error(String.format("Container [" + createCommand.getName() + "] did not start within %d seconds.", timeout));
 
-            try {
-                LogContainerCmd logContainerCmd = DockerClientFactory.build().logContainerCmd(containerId);
-                logContainerCmd.withStdOut().withStdErr();
-                logContainerCmd.exec(new LogContainerResultCallback() {
-                    @Override
-                    public void onNext(Frame item) {
-                        LOGGER.error(item.toString());
+            await().atMost(timeout, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(() -> {
+                List<Container> containers = DockerClientFactory.build().listContainersCmd().withShowAll(true).exec();
+                for (Container container : containers) {
+                    if (container.getId().equals(containerId)) {
+                        return true;
                     }
-                }).awaitCompletion();
-            } catch (InterruptedException e) {
-                LOGGER.error("Could not print container logs");
+                }
+                return false;
+            });
+
+        } catch (ConditionTimeoutException cte) {
+            String errorMessage = String.format("Container [" + createCommand.getName() + "] did not start within %d seconds.", timeout);
+            LOGGER.error(errorMessage);
+            try {
+                for (String logLine : DockerContainersUtil.getDockerLogs(containerId)) {
+                    LOGGER.error(logLine);
+                }
+            } catch (Exception e) {
+                LOGGER.error("Could not print container logs", e);
             }
+            throw new MinimesosException(errorMessage + " See container logs above");
         }
 
         LOGGER.debug("Container is up and running");
@@ -239,25 +245,6 @@ public abstract class AbstractContainer implements ClusterProcess {
         return envVars.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
     }
 
-    private class ContainerIsRunning implements Callable<Boolean> {
-
-        private String containerId;
-
-        public ContainerIsRunning(String containerId) {
-            this.containerId = containerId;
-        }
-
-        @Override
-        public Boolean call() throws Exception {
-            List<Container> containers = DockerClientFactory.build().listContainersCmd().exec();
-            for (Container container : containers) {
-                if (container.getId().equals(containerId)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
 
     @Override
     public String toString() {

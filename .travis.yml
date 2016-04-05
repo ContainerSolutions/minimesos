@@ -1,0 +1,23 @@
+language: java
+
+jdk:
+  - oraclejdk8
+
+sudo: required
+
+env:
+  global:
+    - DOCKER_VERSION=1.9.1  # Install Docker version 1.9.1
+
+install:
+# one liner installation of docker 1.9.1 below did not work (see https://github.com/moul/travis-docker/issues/38).
+#  - curl -sLo - http://j.mp/install-travis-docker | sh -xe
+# Therefore installing it through a script
+  - sudo sh -c 'echo "deb https://apt.dockerproject.org/repo ubuntu-precise main" > /etc/apt/sources.list.d/docker.list'
+  - sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+  - sudo apt-get update
+  - sudo apt-key update
+  - sudo apt-get -qqy install docker-engine=1.9.1-0~precise
+  - chmod +x pull-containers.sh && sudo ./pull-containers.sh
+
+script: sudo ./gradlew clean build --info --stacktrace

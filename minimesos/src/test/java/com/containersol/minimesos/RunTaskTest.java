@@ -29,14 +29,6 @@ public class RunTaskTest {
                     .withAgent()
                     .build());
 
-    @After
-    public void after() {
-        DockerContainersUtil util = new DockerContainersUtil();
-        // kill() is not used because containers are expected to exit by this time
-        util.getContainers(true).filterByName("^minimesos-" + TASK_CLUSTER_ROLE + "-[0-9a-f\\-]*$").remove();
-    }
-
-
     public static class LogContainerTestCallback extends LogContainerResultCallback {
         protected final StringBuffer log = new StringBuffer();
 
