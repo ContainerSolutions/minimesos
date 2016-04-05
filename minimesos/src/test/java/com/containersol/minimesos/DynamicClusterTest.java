@@ -35,7 +35,7 @@ public class DynamicClusterTest {
         assertNotNull( "Cluster ID must be set", clusterId );
 
         // this should not throw any exceptions
-        cluster.destroy();
+        cluster.stop();
 
     }
 

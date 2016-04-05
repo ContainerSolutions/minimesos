@@ -7,6 +7,7 @@ import com.containersol.minimesos.config.MarathonConfig;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.container.ContainerName;
+import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.marathon.Marathon;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersol.minimesos.mesos.ClusterContainers;
@@ -157,7 +158,9 @@ public class MesosCluster extends ExternalResource {
                 mesosAgent.setZooKeeperContainer(zookeeper);
             }
             getMasterContainer().setZooKeeperContainer(zookeeper);
-            getMarathonContainer().setZooKeeper(zookeeper);
+            if (getMarathonContainer() != null) {
+                getMarathonContainer().setZooKeeper(zookeeper);
+            }
         }
 
         running = true;
@@ -228,7 +231,14 @@ public class MesosCluster extends ExternalResource {
      * Containers are stopped in reverse order of their creation
      */
     public void stop() {
+
         LOGGER.debug("Cluster " + getClusterId() + " - stop");
+
+        // stop applications, which are installed through marathon
+        Marathon marathon = getMarathonContainer();
+        if (marathon != null) {
+            marathon.killAllApps();
+        }
 
         if (containers.size() > 0) {
             for (int i = containers.size() - 1; i >= 0; i--) {
@@ -241,8 +251,30 @@ public class MesosCluster extends ExternalResource {
                 }
             }
         }
-        this.running = false;
+
         this.containers.clear();
+
+        if (clusterId != null) {
+
+            DockerContainersUtil containers = new DockerContainersUtil(dockerClient);
+            containers.getContainers(true).filterByName(ContainerName.getContainerNamePattern(clusterId)).kill(true).remove();
+
+            File sandboxLocation = new File(getHostDir(), ".minimesos/sandbox-" + clusterId);
+            if (sandboxLocation.exists()) {
+                try {
+                    FileUtils.forceDelete(sandboxLocation);
+                } catch (IOException e) {
+                    String msg = String.format("Failed to force delete the cluster sandbox at %s", sandboxLocation.getAbsolutePath());
+                    throw new MinimesosException(msg, e);
+                }
+            }
+
+        } else {
+            LOGGER.info("Minimesos cluster is not running");
+        }
+
+        this.running = false;
+
     }
 
     /**
@@ -264,40 +296,6 @@ public class MesosCluster extends ExternalResource {
         LOGGER.debug(String.format("Installing %s app on marathon %s", marathonJson, marathonIp));
 
         marathon.deployApp(marathonJson);
-    }
-
-    /**
-     * Destroys the Mesos cluster and its containers
-     */
-    public void destroy() {
-        LOGGER.debug("Cluster " + getClusterId() + " - destroy");
-
-        if (clusterId != null) {
-
-            Marathon marathon = getMarathonContainer();
-            if (marathon != null) {
-                marathon.killAllApps();
-            }
-
-            List<Container> containers = dockerClient.listContainersCmd().exec();
-            for (Container container : containers) {
-                if (ContainerName.belongsToCluster(container.getNames(), clusterId)) {
-                    dockerClient.removeContainerCmd(container.getId()).withForce().withRemoveVolumes(true).exec();
-                }
-            }
-            File sandboxLocation = new File(getHostDir(), ".minimesos/sandbox-" + clusterId);
-            if (sandboxLocation.exists()) {
-                try {
-                    FileUtils.forceDelete(sandboxLocation);
-                } catch (IOException e) {
-                    String msg = String.format("Failed to force delete the cluster sandbox at %s", sandboxLocation.getAbsolutePath());
-                    LOGGER.error(msg, e);
-                    throw new MinimesosException(msg, e);
-                }
-            }
-        } else {
-            LOGGER.info("Minimesos cluster is not running");
-        }
     }
 
     /**
@@ -406,7 +404,7 @@ public class MesosCluster extends ExternalResource {
 
     @Override
     protected void after() {
-        destroy();
+        stop();
     }
 
     public MesosMaster getMasterContainer() {

@@ -43,7 +43,7 @@ public class DockerContainersUtil {
     }
 
     /**
-     * Filters the set based on the constainer name
+     * Filters the set based on the container name
      *
      * @param pattern regular expression pattern of the container name
      * @return filtered set

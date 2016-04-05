@@ -47,11 +47,6 @@ public class MesosClusterTest {
     @ClassRule
     public static final MesosCluster cluster = new MesosCluster(CONFIG);
 
-    @AfterClass
-    public static void after() {
-        cluster.destroy();
-    }
-
     @Test(expected = ClusterArchitecture.MesosArchitectureException.class)
     public void testConstructor() {
         MesosCluster cluster = new MesosCluster(null);

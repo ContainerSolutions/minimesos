@@ -22,22 +22,18 @@ import static org.junit.Assert.assertFalse;
 public class ConsulRegistrationTest {
 
     protected static final DockerClient dockerClient = DockerClientFactory.build();
+
+    // using Marathon slows down destruction of the cluster
     protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder(dockerClient)
             .withZooKeeper()
             .withMaster()
             .withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper))
-            .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper))
             .withConsul(new Consul(dockerClient, new ConsulConfig()))
             .withRegistrator(consul -> new Registrator(dockerClient, consul, new RegistratorConfig()))
             .build();
 
     @ClassRule
     public static final MesosCluster cluster = new MesosCluster(CONFIG);
-
-    @AfterClass
-    public static void after() {
-        cluster.destroy();
-    }
 
     @Test
     public void testRegisterServiceWithConsul() throws UnirestException {

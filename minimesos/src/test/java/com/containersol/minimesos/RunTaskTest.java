@@ -30,12 +30,6 @@ public class RunTaskTest {
                     .withAgent()
                     .build());
 
-    @AfterClass
-    public static void after() {
-        cluster.destroy();
-    }
-
-
     public static class LogContainerTestCallback extends LogContainerResultCallback {
         protected final StringBuffer log = new StringBuffer();
 

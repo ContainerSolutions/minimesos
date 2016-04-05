@@ -37,11 +37,6 @@ public class DefaultMinimumClusterTest {
     @ClassRule
     public static final MesosCluster cluster = new MesosCluster(new ClusterArchitecture.Builder().build());
 
-    @AfterClass
-    public static void after() {
-        cluster.destroy();
-    }
-
     @Test
     public void mesosClusterCanBeStarted() throws Exception {
         JSONObject stateInfo = cluster.getMasterContainer().getStateInfoJSON();

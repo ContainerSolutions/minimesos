@@ -13,7 +13,6 @@ import com.containersol.minimesos.mesos.MesosAgent;
 import com.containersol.minimesos.mesos.MesosMaster;
 import com.github.dockerjava.api.DockerClient;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,14 +32,13 @@ public class ExposedPortsTest {
 
         MesosMasterConfig masterConfig = new MesosMasterConfig();
         MesosAgentConfig agentConfig = new MesosAgentConfig();
-        MarathonConfig marathonConfig = new MarathonConfig();
         ConsulConfig consulConfig = new ConsulConfig();
 
+        // using Marathon slows down stopping the cluster
         ClusterArchitecture architecture = new ClusterArchitecture.Builder(dockerClient)
                 .withZooKeeper()
                 .withMaster(zooKeeper -> new MesosMaster(dockerClient, zooKeeper, masterConfig))
                 .withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper, agentConfig))
-                .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper, marathonConfig))
                 .withConsul(new Consul(dockerClient, consulConfig))
                 .build();
 
@@ -50,9 +48,9 @@ public class ExposedPortsTest {
 
     }
 
-    @AfterClass
-    public static void afterTest() {
-        cluster.destroy();
+    @After
+    public void afterTest() {
+        cluster.stop();
     }
 
     @Test
