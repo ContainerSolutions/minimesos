@@ -37,7 +37,7 @@ public class MesosCluster {
 
     private final ClusterConfig clusterConfig;
 
-    private List<ClusterProcess> members = Collections.synchronizedList(new ArrayList<>());
+    private List<ClusterProcess> memberPocesses = Collections.synchronizedList(new ArrayList<>());
 
     private boolean running = false;
 
@@ -45,13 +45,13 @@ public class MesosCluster {
     /**
      * Create a new MesosCluster with a specified cluster architecture.
      */
-    public MesosCluster(ClusterConfig clusterConfig, List<ClusterProcess> members) {
-        this.members = members;
+    public MesosCluster(ClusterConfig clusterConfig, List<ClusterProcess> processes) {
+        this.memberPocesses = processes;
         this.clusterConfig = clusterConfig;
 
         clusterId = Integer.toUnsignedString(new SecureRandom().nextInt());
-        for (ClusterProcess container : members) {
-            container.setCluster(this);
+        for (ClusterProcess process : processes) {
+            process.setCluster(this);
         }
     }
 
@@ -76,7 +76,7 @@ public class MesosCluster {
 
         factory.loadRunningCluster(this);
 
-        if (members.isEmpty()) {
+        if (memberPocesses.isEmpty()) {
             throw new MinimesosException("No containers found for cluster ID " + clusterId);
         }
 
@@ -114,7 +114,7 @@ public class MesosCluster {
         }
 
         LOGGER.debug("Cluster " + getClusterId() + " - start");
-        this.members.forEach((container) -> container.start(timeoutSeconds));
+        this.memberPocesses.forEach((container) -> container.start(timeoutSeconds));
         // wait until the given number of agents are registered
         getMaster().waitFor();
 
@@ -164,9 +164,9 @@ public class MesosCluster {
     public void stop() {
         LOGGER.debug("Cluster " + getClusterId() + " - stop");
 
-        if (members.size() > 0) {
-            for (int i = members.size() - 1; i >= 0; i--) {
-                ClusterProcess container = members.get(i);
+        if (memberPocesses.size() > 0) {
+            for (int i = memberPocesses.size() - 1; i >= 0; i--) {
+                ClusterProcess container = memberPocesses.get(i);
                 LOGGER.debug("Removing container [" + container.getContainerId() + "]");
                 try {
                     container.remove();
@@ -176,7 +176,7 @@ public class MesosCluster {
             }
         }
         this.running = false;
-        this.members.clear();
+        this.memberPocesses.clear();
     }
 
     /**
@@ -227,36 +227,36 @@ public class MesosCluster {
     /**
      * Starts a container. This container will be removed when the Mesos cluster is shut down.
      *
-     * @param container container to be started
+     * @param process container to be started
      * @param timeout   in seconds
      * @return container ID
      */
-    public String addAndStartContainer(ClusterProcess container, int timeout) {
-        container.setCluster(this);
-        members.add(container);
+    public String addAndStartProcess(ClusterProcess process, int timeout) {
+        process.setCluster(this);
+        memberPocesses.add(process);
 
-        LOGGER.debug(String.format("Starting %s (%s) container", container.getName(), container.getContainerId()));
+        LOGGER.debug(String.format("Starting %s (%s) container", process.getName(), process.getContainerId()));
 
         try {
-            container.start(timeout);
+            process.start(timeout);
         } catch (Exception exc) {
-            String msg = String.format("Failed to start %s (%s) container", container.getName(), container.getContainerId());
+            String msg = String.format("Failed to start %s (%s) container", process.getName(), process.getContainerId());
             LOGGER.error(msg, exc);
             throw new MinimesosException(msg, exc);
         }
 
-        return container.getContainerId();
+        return process.getContainerId();
     }
 
     /**
      * Starts a container. This container will be removed when the Mesos cluster is shut down.
      * The method is used by frameworks
      *
-     * @param container container to be started
+     * @param clusterProcess container to be started
      * @return container ID
      */
-    public String addAndStartContainer(ClusterProcess container) {
-        return addAndStartContainer(container, clusterConfig.getTimeout());
+    public String addAndStartProcess(ClusterProcess clusterProcess) {
+        return addAndStartProcess(clusterProcess, clusterConfig.getTimeout());
     }
 
     /**
@@ -297,12 +297,12 @@ public class MesosCluster {
         }
     }
 
-    public List<ClusterProcess> getMembers() {
-        return members;
+    public List<ClusterProcess> getMemberProcesses() {
+        return memberPocesses;
     }
 
     public List<MesosAgent> getAgents() {
-        return members.stream().filter(Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
+        return memberPocesses.stream().filter(Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
     }
 
     public MesosMaster getMaster() {
@@ -335,7 +335,7 @@ public class MesosCluster {
      */
     @SuppressWarnings("unchecked")
     public <T extends ClusterProcess> Optional<T> getOne(java.util.function.Predicate<ClusterProcess> filter) {
-        return (Optional<T>) getMembers().stream().filter(filter).findFirst();
+        return (Optional<T>) getMemberProcesses().stream().filter(filter).findFirst();
     }
 
     public String getClusterId() {
@@ -370,7 +370,7 @@ public class MesosCluster {
         boolean exposedHostPorts = isExposedHostPorts();
         String dockerHostIp = System.getenv("DOCKER_HOST_IP");
 
-        for (ClusterProcess container : getMembers()) {
+        for (ClusterProcess container : getMemberProcesses()) {
 
             String ip;
             if (!exposedHostPorts || StringUtils.isEmpty(dockerHostIp)) {
@@ -520,7 +520,7 @@ public class MesosCluster {
     public String toString() {
         return "MesosCluster{" +
                 "clusterId='" + clusterId + '\'' +
-                ", members=" + members +
+                ", processes=" + memberPocesses +
                 '}';
     }
 

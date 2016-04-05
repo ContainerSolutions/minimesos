@@ -45,7 +45,7 @@ public class DiscoverySystemTest {
         SchedulerContainer scheduler = new SchedulerContainer(ipAddress);
 
         // Cluster now has responsibility to shut down container
-        CLUSTER.addAndStartContainer(scheduler);
+        CLUSTER.addAndStartProcess(scheduler);
 
         LOGGER.info("Started Scheduler on " + scheduler.getIpAddress());
     }

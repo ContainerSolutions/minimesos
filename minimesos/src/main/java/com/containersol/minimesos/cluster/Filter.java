@@ -4,22 +4,22 @@ import java.util.function.Predicate;
 
 public class Filter {
     public static Predicate<ClusterProcess> zooKeeper() {
-        return abstractContainer -> abstractContainer instanceof ZooKeeper;
+        return process -> process instanceof ZooKeeper;
     }
 
     public static Predicate<ClusterProcess> consul() {
-        return abstractContainer -> abstractContainer instanceof Consul;
+        return process -> process instanceof Consul;
     }
 
     public static Predicate<ClusterProcess> mesosMaster() {
-        return abstractContainer -> abstractContainer instanceof MesosMaster;
+        return process -> process instanceof MesosMaster;
     }
 
     public static Predicate<ClusterProcess> mesosAgent() {
-        return abstractContainer -> abstractContainer instanceof MesosAgent;
+        return process -> process instanceof MesosAgent;
     }
 
     public static Predicate<ClusterProcess> marathon() {
-        return abstractContainer -> abstractContainer instanceof Marathon;
+        return process -> process instanceof Marathon;
     }
 }

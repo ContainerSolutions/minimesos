@@ -73,7 +73,7 @@ public class DefaultMinimumClusterTest {
     @Test
     public void testPullAndStartContainer() throws UnirestException {
         HelloWorldContainer container = new HelloWorldContainer();
-        String containerId = cluster.addAndStartContainer(container);
+        String containerId = cluster.addAndStartProcess(container);
         String ipAddress = DockerContainersUtil.getIpAddress(containerId);
 
         String url = "http://" + ipAddress + ":" + HelloWorldContainer.SERVICE_PORT;

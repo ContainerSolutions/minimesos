@@ -41,7 +41,7 @@ public class ConsulRegistrationTest {
 
     @Test
     public void testRegisterServiceWithConsul() throws UnirestException {
-        CLUSTER.addAndStartContainer(new HelloWorldContainer());
+        CLUSTER.addAndStartProcess(new HelloWorldContainer());
         String ipAddress = DockerContainersUtil.getIpAddress(CLUSTER.getConsul().getContainerId());
         String url = String.format("http://%s:%d/v1/catalog/service/%s",
                 ipAddress, ConsulConfig.CONSUL_HTTP_PORT, HelloWorldContainer.SERVICE_NAME);

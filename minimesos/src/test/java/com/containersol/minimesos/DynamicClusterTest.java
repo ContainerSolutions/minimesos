@@ -60,7 +60,7 @@ public class DynamicClusterTest {
         ZooKeeper zooKeeper = cluster.getZooKeeper();
         MesosAgent extraAgent = new MesosAgentContainer(zooKeeper);
 
-        String containerId = cluster.addAndStartContainer(extraAgent);
+        String containerId = cluster.addAndStartProcess(extraAgent);
         assertNotNull("freshly started container is not found", DockerContainersUtil.getContainer(containerId));
 
         cluster.stop();

@@ -62,7 +62,7 @@ public class MesosClusterTest {
 
         MesosCluster cluster = MesosCluster.loadCluster(clusterId, new MesosClusterContainersFactory());
 
-        assertArrayEquals(CLUSTER.getMembers().toArray(), cluster.getMembers().toArray());
+        assertArrayEquals(CLUSTER.getMemberProcesses().toArray(), cluster.getMemberProcesses().toArray());
 
         assertEquals(CLUSTER.getZooKeeper().getIpAddress(), cluster.getZooKeeper().getIpAddress());
         assertEquals(CLUSTER.getMaster().getStateUrl(), cluster.getMaster().getStateUrl());
@@ -151,7 +151,7 @@ public class MesosClusterTest {
     @Test
     public void testPullAndStartContainer() throws UnirestException {
         HelloWorldContainer container = new HelloWorldContainer();
-        String containerId = CLUSTER.addAndStartContainer(container);
+        String containerId = CLUSTER.addAndStartProcess(container);
         String ipAddress = DockerContainersUtil.getIpAddress(containerId);
         String url = "http://" + ipAddress + ":" + HelloWorldContainer.SERVICE_PORT;
         assertEquals(200, Unirest.get(url).asString().getStatus());

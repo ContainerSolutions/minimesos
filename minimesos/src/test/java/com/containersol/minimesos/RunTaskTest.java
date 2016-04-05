@@ -78,7 +78,7 @@ public class RunTaskTest {
             }
         };
 
-        cluster.addAndStartContainer(mesosAgent);
+        cluster.addAndStartProcess(mesosAgent);
         LogContainerTestCallback cb = new LogContainerTestCallback();
         DockerClientFactory.build().logContainerCmd(mesosAgent.getContainerId()).withStdOut().exec(cb);
         cb.awaitCompletion();

@@ -49,8 +49,12 @@ public class CommandInstall implements Command {
             throw new MinimesosException("Neither --marathonFile nor --stdin parameters are provided");
         }
 
-        while (scanner.hasNextLine()) {
-            fileContents = fileContents.concat(scanner.nextLine());
+        try {
+            while (scanner.hasNextLine()) {
+                fileContents = fileContents.concat(scanner.nextLine());
+            }
+        } finally {
+            scanner.close();
         }
 
         return fileContents;

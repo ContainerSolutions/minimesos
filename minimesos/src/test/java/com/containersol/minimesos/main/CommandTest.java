@@ -44,7 +44,7 @@ public class CommandTest {
 
         assertTrue("Minimesos file at " + minimesosFile + " should exist", minimesosFile.exists());
 
-        assertEquals(3, cluster.getMembers().size());
+        assertEquals(3, cluster.getMemberProcesses().size());
 
         CommandDestroy commandDestroy = new CommandDestroy();
         commandDestroy.execute();
