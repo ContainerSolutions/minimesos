@@ -50,7 +50,9 @@ public class ExposedPortsTest {
 
     @After
     public void afterTest() {
-        cluster.stop();
+        if (cluster != null) {
+            cluster.stop();
+        }
     }
 
     @Test
