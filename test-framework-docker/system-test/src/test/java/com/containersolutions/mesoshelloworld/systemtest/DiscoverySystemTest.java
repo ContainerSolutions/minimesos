@@ -6,6 +6,7 @@ import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersolutions.mesoshelloworld.scheduler.Configuration;
 import com.github.dockerjava.api.model.Container;
 import com.jayway.awaitility.Awaitility;
+import com.jayway.awaitility.core.ConditionTimeoutException;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -60,22 +61,25 @@ public class DiscoverySystemTest {
         DockerContainersUtil util = new DockerContainersUtil();
 
         final Set<String> ipAddresses = new HashSet<>();
-        Awaitility.await("9 expected executors did not come up").atMost(timeout, TimeUnit.SECONDS).pollDelay(5, TimeUnit.SECONDS).until(() -> {
-            ipAddresses.clear();
-            ipAddresses.addAll(util.getContainers(false).filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE).getIpAddresses());
+        try {
 
-            System.out.println("Found containers: ");
+            Awaitility.await("9 expected executors did not come up").atMost(timeout, TimeUnit.SECONDS).pollDelay(5, TimeUnit.SECONDS).until(() -> {
+                ipAddresses.clear();
+                ipAddresses.addAll(util.getContainers(false).filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE).getIpAddresses());
+                return ipAddresses.size() == 9;
+            });
+
+        } catch (ConditionTimeoutException cte) {
             for (Container container : util.getContainers(true).getContainers()) {
-                System.out.println(String.format("  Container ID:%s, IMAGE:%s, STATUS:%s, NAMES:%s", container.getId(), container.getImage(), container.getStatus(), Arrays.toString(container.getNames())));
+                LOGGER.error("Containers:");
+                LOGGER.error(String.format("  Container ID:%s, IMAGE:%s, STATUS:%s, NAMES:%s", container.getId(), container.getImage(), container.getStatus(), Arrays.toString(container.getNames())));
+                LOGGER.error("Scheduler logs:");
+                for (String logLine : DockerContainersUtil.getDockerLogs(schedulerContainerId)) {
+                    LOGGER.error(logLine);
+                }
             }
-            System.out.print("Scheduler logs");
-            for (String logLine : DockerContainersUtil.getDockerLogs(schedulerContainerId)) {
-                System.out.println(logLine);
-            }
-            System.out.print("");
-
-            return ipAddresses.size() == 9;
-        });
+            throw cte;
+        }
 
         HelloWorldResponse helloWorldResponse = new HelloWorldResponse( ipAddresses, Arrays.asList(8080, 8081, 8082), timeout );
         assertTrue("Executors did not come up within " + timeout + " seconds", helloWorldResponse.isDiscoverySuccessful());

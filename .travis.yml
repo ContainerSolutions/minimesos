@@ -5,10 +5,6 @@ jdk:
 
 sudo: required
 
-env:
-  global:
-    - DOCKER_VERSION=1.9.1  # Install Docker version 1.9.1
-
 install:
 # one liner installation of docker 1.9.1 below did not work (see https://github.com/moul/travis-docker/issues/38).
 #  - curl -sLo - http://j.mp/install-travis-docker | sh -xe
@@ -18,6 +14,8 @@ install:
   - sudo apt-get update
   - sudo apt-key update
   - sudo apt-get -qqy install docker-engine=1.9.1-0~precise
+# Has to run this script with sudo because custom installation does not allow $USER to use docker and it's not possible to relogin
   - chmod +x pull-containers.sh && sudo ./pull-containers.sh
 
+# Has to run the build script with sudo because custom installation does not allow $USER to use docker and it's not possible to relogin
 script: sudo ./gradlew clean build --info --stacktrace
