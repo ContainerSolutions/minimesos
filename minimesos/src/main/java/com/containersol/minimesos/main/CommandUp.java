@@ -1,19 +1,17 @@
 package com.containersol.minimesos.main;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.LoggerContext;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.*;
+import com.containersol.minimesos.main.factory.MesosClusterContainersFactory;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,9 +41,6 @@ public class CommandUp implements Command {
     @Parameter(names = "--timeout", description = "Time to wait for a container to get responsive, in seconds.")
     private Integer timeout = null;
 
-    @Parameter(names = "--debug", description = "Enable debug logging.")
-    private Boolean debug = null;
-
     /**
      * As number of agents can be determined either in config file or command line parameters, it defaults to invalid value.
      * Logic to select the actual number of agent is in the field getter
@@ -60,11 +55,12 @@ public class CommandUp implements Command {
      * Indicates is configurationFile was found
      */
     private Boolean configFileFound = null;
+
     private ClusterConfig clusterConfig = null;
 
     private MesosCluster startedCluster = null;
-    private PrintStream output = System.out;
 
+    private PrintStream output = System.out;
 
     public CommandUp() {
     }
@@ -126,12 +122,8 @@ public class CommandUp implements Command {
 
     @Override
     public void execute() {
-        if (debug != null) {
-            LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-            Logger rootLogger = loggerContext.getLogger(Logger.ROOT_LOGGER_NAME);
-            rootLogger.setLevel(Level.DEBUG);
-            LOGGER.debug("Initialized debug logging");
-        }
+
+        LOGGER.debug("Executing up command");
 
         MesosCluster cluster = getCluster();
         if (cluster != null) {
@@ -141,13 +133,15 @@ public class CommandUp implements Command {
 
         ClusterArchitecture clusterArchitecture = getClusterArchitecture();
 
-        startedCluster = new MesosCluster(clusterArchitecture);
+        startedCluster = new MesosCluster(clusterArchitecture.getClusterConfig(), clusterArchitecture.getClusterContainers().getContainers());
+        // save cluster ID first, so it becomes available for 'destroy' even if its part failed to start
+        ClusterRepository.saveClusterFile(startedCluster);
+
         startedCluster.start();
         startedCluster.waitForState(state -> state != null);
 
         startedCluster.printServiceUrls(output);
 
-        ClusterRepository.saveClusterFile(startedCluster);
     }
 
     /**
@@ -161,12 +155,12 @@ public class CommandUp implements Command {
             return clusterConfig;
         }
 
-        File clusterConfigFile = MesosCluster.getHostFile(getClusterConfigPath());
-        if (clusterConfigFile.exists()) {
+        InputStream clusterConfigFile = MesosCluster.getInputStream(getClusterConfigPath());
+        if (clusterConfigFile != null) {
             configFileFound = true;
             ConfigParser configParser = new ConfigParser();
             try {
-                clusterConfig = configParser.parse(FileUtils.readFileToString(clusterConfigFile));
+                clusterConfig = configParser.parse(IOUtils.toString(clusterConfigFile));
             } catch (Exception e) {
                 String msg = String.format("Failed to load cluster configuration from %s: %s", getClusterConfigPath(), e.getMessage());
                 throw new MinimesosException(msg, e);
@@ -191,7 +185,6 @@ public class CommandUp implements Command {
         }
         updateWithParameters(clusterConfig);
 
-
         ClusterArchitecture.Builder configBuilder = ClusterArchitecture.Builder.createCluster(clusterConfig);
 
         return configBuilder.build();
@@ -203,7 +196,6 @@ public class CommandUp implements Command {
      * @param clusterConfig cluster configuration to update
      */
     public void updateWithParameters(ClusterConfig clusterConfig) {
-
         if (isExposedHostPorts() != null) {
             clusterConfig.setExposePorts(isExposedHostPorts());
         }
@@ -227,12 +219,14 @@ public class CommandUp implements Command {
         }
         clusterConfig.setMaster(masterConfig);
 
-        // Marathon
-        MarathonConfig marathonConfig = (clusterConfig.getMarathon() != null) ? clusterConfig.getMarathon() : new MarathonConfig();
-        if (getMarathonImageTag() != null) {
-            marathonConfig.setImageTag(getMarathonImageTag());
+        // Marathon (optional)
+        if (clusterConfig.getMarathon() != null) {
+            MarathonConfig marathonConfig = clusterConfig.getMarathon();
+            if (getMarathonImageTag() != null) {
+                marathonConfig.setImageTag(getMarathonImageTag());
+            }
+            clusterConfig.setMarathon(marathonConfig);
         }
-        clusterConfig.setMarathon(marathonConfig);
 
         // creation of agents
         List<MesosAgentConfig> agentConfigs = clusterConfig.getAgents();
@@ -246,23 +240,27 @@ public class CommandUp implements Command {
         }
         clusterConfig.setAgents(updatedConfigs);
 
-        // Consul
-        ConsulConfig consulConfig = clusterConfig.getConsul();
-        if (consulConfig == null) {
-            consulConfig = new ConsulConfig();
+        // Consul (optional)
+        if (clusterConfig.getConsul() != null) {
+            ConsulConfig consulConfig = clusterConfig.getConsul();
+            if (consulConfig == null) {
+                consulConfig = new ConsulConfig();
+            }
+            clusterConfig.setConsul(consulConfig);
         }
-        clusterConfig.setConsul(consulConfig);
 
-        //Registrator
-        RegistratorConfig registratorConfig = clusterConfig.getRegistrator();
-        if(registratorConfig ==null){
-            registratorConfig = new RegistratorConfig();
+        // Registrator (optional)
+        if (clusterConfig.getRegistrator() != null) {
+            RegistratorConfig registratorConfig = clusterConfig.getRegistrator();
+            if (registratorConfig == null) {
+                registratorConfig = new RegistratorConfig();
+            }
+            clusterConfig.setRegistrator(registratorConfig);
         }
-        clusterConfig.setRegistrator(registratorConfig);
     }
 
     public MesosCluster getCluster() {
-        return (startedCluster != null) ? startedCluster : ClusterRepository.loadCluster();
+        return (startedCluster != null) ? startedCluster : ClusterRepository.loadCluster(new MesosClusterContainersFactory());
     }
 
     @Override
@@ -276,5 +274,3 @@ public class CommandUp implements Command {
     }
 
 }
-
-

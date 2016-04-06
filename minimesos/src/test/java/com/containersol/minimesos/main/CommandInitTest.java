@@ -37,7 +37,6 @@ public class CommandInitTest {
 
     @Test(expected = MinimesosException.class)
     public void testExecute_existingMiniMesosFile() throws IOException {
-
         String oldHostDir = System.getProperty(MesosCluster.MINIMESOS_HOST_DIR_PROPERTY);
         File dir = File.createTempFile("mimimesos-test", "dir");
         assertTrue("Failed to delete temp file", dir.delete());

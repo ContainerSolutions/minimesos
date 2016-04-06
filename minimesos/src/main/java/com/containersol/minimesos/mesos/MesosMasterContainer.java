@@ -1,15 +1,18 @@
 package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.cluster.MesosMaster;
+import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.MesosMasterConfig;
-import com.github.dockerjava.api.DockerClient;
+import com.containersol.minimesos.docker.DockerClientFactory;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import org.apache.log4j.Logger;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -21,26 +24,26 @@ import static com.jayway.awaitility.Awaitility.await;
 /**
  * Mesos Master adds the "server" component for Apache Mesos
  */
-public class MesosMaster extends MesosContainer {
+public class MesosMasterContainer extends MesosContainerImpl implements MesosMaster {
 
     // is here for future extension of Master configuration
     private final MesosMasterConfig config;
 
-    public MesosMaster(DockerClient dockerClient, ZooKeeper zooKeeperContainer) {
-        this(dockerClient, zooKeeperContainer, new MesosMasterConfig());
+    public MesosMasterContainer(ZooKeeper zooKeeperContainer) {
+        this(zooKeeperContainer, new MesosMasterConfig());
     }
 
-    public MesosMaster(DockerClient dockerClient, ZooKeeper zooKeeperContainer, MesosMasterConfig config) {
-        super(dockerClient, zooKeeperContainer, config);
+    public MesosMasterContainer(ZooKeeper zooKeeperContainer, MesosMasterConfig config) {
+        super(zooKeeperContainer, config);
         this.config = config;
     }
 
-    public MesosMaster(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId) {
-        this(dockerClient, cluster, uuid, containerId, new MesosMasterConfig());
+    public MesosMasterContainer(MesosCluster cluster, String uuid, String containerId) {
+        this(cluster, uuid, containerId, new MesosMasterConfig());
     }
 
-    private MesosMaster(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId, MesosMasterConfig config) {
-        super(dockerClient, cluster, uuid, containerId, config);
+    private MesosMasterContainer(MesosCluster cluster, String uuid, String containerId, MesosMasterConfig config) {
+        super(cluster, uuid, containerId, config);
         this.config = config;
     }
 
@@ -76,8 +79,8 @@ public class MesosMaster extends MesosContainer {
             portBindings.bind(exposedPort, Ports.Binding(port));
         }
 
-        return dockerClient.createContainerCmd(getMesosImageName() + ":" + getMesosImageTag())
-                .withName( getName() )
+        return DockerClientFactory.build().createContainerCmd(getMesosImageName() + ":" + getMesosImageTag())
+                .withName(getName())
                 .withExposedPorts(new ExposedPort(getPortNumber()))
                 .withEnv(createMesosLocalEnvironment())
                 .withPortBindings(portBindings);
@@ -95,12 +98,12 @@ public class MesosMaster extends MesosContainer {
     }
 
     public void waitFor() {
-        new MesosMaster.MesosClusterStateResponse(getCluster()).waitFor();
+        new MesosMasterContainer.MesosClusterStateResponse(getCluster()).waitFor();
     }
 
     public static class MesosClusterStateResponse implements Callable<Boolean> {
 
-        private final Logger LOGGER = Logger.getLogger(MesosClusterStateResponse.class);
+        private final Logger LOGGER = LoggerFactory.getLogger(MesosClusterStateResponse.class);
 
         private final MesosCluster mesosCluster;
 
@@ -110,7 +113,7 @@ public class MesosMaster extends MesosContainer {
 
         @Override
         public Boolean call() throws Exception {
-            String stateUrl = mesosCluster.getMasterContainer().getStateUrl();
+            String stateUrl = mesosCluster.getMaster().getStateUrl();
             try {
                 int activatedAgents = Unirest.get(stateUrl).asJson().getBody().getObject().getInt("activated_slaves");
                 if (activatedAgents != mesosCluster.getAgents().size()) {
@@ -130,7 +133,7 @@ public class MesosMaster extends MesosContainer {
 
         public void waitFor() {
             await()
-                    .atMost( mesosCluster.getClusterConfig().getTimeout(), TimeUnit.SECONDS)
+                    .atMost(mesosCluster.getClusterConfig().getTimeout(), TimeUnit.SECONDS)
                     .pollInterval(1, TimeUnit.SECONDS)
                     .until(this);
 

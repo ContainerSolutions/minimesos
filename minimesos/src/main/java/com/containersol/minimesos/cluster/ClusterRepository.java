@@ -2,7 +2,8 @@ package com.containersol.minimesos.cluster;
 
 import com.containersol.minimesos.MinimesosException;
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +15,7 @@ import java.nio.file.Paths;
  */
 public class ClusterRepository {
 
-    private static Logger LOGGER = Logger.getLogger(ClusterRepository.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(ClusterRepository.class);
 
     public static final String MINIMESOS_FILE_PROPERTY = "minimesos.cluster";
 
@@ -25,12 +26,12 @@ public class ClusterRepository {
      *
      * @return representation of the cluster, which ID is found in the file
      */
-    public static MesosCluster loadCluster() {
+    public static MesosCluster loadCluster(MesosClusterFactory factory) {
         String clusterId = ClusterRepository.readClusterId();
         if (clusterId != null) {
             try {
-                return MesosCluster.loadCluster(clusterId);
-            } catch (RuntimeException e) {
+                return MesosCluster.loadCluster(clusterId, factory);
+            } catch (MinimesosException e) {
                 ClusterRepository.deleteMinimesosFile();
             }
         }

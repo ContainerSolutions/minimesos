@@ -75,10 +75,16 @@ public class CommandInit implements Command {
 
         config.setMaster(new MesosMasterConfig());
         config.setZookeeper(new ZooKeeperConfig());
-        config.setMarathon(new MarathonConfig());
         config.getAgents().add(new MesosAgentConfig());
         config.setConsul(new ConsulConfig());
         config.setRegistrator(new RegistratorConfig());
+
+        AppConfig weaveConfig = new AppConfig();
+        weaveConfig.setMarathonJson("https://raw.githubusercontent.com/ContainerSolutions/minimesos/27744df7071fb2d4ab15562bf2654ec37f4d539d/apps/weave-scope.json");
+
+        MarathonConfig marathonConfig = new MarathonConfig();
+        marathonConfig.getApps().add(weaveConfig);
+        config.setMarathon(marathonConfig);
 
         ConfigParser parser = new ConfigParser();
         return parser.toString(config);

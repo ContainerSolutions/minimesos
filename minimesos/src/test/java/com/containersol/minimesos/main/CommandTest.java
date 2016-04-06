@@ -6,6 +6,7 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,6 +29,11 @@ public class CommandTest {
         ps = new PrintStream(outputStream, true);
     }
 
+    @After
+    public void destroyCluster() {
+        new CommandDestroy().execute();
+    }
+
     @Test
     public void testUpAndDestroy() {
         CommandUp commandUp = new CommandUp();
@@ -38,7 +44,7 @@ public class CommandTest {
 
         assertTrue("Minimesos file at " + minimesosFile + " should exist", minimesosFile.exists());
 
-        assertEquals(6, cluster.getContainers().size());
+        assertEquals(3, cluster.getMemberProcesses().size());
 
         CommandDestroy commandDestroy = new CommandDestroy();
         commandDestroy.execute();
@@ -54,7 +60,7 @@ public class CommandTest {
         commandUp.execute();
         MesosCluster cluster = commandUp.getCluster();
 
-        String fileContent = FileUtils.readFileToString( ClusterRepository.getMinimesosFile() );
+        String fileContent = FileUtils.readFileToString(ClusterRepository.getMinimesosFile());
         assertEquals("Invalid state file has not been overwritten", cluster.getClusterId(), fileContent);
 
         CommandDestroy commandDestroy = new CommandDestroy();
@@ -97,9 +103,6 @@ public class CommandTest {
 
         assertTrue(result.contains("Minimesos cluster is running"));
         assertTrue(result.contains("Mesos version"));
-
-        CommandDestroy commandDestroy = new CommandDestroy();
-        commandDestroy.execute();
     }
 
     @Test
@@ -120,12 +123,9 @@ public class CommandTest {
         CommandState commandState = new CommandState(ps);
         commandState.execute();
 
-        JSONObject state = new JSONObject( outputStream.toString() );
+        JSONObject state = new JSONObject(outputStream.toString());
 
-        assertEquals("master@" + cluster.getMasterContainer().getIpAddress() + ":5050", state.getString("leader"));
-
-        CommandDestroy commandDestroy = new CommandDestroy();
-        commandDestroy.execute();
+        assertEquals("master@" + cluster.getMaster().getIpAddress() + ":5050", state.getString("leader"));
     }
 
     @Test
@@ -137,15 +137,13 @@ public class CommandTest {
     @Test
     public void testInstall() {
         CommandUp commandUp = new CommandUp();
+        commandUp.setClusterConfigPath("src/test/resources/configFiles/withMarathon-minimesosFile");
         commandUp.execute();
 
         CommandInstall install = new CommandInstall();
         install.setMarathonFile("src/test/resources/app.json");
 
         install.execute();
-
-        CommandDestroy commandDestroy = new CommandDestroy();
-        commandDestroy.execute();
     }
 
     @Test(expected = MinimesosException.class)
@@ -158,12 +156,7 @@ public class CommandTest {
 
         install.execute();
 
-        try {
-            install.execute();
-        } finally {
-            CommandDestroy commandDestroy = new CommandDestroy();
-            commandDestroy.execute();
-        }
+        install.execute();
     }
 
     @Test
@@ -173,9 +166,6 @@ public class CommandTest {
 
         String result = outputStream.toString();
         assertTrue(result.contains("Minimesos cluster is not running"));
-
-        CommandDestroy commandDestroy = new CommandDestroy();
-        commandDestroy.execute();
     }
 
 }

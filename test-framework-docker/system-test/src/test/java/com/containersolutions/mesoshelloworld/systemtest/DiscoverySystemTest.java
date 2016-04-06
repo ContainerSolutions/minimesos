@@ -1,11 +1,11 @@
 package com.containersolutions.mesoshelloworld.systemtest;
 
 import com.containersol.minimesos.docker.DockerContainersUtil;
+import com.containersol.minimesos.junit.MesosClusterTestRule;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersolutions.mesoshelloworld.scheduler.Configuration;
 import com.jayway.awaitility.Awaitility;
 import org.apache.log4j.Logger;
-import com.containersol.minimesos.cluster.MesosCluster;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -34,18 +34,18 @@ public class DiscoverySystemTest {
             .build();
 
     @ClassRule
-    public static final MesosCluster CLUSTER = new MesosCluster(CONFIG);
+    public static final MesosClusterTestRule CLUSTER = new MesosClusterTestRule(CONFIG);
 
     @BeforeClass
     public static void startScheduler() throws Exception {
 
-        String ipAddress = CLUSTER.getMasterContainer().getIpAddress();
+        String ipAddress = CLUSTER.getMaster().getIpAddress();
 
         LOGGER.info("Starting Scheduler, connected to " + ipAddress);
-        SchedulerContainer scheduler = new SchedulerContainer(CONFIG.dockerClient, ipAddress);
+        SchedulerContainer scheduler = new SchedulerContainer(ipAddress);
 
         // Cluster now has responsibility to shut down container
-        CLUSTER.addAndStartContainer(scheduler);
+        CLUSTER.addAndStartProcess(scheduler);
 
         LOGGER.info("Started Scheduler on " + scheduler.getIpAddress());
     }
@@ -54,7 +54,7 @@ public class DiscoverySystemTest {
     public void testNodeDiscoveryRest() {
 
         long timeout = 120;
-        DockerContainersUtil util = new DockerContainersUtil(CONFIG.dockerClient);
+        DockerContainersUtil util = new DockerContainersUtil();
 
         final Set<String> ipAddresses = new HashSet<>();
         Awaitility.await("9 expected executors did not come up").atMost(timeout, TimeUnit.SECONDS).until(() -> {
@@ -71,7 +71,7 @@ public class DiscoverySystemTest {
     @AfterClass
     public static void removeExecutors() {
 
-        DockerContainersUtil util = new DockerContainersUtil(CONFIG.dockerClient);
+        DockerContainersUtil util = new DockerContainersUtil();
 
         // stop scheduler, otherwise it keeps on scheduling new executors as soon as they are stopped
         util.getContainers(false).filterByImage(SchedulerContainer.SCHEDULER_IMAGE).kill().remove();

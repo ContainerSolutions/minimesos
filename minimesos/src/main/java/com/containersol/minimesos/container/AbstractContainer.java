@@ -1,9 +1,10 @@
 package com.containersol.minimesos.container;
 
 import com.containersol.minimesos.MinimesosException;
+import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.github.dockerjava.api.DockerClient;
+import com.containersol.minimesos.docker.DockerClientFactory;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.model.Container;
@@ -14,7 +15,8 @@ import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.jayway.awaitility.core.ConditionTimeoutException;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.SecureRandom;
 import java.util.List;
@@ -27,10 +29,11 @@ import static com.jayway.awaitility.Awaitility.await;
 /**
  * Extend this class to start and manage your own containers
  */
-public abstract class AbstractContainer {
+public abstract class AbstractContainer implements ClusterProcess {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractContainer.class);
 
     private static final int IMAGE_PULL_TIMEOUT_SECS = 5 * 60;
-    private static final Logger LOGGER = Logger.getLogger(AbstractContainer.class);
 
     private MesosCluster cluster;
     private String uuid;
@@ -38,23 +41,17 @@ public abstract class AbstractContainer {
     private String ipAddress = null;
     private boolean removed;
 
-    protected DockerClient dockerClient;
-
     protected Map<String, String> envVars = new TreeMap<>();
 
-    protected AbstractContainer(DockerClient dockerClient) {
-        this.dockerClient = dockerClient;
+    protected AbstractContainer() {
         this.uuid = Integer.toUnsignedString(new SecureRandom().nextInt());
     }
 
-    public AbstractContainer(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId) {
-        this.dockerClient = dockerClient;
+    public AbstractContainer(MesosCluster cluster, String uuid, String containerId) {
         this.cluster = cluster;
         this.uuid = uuid;
         this.containerId = containerId;
     }
-
-    public abstract String getRole();
 
     /**
      * Implement this method to pull your image. This will be called before the container is run.
@@ -73,6 +70,7 @@ public abstract class AbstractContainer {
      *
      * @param timeout in seconds
      */
+    @Override
     public void start(int timeout) {
         pullImage();
 
@@ -80,7 +78,7 @@ public abstract class AbstractContainer {
         LOGGER.debug("Creating container [" + createCommand.getName() + "]");
         containerId = createCommand.exec().getId();
 
-        dockerClient.startContainerCmd(containerId).exec();
+        DockerClientFactory.build().startContainerCmd(containerId).exec();
 
         try {
             await().atMost(timeout, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new ContainerIsRunning(containerId));
@@ -88,7 +86,7 @@ public abstract class AbstractContainer {
             LOGGER.error(String.format("Container [" + createCommand.getName() + "] did not start within %d seconds.", timeout));
 
             try {
-                LogContainerCmd logContainerCmd = dockerClient.logContainerCmd(containerId);
+                LogContainerCmd logContainerCmd = DockerClientFactory.build().logContainerCmd(containerId);
                 logContainerCmd.withStdOut().withStdErr();
                 logContainerCmd.exec(new LogContainerResultCallback() {
                     @Override
@@ -110,7 +108,7 @@ public abstract class AbstractContainer {
     public String getHostname() {
         String res = "";
         if (!getContainerId().isEmpty()) {
-            res = dockerClient.inspectContainerCmd(containerId).exec().getConfig().getHostName();
+            res = DockerClientFactory.build().inspectContainerCmd(containerId).exec().getConfig().getHostName();
         }
         return res;
     }
@@ -118,6 +116,7 @@ public abstract class AbstractContainer {
     /**
      * @return the ID of the container.
      */
+    @Override
     public String getContainerId() {
         return containerId;
     }
@@ -125,6 +124,7 @@ public abstract class AbstractContainer {
     /**
      * @return the IP address of the container
      */
+    @Override
     public String getIpAddress() {
         if (ipAddress == null) {
             retrieveIpAddress();
@@ -135,7 +135,7 @@ public abstract class AbstractContainer {
     private synchronized void retrieveIpAddress() {
         String res = "";
         if (!getContainerId().isEmpty()) {
-            res = DockerContainersUtil.getIpAddress(dockerClient, getContainerId());
+            res = DockerContainersUtil.getIpAddress(getContainerId());
         }
         this.ipAddress = res;
     }
@@ -145,6 +145,7 @@ public abstract class AbstractContainer {
      *
      * @return container name
      */
+    @Override
     public String getName() {
         return ContainerName.get(this);
     }
@@ -152,10 +153,11 @@ public abstract class AbstractContainer {
     /**
      * Removes a container with force
      */
+    @Override
     public void remove() {
         try {
-            if (DockerContainersUtil.getContainer(dockerClient, containerId) != null) {
-                dockerClient.removeContainerCmd(containerId).withForce().withRemoveVolumes(true).exec();
+            if (DockerContainersUtil.getContainer(containerId) != null) {
+                DockerClientFactory.build().removeContainerCmd(containerId).withForce().withRemoveVolumes(true).exec();
             }
             this.removed = true;
         } catch (Exception e) {
@@ -164,7 +166,7 @@ public abstract class AbstractContainer {
     }
 
     protected Boolean imageExists(String imageName, String registryTag) {
-        List<Image> images = dockerClient.listImagesCmd().exec();
+        List<Image> images = DockerClientFactory.build().listImagesCmd().exec();
         for (Image image : images) {
             for (String repoTag : image.getRepoTags()) {
                 if (repoTag.equals(imageName + ":" + registryTag)) {
@@ -184,7 +186,7 @@ public abstract class AbstractContainer {
         LOGGER.debug("Image [" + imageName + ":" + registryTag + "] not found. Pulling...");
 
         final CompletableFuture<Void> result = new CompletableFuture<>();
-        dockerClient.pullImageCmd(imageName).withTag(registryTag).exec(new PullImageResultCallback() {
+        DockerClientFactory.build().pullImageCmd(imageName).withTag(registryTag).exec(new PullImageResultCallback() {
 
             @Override
             public void onNext(PullResponseItem item) {
@@ -221,6 +223,7 @@ public abstract class AbstractContainer {
         this.cluster = cluster;
     }
 
+    @Override
     public MesosCluster getCluster() {
         return cluster;
     }
@@ -246,7 +249,7 @@ public abstract class AbstractContainer {
 
         @Override
         public Boolean call() throws Exception {
-            List<Container> containers = dockerClient.listContainersCmd().exec();
+            List<Container> containers = DockerClientFactory.build().listContainersCmd().exec();
             for (Container container : containers) {
                 if (container.getId().equals(containerId)) {
                     return true;
