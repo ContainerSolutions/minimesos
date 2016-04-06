@@ -1,12 +1,14 @@
 package com.containersol.minimesos;
 
+import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.docker.DockerContainersUtil;
+import com.containersol.minimesos.junit.MesosClusterTestRule;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
-import com.containersol.minimesos.mesos.MesosAgent;
-import com.containersol.minimesos.mesos.MesosMaster;
-import com.containersol.minimesos.mesos.ZooKeeper;
+import com.containersol.minimesos.mesos.MesosAgentContainer;
+import com.containersol.minimesos.mesos.MesosMasterContainer;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
@@ -23,11 +25,11 @@ public class DynamicClusterTest {
 
         ClusterArchitecture config = new ClusterArchitecture.Builder()
                 .withZooKeeper()
-                .withMaster(zooKeeper -> new MesosMaster(zooKeeper, masterConfig))
-                .withAgent(MesosAgent::new)
+                .withMaster(zooKeeper -> new MesosMasterContainer(zooKeeper, masterConfig))
+                .withAgent(MesosAgentContainer::new)
                 .build();
 
-        MesosCluster cluster = new MesosCluster(config);
+        MesosClusterTestRule cluster = new MesosClusterTestRule(config);
         cluster.setExposedHostPorts(EXPOSED_PORTS);
 
         cluster.start();
@@ -47,18 +49,18 @@ public class DynamicClusterTest {
 
         ClusterArchitecture config = new ClusterArchitecture.Builder()
                 .withZooKeeper()
-                .withMaster(zooKeeper -> new MesosMaster(zooKeeper, masterConfig))
-                .withAgent(MesosAgent::new)
+                .withMaster(zooKeeper -> new MesosMasterContainer(zooKeeper, masterConfig))
+                .withAgent(MesosAgentContainer::new)
                 .build();
 
-        MesosCluster cluster = new MesosCluster(config);
+        MesosCluster cluster = new MesosCluster(config.getClusterConfig(), config.getClusterContainers().getContainers());
         cluster.setExposedHostPorts(EXPOSED_PORTS);
         cluster.start();
 
-        ZooKeeper zooKeeper = cluster.getZkContainer();
-        MesosAgent extraAgent = new MesosAgent(zooKeeper);
+        ZooKeeper zooKeeper = cluster.getZooKeeper();
+        MesosAgent extraAgent = new MesosAgentContainer(zooKeeper);
 
-        String containerId = cluster.addAndStartContainer(extraAgent);
+        String containerId = cluster.addAndStartProcess(extraAgent);
         assertNotNull("freshly started container is not found", DockerContainersUtil.getContainer(containerId));
 
         cluster.stop();

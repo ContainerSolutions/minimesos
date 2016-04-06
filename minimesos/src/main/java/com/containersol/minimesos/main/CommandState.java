@@ -4,6 +4,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.main.factory.MesosClusterContainersFactory;
 
 import java.io.PrintStream;
 
@@ -29,7 +30,7 @@ public class CommandState implements Command {
 
     @Override
     public void execute() {
-        MesosCluster cluster = ClusterRepository.loadCluster();
+        MesosCluster cluster = ClusterRepository.loadCluster(new MesosClusterContainersFactory());
         if (cluster != null) {
             cluster.state(output, agent);
         } else {

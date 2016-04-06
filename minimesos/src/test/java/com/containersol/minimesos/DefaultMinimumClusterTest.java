@@ -1,11 +1,11 @@
 package com.containersol.minimesos;
 
-import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.config.AgentResourcesConfig;
 import com.containersol.minimesos.docker.DockerContainersUtil;
+import com.containersol.minimesos.junit.MesosClusterTestRule;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
-import com.containersol.minimesos.mesos.DockerClientFactory;
-import com.containersol.minimesos.mesos.MesosAgent;
+import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.util.ResourceUtil;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -30,8 +30,9 @@ import static org.junit.Assert.assertTrue;
  */
 
 public class DefaultMinimumClusterTest {
+
     @ClassRule
-    public static final MesosCluster cluster = new MesosCluster(new ClusterArchitecture.Builder().build());
+    public static final MesosClusterTestRule cluster = new MesosClusterTestRule(new ClusterArchitecture.Builder().build());
 
     @After
     public void after() {
@@ -41,14 +42,14 @@ public class DefaultMinimumClusterTest {
 
     @Test
     public void mesosClusterCanBeStarted() throws Exception {
-        JSONObject stateInfo = cluster.getMasterContainer().getStateInfoJSON();
+        JSONObject stateInfo = cluster.getMaster().getStateInfoJSON();
 
         assertEquals(1, stateInfo.getInt("activated_slaves")); // Only one agent is actually _required_ to have a cluster
     }
 
     @Test
     public void mesosResourcesCorrect() throws Exception {
-        JSONObject stateInfo = cluster.getMasterContainer().getStateInfoJSON();
+        JSONObject stateInfo = cluster.getMaster().getStateInfoJSON();
         for (int i = 0; i < 3; i++) {
             assertEquals(AgentResourcesConfig.DEFAULT_CPU.getValue(), stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getDouble("cpus"), 0.0001);
             assertEquals(256, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getInt("mem"));
@@ -72,7 +73,7 @@ public class DefaultMinimumClusterTest {
     @Test
     public void testPullAndStartContainer() throws UnirestException {
         HelloWorldContainer container = new HelloWorldContainer();
-        String containerId = cluster.addAndStartContainer(container);
+        String containerId = cluster.addAndStartProcess(container);
         String ipAddress = DockerContainersUtil.getIpAddress(containerId);
 
         String url = "http://" + ipAddress + ":" + HelloWorldContainer.SERVICE_PORT;

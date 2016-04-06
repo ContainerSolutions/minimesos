@@ -3,6 +3,7 @@ package com.containersol.minimesos.main;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.main.factory.MesosClusterContainersFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,9 +19,12 @@ public class CommandDestroy implements Command {
 
     @Override
     public void execute() {
-        MesosCluster cluster = ClusterRepository.loadCluster();
+
+        MesosClusterContainersFactory clusterFactory = new MesosClusterContainersFactory();
+
+        MesosCluster cluster = ClusterRepository.loadCluster(clusterFactory);
         if (cluster != null) {
-            cluster.destroy();
+            cluster.destroy(clusterFactory);
             ClusterRepository.deleteClusterFile();
             LOGGER.info("Destroyed minimesos cluster with ID " + cluster.getClusterId());
         } else {

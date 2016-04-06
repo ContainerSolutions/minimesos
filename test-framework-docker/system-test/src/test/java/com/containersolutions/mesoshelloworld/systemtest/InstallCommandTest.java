@@ -1,8 +1,8 @@
 package com.containersolutions.mesoshelloworld.systemtest;
 
-import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.containersol.minimesos.marathon.Marathon;
+import com.containersol.minimesos.junit.MesosClusterTestRule;
+import com.containersol.minimesos.marathon.MarathonContainer;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersolutions.mesoshelloworld.executor.Executor;
 import com.containersolutions.mesoshelloworld.scheduler.Configuration;
@@ -31,11 +31,11 @@ public class InstallCommandTest {
             .withZooKeeper()
             .withMaster()
             .withAgent("ports(*):[8081-8082]")
-            .withMarathon(Marathon::new)
+            .withMarathon(MarathonContainer::new)
             .build();
 
     @ClassRule
-    public static final MesosCluster CLUSTER = new MesosCluster(CONFIG);
+    public static final MesosClusterTestRule CLUSTER = new MesosClusterTestRule(CONFIG);
 
     @Test
     public void testMesosInstall() throws IOException {
@@ -77,8 +77,8 @@ public class InstallCommandTest {
 
         try (FileInputStream fis = new FileInputStream(taskFile)) {
             String appJson = IOUtils.toString(fis);
-            appJson = appJson.replace(MESOS_MASTER_IP_TOKEN, CLUSTER.getMasterContainer().getIpAddress());
-            CLUSTER.getMarathonContainer().deployApp(appJson);
+            appJson = appJson.replace(MESOS_MASTER_IP_TOKEN, CLUSTER.getMaster().getIpAddress());
+            CLUSTER.getMarathon().deployApp(appJson);
         }
     }
 

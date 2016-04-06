@@ -5,11 +5,12 @@ import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.config.MarathonConfig;
 import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.config.MesosMasterConfig;
-import com.containersol.minimesos.marathon.Marathon;
+import com.containersol.minimesos.main.factory.MesosClusterContainersFactory;
+import com.containersol.minimesos.marathon.MarathonContainer;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
-import com.containersol.minimesos.mesos.Consul;
-import com.containersol.minimesos.mesos.MesosAgent;
-import com.containersol.minimesos.mesos.MesosMaster;
+import com.containersol.minimesos.mesos.ConsulContainer;
+import com.containersol.minimesos.mesos.MesosAgentContainer;
+import com.containersol.minimesos.mesos.MesosMasterContainer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,13 +32,14 @@ public class ExposedPortsTest {
 
         ClusterArchitecture architecture = new ClusterArchitecture.Builder()
                 .withZooKeeper()
-                .withMaster(zooKeeper -> new MesosMaster(zooKeeper, masterConfig))
-                .withAgent(zooKeeper -> new MesosAgent(zooKeeper, agentConfig))
-                .withMarathon(zooKeeper -> new Marathon(zooKeeper, marathonConfig))
-                .withConsul(new Consul(consulConfig))
+                .withMaster(zooKeeper -> new MesosMasterContainer(zooKeeper, masterConfig))
+                .withAgent(zooKeeper -> new MesosAgentContainer(zooKeeper, agentConfig))
+                .withMarathon(zooKeeper -> new MarathonContainer(zooKeeper, marathonConfig))
+                .withConsul(new ConsulContainer(consulConfig))
                 .build();
 
-        cluster = new MesosCluster(architecture);
+        cluster = new MesosCluster(architecture.getClusterConfig(), architecture.getClusterContainers().getContainers());
+
         cluster.setExposedHostPorts(EXPOSED_PORTS);
         cluster.start();
 
@@ -53,7 +55,7 @@ public class ExposedPortsTest {
     @Test
     public void testLoadCluster() {
         String clusterId = cluster.getClusterId();
-        MesosCluster cluster = MesosCluster.loadCluster(clusterId);
+        MesosCluster cluster = MesosCluster.loadCluster(clusterId, new MesosClusterContainersFactory());
 
         assertTrue("Deserialize cluster is expected to remember exposed ports setting", cluster.isExposedHostPorts());
     }

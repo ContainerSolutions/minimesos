@@ -1,9 +1,9 @@
 package com.containersol.minimesos;
 
-import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.cluster.ZooKeeper;
+import com.containersol.minimesos.junit.MesosClusterTestRule;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
-import com.containersol.minimesos.mesos.MesosMaster;
-import com.containersol.minimesos.mesos.ZooKeeper;
+import com.containersol.minimesos.mesos.MesosMasterContainer;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -16,15 +16,15 @@ public class FlagsTest {
     public static final String aclExampleUnknownSyntaxUsedInStateJson = "run_tasks {\n  principals {\n    values: \"foo\"\n    values: \"bar\"\n  }\n  users {\n    values: \"alice\"\n  }\n}\n";
 
     @ClassRule
-    public static final MesosCluster cluster = new MesosCluster(
+    public static final MesosClusterTestRule cluster = new MesosClusterTestRule(
             new ClusterArchitecture.Builder()
                     .withZooKeeper()
-                    .withMaster(zooKeeper -> new MesosMasterEnvVars(zooKeeper)).build()
+                    .withMaster(MesosMasterEnvVars::new).build()
     );
 
     @Test
     public void clusterHasZookeeperUrl() throws UnirestException {
-        Assert.assertEquals("zk://" + cluster.getZkContainer().getIpAddress() + ":2181/mesos", cluster.getMasterContainer().getFlags().get("zk"));
+        Assert.assertEquals("zk://" + cluster.getZooKeeper().getIpAddress() + ":2181/mesos", cluster.getMaster().getFlags().get("zk"));
     }
 
     /**
@@ -33,11 +33,11 @@ public class FlagsTest {
      */
     @Test
     public void extraEnvironmentVariablesPassedToMesosMaster() throws UnirestException {
-        Assert.assertEquals("true", cluster.getMasterContainer().getFlags().get("authenticate"));
-        Assert.assertEquals(aclExampleUnknownSyntaxUsedInStateJson, cluster.getMasterContainer().getFlags().get("acls"));
+        Assert.assertEquals("true", cluster.getMaster().getFlags().get("authenticate"));
+        Assert.assertEquals(aclExampleUnknownSyntaxUsedInStateJson, cluster.getMaster().getFlags().get("acls"));
     }
 
-    public static class MesosMasterEnvVars extends MesosMaster {
+    public static class MesosMasterEnvVars extends MesosMasterContainer {
 
         protected MesosMasterEnvVars(ZooKeeper zooKeeperContainer) {
             super(zooKeeperContainer);

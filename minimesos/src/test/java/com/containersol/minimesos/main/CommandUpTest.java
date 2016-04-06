@@ -1,8 +1,9 @@
 package com.containersol.minimesos.main;
 
-import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.cluster.*;
 import com.containersol.minimesos.config.ClusterConfig;
-import com.containersol.minimesos.mesos.*;
+import com.containersol.minimesos.mesos.ClusterArchitecture;
+import com.containersol.minimesos.mesos.ClusterContainers;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -27,8 +28,8 @@ public class CommandUpTest {
         ClusterContainers clusterContainers = architecture.getClusterContainers();
         assertNotNull("cluster containers are not loaded", clusterContainers);
 
-        assertTrue("ZooKeeper is required component of cluster", clusterContainers.isPresent(ClusterContainers.Filter.zooKeeper()));
-        assertTrue("Mesos Master is required component of cluster", clusterContainers.isPresent(ClusterContainers.Filter.mesosMaster()));
+        assertTrue("ZooKeeper is required component of cluster", clusterContainers.isPresent(Filter.zooKeeper()));
+        assertTrue("Mesos Master is required component of cluster", clusterContainers.isPresent(Filter.mesosMaster()));
     }
 
     @Test
@@ -42,10 +43,10 @@ public class CommandUpTest {
         ClusterContainers clusterContainers = architecture.getClusterContainers();
         assertNotNull("cluster containers are not loaded", clusterContainers);
 
-        assertTrue("ZooKeeper is required component of cluster", clusterContainers.isPresent(ClusterContainers.Filter.zooKeeper()));
-        assertTrue("Mesos Master is required component of cluster", clusterContainers.isPresent(ClusterContainers.Filter.mesosMaster()));
+        assertTrue("ZooKeeper is required component of cluster", clusterContainers.isPresent(Filter.zooKeeper()));
+        assertTrue("Mesos Master is required component of cluster", clusterContainers.isPresent(Filter.mesosMaster()));
 
-        List<MesosAgent> agents = clusterContainers.getContainers().stream().filter(ClusterContainers.Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
+        List<MesosAgent> agents = clusterContainers.getContainers().stream().filter(Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
         assertEquals(1, agents.size());
     }
 
@@ -60,10 +61,10 @@ public class CommandUpTest {
         ClusterContainers clusterContainers = architecture.getClusterContainers();
         assertNotNull("cluster containers are not loaded", clusterContainers);
 
-        assertTrue("ZooKeeper is required component of cluster", clusterContainers.isPresent(ClusterContainers.Filter.zooKeeper()));
-        assertTrue("Mesos Master is required component of cluster", clusterContainers.isPresent(ClusterContainers.Filter.mesosMaster()));
+        assertTrue("ZooKeeper is required component of cluster", clusterContainers.isPresent(Filter.zooKeeper()));
+        assertTrue("Mesos Master is required component of cluster", clusterContainers.isPresent(Filter.mesosMaster()));
 
-        List<MesosAgent> agents = clusterContainers.getContainers().stream().filter(ClusterContainers.Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
+        List<MesosAgent> agents = clusterContainers.getContainers().stream().filter(Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
         assertEquals(2, agents.size());
     }
 
@@ -104,7 +105,6 @@ public class CommandUpTest {
     @Test
     public void testMinimalConfig() throws InterruptedException {
         CommandUp commandUp = new CommandUp();
-        commandUp.setDebug();
         commandUp.setClusterConfigPath("src/test/resources/configFiles/minimal-minimesosFile");
 
         ClusterArchitecture clusterArchitecture = commandUp.getClusterArchitecture();
@@ -118,7 +118,6 @@ public class CommandUpTest {
     @Test
     public void testMarathonAppConfig() throws InterruptedException {
         CommandUp commandUp = new CommandUp();
-        commandUp.setDebug();
         commandUp.setClusterConfigPath("src/test/resources/configFiles/marathonAppConfig-minimesosFile");
 
         commandUp.execute();

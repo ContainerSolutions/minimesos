@@ -3,6 +3,7 @@ package com.containersol.minimesos.main;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.main.factory.MesosClusterContainersFactory;
 
 import java.io.PrintStream;
 
@@ -25,7 +26,7 @@ public class CommandInfo implements Command {
 
     @Override
     public void execute() {
-        MesosCluster cluster = ClusterRepository.loadCluster();
+        MesosCluster cluster = ClusterRepository.loadCluster(new MesosClusterContainersFactory());
         if (cluster != null) {
             cluster.info(output);
         } else {

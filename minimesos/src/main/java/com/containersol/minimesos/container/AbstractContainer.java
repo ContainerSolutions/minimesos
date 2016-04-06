@@ -1,9 +1,10 @@
 package com.containersol.minimesos.container;
 
 import com.containersol.minimesos.MinimesosException;
+import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.containersol.minimesos.mesos.DockerClientFactory;
+import com.containersol.minimesos.docker.DockerClientFactory;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.model.Container;
@@ -28,7 +29,7 @@ import static com.jayway.awaitility.Awaitility.await;
 /**
  * Extend this class to start and manage your own containers
  */
-public abstract class AbstractContainer {
+public abstract class AbstractContainer implements ClusterProcess {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractContainer.class);
 
@@ -52,8 +53,6 @@ public abstract class AbstractContainer {
         this.containerId = containerId;
     }
 
-    public abstract String getRole();
-
     /**
      * Implement this method to pull your image. This will be called before the container is run.
      */
@@ -71,6 +70,7 @@ public abstract class AbstractContainer {
      *
      * @param timeout in seconds
      */
+    @Override
     public void start(int timeout) {
         pullImage();
 
@@ -116,6 +116,7 @@ public abstract class AbstractContainer {
     /**
      * @return the ID of the container.
      */
+    @Override
     public String getContainerId() {
         return containerId;
     }
@@ -123,6 +124,7 @@ public abstract class AbstractContainer {
     /**
      * @return the IP address of the container
      */
+    @Override
     public String getIpAddress() {
         if (ipAddress == null) {
             retrieveIpAddress();
@@ -143,6 +145,7 @@ public abstract class AbstractContainer {
      *
      * @return container name
      */
+    @Override
     public String getName() {
         return ContainerName.get(this);
     }
@@ -150,6 +153,7 @@ public abstract class AbstractContainer {
     /**
      * Removes a container with force
      */
+    @Override
     public void remove() {
         try {
             if (DockerContainersUtil.getContainer(containerId) != null) {
@@ -219,6 +223,7 @@ public abstract class AbstractContainer {
         this.cluster = cluster;
     }
 
+    @Override
     public MesosCluster getCluster() {
         return cluster;
     }

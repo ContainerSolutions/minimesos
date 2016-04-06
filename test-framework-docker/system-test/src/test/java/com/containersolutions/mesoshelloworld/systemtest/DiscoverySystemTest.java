@@ -1,11 +1,11 @@
 package com.containersolutions.mesoshelloworld.systemtest;
 
 import com.containersol.minimesos.docker.DockerContainersUtil;
+import com.containersol.minimesos.junit.MesosClusterTestRule;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersolutions.mesoshelloworld.scheduler.Configuration;
 import com.jayway.awaitility.Awaitility;
 import org.apache.log4j.Logger;
-import com.containersol.minimesos.cluster.MesosCluster;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -34,18 +34,18 @@ public class DiscoverySystemTest {
             .build();
 
     @ClassRule
-    public static final MesosCluster CLUSTER = new MesosCluster(CONFIG);
+    public static final MesosClusterTestRule CLUSTER = new MesosClusterTestRule(CONFIG);
 
     @BeforeClass
     public static void startScheduler() throws Exception {
 
-        String ipAddress = CLUSTER.getMasterContainer().getIpAddress();
+        String ipAddress = CLUSTER.getMaster().getIpAddress();
 
         LOGGER.info("Starting Scheduler, connected to " + ipAddress);
         SchedulerContainer scheduler = new SchedulerContainer(ipAddress);
 
         // Cluster now has responsibility to shut down container
-        CLUSTER.addAndStartContainer(scheduler);
+        CLUSTER.addAndStartProcess(scheduler);
 
         LOGGER.info("Started Scheduler on " + scheduler.getIpAddress());
     }

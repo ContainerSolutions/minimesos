@@ -1,8 +1,9 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.cluster.*;
 import com.containersol.minimesos.config.*;
 import com.containersol.minimesos.container.AbstractContainer;
-import com.containersol.minimesos.marathon.Marathon;
+import com.containersol.minimesos.marathon.MarathonContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,8 +11,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
-
-import static com.containersol.minimesos.mesos.ClusterContainers.Filter;
 
 /**
  * Represents the cluster architecture in terms of a list of containers. It exposes a builder to help users create a cluster.
@@ -106,29 +105,29 @@ public class ClusterArchitecture {
             Builder configBuilder = new Builder(clusterConfig);
 
             configBuilder.withZooKeeper(clusterConfig.getZookeeper());
-            configBuilder.withMaster(zooKeeper -> new MesosMaster(zooKeeper, clusterConfig.getMaster()));
+            configBuilder.withMaster(zooKeeper -> new MesosMasterContainer(zooKeeper, clusterConfig.getMaster()));
 
             // creation of agents
             List<MesosAgentConfig> agentConfigs = clusterConfig.getAgents();
             for (MesosAgentConfig agentConfig : agentConfigs) {
-                configBuilder.withAgent(zooKeeper -> new MesosAgent(zooKeeper, agentConfig));
+                configBuilder.withAgent(zooKeeper -> new MesosAgentContainer(zooKeeper, agentConfig));
             }
 
             // Marathon (optional)
             if (clusterConfig.getMarathon() != null) {
-                configBuilder.withMarathon(zooKeeper -> new Marathon(zooKeeper, clusterConfig.getMarathon()));
+                configBuilder.withMarathon(zooKeeper -> new MarathonContainer(zooKeeper, clusterConfig.getMarathon()));
             }
 
             // Consul (optional)
             ConsulConfig consulConfig = clusterConfig.getConsul();
             if (consulConfig != null) {
-                configBuilder.withConsul(new Consul(consulConfig));
+                configBuilder.withConsul(new ConsulContainer(consulConfig));
             }
 
             // Registrator (optional)
             RegistratorConfig registratorConfig = clusterConfig.getRegistrator();
             if (registratorConfig != null) {
-                configBuilder.withRegistrator(consul -> new Registrator(consul, registratorConfig));
+                configBuilder.withRegistrator(consul -> new RegistratorContainer(consul, registratorConfig));
             }
 
             return configBuilder;
@@ -154,7 +153,7 @@ public class ClusterArchitecture {
         }
 
         /**
-         * Includes the default {@link ZooKeeper} instance in the cluster
+         * Includes the default {@link ZooKeeperContainer} instance in the cluster
          */
         public Builder withZooKeeper() {
             return withZooKeeper(new ZooKeeperConfig());
@@ -164,7 +163,7 @@ public class ClusterArchitecture {
          * Be explicit about the version of the image to use.
          */
         public Builder withZooKeeper(ZooKeeperConfig zooKeeperConfig) {
-            return withZooKeeper(new ZooKeeper(zooKeeperConfig));
+            return withZooKeeper(new ZooKeeperContainer(zooKeeperConfig));
         }
 
         /**
@@ -191,14 +190,14 @@ public class ClusterArchitecture {
          * Includes the default {@link MesosMaster} instance in the cluster
          */
         public Builder withMaster() {
-            return withMaster(zooKeeper -> new MesosMaster(zooKeeper));
+            return withMaster(MesosMasterContainer::new);
         }
 
         /**
          * Includes the default {@link MesosAgent} instance in the cluster
          */
         public Builder withAgent() {
-            return withAgent(zooKeeper -> new MesosAgent(zooKeeper));
+            return withAgent(MesosAgentContainer::new);
         }
 
         /**
@@ -210,7 +209,7 @@ public class ClusterArchitecture {
             AgentResourcesConfig resources = AgentResourcesConfig.fromString(agentResourcesConfig);
             MesosAgentConfig config = new MesosAgentConfig();
             config.setResources(resources);
-            return withAgent(zooKeeper -> new MesosAgent(zooKeeper, config));
+            return withAgent(zooKeeper -> new MesosAgentContainer(zooKeeper, config));
         }
 
         /**
@@ -254,9 +253,9 @@ public class ClusterArchitecture {
         /**
          * Includes your own container in the cluster
          *
-         * @param container must extend from {@link AbstractContainer}
+         * @param container must extend from {@link ClusterProcess}
          */
-        public Builder withContainer(AbstractContainer container) {
+        public Builder withContainer(ClusterProcess container) {
             getContainers().add(container); // A simple container may not need any injection. But is available if required.
             return this;
         }
@@ -264,10 +263,10 @@ public class ClusterArchitecture {
         /**
          * Includes your own container in the cluster with a reference to another container of type T
          *
-         * @param container container must extend from {@link AbstractContainer}. Functional, to allow you to inject a reference to another {@link AbstractContainer}.
-         * @param filter    A predicate that returns true if the {@link AbstractContainer} is of type T
+         * @param container container must extend from {@link ClusterProcess}. Functional, to allow you to inject a reference to another {@link ClusterProcess}.
+         * @param filter    A predicate that returns true if the {@link ClusterProcess} is of type T
          */
-        public <T extends AbstractContainer> Builder withContainer(Function<T, AbstractContainer> container, Predicate<AbstractContainer> filter) {
+        public <T extends ClusterProcess> Builder withContainer(Function<T, ClusterProcess> container, Predicate<ClusterProcess> filter) {
             // Dev note: It is not possible to use generics to find the requested type due to generic type erasure. This is why we are explicitly passing a user provided filter.
             Optional<T> foundContainer = getContainers().getOne(filter);
             if (!foundContainer.isPresent()) {
@@ -291,7 +290,7 @@ public class ClusterArchitecture {
             }
         }
 
-        private Boolean isPresent(Predicate<AbstractContainer> filter) {
+        private Boolean isPresent(Predicate<ClusterProcess> filter) {
             return getContainers().isPresent(filter);
         }
 
