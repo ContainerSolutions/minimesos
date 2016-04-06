@@ -64,7 +64,7 @@ public class MesosClusterTestRule extends MesosCluster implements TestRule {
     /**
      * Destroys cluster using docker based factory of cluster members
      */
-    public void destroy() {
+    public void stop() {
         MesosClusterFactory factory = new MesosClusterContainersFactory();
         destroy(factory);
     }

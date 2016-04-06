@@ -59,7 +59,7 @@ public class MesosClusterTest {
 
     @Test
     public void testLoadCluster() {
-        String clusterId = cluster.getClusterId();
+        String clusterId = CLUSTER.getClusterId();
 
         MesosCluster cluster = MesosCluster.loadCluster(clusterId, new MesosClusterContainersFactory());
 
@@ -81,7 +81,7 @@ public class MesosClusterTest {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         PrintStream printStream = new PrintStream(byteArrayOutputStream);
 
-        cluster.info(printStream);
+        CLUSTER.info(printStream);
 
         String output = byteArrayOutputStream.toString();
 
@@ -94,8 +94,8 @@ public class MesosClusterTest {
 
     @Test
     public void mesosAgentStateInfoJSONMatchesSchema() throws UnirestException, JsonParseException, JsonMappingException {
-        String agentId = cluster.getAgents().get(0).getContainerId();
-        JSONObject state = cluster.getAgentStateInfo(agentId);
+        String agentId = CLUSTER.getAgents().get(0).getContainerId();
+        JSONObject state = CLUSTER.getAgentStateInfo(agentId);
         assertNotNull(state);
     }
 
@@ -118,7 +118,7 @@ public class MesosClusterTest {
 
     @Test
     public void testAgentStateRetrieval() {
-        List<MesosAgent> agents = cluster.getAgents();
+        List<MesosAgent> agents = CLUSTER.getAgents();
         assertNotNull(agents);
         assertTrue(agents.size() > 0);
 
@@ -128,7 +128,7 @@ public class MesosClusterTest {
 
         String cliContainerId = agent.getContainerId().substring(0, 11);
 
-        cluster.state(ps, cliContainerId);
+        CLUSTER.state(ps, cliContainerId);
 
         String state = outputStream.toString();
         assertTrue(state.contains("frameworks"));
@@ -160,7 +160,7 @@ public class MesosClusterTest {
 
     @Test
     public void testMasterLinkedToAgents() throws UnirestException {
-        List<MesosAgent> containers = cluster.getAgents();
+        List<MesosAgent> containers = CLUSTER.getAgents();
         for (MesosAgent container : containers) {
             InspectContainerResponse exec = DockerClientFactory.build().inspectContainerCmd(container.getContainerId()).exec();
 
@@ -174,12 +174,12 @@ public class MesosClusterTest {
 
     @Test(expected = MinimesosException.class)
     public void testInstall() {
-        cluster.install(null);
+        CLUSTER.install(null);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testStartingClusterSecondTime() {
-        cluster.start(30);
+        CLUSTER.start(30);
     }
 
 }

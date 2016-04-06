@@ -5,6 +5,7 @@ import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.config.MarathonConfig;
 import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.config.MesosMasterConfig;
+import com.containersol.minimesos.junit.MesosClusterTestRule;
 import com.containersol.minimesos.main.factory.MesosClusterContainersFactory;
 import com.containersol.minimesos.marathon.MarathonContainer;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
@@ -20,11 +21,10 @@ import static org.junit.Assert.assertTrue;
 public class ExposedPortsTest {
     private static final boolean EXPOSED_PORTS = true;
 
-    private MesosCluster cluster;
+    private MesosClusterTestRule cluster;
 
     @Before
     public void beforeTest() {
-
         MesosMasterConfig masterConfig = new MesosMasterConfig();
         MesosAgentConfig agentConfig = new MesosAgentConfig();
         ConsulConfig consulConfig = new ConsulConfig();
@@ -33,15 +33,13 @@ public class ExposedPortsTest {
                 .withZooKeeper()
                 .withMaster(zooKeeper -> new MesosMasterContainer(zooKeeper, masterConfig))
                 .withAgent(zooKeeper -> new MesosAgentContainer(zooKeeper, agentConfig))
-                .withMarathon(zooKeeper -> new MarathonContainer(zooKeeper, marathonConfig))
                 .withConsul(new ConsulContainer(consulConfig))
                 .build();
 
-        cluster = new MesosCluster(architecture.getClusterConfig(), architecture.getClusterContainers().getContainers());
+        cluster = new MesosClusterTestRule(architecture);
 
         cluster.setExposedHostPorts(EXPOSED_PORTS);
         cluster.start();
-
     }
 
     @After

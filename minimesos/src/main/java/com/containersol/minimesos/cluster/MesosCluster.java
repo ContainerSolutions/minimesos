@@ -1,24 +1,11 @@
 package com.containersol.minimesos.cluster;
 
 import com.containersol.minimesos.MinimesosException;
-import com.containersol.minimesos.config.*;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.config.MarathonConfig;
 import com.containersol.minimesos.config.MesosMasterConfig;
-import com.containersol.minimesos.container.AbstractContainer;
-import com.containersol.minimesos.container.ContainerName;
-import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.containersol.minimesos.marathon.Marathon;
-import com.containersol.minimesos.mesos.ClusterArchitecture;
-import com.containersol.minimesos.mesos.ClusterContainers;
-import com.containersol.minimesos.mesos.ClusterUtil;
-import com.containersol.minimesos.mesos.Consul;
-import com.containersol.minimesos.mesos.DockerClientFactory;
-import com.containersol.minimesos.mesos.MesosAgent;
-import com.containersol.minimesos.mesos.MesosMaster;
-import com.containersol.minimesos.mesos.Registrator;
-import com.containersol.minimesos.mesos.ZooKeeper;
+import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.Predicate;
 import com.github.dockerjava.api.InternalServerErrorException;
@@ -31,7 +18,12 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URI;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -103,9 +95,9 @@ public class MesosCluster {
             for (MesosAgent mesosAgent : getAgents()) {
                 mesosAgent.setZooKeeper(zookeeper);
             }
-            getMasterContainer().setZooKeeperContainer(zookeeper);
-            if (getMarathonContainer() != null) {
-                getMarathonContainer().setZooKeeper(zookeeper);
+            getMaster().setZooKeeper(zookeeper);
+            if (getMarathon() != null) {
+                getMarathon().setZooKeeper(zookeeper);
             }
         }
 
@@ -178,12 +170,12 @@ public class MesosCluster {
      * Stops the Mesos cluster and its containers.
      * Containers are stopped in reverse order of their creation
      */
-    public void stop() {
+    public void stop(MesosClusterFactory factory) {
 
         LOGGER.debug("Cluster " + getClusterId() + " - stop");
 
         // stop applications, which are installed through marathon
-        Marathon marathon = getMarathonContainer();
+        Marathon marathon = getMarathon();
         if (marathon != null) {
             marathon.killAllApps();
         }
@@ -203,9 +195,7 @@ public class MesosCluster {
         this.memberPocesses.clear();
 
         if (clusterId != null) {
-
-            DockerContainersUtil containers = new DockerContainersUtil(dockerClient);
-            containers.getContainers(true).filterByName(ContainerName.getContainerNamePattern(clusterId)).kill(true).remove();
+            factory.destroyRunningCluster(clusterId);
 
             File sandboxLocation = new File(getHostDir(), ".minimesos/sandbox-" + clusterId);
             if (sandboxLocation.exists()) {

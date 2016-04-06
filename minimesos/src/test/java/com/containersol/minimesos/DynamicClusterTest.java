@@ -53,7 +53,7 @@ public class DynamicClusterTest {
                 .withAgent(MesosAgentContainer::new)
                 .build();
 
-        MesosCluster cluster = new MesosCluster(config.getClusterConfig(), config.getClusterContainers().getContainers());
+        MesosClusterTestRule cluster = new MesosClusterTestRule(config);
         cluster.setExposedHostPorts(EXPOSED_PORTS);
         cluster.start();
 
