@@ -2,6 +2,7 @@ package com.containersol.minimesos;
 
 import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.config.RegistratorConfig;
+import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.junit.MesosClusterTestRule;
 import com.containersol.minimesos.marathon.MarathonContainer;
@@ -9,6 +10,7 @@ import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersol.minimesos.mesos.ConsulContainer;
 import com.containersol.minimesos.mesos.MesosAgentContainer;
 import com.containersol.minimesos.mesos.RegistratorContainer;
+import com.github.dockerjava.api.DockerClient;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONArray;
@@ -24,6 +26,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 public class ConsulRegistrationTest {
+
+    protected static final DockerClient dockerClient = DockerClientFactory.build();
+
+    // using Marathon slows down destruction of the cluster
     protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder()
             .withZooKeeper()
             .withMaster()
@@ -49,7 +55,7 @@ public class ConsulRegistrationTest {
 
         String ipAddress = DockerContainersUtil.getIpAddress(CLUSTER.getConsul().getContainerId());
         String url = String.format("http://%s:%d/v1/catalog/service/%s",
-                ipAddress, ConsulConfig.CONSUL_HTTP_PORT, HelloWorldContainer.SERVICE_NAME);
+				   ipAddress, ConsulConfig.CONSUL_HTTP_PORT, HelloWorldContainer.SERVICE_NAME);
 
         final JSONArray[] body = new JSONArray[1];
 

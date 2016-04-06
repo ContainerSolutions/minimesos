@@ -11,6 +11,7 @@ import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.jayway.awaitility.Awaitility;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 

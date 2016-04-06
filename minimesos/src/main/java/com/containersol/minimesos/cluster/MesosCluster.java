@@ -1,7 +1,11 @@
 package com.containersol.minimesos.cluster;
 
 import com.containersol.minimesos.MinimesosException;
-import com.containersol.minimesos.config.*;
+import com.containersol.minimesos.config.ClusterConfig;
+import com.containersol.minimesos.config.ConsulConfig;
+import com.containersol.minimesos.config.MarathonConfig;
+import com.containersol.minimesos.config.MesosMasterConfig;
+import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.Predicate;
 import com.github.dockerjava.api.InternalServerErrorException;
@@ -14,7 +18,12 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URI;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -161,8 +170,15 @@ public class MesosCluster {
      * Stops the Mesos cluster and its containers.
      * Containers are stopped in reverse order of their creation
      */
-    public void stop() {
+    public void stop(MesosClusterFactory factory) {
+
         LOGGER.debug("Cluster " + getClusterId() + " - stop");
+
+        // stop applications, which are installed through marathon
+        Marathon marathon = getMarathon();
+        if (marathon != null) {
+            marathon.killAllApps();
+        }
 
         if (memberPocesses.size() > 0) {
             for (int i = memberPocesses.size() - 1; i >= 0; i--) {
@@ -177,6 +193,25 @@ public class MesosCluster {
         }
         this.running = false;
         this.memberPocesses.clear();
+
+        if (clusterId != null) {
+            factory.destroyRunningCluster(clusterId);
+
+            File sandboxLocation = new File(getHostDir(), ".minimesos/sandbox-" + clusterId);
+            if (sandboxLocation.exists()) {
+                try {
+                    FileUtils.forceDelete(sandboxLocation);
+                } catch (IOException e) {
+                    String msg = String.format("Failed to force delete the cluster sandbox at %s", sandboxLocation.getAbsolutePath());
+                    throw new MinimesosException(msg, e);
+                }
+            }
+
+        } else {
+            LOGGER.info("Minimesos cluster is not running");
+        }
+
+        this.running = false;
     }
 
     /**
