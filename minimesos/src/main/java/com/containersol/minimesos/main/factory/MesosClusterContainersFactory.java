@@ -54,39 +54,43 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
             if (ContainerName.belongsToCluster(name, clusterId)) {
 
                 String containerId = container.getId();
-                String[] parts = name.split("-");
-                String role = parts[1];
-                String uuid = parts[3];
 
-                switch (role) {
-                    case "zookeeper":
-                        containers.add(createZooKeeper(cluster, uuid, containerId));
-                        break;
-                    case "agent":
-                        containers.add(createMesosAgent(cluster, uuid, containerId));
-                        break;
-                    case "master":
-                        MesosMaster master = createMesosMaster(cluster, uuid, containerId);
-                        containers.add(master);
-                        // restore "exposed ports" attribute
-                        Container.Port[] ports = container.getPorts();
-                        if (ports != null) {
-                            for (Container.Port port : ports) {
-                                if (port.getIp() != null && port.getPrivatePort() == MesosMasterConfig.MESOS_MASTER_PORT) {
-                                    cluster.setExposedHostPorts(true);
+                String[] parts = name.split("-");
+                if (parts.length > 3) {
+
+                    String role = parts[1];
+                    String uuid = parts[3];
+
+                    switch (role) {
+                        case "zookeeper":
+                            containers.add(createZooKeeper(cluster, uuid, containerId));
+                            break;
+                        case "agent":
+                            containers.add(createMesosAgent(cluster, uuid, containerId));
+                            break;
+                        case "master":
+                            MesosMaster master = createMesosMaster(cluster, uuid, containerId);
+                            containers.add(master);
+                            // restore "exposed ports" attribute
+                            Container.Port[] ports = container.getPorts();
+                            if (ports != null) {
+                                for (Container.Port port : ports) {
+                                    if (port.getIp() != null && port.getPrivatePort() == MesosMasterConfig.MESOS_MASTER_PORT) {
+                                        cluster.setExposedHostPorts(true);
+                                    }
                                 }
                             }
-                        }
-                        break;
-                    case "marathon":
-                        containers.add(createMarathon(cluster, uuid, containerId));
-                        break;
-                    case "consul":
-                        containers.add(createConsul(cluster, uuid, containerId));
-                        break;
-                    case "registrator":
-                        containers.add(createRegistrator(cluster, uuid, containerId));
-                        break;
+                            break;
+                        case "marathon":
+                            containers.add(createMarathon(cluster, uuid, containerId));
+                            break;
+                        case "consul":
+                            containers.add(createConsul(cluster, uuid, containerId));
+                            break;
+                        case "registrator":
+                            containers.add(createRegistrator(cluster, uuid, containerId));
+                            break;
+                    }
                 }
 
             }
