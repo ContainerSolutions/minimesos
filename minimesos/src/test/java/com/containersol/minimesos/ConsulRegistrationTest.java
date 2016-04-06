@@ -53,7 +53,7 @@ public class ConsulRegistrationTest {
 
         final JSONArray[] body = new JSONArray[1];
 
-        await("Test container did appear in Registrator").atMost(10, TimeUnit.SECONDS).pollDelay(100, TimeUnit.MILLISECONDS).until(() -> {
+        await("Test container did appear in Registrator").atMost(30, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(() -> {
             try {
                 body[0] = Unirest.get(url).asJson().getBody().getArray();
             } catch (UnirestException e) {
