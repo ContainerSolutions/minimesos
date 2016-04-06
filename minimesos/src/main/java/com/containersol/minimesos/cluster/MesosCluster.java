@@ -2,10 +2,6 @@ package com.containersol.minimesos.cluster;
 
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.config.ClusterConfig;
-import com.containersol.minimesos.config.ConsulConfig;
-import com.containersol.minimesos.config.MarathonConfig;
-import com.containersol.minimesos.config.MesosMasterConfig;
-import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.Predicate;
 import com.github.dockerjava.api.InternalServerErrorException;
@@ -50,7 +46,6 @@ public class MesosCluster {
 
     private boolean running = false;
 
-
     /**
      * Create a new MesosCluster with a specified cluster architecture.
      */
@@ -79,7 +74,6 @@ public class MesosCluster {
      * @param clusterId ID of the cluster to deserialize
      */
     private MesosCluster(String clusterId, MesosClusterFactory factory) {
-
         this.clusterId = clusterId;
         this.clusterConfig = new ClusterConfig();
 
@@ -133,19 +127,6 @@ public class MesosCluster {
         }
 
         running = true;
-    }
-
-    /**
-     * Print cluster info
-     */
-    public void info(PrintStream out) {
-        if (clusterId != null) {
-            out.println("Minimesos cluster is running: " + clusterId);
-            if (getMesosVersion() != null) {
-                out.println("Mesos version: " + clusterConfig.getMesosVersion());
-            }
-            printServiceUrls(out);
-        }
     }
 
     /**
@@ -401,46 +382,6 @@ public class MesosCluster {
         });
     }
 
-    public void printServiceUrls(PrintStream out) {
-        boolean exposedHostPorts = isExposedHostPorts();
-        String dockerHostIp = System.getenv("DOCKER_HOST_IP");
-
-        for (ClusterProcess container : getMemberProcesses()) {
-
-            String ip;
-            if (!exposedHostPorts || StringUtils.isEmpty(dockerHostIp)) {
-                ip = container.getIpAddress();
-            } else {
-                ip = dockerHostIp;
-            }
-
-            switch (container.getRole()) {
-                case "master":
-                    out.println("export MINIMESOS_MASTER=http://" + ip + ":" + MesosMasterConfig.MESOS_MASTER_PORT);
-                    break;
-                case "marathon":
-                    out.println("export MINIMESOS_MARATHON=http://" + ip + ":" + MarathonConfig.MARATHON_PORT);
-                    break;
-                case "zookeeper":
-                    out.println("export MINIMESOS_ZOOKEEPER=" + getFormattedZKAddress(ip));
-                    break;
-                case "consul":
-                    out.println("export MINIMESOS_CONSUL=http://" + ip + ":" + ConsulConfig.CONSUL_HTTP_PORT);
-                    out.println("export MINIMESOS_CONSUL_IP=" + ip);
-                    break;
-            }
-
-        }
-    }
-
-    /**
-     * @param ipAddress overwrites real IP of ZooKeeper container
-     * @return ZooKeeper URL based on given IP address
-     */
-    public static String getFormattedZKAddress(String ipAddress) {
-        return "zk://" + ipAddress + ":" + ZooKeeperConfig.DEFAULT_ZOOKEEPER_PORT;
-    }
-
     /**
      * Returns current user directory, which is mapped to host
      *
@@ -462,7 +403,6 @@ public class MesosCluster {
      * @return input stream with location content or null
      */
     public static InputStream getInputStream(String location) {
-
         InputStream is = null;
 
         if (location != null) {
