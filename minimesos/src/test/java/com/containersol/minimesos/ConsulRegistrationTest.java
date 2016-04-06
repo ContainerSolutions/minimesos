@@ -17,6 +17,9 @@ import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import java.util.concurrent.TimeUnit;
+
+import static com.jayway.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -40,16 +43,27 @@ public class ConsulRegistrationTest {
     }
 
     @Test
-    public void testRegisterServiceWithConsul() throws UnirestException {
+    public void testRegisterServiceWithConsul() {
+
         CLUSTER.addAndStartProcess(new HelloWorldContainer());
+
         String ipAddress = DockerContainersUtil.getIpAddress(CLUSTER.getConsul().getContainerId());
         String url = String.format("http://%s:%d/v1/catalog/service/%s",
                 ipAddress, ConsulConfig.CONSUL_HTTP_PORT, HelloWorldContainer.SERVICE_NAME);
 
-        JSONArray body = Unirest.get(url).asJson().getBody().getArray();
-        assertEquals(1, body.length());
+        final JSONArray[] body = new JSONArray[1];
 
-        JSONObject service = body.getJSONObject(0);
+        await("Test container did appear in Registrator").atMost(10, TimeUnit.SECONDS).pollDelay(100, TimeUnit.MILLISECONDS).until(() -> {
+            try {
+                body[0] = Unirest.get(url).asJson().getBody().getArray();
+            } catch (UnirestException e) {
+                throw new AssertionError(e);
+            }
+            assertEquals(1, body[0].length());
+        });
+
+
+        JSONObject service = body[0].getJSONObject(0);
         assertEquals(HelloWorldContainer.SERVICE_PORT, service.getInt("ServicePort"));
     }
 
