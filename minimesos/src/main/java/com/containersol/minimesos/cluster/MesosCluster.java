@@ -462,11 +462,9 @@ public class MesosCluster {
      * @return input stream with location content or null
      */
     public static InputStream getInputStream(String location) {
-
         InputStream is = null;
 
         if (location != null) {
-
             URI uri = null;
             try {
                 uri = URI.create(location);
@@ -500,7 +498,6 @@ public class MesosCluster {
                     }
                 }
             }
-
         }
 
         return is;

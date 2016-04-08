@@ -2,12 +2,10 @@ package com.containersol.minimesos;
 
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ConsulConfig;
-import com.containersol.minimesos.config.MarathonConfig;
 import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.junit.MesosClusterTestRule;
-import com.containersol.minimesos.main.factory.MesosClusterContainersFactory;
-import com.containersol.minimesos.marathon.MarathonContainer;
+import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersol.minimesos.mesos.ConsulContainer;
 import com.containersol.minimesos.mesos.MesosAgentContainer;

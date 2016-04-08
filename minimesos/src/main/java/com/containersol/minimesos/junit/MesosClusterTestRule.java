@@ -2,11 +2,13 @@ package com.containersol.minimesos.junit;
 
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosClusterFactory;
-import com.containersol.minimesos.main.factory.MesosClusterContainersFactory;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
+import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
+
+import java.util.List;
 
 /**
  * JUnit Rule extension of Mesos Cluster to use in JUnit.

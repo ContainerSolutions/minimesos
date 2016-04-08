@@ -1,7 +1,7 @@
 package com.containersol.minimesos.factory;
 
 import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.main.factory.MesosClusterContainersFactory;
+import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 import org.junit.Test;
 
 import java.io.FileInputStream;

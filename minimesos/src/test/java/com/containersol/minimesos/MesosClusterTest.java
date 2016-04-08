@@ -9,7 +9,7 @@ import com.containersol.minimesos.config.RegistratorConfig;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.junit.MesosClusterTestRule;
-import com.containersol.minimesos.main.factory.MesosClusterContainersFactory;
+import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 import com.containersol.minimesos.marathon.MarathonContainer;
 import com.containersol.minimesos.mesos.*;
 import com.containersol.minimesos.util.ResourceUtil;
@@ -23,7 +23,6 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.json.JSONObject;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 

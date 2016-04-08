@@ -4,14 +4,13 @@ import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.junit.MesosClusterTestRule;
-import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersol.minimesos.docker.DockerClientFactory;
+import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.jayway.awaitility.Awaitility;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 

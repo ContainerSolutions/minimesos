@@ -4,7 +4,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.main.factory.MesosClusterContainersFactory;
+import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 
 import java.io.PrintStream;
 

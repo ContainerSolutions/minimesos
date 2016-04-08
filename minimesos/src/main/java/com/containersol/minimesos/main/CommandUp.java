@@ -6,8 +6,7 @@ import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.*;
-import com.containersol.minimesos.main.factory.MesosClusterContainersFactory;
-import com.containersol.minimesos.mesos.ClusterArchitecture;
+import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
 
@@ -51,22 +50,14 @@ public class CommandUp implements Command {
     @Parameter(names = "--clusterConfig", description = "Path to file with cluster configuration. Defaults to minimesosFile")
     private String clusterConfigPath = ClusterConfig.DEFAULT_CONFIG_FILE;
 
-    /**
-     * Indicates is configurationFile was found
-     */
-    private Boolean configFileFound = null;
-
-    private ClusterConfig clusterConfig = null;
-
     private MesosCluster startedCluster = null;
 
     private PrintStream output = System.out;
 
-    public CommandUp() {
-    }
+    private MesosClusterContainersFactory mesosClusterFactory;
 
-    public CommandUp(PrintStream ps) {
-        output = ps;
+    public CommandUp() {
+        mesosClusterFactory = new MesosClusterContainersFactory();
     }
 
     public String getMarathonImageTag() {
@@ -103,7 +94,7 @@ public class CommandUp implements Command {
         if (numAgents > 0) {
             return numAgents;
         } else {
-            ClusterConfig clusterConfig = getClusterConfig();
+            ClusterConfig clusterConfig = readClusterConfigFromMinimesosFile();
             if ((clusterConfig != null) && (clusterConfig.getAgents() != null) && (clusterConfig.getAgents().size() > 0)) {
                 return clusterConfig.getAgents().size();
             } else {
@@ -122,7 +113,6 @@ public class CommandUp implements Command {
 
     @Override
     public void execute() {
-
         LOGGER.debug("Executing up command");
 
         MesosCluster cluster = getCluster();
@@ -130,64 +120,37 @@ public class CommandUp implements Command {
             output.println("Cluster " + cluster.getClusterId() + " is already running");
             return;
         }
+        ClusterConfig clusterConfig = readClusterConfigFromMinimesosFile();
+        updateWithParameters(clusterConfig);
 
-        ClusterArchitecture clusterArchitecture = getClusterArchitecture();
-
-        startedCluster = new MesosCluster(clusterArchitecture.getClusterConfig(), clusterArchitecture.getClusterContainers().getContainers());
+        startedCluster = mesosClusterFactory.createMesosCluster(clusterConfig);
         // save cluster ID first, so it becomes available for 'destroy' even if its part failed to start
         ClusterRepository.saveClusterFile(startedCluster);
 
         startedCluster.start();
         startedCluster.waitForState(state -> state != null);
-
         startedCluster.printServiceUrls(output);
-
     }
 
     /**
-     * Getter for Cluster Config with caching logic.
-     * This implementation cannot be used in multi-threaded mode
+     * Reads ClusterConfig from minimesosFile.
      *
-     * @return configuration of the cluster from the file
+     * @throws MinimesosException if minimesosFile is not found or malformed
+     *
+     * @return configuration of the cluster from the minimesosFile
      */
-    public ClusterConfig getClusterConfig() {
-        if (configFileFound != null) {
-            return clusterConfig;
-        }
-
+    public ClusterConfig readClusterConfigFromMinimesosFile() {
         InputStream clusterConfigFile = MesosCluster.getInputStream(getClusterConfigPath());
         if (clusterConfigFile != null) {
-            configFileFound = true;
             ConfigParser configParser = new ConfigParser();
             try {
-                clusterConfig = configParser.parse(IOUtils.toString(clusterConfigFile));
+                return configParser.parse(IOUtils.toString(clusterConfigFile));
             } catch (Exception e) {
                 String msg = String.format("Failed to load cluster configuration from %s: %s", getClusterConfigPath(), e.getMessage());
                 throw new MinimesosException(msg, e);
             }
-        } else {
-            configFileFound = false;
         }
-
-        return clusterConfig;
-    }
-
-    /**
-     * Creates cluster architecture based on the command parameters and configuration file
-     *
-     * @return cluster architecture
-     */
-    public ClusterArchitecture getClusterArchitecture() {
-        ClusterConfig clusterConfig = getClusterConfig();
-        if (clusterConfig == null) {
-            // default cluster configuration is created
-            clusterConfig = new ClusterConfig();
-        }
-        updateWithParameters(clusterConfig);
-
-        ClusterArchitecture.Builder configBuilder = ClusterArchitecture.Builder.createCluster(clusterConfig);
-
-        return configBuilder.build();
+        throw new MinimesosException("No minimesosFile found at '" + getClusterConfigPath() + "'. Please generate one with 'minimesos init'");
     }
 
     /**
@@ -273,4 +236,11 @@ public class CommandUp implements Command {
         return CLINAME;
     }
 
+    public void setMesosClusterFactory(MesosClusterContainersFactory mesosClusterFactory) {
+        this.mesosClusterFactory = mesosClusterFactory;
+    }
+
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
+    }
 }

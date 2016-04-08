@@ -1,141 +1,86 @@
 package com.containersol.minimesos.main;
 
-import com.containersol.minimesos.cluster.*;
+import com.containersol.minimesos.MinimesosException;
+import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ClusterConfig;
-import com.containersol.minimesos.mesos.ClusterArchitecture;
-import com.containersol.minimesos.mesos.ClusterContainers;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
-import static com.jayway.awaitility.Awaitility.await;
 import static org.junit.Assert.*;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class CommandUpTest {
 
-    @Test
-    public void testDefaultClusterConfig() throws IOException {
-        CommandUp commandUp = new CommandUp();
+    private CommandUp commandUp;
 
-        ClusterArchitecture architecture = commandUp.getClusterArchitecture();
-        assertNotNull("architecture is not loaded", architecture);
+    private ArgumentCaptor<ClusterConfig> capturedClusterConfig;
 
-        ClusterContainers clusterContainers = architecture.getClusterContainers();
-        assertNotNull("cluster containers are not loaded", clusterContainers);
+    private MesosCluster mesosCluster;
 
-        assertTrue("ZooKeeper is required component of cluster", clusterContainers.isPresent(Filter.zooKeeper()));
-        assertTrue("Mesos Master is required component of cluster", clusterContainers.isPresent(Filter.mesosMaster()));
+    @Before
+    public void before() {
+        MesosClusterContainersFactory mesosClusterFactory = mock(MesosClusterContainersFactory.class);
+        mesosCluster = mock(MesosCluster.class);
+        when(mesosCluster.getClusterId()).thenReturn("123456");
+
+        capturedClusterConfig = ArgumentCaptor.forClass(ClusterConfig.class);
+        when(mesosClusterFactory.createMesosCluster(capturedClusterConfig.capture())).thenReturn(mesosCluster);
+
+        commandUp = new CommandUp();
+        commandUp.setMesosClusterFactory(mesosClusterFactory);
+    }
+
+    @Test(expected = MinimesosException.class)
+    public void testExecute_missingMinimesosFile() throws IOException {
+        commandUp.execute();
+    }
+
+    @Test(expected = MinimesosException.class)
+    public void testExecute_invalidMinimesosFile() throws IOException {
+        commandUp.setClusterConfigPath("src/test/resources/configFiles/invalid-minimesosFile");
+        commandUp.execute();
     }
 
     @Test
     public void testBasicClusterConfig() throws IOException {
-        CommandUp commandUp = new CommandUp();
         commandUp.setClusterConfigPath("src/test/resources/clusterconfig/basic.groovy");
-
-        ClusterArchitecture architecture = commandUp.getClusterArchitecture();
-        assertNotNull("architecture is not loaded", architecture);
-
-        ClusterContainers clusterContainers = architecture.getClusterContainers();
-        assertNotNull("cluster containers are not loaded", clusterContainers);
-
-        assertTrue("ZooKeeper is required component of cluster", clusterContainers.isPresent(Filter.zooKeeper()));
-        assertTrue("Mesos Master is required component of cluster", clusterContainers.isPresent(Filter.mesosMaster()));
-
-        List<MesosAgent> agents = clusterContainers.getContainers().stream().filter(Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
-        assertEquals(1, agents.size());
-    }
-
-    @Test
-    public void testTwoAgentsClusterConfig() throws IOException {
-        CommandUp commandUp = new CommandUp();
-        commandUp.setClusterConfigPath("src/test/resources/clusterconfig/two-agents.groovy");
-
-        ClusterArchitecture architecture = commandUp.getClusterArchitecture();
-        assertNotNull("architecture is not loaded", architecture);
-
-        ClusterContainers clusterContainers = architecture.getClusterContainers();
-        assertNotNull("cluster containers are not loaded", clusterContainers);
-
-        assertTrue("ZooKeeper is required component of cluster", clusterContainers.isPresent(Filter.zooKeeper()));
-        assertTrue("Mesos Master is required component of cluster", clusterContainers.isPresent(Filter.mesosMaster()));
-
-        List<MesosAgent> agents = clusterContainers.getContainers().stream().filter(Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
-        assertEquals(2, agents.size());
-    }
-
-    @Test
-    public void testUsingExposedPortsFromConfigFileTrue() {
-        ClusterConfig clusterConfig = new ClusterConfig();
-        clusterConfig.setExposePorts(true);
-
-        CommandUp commandUp = new CommandUp();
-        commandUp.updateWithParameters(clusterConfig);
-
-        assertTrue("Exposed port from configuration is expected to remain", clusterConfig.isExposePorts());
-    }
-
-    @Test
-    public void testUsingExposedPortsFromConfigFileFalse() {
-        ClusterConfig clusterConfig = new ClusterConfig();
-        clusterConfig.setExposePorts(false);
-
-        CommandUp commandUp = new CommandUp();
-        commandUp.updateWithParameters(clusterConfig);
-
-        assertFalse("Exposed port from configuration is expected to remain", clusterConfig.isExposePorts());
-    }
-
-    @Test
-    public void testOverwritingExposedPortsFromCommand() {
-        ClusterConfig clusterConfig = new ClusterConfig();
-        clusterConfig.setExposePorts(true);
-
-        CommandUp commandUp = new CommandUp();
-        commandUp.setExposedHostPorts(false);
-        commandUp.updateWithParameters(clusterConfig);
-
-        assertFalse("Exposed port should be changed through command parameters", clusterConfig.isExposePorts());
-    }
-
-    @Test
-    public void testMinimalConfig() throws InterruptedException {
-        CommandUp commandUp = new CommandUp();
-        commandUp.setClusterConfigPath("src/test/resources/configFiles/minimal-minimesosFile");
-
-        ClusterArchitecture clusterArchitecture = commandUp.getClusterArchitecture();
-
-        assertEquals(1, clusterArchitecture.getClusterContainers().getContainers().stream().filter(c -> c instanceof ZooKeeper).count());
-        assertEquals(1, clusterArchitecture.getClusterContainers().getContainers().stream().filter(c -> c instanceof MesosMaster).count());
-        assertEquals(1, clusterArchitecture.getClusterContainers().getContainers().stream().filter(c -> c instanceof MesosAgent).count());
-        assertEquals(3, clusterArchitecture.getClusterContainers().getContainers().size());
-    }
-
-    @Test
-    public void testMarathonAppConfig() throws InterruptedException {
-        CommandUp commandUp = new CommandUp();
-        commandUp.setClusterConfigPath("src/test/resources/configFiles/marathonAppConfig-minimesosFile");
-
         commandUp.execute();
 
-        MesosCluster cluster = commandUp.getCluster();
+        verify(mesosCluster).start();
+    }
 
-        await().atMost(60, TimeUnit.SECONDS).until(() -> {
-            try {
-                JSONObject state = cluster.getClusterStateInfo();
-                JSONObject marathon = state.getJSONArray("frameworks").getJSONObject(0);
-                return marathon.getJSONArray("completed_tasks").getJSONObject(0).getString("name").equals("hello");
-            } catch (JSONException e) {
-                return false;
-            }
-        });
+    @Test
+    public void testExecute_setTimeout() {
+        commandUp.setClusterConfigPath("src/test/resources/configFiles/minimal-minimesosFile");
+        commandUp.setTimeout(30);
+        commandUp.execute();
 
-        CommandDestroy commandDestroy = new CommandDestroy();
-        commandDestroy.execute();
+        assertEquals(30, capturedClusterConfig.getValue().getTimeout());
+    }
+
+    @Test
+    public void testExecute_exposedPorts() {
+        commandUp.setClusterConfigPath("src/test/resources/configFiles/minimal-minimesosFile");
+        commandUp.setExposedHostPorts(true);
+        commandUp.execute();
+
+        assertTrue("Exposed port from configuration is expected to remain", capturedClusterConfig.getValue().isExposePorts());
+    }
+
+    @Test
+    public void testExecute_() {
+        commandUp.setClusterConfigPath("src/test/resources/configFiles/minimal-minimesosFile");
+        commandUp.setTimeout(30);
+        commandUp.execute();
+
+        assertEquals(30, capturedClusterConfig.getValue().getTimeout());
     }
 
 }
