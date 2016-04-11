@@ -148,12 +148,32 @@ public class MesosCluster {
     }
 
     /**
-     * Stops the Mesos cluster and its containers.
-     * Containers are stopped in reverse order of their creation
+     * Installs a Marathon app
+     *
+     * @param marathonJson JSON representation of Marathon app
      */
-    public void stop(MesosClusterFactory factory) {
+    public void install(String marathonJson) {
+        if (marathonJson == null) {
+            throw new MinimesosException("Specify a Marathon JSON app definition");
+        }
 
-        LOGGER.debug("Cluster " + getClusterId() + " - stop");
+        Marathon marathon = getMarathon();
+        if (marathon == null) {
+            throw new MinimesosException("Marathon container is not found in cluster " + clusterId);
+        }
+
+        String marathonIp = marathon.getIpAddress();
+        LOGGER.debug(String.format("Installing %s app on marathon %s", marathonJson, marathonIp));
+
+        marathon.deployApp(marathonJson);
+    }
+
+    /**
+     * Destroys the Mesos cluster and its containers
+     */
+    public void destroy(MesosClusterFactory factory) {
+
+        LOGGER.debug("Cluster " + getClusterId() + " - destroy");
 
         // stop applications, which are installed through marathon
         Marathon marathon = getMarathon();
@@ -193,51 +213,7 @@ public class MesosCluster {
         }
 
         this.running = false;
-    }
 
-    /**
-     * Installs a Marathon app
-     *
-     * @param marathonJson JSON representation of Marathon app
-     */
-    public void install(String marathonJson) {
-        if (marathonJson == null) {
-            throw new MinimesosException("Specify a Marathon JSON app definition");
-        }
-
-        Marathon marathon = getMarathon();
-        if (marathon == null) {
-            throw new MinimesosException("Marathon container is not found in cluster " + clusterId);
-        }
-
-        String marathonIp = marathon.getIpAddress();
-        LOGGER.debug(String.format("Installing %s app on marathon %s", marathonJson, marathonIp));
-
-        marathon.deployApp(marathonJson);
-    }
-
-    /**
-     * Destroys the Mesos cluster and its containers
-     */
-    public void destroy(MesosClusterFactory factory) {
-        LOGGER.debug("Cluster " + getClusterId() + " - destroy");
-        Marathon marathon = getMarathon();
-        if (marathon != null) {
-            marathon.killAllApps();
-        }
-
-        factory.destroyRunningCluster(getClusterId());
-
-        File sandboxLocation = new File(getHostDir(), ".minimesos/sandbox-" + clusterId);
-        if (sandboxLocation.exists()) {
-            try {
-                FileUtils.forceDelete(sandboxLocation);
-            } catch (IOException e) {
-                String msg = String.format("Failed to force delete the cluster sandbox at %s", sandboxLocation.getAbsolutePath());
-                LOGGER.error(msg, e);
-                throw new MinimesosException(msg, e);
-            }
-        }
     }
 
     /**
