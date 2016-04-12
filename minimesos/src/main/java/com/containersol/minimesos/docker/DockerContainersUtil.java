@@ -1,11 +1,16 @@
 package com.containersol.minimesos.docker;
 
 
+import com.containersol.minimesos.MinimesosException;
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Filters;
+import com.github.dockerjava.api.model.Frame;
+import com.github.dockerjava.core.command.LogContainerResultCallback;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,6 +27,14 @@ public class DockerContainersUtil {
 
     private DockerContainersUtil(Set<Container> containers) {
         this.containers = containers;
+    }
+
+    /**
+     * Use this getter if you need to iterate over docker objects
+     * @return set of docker containers
+     */
+    public Set<Container> getContainers() {
+        return containers;
     }
 
     /**
@@ -141,6 +154,26 @@ public class DockerContainersUtil {
     public static String getIpAddress(String containerId) {
         InspectContainerResponse response = DockerClientFactory.build().inspectContainerCmd(containerId).exec();
         return response.getNetworkSettings().getIpAddress();
+    }
+
+    public static List<String> getDockerLogs(String containerId) {
+
+        final List<String> logs = new ArrayList<>();
+
+        LogContainerCmd logContainerCmd = DockerClientFactory.build().logContainerCmd(containerId);
+        logContainerCmd.withStdOut().withStdErr();
+        try {
+            logContainerCmd.exec(new LogContainerResultCallback() {
+                @Override
+                public void onNext(Frame item) {
+                    logs.add(item.toString());
+                }
+            }).awaitCompletion();
+        } catch (InterruptedException e) {
+            throw new MinimesosException("Failed to retrieve logs of container " + containerId, e);
+        }
+
+        return logs;
     }
 
     /**
