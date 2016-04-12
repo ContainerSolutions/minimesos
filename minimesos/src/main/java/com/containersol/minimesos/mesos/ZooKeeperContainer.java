@@ -51,7 +51,7 @@ public class ZooKeeperContainer extends AbstractContainer implements ZooKeeper {
      */
     @Override
     public String getFormattedZKAddress() {
-        return MesosCluster.getFormattedZKAddress(getIpAddress());
+        return "zk://" + getIpAddress() + ":" + ZooKeeperConfig.DEFAULT_ZOOKEEPER_PORT;
     }
 
 }
