@@ -15,7 +15,7 @@ import java.nio.file.Paths;
  */
 public class ClusterRepository {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(ClusterRepository.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClusterRepository.class);
 
     public static final String MINIMESOS_FILE_PROPERTY = "minimesos.cluster";
 

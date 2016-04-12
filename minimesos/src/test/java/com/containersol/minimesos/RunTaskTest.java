@@ -1,6 +1,9 @@
 package com.containersol.minimesos;
 
 import com.containersol.minimesos.cluster.ClusterProcess;
+import com.containersol.minimesos.config.ContainerConfigBlock;
+import com.containersol.minimesos.config.MesosAgentConfig;
+import com.containersol.minimesos.config.MesosContainerConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.junit.MesosClusterTestRule;
@@ -47,7 +50,7 @@ public class RunTaskTest {
     @Test
     public void testMesosExecuteContainerSuccess() throws InterruptedException {
 
-        ClusterProcess mesosAgent = new AbstractContainer() {
+        ClusterProcess mesosAgent = new AbstractContainer( new ContainerConfigBlock(MesosAgentConfig.MESOS_AGENT_IMAGE, MesosContainerConfig.MESOS_IMAGE_TAGS.get("0.25"))) {
 
             @Override
             public String getRole() {
@@ -55,11 +58,8 @@ public class RunTaskTest {
             }
 
             @Override
-            protected void pullImage() {}
-
-            @Override
             protected CreateContainerCmd dockerCommand() {
-                return DockerClientFactory.build().createContainerCmd("containersol/mesos-agent:0.25.0-0.2.70.ubuntu1404")
+                return DockerClientFactory.build().createContainerCmd(String.format("%s:%s", MesosAgentConfig.MESOS_AGENT_IMAGE, MesosContainerConfig.MESOS_IMAGE_TAGS.get("0.25")))
                         .withName( getName() )
                         .withEntrypoint(
                                 "mesos-execute",
