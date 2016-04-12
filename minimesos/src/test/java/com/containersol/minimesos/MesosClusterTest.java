@@ -75,22 +75,6 @@ public class MesosClusterTest {
     public void testLoadCluster_noContainersFound() {
         MesosCluster.loadCluster("nonexistent", new MesosClusterContainersFactory());
     }
-//
-//    @Test
-//    public void testInfo() {
-//        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-//        PrintStream printStream = new PrintStream(byteArrayOutputStream);
-//
-//        CLUSTER.info(printStream);
-//
-//        String output = byteArrayOutputStream.toString();
-//
-//        assertTrue(output.contains("Minimesos cluster is running: " + CLUSTER.getClusterId() + "\n"));
-//        assertTrue(output.contains("export MINIMESOS_ZOOKEEPER=zk://" + CLUSTER.getZooKeeper().getIpAddress() + ":2181\n"));
-//        assertTrue(output.contains("export MINIMESOS_MASTER=http://" + CLUSTER.getMaster().getIpAddress() + ":5050\n"));
-//        assertTrue(output.contains("export MINIMESOS_MARATHON=http://" + CLUSTER.getMarathon().getIpAddress() + ":8080\n"));
-//        assertTrue(output.contains("export MINIMESOS_CONSUL=http://" + CLUSTER.getConsul().getIpAddress() + ":8500\n"));
-//    }
 
     @Test
     public void mesosAgentStateInfoJSONMatchesSchema() throws UnirestException, JsonParseException, JsonMappingException {
