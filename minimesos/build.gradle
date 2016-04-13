@@ -140,6 +140,7 @@ test {
 
 docker {
     url = "unix:///var/run/docker.sock"
+    certPath = null
     if (!System.properties.getProperty("docker.host", "").isEmpty()) {
         url = System.properties.getProperty("docker.host")
     }
