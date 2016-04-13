@@ -23,7 +23,7 @@ public class MesosAgentContainer extends MesosContainerImpl implements MesosAgen
 
     private final MesosAgentConfig config;
 
-    private final static String MESOS_AGENT_SANDBOX_DIR = "/tmp/mesos";
+    private static final String MESOS_AGENT_SANDBOX_DIR = "/tmp/mesos";
 
     public MesosAgentContainer(ZooKeeper zooKeeperContainer) {
         this(zooKeeperContainer, new MesosAgentConfig());
