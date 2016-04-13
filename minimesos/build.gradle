@@ -166,16 +166,6 @@ afterEvaluate { project ->
             throw new GradleException('Root directory of ' + project.name
                     + ' contains Dockerfile, but it does not define project.ext.imageName value')
         }
-//        docker.url = 'unix:///var/run/docker.sock'
-//        if(!System.properties['os.name'].equals('Mac OS X')) {
-//            docker.certPath = null
-//        }
-//        if (System.env.DOCKER_HOST) {
-//            docker.url = "$System.env.DOCKER_HOST".replace("tcp","https")
-//            if (System.env.DOCKER_CERT_PATH) {
-//                docker.certPath = new File(System.env.DOCKER_CERT_PATH)
-//            }
-//        }
         task buildDockerImage(type: DockerBuildImage, dependsOn: [copyDockerfile], description: 'build Docker image') {
             inputDir = new File( "${buildDir}/docker")
             tag = project.imageName
