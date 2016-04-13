@@ -3,7 +3,7 @@ package com.containersol.minimesos.docker;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
-import org.apache.commons.lang.StringUtils;
+import java.io.File;
 
 /**
  * Factory for creating {@link DockerClient}s
@@ -30,10 +30,10 @@ public class DockerClientFactory {
             if (dockerHostEnv != null) {
                 dockerUri = dockerHostEnv;
             }
-            if (dockerCertPathPrp != null) {
+            if (dockerCertPathPrp != null && new File(dockerCertPathPrp).exists()) {
                 builder.withDockerCertPath(dockerCertPathPrp);
             }
-            if (dockerCertPathEnv != null) {
+            if (dockerCertPathEnv != null && new File(dockerCertPathEnv).exists()) {
                 builder.withDockerCertPath(dockerCertPathEnv);
             }
             builder.withUri(dockerUri.replace("tcp", "https"));
