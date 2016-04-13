@@ -16,7 +16,7 @@ public class ZooKeeperContainer extends AbstractContainer implements ZooKeeper {
     private final ZooKeeperConfig config;
 
     public ZooKeeperContainer(ZooKeeperConfig config) {
-        super();
+        super(config);
         this.config = config;
     }
 
@@ -25,18 +25,16 @@ public class ZooKeeperContainer extends AbstractContainer implements ZooKeeper {
     }
 
     public ZooKeeperContainer(MesosCluster cluster, String uuid, String containerId) {
-        super(cluster, uuid, containerId);
-        this.config = new ZooKeeperConfig();
+        this(cluster, uuid, containerId, new ZooKeeperConfig());
+    }
+    public ZooKeeperContainer(MesosCluster cluster, String uuid, String containerId, ZooKeeperConfig config) {
+        super(cluster, uuid, containerId, config);
+        this.config = config;
     }
 
     @Override
     public String getRole() {
         return "zookeeper";
-    }
-
-    @Override
-    protected void pullImage() {
-        pullImage(config.getImageName(), config.getImageTag());
     }
 
     @Override
