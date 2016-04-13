@@ -153,7 +153,8 @@ docker {
     }
 
     if (System.getenv("DOCKER_CERT_PATH") != null) {
-        certPath = new File(System.getenv("DOCKER_CERT_PATH"))
+        if (new File(System.getenv("DOCKER_CERT_PATH")).exists())
+            certPath = new File(System.getenv("DOCKER_CERT_PATH"))
     }
 
     url = url.replace("tcp", "https")
