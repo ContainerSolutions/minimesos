@@ -138,22 +138,44 @@ test {
     }
 }
 
+docker {
+    url = "unix:///var/run/docker.sock"
+    if (!System.properties.getProperty("docker.host", "").isEmpty()) {
+        url = System.properties.getProperty("docker.host")
+    }
+
+    if (!System.properties.getProperty("docker.cert.path", "").isEmpty()) {
+        certPath = new File(System.properties.getProperty("docker.cert.path"))
+    }
+
+    if (System.getenv("DOCKER_HOST") != null) {
+        url = System.getenv("DOCKER_HOST")
+    }
+
+    if (System.getenv("DOCKER_CERT_PATH") != null) {
+        certPath = new File(System.getenv("DOCKER_CERT_PATH"))
+    }
+
+    url = url.replace("tcp", "https")
+
+}
+
 afterEvaluate { project ->
     if (new File(project.projectDir, 'Dockerfile').exists()) {
         if (!project.hasProperty('imageName')) {
             throw new GradleException('Root directory of ' + project.name
                     + ' contains Dockerfile, but it does not define project.ext.imageName value')
         }
-        docker.url = 'unix:///var/run/docker.sock'
-        if(!System.properties['os.name'].equals('Mac OS X')) {
-            docker.certPath = null
-        }
-        if (System.env.DOCKER_HOST) {
-            docker.url = "$System.env.DOCKER_HOST".replace("tcp","https")
-            if (System.env.DOCKER_CERT_PATH) {
-                docker.certPath = new File(System.env.DOCKER_CERT_PATH)
-            }
-        }
+//        docker.url = 'unix:///var/run/docker.sock'
+//        if(!System.properties['os.name'].equals('Mac OS X')) {
+//            docker.certPath = null
+//        }
+//        if (System.env.DOCKER_HOST) {
+//            docker.url = "$System.env.DOCKER_HOST".replace("tcp","https")
+//            if (System.env.DOCKER_CERT_PATH) {
+//                docker.certPath = new File(System.env.DOCKER_CERT_PATH)
+//            }
+//        }
         task buildDockerImage(type: DockerBuildImage, dependsOn: [copyDockerfile], description: 'build Docker image') {
             inputDir = new File( "${buildDir}/docker")
             tag = project.imageName

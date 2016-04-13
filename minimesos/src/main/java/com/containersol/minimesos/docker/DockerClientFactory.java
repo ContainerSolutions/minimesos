@@ -18,10 +18,25 @@ public class DockerClientFactory {
             builder.withVersion("");
 
             String dockerHostEnv = System.getenv("DOCKER_HOST");
-            if (StringUtils.isBlank(dockerHostEnv)) {
-                builder.withUri("unix:///var/run/docker.sock");
-            }
+            String dockerCertPathEnv = System.getenv("DOCKER_CERT_PATH");
+            String dockerHostPrp = System.getProperty("docker.host");
+            String dockerCertPathPrp = System.getProperty("docker.cert.path");
+            String dockerUri = "unix:///var/run/docker.sock";
+            builder.withDockerCertPath("");
 
+            if (dockerHostPrp != null) {
+                dockerUri = dockerHostPrp;
+            }
+            if (dockerHostEnv != null) {
+                dockerUri = dockerHostEnv;
+            }
+            if (dockerCertPathPrp != null) {
+                builder.withDockerCertPath(dockerCertPathPrp);
+            }
+            if (dockerCertPathEnv != null) {
+                builder.withDockerCertPath(dockerCertPathEnv);
+            }
+            builder.withUri(dockerUri.replace("tcp", "https"));
             DockerClientConfig config = builder.build();
             dockerClient = DockerClientBuilder.getInstance(config).build();
         }
