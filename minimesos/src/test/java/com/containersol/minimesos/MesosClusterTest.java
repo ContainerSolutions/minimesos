@@ -34,7 +34,7 @@ public class MesosClusterTest {
     @ClassRule
     public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromFile("src/test/resources/configFiles/minimesosFile-mesosClusterTest");
 
-    public static MesosCluster CLUSTER = RULE.getMesosCluster();
+    public static final MesosCluster CLUSTER = RULE.getMesosCluster();
 
     @After
     public void after() {

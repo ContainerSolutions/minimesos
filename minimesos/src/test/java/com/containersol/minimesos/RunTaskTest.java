@@ -23,7 +23,7 @@ public class RunTaskTest {
     @ClassRule
     public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromFile("src/test/resources/configFiles/minimesosFile-runTaskTest");
 
-    public static MesosCluster CLUSTER = RULE.getMesosCluster();
+    public static final MesosCluster CLUSTER = RULE.getMesosCluster();
 
     public static class LogContainerTestCallback extends LogContainerResultCallback {
         protected final StringBuffer log = new StringBuffer();
