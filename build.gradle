@@ -22,7 +22,7 @@ buildscript {
 
 plugins {
     id 'idea'
-    id "org.sonarqube" version "1.2"
+    id 'sonar-runner'
     id 'net.researchgate.release' version '2.3.5'
 }
 
@@ -43,9 +43,10 @@ idea {
     }
 }
 
-sonarqube {
-    properties {
+sonarRunner {
+    sonarProperties {
         property "sonar.sourceEncoding", "UTF-8"
+        property "sonar.dynamicAnalysis", "reuseReports"
         property "sonar.jacoco.reportPath", "${buildDir}/jacoco/test.exec"
     }
 }
