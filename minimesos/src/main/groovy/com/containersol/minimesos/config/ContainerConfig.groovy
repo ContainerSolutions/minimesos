@@ -6,7 +6,6 @@ package com.containersol.minimesos.config
  */
 interface ContainerConfig {
 
-    public static final String DEFAULT_NETWORK_MODE = "bridge"
 
     String getImageName()
 

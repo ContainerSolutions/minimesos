@@ -152,6 +152,10 @@ public abstract class AbstractContainer implements ClusterProcess {
         if (!getContainerId().isEmpty()) {
             res = DockerContainersUtil.getIpAddress(getContainerId());
         }
+        if (res.equals("")) {
+            res = DockerContainersUtil.getGatewayIpAddress();
+        }
+
         this.ipAddress = res;
     }
 

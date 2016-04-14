@@ -10,7 +10,6 @@ class MesosAgentConfig extends MesosContainerConfig {
     public static final int DEFAULT_MESOS_AGENT_PORT    = 5051
 
     int portNumber          = DEFAULT_MESOS_AGENT_PORT
-    String networkMode      = DEFAULT_NETWORK_MODE
 
     AgentResourcesConfig resources = new AgentResourcesConfig()
 
@@ -21,19 +20,6 @@ class MesosAgentConfig extends MesosContainerConfig {
 
     def resources(@DelegatesTo(AgentResourcesConfig) Closure cl) {
         delegateTo(resources, cl)
-    }
-
-    @Override
-    String getNetworkMode() {
-        return networkMode
-    }
-
-    @Override
-    void setNetworkMode(String networkMode) {
-        if (!StringUtils.equalsIgnoreCase(networkMode, "bridge") && !StringUtils.equalsIgnoreCase(networkMode, "host")) {
-            throw new RuntimeException("Property 'networkMode' can only have the values 'bridge' or 'host'")
-        }
-        this.networkMode = networkMode
     }
 
 }

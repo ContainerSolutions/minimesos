@@ -10,8 +10,6 @@ public class MarathonConfig extends ContainerConfigBlock implements ContainerCon
 
     List<AppConfig> apps = new ArrayList<>();
 
-    String networkMode   = DEFAULT_NETWORK_MODE
-
     public MarathonConfig() {
         imageName     = MARATHON_IMAGE
         imageTag      = MARATHON_IMAGE_TAG
@@ -26,19 +24,6 @@ public class MarathonConfig extends ContainerConfigBlock implements ContainerCon
         }
 
         apps.add(app)
-    }
-
-    @Override
-    String getNetworkMode() {
-        return networkMode
-    }
-
-    @Override
-    void setNetworkMode(String networkMode) {
-        if (!StringUtils.equalsIgnoreCase(networkMode, "bridge") && !StringUtils.equalsIgnoreCase(networkMode, "host")) {
-            throw new RuntimeException("Property 'networkMode' can only have the values 'bridge' or 'host'")
-        }
-        this.networkMode = networkMode
     }
 
 }

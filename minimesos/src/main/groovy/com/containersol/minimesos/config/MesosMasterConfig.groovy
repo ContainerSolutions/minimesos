@@ -14,22 +14,7 @@ class MesosMasterConfig extends MesosContainerConfig {
         imageTag      = MESOS_IMAGE_TAG
     }
 
-    String networkMode   = DEFAULT_NETWORK_MODE
     boolean authenticate = false
     String aclJson
-
-    @Override
-    String getNetworkMode() {
-        return networkMode
-    }
-
-    @Override
-    void setNetworkMode(String networkMode) {
-        if (!StringUtils.equalsIgnoreCase(networkMode, "bridge") && !StringUtils.equalsIgnoreCase(networkMode, "host")) {
-            throw new RuntimeException("Property 'networkMode' can only have the values 'bridge' or 'host'")
-        }
-        this.networkMode = networkMode
-    }
-
 
 }

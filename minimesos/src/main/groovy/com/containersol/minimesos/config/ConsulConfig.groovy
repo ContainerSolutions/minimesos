@@ -8,24 +8,9 @@ public class ConsulConfig extends ContainerConfigBlock implements ContainerConfi
     public static final int CONSUL_HTTP_PORT = 8500
     public static final int CONSUL_DNS_PORT = 8600
 
-    String networkMode   = DEFAULT_NETWORK_MODE
-
     public ConsulConfig() {
         imageName     = CONSUL_IMAGE_NAME
         imageTag      = CONSUL_TAG_NAME
-    }
-
-    @Override
-    String getNetworkMode() {
-        return networkMode
-    }
-
-    @Override
-    void setNetworkMode(String networkMode) {
-        if (!StringUtils.equalsIgnoreCase(networkMode, "bridge") && !StringUtils.equalsIgnoreCase(networkMode, "host")) {
-            throw new RuntimeException("Property 'networkMode' can only have the values 'bridge' or 'host'")
-        }
-        this.networkMode = networkMode
     }
 
 }
