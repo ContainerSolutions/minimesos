@@ -36,7 +36,6 @@ public abstract class AbstractContainer implements ClusterProcess {
     private final String uuid;
     private String containerId;
     private String ipAddress = null;
-    private boolean removed;
 
     protected Map<String, String> envVars = new TreeMap<>();
 
@@ -169,7 +168,6 @@ public abstract class AbstractContainer implements ClusterProcess {
             if (DockerContainersUtil.getContainer(containerId) != null) {
                 DockerClientFactory.build().removeContainerCmd(containerId).withForce().withRemoveVolumes(true).exec();
             }
-            this.removed = true;
         } catch (Exception e) {
             LOGGER.error("Could not remove container " + dockerCommand().getName(), e);
         }
