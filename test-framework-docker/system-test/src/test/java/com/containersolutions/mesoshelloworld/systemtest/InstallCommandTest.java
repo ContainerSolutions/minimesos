@@ -27,7 +27,7 @@ public class InstallCommandTest {
     public static final String MESOS_MASTER_IP_TOKEN = "${MESOS_MASTER_IP}";
 
     @ClassRule
-    public static final MesosClusterTestRule RULE = new MesosClusterTestRule(new File("src/test/resources/configFiles/minimesosFile-install-command-test"));
+    public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromFile("src/test/resources/configFiles/minimesosFile-install-command-test");
 
     public static MesosCluster CLUSTER = RULE.getMesosCluster();
 

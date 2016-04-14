@@ -11,7 +11,6 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,7 +26,7 @@ public class DiscoverySystemTest {
     public static final Logger LOGGER = Logger.getLogger(DiscoverySystemTest.class);
 
     @ClassRule
-    public static final MesosClusterTestRule RULE = new MesosClusterTestRule(new File("src/test/resources/configFiles/minimesosFile-discoverySystemTest"));
+    public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromFile("src/test/resources/configFiles/minimesosFile-discoverySystemTest");
 
     public static MesosCluster CLUSTER = RULE.getMesosCluster();
 

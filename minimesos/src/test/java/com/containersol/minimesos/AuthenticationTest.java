@@ -6,8 +6,6 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import java.io.File;
-
 import static org.junit.Assert.assertEquals;
 
 public class AuthenticationTest {
@@ -15,7 +13,7 @@ public class AuthenticationTest {
     public static final String aclExampleUnknownSyntaxUsedInStateJson = "run_tasks {\n  principals {\n    values: \"foo\"\n    values: \"bar\"\n  }\n  users {\n    values: \"alice\"\n  }\n}\n";
 
     @ClassRule
-    public static final MesosClusterTestRule RULE = new MesosClusterTestRule(new File("src/test/resources/configFiles/minimesosFile-authenticationTest"));
+    public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromFile("src/test/resources/configFiles/minimesosFile-authenticationTest");
 
     public static MesosCluster CLUSTER = RULE.getMesosCluster();
 

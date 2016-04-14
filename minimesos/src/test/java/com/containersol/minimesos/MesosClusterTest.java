@@ -21,7 +21,6 @@ import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +32,7 @@ import static org.junit.Assert.*;
 public class MesosClusterTest {
 
     @ClassRule
-    public static final MesosClusterTestRule RULE = new MesosClusterTestRule(new File("src/test/resources/configFiles/minimesosFile-mesosClusterTest"));
+    public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromFile("src/test/resources/configFiles/minimesosFile-mesosClusterTest");
 
     public static MesosCluster CLUSTER = RULE.getMesosCluster();
 

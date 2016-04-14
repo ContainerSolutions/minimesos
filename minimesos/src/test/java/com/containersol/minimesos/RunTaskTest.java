@@ -12,14 +12,13 @@ import com.jayway.awaitility.Awaitility;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 public class RunTaskTest {
     private static final String TASK_CLUSTER_ROLE = "test";
 
     @ClassRule
-    public static final MesosClusterTestRule RULE = new MesosClusterTestRule(new File("src/test/resources/configFiles/minimesosFile-runTaskTest"));
+    public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromFile("src/test/resources/configFiles/minimesosFile-runTaskTest");
 
     public static MesosCluster CLUSTER = RULE.getMesosCluster();
 

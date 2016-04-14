@@ -8,7 +8,6 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
@@ -21,14 +20,19 @@ public class MesosClusterTestRule implements TestRule {
 
     private MesosClusterFactory factory = new MesosClusterContainersFactory();
 
-    private final MesosCluster cluster;
+    private MesosCluster mesosCluster;
 
-    public MesosClusterTestRule(File minimesosFile) {
+    public static MesosClusterTestRule fromFile(String minimesosFilePath) {
         try {
-            this.cluster = new MesosClusterContainersFactory().createMesosCluster(new FileInputStream(minimesosFile));
+            MesosCluster cluster = new MesosClusterContainersFactory().createMesosCluster(new FileInputStream(minimesosFilePath));
+            return new MesosClusterTestRule(cluster);
         } catch (FileNotFoundException e) {
-            throw new MinimesosException("Could not read minimesosFile at " + minimesosFile.getAbsolutePath());
+            throw new MinimesosException("Could not read minimesosFile at " + minimesosFilePath);
         }
+    }
+
+    private MesosClusterTestRule(MesosCluster mesosCluster) {
+        this.mesosCluster = mesosCluster;
     }
 
     /**
@@ -56,11 +60,11 @@ public class MesosClusterTestRule implements TestRule {
      * Execute before the test
      */
     protected void before() {
-        cluster.start();
+        mesosCluster.start();
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                factory.destroyRunningCluster(cluster.getClusterId());
+                factory.destroyRunningCluster(mesosCluster.getClusterId());
             }
         });
     }
@@ -76,11 +80,11 @@ public class MesosClusterTestRule implements TestRule {
      * Destroys cluster using docker based factory of cluster members
      */
     public void stop() {
-        cluster.destroy(factory);
+        mesosCluster.destroy(factory);
     }
 
     public MesosCluster getMesosCluster() {
-        return cluster;
+        return mesosCluster;
     }
 
     public MesosClusterFactory getFactory() {

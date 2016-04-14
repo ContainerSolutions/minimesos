@@ -6,14 +6,12 @@ import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import java.io.File;
-
 import static org.junit.Assert.assertTrue;
 
 public class ExposedPortsTest {
 
     @ClassRule
-    public static final MesosClusterTestRule RULE = new MesosClusterTestRule(new File("src/test/resources/configFiles/minimesosFile-exposedPortsTest"));
+    public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromFile("src/test/resources/configFiles/minimesosFile-exposedPortsTest");
 
     public static MesosCluster CLUSTER = RULE.getMesosCluster();
 

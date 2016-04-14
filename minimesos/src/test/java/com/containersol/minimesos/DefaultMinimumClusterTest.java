@@ -33,7 +33,7 @@ import static org.junit.Assert.assertTrue;
 public class DefaultMinimumClusterTest {
 
     @ClassRule
-    public static final MesosClusterTestRule RULE = new MesosClusterTestRule(new File("src/test/resources/configFiles/minimesosFile-defaultMinimumClusterTest"));
+    public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromFile("src/test/resources/configFiles/minimesosFile-defaultMinimumClusterTest");
 
     public static MesosCluster CLUSTER = RULE.getMesosCluster();
 

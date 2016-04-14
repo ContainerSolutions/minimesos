@@ -12,7 +12,6 @@ import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.await;
@@ -22,7 +21,7 @@ import static org.junit.Assert.assertFalse;
 public class ConsulRegistrationTest {
 
     @ClassRule
-    public static final MesosClusterTestRule RULE = new MesosClusterTestRule(new File("src/test/resources/configFiles/minimesosFile-consulRegistrationTest"));
+    public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromFile("src/test/resources/configFiles/minimesosFile-consulRegistrationTest");
 
     public static MesosCluster CLUSTER = RULE.getMesosCluster();
 
