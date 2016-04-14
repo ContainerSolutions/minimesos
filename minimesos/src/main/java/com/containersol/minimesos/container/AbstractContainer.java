@@ -167,7 +167,7 @@ public abstract class AbstractContainer implements ClusterProcess {
     public void remove() {
         try {
             if (DockerContainersUtil.getContainer(containerId) != null) {
-                DockerClientFactory.build().removeContainerCmd(containerId).withForce().withRemoveVolumes(true).exec();
+                DockerClientFactory.build().removeContainerCmd(containerId).withForce(true).withRemoveVolumes(true).exec();
             }
             this.removed = true;
         } catch (Exception e) {

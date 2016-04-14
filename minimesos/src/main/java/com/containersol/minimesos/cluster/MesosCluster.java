@@ -4,8 +4,8 @@ import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.Predicate;
-import com.github.dockerjava.api.InternalServerErrorException;
-import com.github.dockerjava.api.NotFoundException;
+import com.github.dockerjava.api.exception.InternalServerErrorException;
+import com.github.dockerjava.api.exception.NotFoundException;
 import com.jayway.awaitility.Awaitility;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.FileUtils;
@@ -381,7 +381,7 @@ public class MesosCluster {
         InputStream is = null;
 
         if (location != null) {
-            URI uri = null;
+            URI uri;
             try {
                 uri = URI.create(location);
                 if (!uri.isAbsolute()) {
