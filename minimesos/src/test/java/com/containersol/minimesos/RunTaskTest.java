@@ -22,14 +22,6 @@ public class RunTaskTest {
 
     public static MesosCluster CLUSTER = RULE.getMesosCluster();
 
-//    @After
-//    public void after() {
-//        DockerContainersUtil util = new DockerContainersUtil();
-//        // kill() is not used because containers are expected to exit by this time
-//        util.getContainers(true).filterByName("^minimesos-" + TASK_CLUSTER_ROLE + "-[0-9a-f\\-]*$").remove();
-//    }
-//
-
     public static class LogContainerTestCallback extends LogContainerResultCallback {
         protected final StringBuffer log = new StringBuffer();
 
@@ -47,18 +39,16 @@ public class RunTaskTest {
 
     @Test
     public void testMesosExecuteContainerSuccess() throws InterruptedException {
-        ClusterProcess mesosAgent = new AbstractContainer() {
+        ClusterProcess mesosAgent = new AbstractContainer( new ContainerConfigBlock(MesosAgentConfig.MESOS_AGENT_IMAGE, MesosContainerConfig.MESOS_IMAGE_TAGS.get("0.25"))) {
+
             @Override
             public String getRole() {
                 return TASK_CLUSTER_ROLE;
             }
 
             @Override
-            protected void pullImage() {}
-
-            @Override
             protected CreateContainerCmd dockerCommand() {
-                return DockerClientFactory.build().createContainerCmd("containersol/mesos-agent:0.25.0-0.2.70.ubuntu1404")
+                return DockerClientFactory.build().createContainerCmd(String.format("%s:%s", MesosAgentConfig.MESOS_AGENT_IMAGE, MesosContainerConfig.MESOS_IMAGE_TAGS.get("0.25")))
                         .withName( getName() )
                         .withEntrypoint(
                                 "mesos-execute",

@@ -1,4 +1,4 @@
-# minimesos
+# minimesos [![Build Status](https://travis-ci.org/ContainerSolutions/minimesos.svg?branch=master)](https://travis-ci.org/ContainerSolutions/minimesos)
 
 The experimentation and testing tool for Apache Mesos
 

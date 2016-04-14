@@ -27,13 +27,13 @@ public abstract class MesosContainerImpl extends AbstractContainer implements Me
     private final MesosContainerConfig config;
 
     protected MesosContainerImpl(ZooKeeper zooKeeperContainer, MesosContainerConfig config) {
-        super();
+        super(config);
         this.zooKeeperContainer = zooKeeperContainer;
         this.config = config;
     }
 
     protected MesosContainerImpl(MesosCluster cluster, String uuid, String containerId, MesosContainerConfig config) {
-        super(cluster, uuid, containerId);
+        super(cluster, uuid, containerId, config);
         this.config = config;
     }
 
@@ -42,21 +42,13 @@ public abstract class MesosContainerImpl extends AbstractContainer implements Me
     protected abstract Map<String, String> getDefaultEnvVars();
 
     @Override
-    protected void pullImage() {
-        pullImage(getMesosImageName(), getMesosImageTag());
-    }
-
-    public String getMesosImageTag() {
+    public String getImageTag() {
         String imageTag = config.getImageTag();
         if (MesosContainerConfig.MESOS_IMAGE_TAG.equalsIgnoreCase(imageTag)) {
             String mesosVersion = getCluster().getMesosVersion();
             imageTag = MesosContainerConfig.MESOS_IMAGE_TAGS.get(mesosVersion);
         }
         return imageTag;
-    }
-
-    public String getMesosImageName() {
-        return config.getImageName();
     }
 
     protected String[] createMesosLocalEnvironment() {
@@ -77,6 +69,7 @@ public abstract class MesosContainerImpl extends AbstractContainer implements Me
         return envs;
     }
 
+    @Override
     public void setZooKeeper(ZooKeeper zooKeeperContainer) {
         this.zooKeeperContainer = zooKeeperContainer;
     }
@@ -93,6 +86,7 @@ public abstract class MesosContainerImpl extends AbstractContainer implements Me
         return "http://" + getIpAddress() + ":" + getPortNumber() + "/state.json";
     }
 
+    @Override
     public JSONObject getStateInfoJSON() throws UnirestException {
         String stateUrl = getStateUrl();
         GetRequest request = Unirest.get(stateUrl);

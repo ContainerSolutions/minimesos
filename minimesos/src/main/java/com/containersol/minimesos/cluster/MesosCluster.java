@@ -2,10 +2,6 @@ package com.containersol.minimesos.cluster;
 
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.config.ClusterConfig;
-import com.containersol.minimesos.config.ConsulConfig;
-import com.containersol.minimesos.config.MarathonConfig;
-import com.containersol.minimesos.config.MesosMasterConfig;
-import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.Predicate;
 import com.github.dockerjava.api.InternalServerErrorException;
@@ -38,7 +34,7 @@ import java.util.stream.Collectors;
  */
 public class MesosCluster {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(MesosCluster.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MesosCluster.class);
 
     public static final String MINIMESOS_HOST_DIR_PROPERTY = "minimesos.host.dir";
 
@@ -49,7 +45,6 @@ public class MesosCluster {
     private List<ClusterProcess> memberPocesses = Collections.synchronizedList(new ArrayList<>());
 
     private boolean running = false;
-
 
     /**
      * Create a new MesosCluster with a specified cluster architecture.
@@ -79,7 +74,6 @@ public class MesosCluster {
      * @param clusterId ID of the cluster to deserialize
      */
     private MesosCluster(String clusterId, MesosClusterFactory factory) {
-
         this.clusterId = clusterId;
         this.clusterConfig = new ClusterConfig();
 
@@ -136,19 +130,6 @@ public class MesosCluster {
     }
 
     /**
-     * Print cluster info
-     */
-    public void info(PrintStream out) {
-        if (clusterId != null) {
-            out.println("Minimesos cluster is running: " + clusterId);
-            if (getMesosVersion() != null) {
-                out.println("Mesos version: " + clusterConfig.getMesosVersion());
-            }
-            printServiceUrls(out);
-        }
-    }
-
-    /**
      * Prints the state of the Mesos master or agent
      */
     public void state(PrintStream out, String agentContainerId) {
@@ -167,12 +148,32 @@ public class MesosCluster {
     }
 
     /**
-     * Stops the Mesos cluster and its containers.
-     * Containers are stopped in reverse order of their creation
+     * Installs a Marathon app
+     *
+     * @param marathonJson JSON representation of Marathon app
      */
-    public void stop(MesosClusterFactory factory) {
+    public void install(String marathonJson) {
+        if (marathonJson == null) {
+            throw new MinimesosException("Specify a Marathon JSON app definition");
+        }
 
-        LOGGER.debug("Cluster " + getClusterId() + " - stop");
+        Marathon marathon = getMarathon();
+        if (marathon == null) {
+            throw new MinimesosException("Marathon container is not found in cluster " + clusterId);
+        }
+
+        String marathonIp = marathon.getIpAddress();
+        LOGGER.debug(String.format("Installing %s app on marathon %s", marathonJson, marathonIp));
+
+        marathon.deployApp(marathonJson);
+    }
+
+    /**
+     * Destroys the Mesos cluster and its containers
+     */
+    public void destroy(MesosClusterFactory factory) {
+
+        LOGGER.debug("Cluster " + getClusterId() + " - destroy");
 
         // stop applications, which are installed through marathon
         Marathon marathon = getMarathon();
@@ -212,51 +213,7 @@ public class MesosCluster {
         }
 
         this.running = false;
-    }
 
-    /**
-     * Installs a Marathon app
-     *
-     * @param marathonJson JSON representation of Marathon app
-     */
-    public void install(String marathonJson) {
-        if (marathonJson == null) {
-            throw new MinimesosException("Specify a Marathon JSON app definition");
-        }
-
-        Marathon marathon = getMarathon();
-        if (marathon == null) {
-            throw new MinimesosException("Marathon container is not found in cluster " + clusterId);
-        }
-
-        String marathonIp = marathon.getIpAddress();
-        LOGGER.debug(String.format("Installing %s app on marathon %s", marathonJson, marathonIp));
-
-        marathon.deployApp(marathonJson);
-    }
-
-    /**
-     * Destroys the Mesos cluster and its containers
-     */
-    public void destroy(MesosClusterFactory factory) {
-        LOGGER.debug("Cluster " + getClusterId() + " - destroy");
-        Marathon marathon = getMarathon();
-        if (marathon != null) {
-            marathon.killAllApps();
-        }
-
-        factory.destroyRunningCluster(getClusterId());
-
-        File sandboxLocation = new File(getHostDir(), ".minimesos/sandbox-" + clusterId);
-        if (sandboxLocation.exists()) {
-            try {
-                FileUtils.forceDelete(sandboxLocation);
-            } catch (IOException e) {
-                String msg = String.format("Failed to force delete the cluster sandbox at %s", sandboxLocation.getAbsolutePath());
-                LOGGER.error(msg, e);
-                throw new MinimesosException(msg, e);
-            }
-        }
     }
 
     /**
@@ -393,52 +350,11 @@ public class MesosCluster {
         Awaitility.await().atMost(clusterConfig.getTimeout(), TimeUnit.SECONDS).until(() -> {
             try {
                 return predicate.test(State.fromJSON(getMaster().getStateInfoJSON().toString()));
-            } catch (InternalServerErrorException e) {
-                LOGGER.error(e.toString());
-                // This probably means that the mesos cluster isn't ready yet..
+            } catch (InternalServerErrorException e) { //NOSONAR
+                // This means that the mesos cluster isn't ready yet..
                 return false;
             }
         });
-    }
-
-    public void printServiceUrls(PrintStream out) {
-        boolean exposedHostPorts = isExposedHostPorts();
-        String dockerHostIp = System.getenv("DOCKER_HOST_IP");
-
-        for (ClusterProcess container : getMemberProcesses()) {
-
-            String ip;
-            if (!exposedHostPorts || StringUtils.isEmpty(dockerHostIp)) {
-                ip = container.getIpAddress();
-            } else {
-                ip = dockerHostIp;
-            }
-
-            switch (container.getRole()) {
-                case "master":
-                    out.println("export MINIMESOS_MASTER=http://" + ip + ":" + MesosMasterConfig.MESOS_MASTER_PORT);
-                    break;
-                case "marathon":
-                    out.println("export MINIMESOS_MARATHON=http://" + ip + ":" + MarathonConfig.MARATHON_PORT);
-                    break;
-                case "zookeeper":
-                    out.println("export MINIMESOS_ZOOKEEPER=" + getFormattedZKAddress(ip));
-                    break;
-                case "consul":
-                    out.println("export MINIMESOS_CONSUL=http://" + ip + ":" + ConsulConfig.CONSUL_HTTP_PORT);
-                    out.println("export MINIMESOS_CONSUL_IP=" + ip);
-                    break;
-            }
-
-        }
-    }
-
-    /**
-     * @param ipAddress overwrites real IP of ZooKeeper container
-     * @return ZooKeeper URL based on given IP address
-     */
-    public static String getFormattedZKAddress(String ipAddress) {
-        return "zk://" + ipAddress + ":" + ZooKeeperConfig.DEFAULT_ZOOKEEPER_PORT;
     }
 
     /**
@@ -471,8 +387,9 @@ public class MesosCluster {
                 if (!uri.isAbsolute()) {
                     uri = null;
                 }
-            } catch (IllegalArgumentException ignored) {
-                // means this is not a valid URI
+            } catch (IllegalArgumentException ignored) { //NOSONAR
+                // means this is not a valid URI, could be filepath
+                uri = null;
             }
 
             if (uri != null) {

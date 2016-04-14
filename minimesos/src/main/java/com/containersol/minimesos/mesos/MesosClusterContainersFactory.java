@@ -7,6 +7,7 @@ import com.containersol.minimesos.config.ConfigParser;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.container.ContainerName;
 import com.containersol.minimesos.docker.DockerClientFactory;
+import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.marathon.MarathonContainer;
 import com.github.dockerjava.api.model.Container;
 import org.apache.commons.io.IOUtils;
@@ -102,12 +103,8 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
 
     @Override
     public void destroyRunningCluster(String clusterId) {
-        List<Container> containers = DockerClientFactory.build().listContainersCmd().exec();
-        for (Container container : containers) {
-            if (ContainerName.belongsToCluster(container.getNames(), clusterId)) {
-                DockerClientFactory.build().removeContainerCmd(container.getId()).withForce().withRemoveVolumes(true).exec();
-            }
-        }
+        DockerContainersUtil dockerUtil = new DockerContainersUtil();
+        dockerUtil.getContainers(true).filterByName(ContainerName.getContainerNamePattern(clusterId)).kill(true).remove();
     }
 
     public MesosCluster createMesosCluster(InputStream inputStream) {

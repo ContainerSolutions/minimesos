@@ -1,14 +1,25 @@
 package com.containersol.minimesos.docker;
 
 
+import com.containersol.minimesos.MinimesosException;
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Filters;
+import com.github.dockerjava.api.model.Frame;
+import com.github.dockerjava.api.model.PullResponseItem;
+import com.github.dockerjava.core.command.LogContainerResultCallback;
+import com.github.dockerjava.core.command.PullImageResultCallback;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Immutable utility class, which represents set of docker containers with filters and operations on this list
@@ -22,6 +33,14 @@ public class DockerContainersUtil {
 
     private DockerContainersUtil(Set<Container> containers) {
         this.containers = containers;
+    }
+
+    /**
+     * Use this getter if you need to iterate over docker objects
+     * @return set of docker containers
+     */
+    public Set<Container> getContainers() {
+        return containers;
     }
 
     /**
@@ -141,6 +160,78 @@ public class DockerContainersUtil {
     public static String getIpAddress(String containerId) {
         InspectContainerResponse response = DockerClientFactory.build().inspectContainerCmd(containerId).exec();
         return response.getNetworkSettings().getIpAddress();
+    }
+
+    /**
+     * Synchronized method for returning logs of docker container
+     * @param containerId - ID of the container ot lookup logs
+     * @return list of strings, where every string is log line
+     */
+    public static List<String> getDockerLogs(String containerId) {
+
+        final List<String> logs = new ArrayList<>();
+
+        LogContainerCmd logContainerCmd = DockerClientFactory.build().logContainerCmd(containerId);
+        logContainerCmd.withStdOut().withStdErr();
+        try {
+            logContainerCmd.exec(new LogContainerResultCallback() {
+                @Override
+                public void onNext(Frame item) {
+                    logs.add(item.toString());
+                }
+            }).awaitCompletion();
+        } catch (InterruptedException e) {
+            throw new MinimesosException("Failed to retrieve logs of container " + containerId, e);
+        }
+
+        return logs;
+    }
+
+
+    /**
+     * Synchronized method for pulling docker image
+     *
+     * @param imageName    image to pull
+     * @param imageVersion image version to pull
+     * @param timeoutSecs  pulling timeout in seconds
+     */
+    public static void pullImage(String imageName, String imageVersion, long timeoutSecs) {
+
+        final CompletableFuture<Void> result = new CompletableFuture<>();
+
+        try {
+            DockerClientFactory.build().pullImageCmd(imageName).withTag(imageVersion).exec(new PullImageResultCallback() {
+
+                @Override
+                public void onNext(PullResponseItem item) {
+                    String status = item.getStatus();
+                    if (status == null) {
+                        result.completeExceptionally(new MinimesosException("docker failed to pull image"));
+                    }
+                }
+
+                @Override
+                public void onComplete() {
+                    super.onComplete();
+                    result.complete(null);
+                }
+
+            });
+        } catch (RuntimeException rte) {
+            throw new MinimesosException(String.format("Failed to pull %s:%s container", imageName, imageVersion), rte);
+        }
+
+        try {
+            result.get(timeoutSecs, TimeUnit.SECONDS);
+        } catch (ExecutionException e) {
+            // we get here on future.completeExceptionally() above
+            String msg = String.format("# Error pulling image from registry. Try executing the command below manually%ndocker pull %s:%s", imageName, imageVersion);
+            throw new MinimesosException(msg, e);
+        } catch (InterruptedException | TimeoutException | RuntimeException e) {
+            String msg = "Error pulling image or image not found in registry: " + imageName + ":" + imageVersion;
+            throw new MinimesosException(msg, e);
+        }
+
     }
 
     /**

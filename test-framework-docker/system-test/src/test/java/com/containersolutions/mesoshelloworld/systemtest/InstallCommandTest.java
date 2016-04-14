@@ -17,6 +17,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.await;
@@ -36,10 +37,12 @@ public class InstallCommandTest {
         deployApp();
 
         DockerContainersUtil util = new DockerContainersUtil();
-        final List<String> ipAddresses = new ArrayList<>();
+        List<String> ipAddresses = new ArrayList<>();
         await("executors are expected to come up").atMost(60, TimeUnit.SECONDS).until(() -> {
-            ipAddresses.clear();
-            ipAddresses.addAll(util.getContainers(false).filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE).getIpAddresses());
+            Set<String> runningNow = util.getContainers(false).filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE).getIpAddresses();
+            if (runningNow.size() > 0) {
+                ipAddresses.addAll(runningNow);
+            }
             return ipAddresses.size() > 0;
         });
 

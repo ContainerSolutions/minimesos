@@ -30,13 +30,17 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.await;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 /**
  * Marathon container. Marathon is a cluster-wide init and control system for services in cgroups or Docker containers.
  */
 public class MarathonContainer extends AbstractContainer implements Marathon {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(MarathonContainer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MarathonContainer.class);
+
+    private static final String END_POINT_EXT = "/v2/apps";
+    private static final String HEADER_ACCEPT = "accept";
 
     private final MarathonConfig config;
 
@@ -47,14 +51,18 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
     }
 
     public MarathonContainer(ZooKeeper zooKeeper, MarathonConfig config) {
-        super();
+        super(config);
         this.zooKeeper = zooKeeper;
         this.config = config;
     }
 
     public MarathonContainer(MesosCluster cluster, String uuid, String containerId) {
-        super(cluster, uuid, containerId);
-        this.config = new MarathonConfig();
+        this(cluster, uuid, containerId, new MarathonConfig());
+    }
+
+    public MarathonContainer(MesosCluster cluster, String uuid, String containerId, MarathonConfig config) {
+        super(cluster, uuid, containerId, config);
+        this.config = config;
     }
 
     @Override
@@ -63,10 +71,6 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
     }
 
     @Override
-    protected void pullImage() {
-        pullImage(config.getImageName(), config.getImageTag());
-    }
-
     public void setZooKeeper(ZooKeeper zooKeeper) {
         this.zooKeeper = zooKeeper;
     }
@@ -79,7 +83,7 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
             portBindings.bind(exposedPort, Ports.Binding(MarathonConfig.MARATHON_PORT));
         }
         return DockerClientFactory.build().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
-                .withName( getName() )
+                .withName(getName())
                 .withExtraHosts("minimesos-zookeeper:" + this.zooKeeper.getIpAddress())
                 .withCmd("--master", "zk://minimesos-zookeeper:2181/mesos", "--zk", "zk://minimesos-zookeeper:2181/marathon")
                 .withExposedPorts(exposedPort)
@@ -96,7 +100,7 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
         String marathonEndpoint = getMarathonEndpoint();
         try {
             byte[] app = marathonJson.getBytes(Charset.forName("UTF-8"));
-            HttpResponse<JsonNode> response = Unirest.post(marathonEndpoint + "/v2/apps").header("accept", "application/json").body(app).asJson();
+            HttpResponse<JsonNode> response = Unirest.post(marathonEndpoint + END_POINT_EXT).header(HEADER_ACCEPT, APPLICATION_JSON).body(app).asJson();
             JSONObject deployResponse = response.getBody().getObject();
             if (response.getStatus() == HttpStatus.SC_CREATED) {
                 LOGGER.debug(deployResponse.toString());
@@ -119,13 +123,12 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
         String marathonEndpoint = getMarathonEndpoint();
         JSONObject appsResponse;
         try {
-            appsResponse = Unirest.get(marathonEndpoint + "/v2/apps").header("accept", "application/json").asJson().getBody().getObject();
+            appsResponse = Unirest.get(marathonEndpoint + END_POINT_EXT).header(HEADER_ACCEPT, APPLICATION_JSON).asJson().getBody().getObject();
             if (appsResponse.length() == 0) {
                 return;
             }
         } catch (UnirestException e) {
-            LOGGER.error("Could not retrieve apps from Marathon at " + marathonEndpoint);
-            return;
+            throw new MinimesosException("Could not retrieve apps from Marathon at " + marathonEndpoint, e);
         }
 
         JSONArray apps = appsResponse.getJSONArray("apps");
@@ -133,9 +136,10 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
             JSONObject app = apps.getJSONObject(i);
             String appId = app.getString("id");
             try {
-                Unirest.delete(marathonEndpoint + "/v2/apps" + appId).asJson();
-            } catch (UnirestException e) {
-                LOGGER.error("Could not delete app " + appId + " at " + marathonEndpoint);
+                Unirest.delete(marathonEndpoint + END_POINT_EXT + appId).asJson();
+            } catch (UnirestException e) { //NOSONAR
+                // failed to delete one app; continue with others
+                LOGGER.error("Could not delete app " + appId + " at " + marathonEndpoint, e);
             }
         }
     }
@@ -157,8 +161,9 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
         @Override
         public Boolean call() throws Exception {
             try {
-                Unirest.get(getMarathonEndpoint() + "/v2/apps").header("accept", "application/json").asJson().getBody().getObject();
-            } catch (UnirestException e) {
+                Unirest.get(getMarathonEndpoint() + END_POINT_EXT).header(HEADER_ACCEPT, APPLICATION_JSON).asJson().getBody().getObject();
+            } catch (UnirestException e) { //NOSONAR
+                // meaning API is not ready
                 return false;
             }
             return true;

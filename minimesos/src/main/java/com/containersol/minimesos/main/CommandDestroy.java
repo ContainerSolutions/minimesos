@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 @Parameters(separators = "=", commandDescription = "Destroy a minimesos cluster")
 public class CommandDestroy implements Command {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(CommandDestroy.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CommandDestroy.class);
 
     public static final String CLINAME = "destroy";
 

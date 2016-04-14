@@ -11,7 +11,4 @@ public interface MesosContainer extends ClusterProcess {
     void setZooKeeper(ZooKeeper zookeeper);
     JSONObject getStateInfoJSON() throws UnirestException;
 
-    String getMesosImageTag();
-    String getLoggingLevel();
-
 }

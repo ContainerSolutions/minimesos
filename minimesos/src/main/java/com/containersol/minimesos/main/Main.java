@@ -101,7 +101,7 @@ public class Main {
         if (jc.getParsedCommand() == null) {
             MesosCluster cluster = ClusterRepository.loadCluster(new MesosClusterContainersFactory());
             if (cluster != null) {
-                cluster.printServiceUrls(output);
+                new CommandInfo().execute();
                 return EXIT_CODE_OK;
             } else {
                 printUsage(null);

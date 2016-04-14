@@ -1,5 +1,6 @@
 package com.containersol.minimesos;
 
+import com.containersol.minimesos.config.ContainerConfigBlock;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -14,14 +15,13 @@ class HelloWorldContainer extends AbstractContainer {
     public static final String HELLO_WORLD_IMAGE = "tutum/hello-world";
     public static final String CONTAINER_NAME_PATTERN = "^helloworld-[0-9a-f\\-]*$";
 
-    @Override
-    public String getRole() {
-        return "helloworld";
+    public HelloWorldContainer() {
+        super( new ContainerConfigBlock(HELLO_WORLD_IMAGE, "latest"));
     }
 
     @Override
-    protected void pullImage() {
-        pullImage(HELLO_WORLD_IMAGE, "latest");
+    public String getRole() {
+        return "helloworld";
     }
 
     @Override

@@ -3,11 +3,13 @@ package com.containersol.minimesos.main;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MinimesosException;
+import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.*;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
@@ -131,7 +133,8 @@ public class CommandUp implements Command {
 
         startedCluster.start();
         startedCluster.waitForState(state -> state != null);
-        startedCluster.printServiceUrls(output);
+
+        new CommandInfo().execute();
     }
 
     /**

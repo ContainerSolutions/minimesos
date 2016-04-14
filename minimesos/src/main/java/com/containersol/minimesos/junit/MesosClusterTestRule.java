@@ -42,6 +42,7 @@ public class MesosClusterTestRule implements TestRule {
      * @param description A {@link Description} of the test implemented in {@code base}
      * @return a new statement, which may be the same as {@code base}, a wrapper around {@code base}, or a completely new Statement.
      */
+    @Override
     public Statement apply(Statement base, Description description) {
         return new Statement() {
             @Override

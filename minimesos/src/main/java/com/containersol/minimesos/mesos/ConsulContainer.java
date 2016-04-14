@@ -19,7 +19,7 @@ public class ConsulContainer extends AbstractContainer implements Consul {
     private final ConsulConfig config;
 
     public ConsulContainer(ConsulConfig config) {
-        super();
+        super(config);
         this.config = config;
     }
 
@@ -28,18 +28,13 @@ public class ConsulContainer extends AbstractContainer implements Consul {
     }
 
     private ConsulContainer(MesosCluster cluster, String uuid, String containerId, ConsulConfig config) {
-        super(cluster, uuid, containerId);
+        super(cluster, uuid, containerId, config);
         this.config = config;
     }
 
     @Override
     public String getRole() {
         return "consul";
-    }
-
-    @Override
-    protected void pullImage() {
-        pullImage(config.getImageName(), config.getImageTag());
     }
 
     @Override

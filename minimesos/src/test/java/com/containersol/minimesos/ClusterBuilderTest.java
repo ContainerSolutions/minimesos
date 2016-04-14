@@ -1,11 +1,11 @@
 package com.containersol.minimesos;
 
-
-import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ConfigParser;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
+import com.containersol.minimesos.mesos.MesosAgentContainer;
+import com.containersol.minimesos.util.CollectionsUtils;
 import org.junit.Test;
 
 import java.util.List;
@@ -29,11 +29,11 @@ public class ClusterBuilderTest {
         ClusterArchitecture architecture = builder.build();
         MesosCluster cluster = new MesosCluster(architecture.getClusterConfig(), architecture.getClusterContainers().getContainers());
 
-        List<MesosAgent> agents = cluster.getAgents();
+        List<MesosAgentContainer> agents = CollectionsUtils.typedList(cluster.getAgents(), MesosAgentContainer.class);
         assertEquals(2, agents.size());
 
-        assertEquals("0.27.0-0.2.190.ubuntu1404", agents.get(0).getMesosImageTag());
-        assertEquals("0.26.0-0.2.145.ubuntu1404", agents.get(1).getMesosImageTag());
+        assertEquals("0.27.0-0.2.190.ubuntu1404", agents.get(0).getImageTag());
+        assertEquals("0.26.0-0.2.145.ubuntu1404", agents.get(1).getImageTag());
     }
 
     @Test
@@ -50,7 +50,7 @@ public class ClusterBuilderTest {
         ClusterArchitecture architecture = ClusterArchitecture.Builder.createCluster(dsl).build();
         MesosCluster cluster = new MesosCluster(architecture.getClusterConfig(), architecture.getClusterContainers().getContainers());
 
-        List<MesosAgent> agents = cluster.getAgents();
+        List<MesosAgentContainer> agents = CollectionsUtils.typedList(cluster.getAgents(), MesosAgentContainer.class);
         assertEquals(2, agents.size());
 
         assertEquals("ERROR", agents.get(0).getLoggingLevel());
@@ -71,7 +71,7 @@ public class ClusterBuilderTest {
         ClusterArchitecture architecture = ClusterArchitecture.Builder.createCluster(dsl).build();
         MesosCluster cluster = new MesosCluster(architecture.getClusterConfig(), architecture.getClusterContainers().getContainers());
 
-        List<MesosAgent> agents = cluster.getAgents();
+        List<MesosAgentContainer> agents = CollectionsUtils.typedList(cluster.getAgents(), MesosAgentContainer.class);
         assertEquals(2, agents.size());
 
         assertEquals("ERROR", agents.get(0).getLoggingLevel());

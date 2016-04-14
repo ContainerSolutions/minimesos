@@ -19,7 +19,7 @@ public class RegistratorContainer extends AbstractContainer implements Registrat
     private Consul consulContainer;
 
     public RegistratorContainer(Consul consulContainer, RegistratorConfig config) {
-        super();
+        super(config);
         this.consulContainer = consulContainer;
         this.config = config;
     }
@@ -29,18 +29,13 @@ public class RegistratorContainer extends AbstractContainer implements Registrat
     }
 
     private RegistratorContainer(MesosCluster cluster, String uuid, String containerId, RegistratorConfig config) {
-        super(cluster, uuid, containerId);
+        super(cluster, uuid, containerId, config);
         this.config = config;
     }
 
     @Override
     public String getRole() {
         return "registrator";
-    }
-
-    @Override
-    protected void pullImage() {
-        pullImage(config.getImageName(), config.getImageTag());
     }
 
     @Override
