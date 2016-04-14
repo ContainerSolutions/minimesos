@@ -381,8 +381,7 @@ public class MesosCluster {
         InputStream is = null;
 
         if (location != null) {
-
-            URI uri;
+            URI uri = null;
             try {
                 uri = URI.create(location);
                 if (!uri.isAbsolute()) {
@@ -416,7 +415,6 @@ public class MesosCluster {
                     }
                 }
             }
-
         }
 
         return is;

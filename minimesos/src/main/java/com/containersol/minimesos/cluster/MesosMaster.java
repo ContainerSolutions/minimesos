@@ -1,8 +1,6 @@
 package com.containersol.minimesos.cluster;
 
-import com.fasterxml.jackson.databind.util.Annotations;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import org.json.JSONObject;
 
 import java.util.Map;
 
