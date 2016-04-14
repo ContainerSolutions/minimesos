@@ -161,7 +161,6 @@ public class CommandTest {
         install.setMarathonFile("src/test/resources/app.json");
 
         install.execute();
-
         install.execute();
     }
 

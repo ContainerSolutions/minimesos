@@ -11,4 +11,7 @@ class MesosMasterConfig extends MesosContainerConfig {
     String imageName     = MESOS_MASTER_IMAGE
     String imageTag      = MESOS_IMAGE_TAG
 
+    boolean authenticate = false
+    String aclJson
+
 }
