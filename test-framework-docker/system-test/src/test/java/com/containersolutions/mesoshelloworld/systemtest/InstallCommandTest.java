@@ -1,9 +1,8 @@
 package com.containersolutions.mesoshelloworld.systemtest;
 
+import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.junit.MesosClusterTestRule;
-import com.containersol.minimesos.marathon.MarathonContainer;
-import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersolutions.mesoshelloworld.executor.Executor;
 import com.containersolutions.mesoshelloworld.scheduler.Configuration;
 import com.mashape.unirest.http.Unirest;
@@ -28,15 +27,10 @@ public class InstallCommandTest {
 
     public static final String MESOS_MASTER_IP_TOKEN = "${MESOS_MASTER_IP}";
 
-    protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder()
-            .withZooKeeper()
-            .withMaster()
-            .withAgent("ports(*):[8081-8082]")
-            .withMarathon(MarathonContainer::new)
-            .build();
-
     @ClassRule
-    public static final MesosClusterTestRule CLUSTER = new MesosClusterTestRule(CONFIG);
+    public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromFile("src/test/resources/configFiles/minimesosFile-install-command-test");
+
+    public static MesosCluster CLUSTER = RULE.getMesosCluster();
 
     @Test
     public void testMesosInstall() throws IOException {

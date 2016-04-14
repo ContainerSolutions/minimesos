@@ -1,14 +1,9 @@
 package com.containersol.minimesos;
 
+import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ConsulConfig;
-import com.containersol.minimesos.config.RegistratorConfig;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.junit.MesosClusterTestRule;
-import com.containersol.minimesos.marathon.MarathonContainer;
-import com.containersol.minimesos.mesos.ClusterArchitecture;
-import com.containersol.minimesos.mesos.ConsulContainer;
-import com.containersol.minimesos.mesos.MesosAgentContainer;
-import com.containersol.minimesos.mesos.RegistratorContainer;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONArray;
@@ -25,18 +20,10 @@ import static org.junit.Assert.assertFalse;
 
 public class ConsulRegistrationTest {
 
-    // using Marathon slows down destruction of the cluster
-    protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder()
-            .withZooKeeper()
-            .withMaster()
-            .withAgent(MesosAgentContainer::new)
-            .withMarathon(MarathonContainer::new)
-            .withConsul(new ConsulContainer(new ConsulConfig()))
-            .withRegistrator(consul -> new RegistratorContainer(consul, new RegistratorConfig()))
-            .build();
-
     @ClassRule
-    public static final MesosClusterTestRule CLUSTER = new MesosClusterTestRule(CONFIG);
+    public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromFile("src/test/resources/configFiles/minimesosFile-consulRegistrationTest");
+
+    public static MesosCluster CLUSTER = RULE.getMesosCluster();
 
     @After
     public void after() {
@@ -46,7 +33,6 @@ public class ConsulRegistrationTest {
 
     @Test
     public void testRegisterServiceWithConsul() {
-
         CLUSTER.addAndStartProcess(new HelloWorldContainer());
 
         String ipAddress = DockerContainersUtil.getIpAddress(CLUSTER.getConsul().getContainerId());
@@ -63,7 +49,6 @@ public class ConsulRegistrationTest {
             }
             assertEquals(1, body[0].length());
         });
-
 
         JSONObject service = body[0].getJSONObject(0);
         assertEquals(HelloWorldContainer.SERVICE_PORT, service.getInt("ServicePort"));

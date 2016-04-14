@@ -1,14 +1,19 @@
-package com.containersol.minimesos.main.factory;
+package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.*;
+import com.containersol.minimesos.config.ClusterConfig;
+import com.containersol.minimesos.config.ConfigParser;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.container.ContainerName;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.marathon.MarathonContainer;
-import com.containersol.minimesos.mesos.*;
 import com.github.dockerjava.api.model.Container;
+import org.apache.commons.io.IOUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 
@@ -43,7 +48,6 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
 
     @Override
     public void loadRunningCluster(MesosCluster cluster) {
-
         String clusterId = cluster.getClusterId();
         List<ClusterProcess> containers = cluster.getMemberProcesses();
 
@@ -93,9 +97,7 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
                             break;
                     }
                 }
-
             }
-
         }
     }
 
@@ -103,6 +105,21 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
     public void destroyRunningCluster(String clusterId) {
         DockerContainersUtil dockerUtil = new DockerContainersUtil();
         dockerUtil.getContainers(true).filterByName(ContainerName.getContainerNamePattern(clusterId)).kill(true).remove();
+    }
+
+    public MesosCluster createMesosCluster(InputStream inputStream) {
+        try {
+            ClusterConfig clusterConfig = new ConfigParser().parse(IOUtils.toString(inputStream));
+            return createMesosCluster(clusterConfig);
+        } catch (IOException e) {
+            throw new MinimesosException("Could not read minimesos config:" + e.getCause());
+        }
+    }
+
+    public MesosCluster createMesosCluster(ClusterConfig clusterConfig) {
+        ClusterContainers clusterContainers = ClusterArchitecture.Builder.createCluster(clusterConfig).build().getClusterContainers();
+        List<ClusterProcess> processes = clusterContainers.getContainers();
+        return new MesosCluster(clusterConfig, processes);
     }
 
 }

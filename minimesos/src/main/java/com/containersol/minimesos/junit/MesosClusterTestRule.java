@@ -1,22 +1,38 @@
 package com.containersol.minimesos.junit;
 
+import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosClusterFactory;
-import com.containersol.minimesos.main.factory.MesosClusterContainersFactory;
-import com.containersol.minimesos.mesos.ClusterArchitecture;
+import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 /**
  * JUnit Rule extension of Mesos Cluster to use in JUnit.
  *
  * TODO: see https://github.com/ContainerSolutions/minimesos/issues/8 for completion
  */
-public class MesosClusterTestRule extends MesosCluster implements TestRule {
+public class MesosClusterTestRule implements TestRule {
 
-    public MesosClusterTestRule(ClusterArchitecture clusterArchitecture) {
-        super(clusterArchitecture.getClusterConfig(), clusterArchitecture.getClusterContainers().getContainers());
+    private MesosClusterFactory factory = new MesosClusterContainersFactory();
+
+    private MesosCluster mesosCluster;
+
+    public static MesosClusterTestRule fromFile(String minimesosFilePath) {
+        try {
+            MesosCluster cluster = new MesosClusterContainersFactory().createMesosCluster(new FileInputStream(minimesosFilePath));
+            return new MesosClusterTestRule(cluster);
+        } catch (FileNotFoundException e) {
+            throw new MinimesosException("Could not read minimesosFile at " + minimesosFilePath);
+        }
+    }
+
+    private MesosClusterTestRule(MesosCluster mesosCluster) {
+        this.mesosCluster = mesosCluster;
     }
 
     /**
@@ -45,12 +61,11 @@ public class MesosClusterTestRule extends MesosCluster implements TestRule {
      * Execute before the test
      */
     protected void before() {
-        start();
+        mesosCluster.start();
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                MesosClusterFactory factory = new MesosClusterContainersFactory();
-                factory.destroyRunningCluster(getClusterId());
+                factory.destroyRunningCluster(mesosCluster.getClusterId());
             }
         });
     }
@@ -66,8 +81,14 @@ public class MesosClusterTestRule extends MesosCluster implements TestRule {
      * Destroys cluster using docker based factory of cluster members
      */
     public void stop() {
-        MesosClusterFactory factory = new MesosClusterContainersFactory();
-        destroy(factory);
+        mesosCluster.destroy(factory);
     }
 
+    public MesosCluster getMesosCluster() {
+        return mesosCluster;
+    }
+
+    public MesosClusterFactory getFactory() {
+        return factory;
+    }
 }
