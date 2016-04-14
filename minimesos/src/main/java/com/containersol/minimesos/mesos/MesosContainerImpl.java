@@ -24,7 +24,7 @@ public abstract class MesosContainerImpl extends AbstractContainer implements Me
     public static final String DEFAULT_MESOS_ZK_PATH = "/mesos";
 
     private ZooKeeper zooKeeperContainer;
-    private final MesosContainerConfig config;
+    protected MesosContainerConfig config;
 
     protected MesosContainerImpl(ZooKeeper zooKeeperContainer, MesosContainerConfig config) {
         super(config);

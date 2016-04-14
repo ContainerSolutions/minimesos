@@ -51,9 +51,9 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
     public Map<String, String> getDefaultEnvVars() {
         Map<String, String> envs = new TreeMap<>();
         envs.put("MESOS_QUORUM", "1");
-        if (config.getAuthenticate() && config.getAclJson() != null) {
-            envs.put("MESOS_AUTHENTICATE", String.valueOf(config.getAuthenticate()));
-            envs.put("MESOS_ACLS", config.getAclJson());
+        if (((MesosMasterConfig) config).getAuthenticate() && ((MesosMasterConfig) config).getAclJson() != null) {
+            envs.put("MESOS_AUTHENTICATE", String.valueOf(((MesosMasterConfig) config).getAuthenticate()));
+            envs.put("MESOS_ACLS", ((MesosMasterConfig) config).getAclJson());
         }
         envs.put("MESOS_ZK", getFormattedZKAddress());
         envs.put("MESOS_LOGGING_LEVEL", getLoggingLevel());

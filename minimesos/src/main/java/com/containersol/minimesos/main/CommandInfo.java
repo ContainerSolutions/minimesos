@@ -4,7 +4,12 @@ import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.config.ConsulConfig;
+import com.containersol.minimesos.config.MarathonConfig;
+import com.containersol.minimesos.config.MesosMasterConfig;
+import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.PrintStream;
 

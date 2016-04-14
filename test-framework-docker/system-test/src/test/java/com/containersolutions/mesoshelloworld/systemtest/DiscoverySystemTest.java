@@ -56,7 +56,7 @@ public class DiscoverySystemTest {
         final Set<String> ipAddresses = new HashSet<>();
         try {
 
-            Awaitility.await("9 expected executors did not come up").atMost(timeout, TimeUnit.SECONDS).pollDelay(5, TimeUnit.SECONDS).until(() -> {
+            Awaitility.await("9 expected executors did not come up").atMost(TIMEOUT, TimeUnit.SECONDS).pollDelay(5, TimeUnit.SECONDS).until(() -> {
                 ipAddresses.clear();
                 ipAddresses.addAll(util.getContainers(false).filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE).getIpAddresses());
                 return ipAddresses.size() == 9;
@@ -74,9 +74,8 @@ public class DiscoverySystemTest {
             throw cte;
         }
 
-        HelloWorldResponse helloWorldResponse = new HelloWorldResponse( ipAddresses, Arrays.asList(8080, 8081, 8082), timeout );
-        assertTrue("Executors did not come up within " + timeout + " seconds", helloWorldResponse.isDiscoverySuccessful());
-
+        HelloWorldResponse helloWorldResponse = new HelloWorldResponse(ipAddresses, Arrays.asList(8080, 8081, 8082), TIMEOUT);
+        assertTrue("Executors did not come up within " + TIMEOUT + " seconds", helloWorldResponse.isDiscoverySuccessful());
     }
 
     @AfterClass

@@ -28,7 +28,7 @@ public class DynamicClusterTest {
         assertNotNull("Cluster ID must be set", clusterId);
 
         // this should not throw any exceptions
-        CLUSTER.stop(RULE.getFactory());
+        CLUSTER.destroy(RULE.getFactory());
     }
 
     @Test
@@ -39,7 +39,7 @@ public class DynamicClusterTest {
         String containerId = CLUSTER.addAndStartProcess(extraAgent);
         assertNotNull("freshly started container is not found", DockerContainersUtil.getContainer(containerId));
 
-        CLUSTER.stop(RULE.getFactory());
+        CLUSTER.destroy(RULE.getFactory());
         assertNull("new container should be stopped too", DockerContainersUtil.getContainer(containerId));
     }
 
