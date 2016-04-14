@@ -4,12 +4,12 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 
 import java.io.PrintStream;
 
 /**
  * Parameters for the 'state' command
- *
  */
 @Parameters(separators = "=", commandDescription = "Display state.json file of a master or an agent")
 public class CommandState implements Command {
@@ -30,9 +30,9 @@ public class CommandState implements Command {
 
     @Override
     public void execute() {
-        MesosCluster cluster = ClusterRepository.loadCluster();
+        MesosCluster cluster = ClusterRepository.loadCluster(new MesosClusterContainersFactory());
         if (cluster != null) {
-            cluster.state( output, agent);
+            cluster.state(output, agent);
         } else {
             output.println("Minimesos cluster is not running");
         }

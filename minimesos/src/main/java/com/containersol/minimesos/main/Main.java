@@ -1,11 +1,14 @@
 package com.containersol.minimesos.main;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +29,9 @@ public class Main {
 
     @Parameter(names = {"--help", "-help", "-?", "-h"}, description = "Show help")
     private boolean help = false;
+
+    @Parameter(names = "--debug", description = "Enable debug logging.")
+    private Boolean debug = null;
 
     private PrintStream output = System.out;
 
@@ -48,7 +54,11 @@ public class Main {
                 System.exit(rc);
             }
         } catch (MinimesosException mme) {
-            LOGGER.error(mme.getMessage());
+            if (main.debug) {
+                LOGGER.error("An error, which was handled, occurred", mme);
+            } else {
+                LOGGER.error(mme.getMessage());
+            }
             System.exit(EXIT_CODE_ERR);
         }
     }
@@ -76,15 +86,22 @@ public class Main {
             return EXIT_CODE_ERR;
         }
 
-        if (jc.getParameters().get(0).isAssigned()) {
+        if (help) {
             printUsage(null);
             return EXIT_CODE_OK;
         }
 
+        if (debug != null) {
+            LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+            ch.qos.logback.classic.Logger rootLogger = loggerContext.getLogger("com.containersol.minimesos.container");
+            rootLogger.setLevel(Level.DEBUG);
+            LOGGER.debug("Initialized debug logging");
+        }
+
         if (jc.getParsedCommand() == null) {
-            MesosCluster cluster = ClusterRepository.loadCluster();
+            MesosCluster cluster = ClusterRepository.loadCluster(new MesosClusterContainersFactory());
             if (cluster != null) {
-                cluster.printServiceUrls(output);
+                new CommandInfo().execute();
                 return EXIT_CODE_OK;
             } else {
                 printUsage(null);

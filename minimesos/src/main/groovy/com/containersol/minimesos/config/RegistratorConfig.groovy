@@ -1,14 +1,17 @@
-package com.containersol.minimesos.config
+package com.containersol.minimesos.config;
 
 import org.apache.commons.lang.StringUtils;
 
-public class RegistratorConfig extends GroovyBlock implements ContainerConfig {
+public class RegistratorConfig extends ContainerConfigBlock implements ContainerConfig {
 
     public static final String REGISTRATOR_IMAGE_NAME = "gliderlabs/registrator"
     public static final String REGISTRATOR_TAG_NAME = "v6"
 
-    String imageName     = REGISTRATOR_IMAGE_NAME
-    String imageTag      = REGISTRATOR_TAG_NAME
+    public RegistratorConfig() {
+        imageName     = REGISTRATOR_IMAGE_NAME
+        imageTag      = REGISTRATOR_TAG_NAME
+    }
+
     String networkMode   = DEFAULT_NETWORK_MODE
 
     @Override

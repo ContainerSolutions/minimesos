@@ -1,15 +1,24 @@
 <configuration debug="false">
 
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <!-- encoders are  by default assigned the type
-             ch.qos.logback.classic.encoder.PatternLayoutEncoder -->
+    <appender name="JAVA" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.out</target>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="CLI" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%msg%n</pattern>
         </encoder>
     </appender>
 
-    <root level="info">
-        <appender-ref ref="STDOUT" />
-    </root>
+    <logger name="com.containersol.minimesos.main" level="info">
+        <appender-ref ref="CLI" />
+    </logger>
+
+    <logger name="com.containersol.minimesos.container" level="info">
+        <appender-ref ref="JAVA" />
+    </logger>
 
 </configuration>

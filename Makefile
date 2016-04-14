@@ -17,8 +17,6 @@ deps:
 clean:
 	./gradlew clean
 	-docker rmi containersol/minimesos:latest
-	-docker rmi containersol/mesos-hello-world-scheduler:latest
-	-docker rmi containersol/mesos-hello-world-executor:latest
 
 build:
 	./gradlew build --info --stacktrace

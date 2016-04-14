@@ -2,12 +2,9 @@ package com.containersolutions.mesoshelloworld.systemtest;
 
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.containersol.minimesos.marathon.Marathon;
-import com.containersol.minimesos.mesos.ClusterArchitecture;
-import com.containersol.minimesos.mesos.DockerClientFactory;
+import com.containersol.minimesos.junit.MesosClusterTestRule;
 import com.containersolutions.mesoshelloworld.executor.Executor;
 import com.containersolutions.mesoshelloworld.scheduler.Configuration;
-import com.github.dockerjava.api.DockerClient;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.IOUtils;
@@ -20,35 +17,32 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static com.jayway.awaitility.Awaitility.*;
+import static com.jayway.awaitility.Awaitility.await;
 import static org.junit.Assert.fail;
 
 public class InstallCommandTest {
 
     public static final String MESOS_MASTER_IP_TOKEN = "${MESOS_MASTER_IP}";
 
-    protected static final DockerClient dockerClient = DockerClientFactory.build();
-    protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder(dockerClient)
-            .withZooKeeper()
-            .withMaster()
-            .withAgent("ports(*):[8081-8082]")
-            .withMarathon(zooKeeper -> new Marathon(dockerClient, zooKeeper))
-            .build();
-
     @ClassRule
-    public static final MesosCluster CLUSTER = new MesosCluster(CONFIG);
+    public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromFile("src/test/resources/configFiles/minimesosFile-install-command-test");
+
+    public static MesosCluster CLUSTER = RULE.getMesosCluster();
 
     @Test
     public void testMesosInstall() throws IOException {
         deployApp();
 
-        DockerContainersUtil util = new DockerContainersUtil(CONFIG.dockerClient);
-        final List<String> ipAddresses = new ArrayList<>();
+        DockerContainersUtil util = new DockerContainersUtil();
+        List<String> ipAddresses = new ArrayList<>();
         await("executors are expected to come up").atMost(60, TimeUnit.SECONDS).until(() -> {
-            ipAddresses.clear();
-            ipAddresses.addAll(util.getContainers(false).filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE).getIpAddresses());
+            Set<String> runningNow = util.getContainers(false).filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE).getIpAddresses();
+            if (runningNow.size() > 0) {
+                ipAddresses.addAll(runningNow);
+            }
             return ipAddresses.size() > 0;
         });
 
@@ -80,14 +74,14 @@ public class InstallCommandTest {
 
         try (FileInputStream fis = new FileInputStream(taskFile)) {
             String appJson = IOUtils.toString(fis);
-            appJson = appJson.replace(MESOS_MASTER_IP_TOKEN, CLUSTER.getMasterContainer().getIpAddress());
-            CLUSTER.getMarathonContainer().deployApp(appJson);
+            appJson = appJson.replace(MESOS_MASTER_IP_TOKEN, CLUSTER.getMaster().getIpAddress());
+            CLUSTER.getMarathon().deployApp(appJson);
         }
     }
 
     @AfterClass
     public static void removeExecutors() {
-        DockerContainersUtil util = new DockerContainersUtil(CONFIG.dockerClient);
+        DockerContainersUtil util = new DockerContainersUtil();
 
         // stop container, otherwise it keeps on scheduling new executors as soon as they are stopped
         util.getContainers(false).filterByImage(SchedulerContainer.SCHEDULER_IMAGE).kill().remove();

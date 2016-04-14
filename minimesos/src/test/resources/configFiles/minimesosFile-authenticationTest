@@ -1,0 +1,28 @@
+minimesos {
+    clusterName = "authentication-test"
+    exposePorts = false
+    loggingLevel = "INFO"
+    mapAgentSandboxVolume = false
+    mesosVersion = "0.25"
+    timeout = 60
+
+    master {
+        imageName       = "containersol/mesos-master"
+        imageTag        = "# derive from mesos version"
+        authenticate    = true
+        aclJson         = """
+                            {
+                                "run_tasks": [
+                                    { "principals": { "values": ["foo", "bar"] },
+                                      "users": { "values": ["alice"] }
+                                    }
+                               ]
+                            }
+                          """
+    }
+
+    zookeeper {
+        imageName = "jplock/zookeeper"
+        imageTag = "3.4.6"
+    }
+}

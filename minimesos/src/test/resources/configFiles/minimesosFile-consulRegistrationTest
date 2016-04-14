@@ -1,0 +1,59 @@
+minimesos {
+    clusterName = "exposed-ports-test"
+    exposePorts = true
+    loggingLevel = "INFO"
+    mapAgentSandboxVolume = false
+    mesosVersion = "0.25"
+    timeout = 60
+
+    agent {
+        imageName = "containersol/mesos-agent"
+        imageTag = "# derive from mesos version"
+        loggingLevel = "# INHERIT FROM CLUSTER"
+        portNumber = 5051
+
+        resources {
+
+            cpu {
+                role = "*"
+                value = 1
+            }
+
+            disk {
+                role = "*"
+                value = 200
+            }
+
+            mem {
+                role = "*"
+                value = 256
+            }
+
+            ports {
+                role = "*"
+                value = "[31000-32000]"
+            }
+        }
+    }
+
+    consul {
+        imageName = "containersol/consul-server"
+        imageTag = "0.6"
+    }
+
+    registrator {
+        imageName = "gliderlabs/registrator"
+        imageTag = "v6"
+    }
+
+    master {
+        imageName = "containersol/mesos-master"
+        imageTag = "# derive from mesos version"
+        loggingLevel = "# INHERIT FROM CLUSTER"
+    }
+
+    zookeeper {
+        imageName = "jplock/zookeeper"
+        imageTag = "3.4.6"
+    }
+}

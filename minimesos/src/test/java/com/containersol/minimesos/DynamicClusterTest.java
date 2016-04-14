@@ -1,68 +1,46 @@
 package com.containersol.minimesos;
 
+import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.config.MesosMasterConfig;
+import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.containersol.minimesos.mesos.*;
-import com.github.dockerjava.api.DockerClient;
+import com.containersol.minimesos.junit.MesosClusterTestRule;
+import com.containersol.minimesos.mesos.MesosAgentContainer;
+import org.junit.ClassRule;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import java.io.FileNotFoundException;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class DynamicClusterTest {
 
-    private static final boolean EXPOSED_PORTS = false;
+    @ClassRule
+    public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromFile("src/test/resources/configFiles/minimesosFile-dynamicClusterTest");
 
-    protected static final DockerClient dockerClient = DockerClientFactory.build();
+    public static MesosCluster CLUSTER = RULE.getMesosCluster();
 
     @Test
-    public void noMarathonTest() {
+    public void noMarathonTest() throws FileNotFoundException {
+        String clusterId = CLUSTER.getClusterId();
 
-        MesosMasterConfig masterConfig = new MesosMasterConfig();
-
-        ClusterArchitecture config = new ClusterArchitecture.Builder(dockerClient)
-                .withZooKeeper()
-                .withMaster(zooKeeper -> new MesosMaster(dockerClient, zooKeeper, masterConfig ))
-                .withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper ))
-                .build();
-
-        MesosCluster cluster = new MesosCluster(config);
-        cluster.setExposedHostPorts(EXPOSED_PORTS);
-
-        cluster.start();
-        String clusterId = cluster.getClusterId();
-
-        assertNotNull( "Cluster ID must be set", clusterId );
+        assertNotNull("Cluster ID must be set", clusterId);
 
         // this should not throw any exceptions
-        cluster.destroy();
-
+        CLUSTER.destroy(RULE.getFactory());
     }
 
     @Test
     public void stopWithNewContainerTest() {
+        ZooKeeper zooKeeper = CLUSTER.getZooKeeper();
+        MesosAgent extraAgent = new MesosAgentContainer(zooKeeper);
 
-        MesosMasterConfig masterConfig = new MesosMasterConfig();
+        String containerId = CLUSTER.addAndStartProcess(extraAgent);
+        assertNotNull("freshly started container is not found", DockerContainersUtil.getContainer(containerId));
 
-        ClusterArchitecture config = new ClusterArchitecture.Builder(dockerClient)
-                .withZooKeeper()
-                .withMaster(zooKeeper -> new MesosMaster(dockerClient, zooKeeper, masterConfig ))
-                .withAgent(zooKeeper -> new MesosAgent(dockerClient, zooKeeper))
-                .build();
-
-        MesosCluster cluster = new MesosCluster(config);
-        cluster.setExposedHostPorts(EXPOSED_PORTS);
-        cluster.start();
-
-        ZooKeeper zooKeeper = cluster.getZkContainer();
-        MesosAgent extraAgent = new MesosAgent(dockerClient, zooKeeper);
-
-        String containerId = cluster.addAndStartContainer(extraAgent);
-        assertNotNull("freshly started container is not found", DockerContainersUtil.getContainer(dockerClient, containerId));
-
-        cluster.stop();
-        assertNull("new container should be stopped too", DockerContainersUtil.getContainer(dockerClient, containerId));
-
+        CLUSTER.destroy(RULE.getFactory());
+        assertNull("new container should be stopped too", DockerContainersUtil.getContainer(containerId));
     }
 
 }

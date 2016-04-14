@@ -1,32 +1,46 @@
 package com.containersol.minimesos.docker;
 
 
-import com.github.dockerjava.api.DockerClient;
+import com.containersol.minimesos.MinimesosException;
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Filters;
+import com.github.dockerjava.api.model.Frame;
+import com.github.dockerjava.api.model.PullResponseItem;
+import com.github.dockerjava.core.command.LogContainerResultCallback;
+import com.github.dockerjava.core.command.PullImageResultCallback;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Immutable utility class, which represents set of docker containers with filters and operations on this list
  */
 public class DockerContainersUtil {
-
-    private final DockerClient dockerClient;
     private final Set<Container> containers;
 
-    public DockerContainersUtil(DockerClient dockerClient) {
-        this.dockerClient = dockerClient;
+    public DockerContainersUtil() {
         this.containers = null;
     }
 
-    private DockerContainersUtil(DockerClient dockerClient, Set<Container> containers) {
-        this.dockerClient = dockerClient;
+    private DockerContainersUtil(Set<Container> containers) {
         this.containers = containers;
+    }
+
+    /**
+     * Use this getter if you need to iterate over docker objects
+     * @return set of docker containers
+     */
+    public Set<Container> getContainers() {
+        return containers;
     }
 
     /**
@@ -34,8 +48,8 @@ public class DockerContainersUtil {
      * @return set of docker containers
      */
     public DockerContainersUtil getContainers(boolean showAll) {
-        Set<Container> containers = new HashSet<>(dockerClient.listContainersCmd().withShowAll(showAll).exec());
-        return new DockerContainersUtil(dockerClient, containers);
+        Set<Container> containers = new HashSet<>(DockerClientFactory.build().listContainersCmd().withShowAll(showAll).exec());
+        return new DockerContainersUtil(containers);
     }
 
     public int size() {
@@ -43,7 +57,7 @@ public class DockerContainersUtil {
     }
 
     /**
-     * Filters the set based on the constainer name
+     * Filters the set based on the container name
      *
      * @param pattern regular expression pattern of the container name
      * @return filtered set
@@ -64,7 +78,7 @@ public class DockerContainersUtil {
             }
         }
 
-        return new DockerContainersUtil(dockerClient, matched);
+        return new DockerContainersUtil(matched);
     }
 
     /**
@@ -85,7 +99,7 @@ public class DockerContainersUtil {
             }
         }
 
-        return new DockerContainersUtil(dockerClient, matched);
+        return new DockerContainersUtil(matched);
     }
 
     /**
@@ -94,7 +108,7 @@ public class DockerContainersUtil {
     public void remove() {
         if (containers != null) {
             for (Container container : containers) {
-                dockerClient.removeContainerCmd(container.getId()).withForce(true).withRemoveVolumes(true).exec();
+                DockerClientFactory.build().removeContainerCmd(container.getId()).withForce(true).withRemoveVolumes(true).exec();
             }
         }
     }
@@ -115,9 +129,9 @@ public class DockerContainersUtil {
         if (containers != null) {
             for (Container container : containers) {
                 try {
-                    dockerClient.killContainerCmd(container.getId()).exec();
+                    DockerClientFactory.build().killContainerCmd(container.getId()).exec();
                 } catch (DockerException failure) {
-                    if(!ignoreFailure) {
+                    if (!ignoreFailure) {
                         throw failure;
                     }
                 }
@@ -133,43 +147,112 @@ public class DockerContainersUtil {
         Set<String> ips = new HashSet<>();
         if (containers != null) {
             for (Container container : containers) {
-                ips.add(getIpAddress(dockerClient, container.getId()));
+                ips.add(getIpAddress(container.getId()));
             }
         }
         return ips;
     }
 
     /**
-     * @param dockerClient docker client to use
-     * @param containerId  id of the container to inspect
+     * @param containerId id of the container to inspect
      * @return IP Address of the container
      */
-    public static String getIpAddress(DockerClient dockerClient, String containerId) {
-        InspectContainerResponse response = dockerClient.inspectContainerCmd(containerId).exec();
+    public static String getIpAddress(String containerId) {
+        InspectContainerResponse response = DockerClientFactory.build().inspectContainerCmd(containerId).exec();
         return response.getNetworkSettings().getIpAddress();
     }
 
     /**
-     * @param dockerClient docker client to use
+     * Synchronized method for returning logs of docker container
+     * @param containerId - ID of the container ot lookup logs
+     * @return list of strings, where every string is log line
+     */
+    public static List<String> getDockerLogs(String containerId) {
+
+        final List<String> logs = new ArrayList<>();
+
+        LogContainerCmd logContainerCmd = DockerClientFactory.build().logContainerCmd(containerId);
+        logContainerCmd.withStdOut().withStdErr();
+        try {
+            logContainerCmd.exec(new LogContainerResultCallback() {
+                @Override
+                public void onNext(Frame item) {
+                    logs.add(item.toString());
+                }
+            }).awaitCompletion();
+        } catch (InterruptedException e) {
+            throw new MinimesosException("Failed to retrieve logs of container " + containerId, e);
+        }
+
+        return logs;
+    }
+
+
+    /**
+     * Synchronized method for pulling docker image
+     *
+     * @param imageName    image to pull
+     * @param imageVersion image version to pull
+     * @param timeoutSecs  pulling timeout in seconds
+     */
+    public static void pullImage(String imageName, String imageVersion, long timeoutSecs) {
+
+        final CompletableFuture<Void> result = new CompletableFuture<>();
+
+        try {
+            DockerClientFactory.build().pullImageCmd(imageName).withTag(imageVersion).exec(new PullImageResultCallback() {
+
+                @Override
+                public void onNext(PullResponseItem item) {
+                    String status = item.getStatus();
+                    if (status == null) {
+                        result.completeExceptionally(new MinimesosException("docker failed to pull image"));
+                    }
+                }
+
+                @Override
+                public void onComplete() {
+                    super.onComplete();
+                    result.complete(null);
+                }
+
+            });
+        } catch (RuntimeException rte) {
+            throw new MinimesosException(String.format("Failed to pull %s:%s container", imageName, imageVersion), rte);
+        }
+
+        try {
+            result.get(timeoutSecs, TimeUnit.SECONDS);
+        } catch (ExecutionException e) {
+            // we get here on future.completeExceptionally() above
+            String msg = String.format("# Error pulling image from registry. Try executing the command below manually%ndocker pull %s:%s", imageName, imageVersion);
+            throw new MinimesosException(msg, e);
+        } catch (InterruptedException | TimeoutException | RuntimeException e) {
+            String msg = "Error pulling image or image not found in registry: " + imageName + ":" + imageVersion;
+            throw new MinimesosException(msg, e);
+        }
+
+    }
+
+    /**
      * @return IP Address of the container's gateway (which would be docker0)
      */
-    public static String getGatewayIpAddress(DockerClient dockerClient) {
-        List<Container> containers = dockerClient.listContainersCmd().exec();
+    public static String getGatewayIpAddress() {
+        List<Container> containers = DockerClientFactory.build().listContainersCmd().exec();
         if (containers == null || containers.size() == 0) {
             throw new IllegalStateException("Cannot get docker0 IP address because no containers are running");
         }
 
-        InspectContainerResponse response = dockerClient.inspectContainerCmd(containers.get(0).getId()).exec();
+        InspectContainerResponse response = DockerClientFactory.build().inspectContainerCmd(containers.get(0).getId()).exec();
         return response.getNetworkSettings().getGateway();
     }
 
     /**
-     * @param dockerClient docker client to use
-     * @param containerId  id of the container to retrieve
+     * @param containerId id of the container to retrieve
      * @return container or null
      */
-    public static Container getContainer(DockerClient dockerClient, String containerId) {
-        List<Container> containers = dockerClient.listContainersCmd().withFilters(new Filters().withFilter("id", containerId)).exec();
+    public static Container getContainer(String containerId) {
+        List<Container> containers = DockerClientFactory.build().listContainersCmd().withFilters(new Filters().withFilter("id", containerId)).exec();
         if (containers != null && containers.size() == 1) {
             return containers.get(0);
         } else {

@@ -1,9 +1,10 @@
 package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.cluster.MesosContainer;
+import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.MesosContainerConfig;
 import com.containersol.minimesos.container.AbstractContainer;
-import com.github.dockerjava.api.DockerClient;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -18,21 +19,21 @@ import java.util.TreeMap;
  * Superclass for Mesos master and agent images.
  * Apache Mesos abstracts CPU, memory, storage, and other compute resources away from machines (physical or virtual), enabling fault-tolerant and elastic distributed systems to easily be built and run effectively.
  */
-public abstract class MesosContainer extends AbstractContainer {
+public abstract class MesosContainerImpl extends AbstractContainer implements MesosContainer {
 
     public static final String DEFAULT_MESOS_ZK_PATH = "/mesos";
 
     private ZooKeeper zooKeeperContainer;
-    private final MesosContainerConfig config;
+    protected MesosContainerConfig config;
 
-    protected MesosContainer(DockerClient dockerClient, ZooKeeper zooKeeperContainer, MesosContainerConfig config) {
-        super(dockerClient);
+    protected MesosContainerImpl(ZooKeeper zooKeeperContainer, MesosContainerConfig config) {
+        super(config);
         this.zooKeeperContainer = zooKeeperContainer;
         this.config = config;
     }
 
-    protected MesosContainer(DockerClient dockerClient, MesosCluster cluster, String uuid, String containerId, MesosContainerConfig config) {
-        super(dockerClient, cluster, uuid, containerId);
+    protected MesosContainerImpl(MesosCluster cluster, String uuid, String containerId, MesosContainerConfig config) {
+        super(cluster, uuid, containerId, config);
         this.config = config;
     }
 
@@ -41,21 +42,13 @@ public abstract class MesosContainer extends AbstractContainer {
     protected abstract Map<String, String> getDefaultEnvVars();
 
     @Override
-    protected void pullImage() {
-        pullImage(getMesosImageName(), getMesosImageTag());
-    }
-
-    public String getMesosImageTag() {
+    public String getImageTag() {
         String imageTag = config.getImageTag();
         if (MesosContainerConfig.MESOS_IMAGE_TAG.equalsIgnoreCase(imageTag)) {
             String mesosVersion = getCluster().getMesosVersion();
             imageTag = MesosContainerConfig.MESOS_IMAGE_TAGS.get(mesosVersion);
         }
         return imageTag;
-    }
-
-    public String getMesosImageName() {
-        return config.getImageName();
     }
 
     protected String[] createMesosLocalEnvironment() {
@@ -76,11 +69,12 @@ public abstract class MesosContainer extends AbstractContainer {
         return envs;
     }
 
-    public void setZooKeeperContainer(ZooKeeper zooKeeperContainer) {
+    @Override
+    public void setZooKeeper(ZooKeeper zooKeeperContainer) {
         this.zooKeeperContainer = zooKeeperContainer;
     }
 
-    public ZooKeeper getZooKeeperContainer() {
+    public ZooKeeper getZooKeeper() {
         return zooKeeperContainer;
     }
 
@@ -92,6 +86,7 @@ public abstract class MesosContainer extends AbstractContainer {
         return "http://" + getIpAddress() + ":" + getPortNumber() + "/state.json";
     }
 
+    @Override
     public JSONObject getStateInfoJSON() throws UnirestException {
         String stateUrl = getStateUrl();
         GetRequest request = Unirest.get(stateUrl);

@@ -1,41 +1,29 @@
 package com.containersol.minimesos;
 
+import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.config.ContainerConfigBlock;
+import com.containersol.minimesos.config.MesosAgentConfig;
+import com.containersol.minimesos.config.MesosContainerConfig;
 import com.containersol.minimesos.container.AbstractContainer;
-import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.containersol.minimesos.mesos.*;
-import com.github.dockerjava.api.DockerClient;
+import com.containersol.minimesos.junit.MesosClusterTestRule;
+import com.containersol.minimesos.docker.DockerClientFactory;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.jayway.awaitility.Awaitility;
-import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
 
 public class RunTaskTest {
-
-    private static DockerClient dockerClient = DockerClientFactory.build();
     private static final String TASK_CLUSTER_ROLE = "test";
 
     @ClassRule
-    public static final MesosCluster cluster = new MesosCluster(
-            new ClusterArchitecture.Builder()
-                    .withZooKeeper()
-                    .withMaster()
-                    .withAgent()
-                    .withAgent()
-                    . build());
+    public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromFile("src/test/resources/configFiles/minimesosFile-runTaskTest");
 
-    @After
-    public void after() {
-        DockerContainersUtil util = new DockerContainersUtil(dockerClient);
-        // kill() is not used because containers are expected to exit by this time
-        util.getContainers(true).filterByName("^minimesos-" + TASK_CLUSTER_ROLE + "-[0-9a-f\\-]*$").remove();
-    }
-
+    public static final MesosCluster CLUSTER = RULE.getMesosCluster();
 
     public static class LogContainerTestCallback extends LogContainerResultCallback {
         protected final StringBuffer log = new StringBuffer();
@@ -54,9 +42,7 @@ public class RunTaskTest {
 
     @Test
     public void testMesosExecuteContainerSuccess() throws InterruptedException {
-
-        AbstractContainer mesosAgent = new AbstractContainer(
-                dockerClient) {
+        ClusterProcess mesosAgent = new AbstractContainer(new ContainerConfigBlock(MesosAgentConfig.MESOS_AGENT_IMAGE, MesosContainerConfig.MESOS_IMAGE_TAGS.get("0.25"))) {
 
             @Override
             public String getRole() {
@@ -64,15 +50,12 @@ public class RunTaskTest {
             }
 
             @Override
-            protected void pullImage() {}
-
-            @Override
             protected CreateContainerCmd dockerCommand() {
-                return dockerClient.createContainerCmd( "containersol/mesos-agent:0.25.0-0.2.70.ubuntu1404" )
+                return DockerClientFactory.build().createContainerCmd(String.format("%s:%s", MesosAgentConfig.MESOS_AGENT_IMAGE, MesosContainerConfig.MESOS_IMAGE_TAGS.get("0.25")))
                         .withName( getName() )
                         .withEntrypoint(
                                 "mesos-execute",
-                                "--master=" + cluster.getMasterContainer().getIpAddress() + ":5050",
+                                "--master=" + CLUSTER.getMaster().getIpAddress() + ":5050",
                                 "--command=echo 1",
                                 "--name=test-cmd",
                                 "--resources=cpus:0.1;mem:128"
@@ -80,14 +63,14 @@ public class RunTaskTest {
             }
         };
 
-        cluster.addAndStartContainer(mesosAgent);
+        CLUSTER.addAndStartProcess(mesosAgent);
         LogContainerTestCallback cb = new LogContainerTestCallback();
-        dockerClient.logContainerCmd(mesosAgent.getContainerId()).withStdOut().exec(cb);
+        DockerClientFactory.build().logContainerCmd(mesosAgent.getContainerId()).withStdOut().exec(cb);
         cb.awaitCompletion();
 
         Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
             LogContainerTestCallback cb1 = new LogContainerTestCallback();
-            dockerClient.logContainerCmd(mesosAgent.getContainerId()).withStdOut().exec(cb1);
+            DockerClientFactory.build().logContainerCmd(mesosAgent.getContainerId()).withStdOut().exec(cb1);
             cb1.awaitCompletion();
             String log = cb1.toString();
             return log.contains("Received status update TASK_FINISHED for task test-cmd");

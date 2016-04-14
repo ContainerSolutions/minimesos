@@ -1,9 +1,10 @@
 package com.containersolutions.mesoshelloworld.systemtest;
 
-import com.containersolutions.mesoshelloworld.scheduler.Configuration;
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.containersol.minimesos.config.ContainerConfigBlock;
 import com.containersol.minimesos.container.AbstractContainer;
+import com.containersol.minimesos.docker.DockerClientFactory;
+import com.containersolutions.mesoshelloworld.scheduler.Configuration;
+import com.github.dockerjava.api.command.CreateContainerCmd;
 
 import java.util.stream.IntStream;
 
@@ -20,9 +21,8 @@ public class SchedulerContainer extends AbstractContainer {
     private final String mesosIp;
     private final int containerIndex;
 
-    protected SchedulerContainer(DockerClient dockerClient, String mesosIp) {
-
-        super(dockerClient);
+    protected SchedulerContainer(String mesosIp) {
+        super( new ContainerConfigBlock(SCHEDULER_IMAGE, "latest"));
 
         this.mesosIp = mesosIp;
         containerCount++;
@@ -36,13 +36,8 @@ public class SchedulerContainer extends AbstractContainer {
     }
 
     @Override
-    protected void pullImage() {
-        dockerClient.pullImageCmd(SCHEDULER_IMAGE);
-    }
-
-    @Override
     protected CreateContainerCmd dockerCommand() {
-        return dockerClient
+        return DockerClientFactory.build()
                 .createContainerCmd(SCHEDULER_IMAGE)
                 .withName( getName() )
                 .withEnv("JAVA_OPTS=-Xms128m -Xmx256m")

@@ -2,8 +2,6 @@ import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
 
-version = '0.1.0-SNAPSHOT'
-
 ext {
     imageName = imagePrefix + '/minimesos'
 }
@@ -41,11 +39,6 @@ dependencies {
     compile 'junit:junit:4.11'
     compile 'com.jayway.awaitility:awaitility:1.6.3'
     compile 'com.mashape.unirest:unirest-java:1.4.8'
-
-    compile 'org.slf4j:jcl-over-slf4j:1.7.12'
-    compile 'org.slf4j:log4j-over-slf4j:1.7.12'
-    compile 'org.slf4j:jul-to-slf4j:1.7.12'
-
     compile 'org.slf4j:slf4j-api:1.7.12'
 
     compile 'ch.qos.logback:logback-core:1.1.3'
@@ -54,6 +47,8 @@ dependencies {
     compile 'com.beust:jcommander:1.48'
 
     testCompile "org.mockito:mockito-core:1.+"
+    // using guru.nidi as maintenanance of the original project is dropped https://github.com/clarkware/jdepend/pull/9
+    testCompile "guru.nidi:jdepend:2.9.5"
 }
 
 sourceSets {

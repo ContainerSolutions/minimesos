@@ -2,31 +2,29 @@ package com.containersol.minimesos.container;
 
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.mesos.ClusterArchitecture;
-import com.containersol.minimesos.mesos.DockerClientFactory;
-import com.containersol.minimesos.mesos.MesosAgent;
-import com.github.dockerjava.api.DockerClient;
+import com.containersol.minimesos.mesos.MesosAgentContainer;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 public class ContainerNameTest {
 
-    protected static final DockerClient dockerClient = DockerClientFactory.build();
-
     private MesosCluster cluster;
     private String clusterId;
 
     @Before
     public void before() {
-        cluster = new MesosCluster(new ClusterArchitecture(dockerClient));
+
+        ClusterArchitecture architecture = new ClusterArchitecture();
+        cluster = new MesosCluster(architecture.getClusterConfig(), architecture.getClusterContainers().getContainers());
+
         clusterId = cluster.getClusterId();
     }
 
     @Test
     public void testBelongsToCluster() throws Exception {
-        MesosAgent agent = new MesosAgent(dockerClient, cluster, "UUID", "CONTAINERID");
+        MesosAgentContainer agent = new MesosAgentContainer(cluster, "UUID", "CONTAINERID");
         String containerName = ContainerName.get(agent);
 
         assertTrue(ContainerName.hasRoleInCluster(containerName, clusterId, agent.getRole()));
@@ -35,7 +33,7 @@ public class ContainerNameTest {
 
     @Test
     public void testWrongCluster() throws Exception {
-        MesosAgent agent = new MesosAgent(dockerClient, cluster, "UUID", "CONTAINERID");
+        MesosAgentContainer agent = new MesosAgentContainer(cluster, "UUID", "CONTAINERID");
         String containerName = ContainerName.get(agent);
 
         assertFalse(ContainerName.hasRoleInCluster(containerName, "XXXXXX", agent.getRole()));
@@ -44,7 +42,7 @@ public class ContainerNameTest {
 
     @Test
     public void testWrongRole() throws Exception {
-        MesosAgent agent = new MesosAgent(dockerClient, cluster, "UUID", "CONTAINERID");
+        MesosAgentContainer agent = new MesosAgentContainer(cluster, "UUID", "CONTAINERID");
         String containerName = ContainerName.get(agent);
 
         assertFalse(ContainerName.hasRoleInCluster(containerName, clusterId, "XXXXXX"));
@@ -57,6 +55,17 @@ public class ContainerNameTest {
         names[0] = "/minimesos-agent";
 
         assertEquals("minimesos-agent", ContainerName.getFromDockerNames(names));
+    }
+
+    @Test
+    public void testLinkedContainerNames() {
+        String[] names = new String[4];
+        names[0] = "/minimesos-agent0/minimesos-zookeeper";
+        names[1] = "/minimesos-agent1/minimesos-zookeeper";
+        names[2] = "/minimesos-agent2/minimesos-zookeeper";
+        names[3] = "/minimesos-zookeeper";
+
+        assertEquals("minimesos-zookeeper", ContainerName.getFromDockerNames(names));
     }
 
 }

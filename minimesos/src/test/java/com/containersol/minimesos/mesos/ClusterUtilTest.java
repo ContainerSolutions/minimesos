@@ -1,5 +1,6 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.cluster.MesosAgent;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

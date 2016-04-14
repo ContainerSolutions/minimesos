@@ -9,6 +9,10 @@ public class ContainerName {
     private ContainerName() {
     }
 
+    public static String getContainerNamePattern(String clusterId) {
+        return "^minimesos-\\w+-" + clusterId + "-\\w+$";
+    }
+
     /**
      * @param container to build the name for
      * @return name of the container
@@ -47,7 +51,8 @@ public class ContainerName {
      * @return true, if container with this name belongs to the cluster
      */
     public static boolean belongsToCluster(String containerName, String clusterId) {
-        return containerName.matches("^minimesos-\\w+-" + clusterId + "-\\w+$");
+        String pattern = getContainerNamePattern(clusterId);
+        return containerName.matches(pattern);
     }
 
     /**
