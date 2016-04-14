@@ -91,16 +91,18 @@ public class CommandUp implements Command {
      * @return Number of agents to create
      */
     public int getNumAgents() {
-        if (numAgents > 0) {
-            return numAgents;
+        int numAgents;
+        if (this.numAgents > 0) {
+            numAgents = this.numAgents;
         } else {
             ClusterConfig clusterConfig = readClusterConfigFromMinimesosFile();
             if ((clusterConfig != null) && (clusterConfig.getAgents() != null) && (clusterConfig.getAgents().size() > 0)) {
-                return clusterConfig.getAgents().size();
+                numAgents = clusterConfig.getAgents().size();
             } else {
-                return 1;
+                numAgents = 1;
             }
         }
+        return numAgents;
     }
 
     public String getClusterConfigPath() {

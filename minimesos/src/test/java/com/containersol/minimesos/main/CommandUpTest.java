@@ -74,13 +74,4 @@ public class CommandUpTest {
         assertTrue("Exposed port from configuration is expected to remain", capturedClusterConfig.getValue().isExposePorts());
     }
 
-    @Test
-    public void testExecute_() {
-        commandUp.setClusterConfigPath("src/test/resources/configFiles/minimal-minimesosFile");
-        commandUp.setTimeout(30);
-        commandUp.execute();
-
-        assertEquals(30, capturedClusterConfig.getValue().getTimeout());
-    }
-
 }
