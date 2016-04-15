@@ -18,10 +18,8 @@ public class DockerClientFactory {
 
             String dockerHostEnv = System.getenv("DOCKER_HOST");
             if (StringUtils.isBlank(dockerHostEnv)) {
-                builder.withDockerHost("unix:///var/run/docker.sock");
+                builder.withUri("unix:///var/run/docker.sock");
             }
-
-            builder.withDockerTlsVerify(false);
 
             DockerClientConfig config = builder.build();
             dockerClient = DockerClientBuilder.getInstance(config).build();
