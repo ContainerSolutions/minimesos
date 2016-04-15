@@ -1,12 +1,10 @@
 package com.containersol.minimesos.docker;
 
-
 import com.containersol.minimesos.MinimesosException;
-import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.LogContainerCmd;
+import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.Container;
-import com.github.dockerjava.api.model.Filters;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.PullResponseItem;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
@@ -15,6 +13,7 @@ import com.github.dockerjava.core.command.PullImageResultCallback;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -172,7 +171,7 @@ public class DockerContainersUtil {
         final List<String> logs = new ArrayList<>();
 
         LogContainerCmd logContainerCmd = DockerClientFactory.build().logContainerCmd(containerId);
-        logContainerCmd.withStdOut().withStdErr();
+        logContainerCmd.withStdOut(true).withStdErr(true);
         try {
             logContainerCmd.exec(new LogContainerResultCallback() {
                 @Override
@@ -252,12 +251,15 @@ public class DockerContainersUtil {
      * @return container or null
      */
     public static Container getContainer(String containerId) {
-        List<Container> containers = DockerClientFactory.build().listContainersCmd().withFilters(new Filters().withFilter("id", containerId)).exec();
-        if (containers != null && containers.size() == 1) {
-            return containers.get(0);
-        } else {
-            return null;
+        List<Container> containers = DockerClientFactory.build().listContainersCmd().withShowAll(true).exec();
+        Container container = null;
+        if (containers != null && !containers.isEmpty()) {
+            Optional<Container> optional = containers.stream().filter(c -> c.getId().equals(containerId)).findFirst();
+            if (optional.isPresent()) {
+                container = optional.get();
+            }
         }
+        return container;
     }
 
 }

@@ -10,6 +10,7 @@ import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.marathon.MarathonContainer;
 import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.api.model.ContainerPort;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -77,9 +78,9 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
                             MesosMaster master = createMesosMaster(cluster, uuid, containerId);
                             containers.add(master);
                             // restore "exposed ports" attribute
-                            Container.Port[] ports = container.getPorts();
+                            ContainerPort[] ports = container.getPorts();
                             if (ports != null) {
-                                for (Container.Port port : ports) {
+                                for (ContainerPort port : ports) {
                                     if (port.getIp() != null && port.getPrivatePort() == MesosMasterConfig.MESOS_MASTER_PORT) {
                                         cluster.setExposedHostPorts(true);
                                     }

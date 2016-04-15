@@ -70,7 +70,7 @@ public class MesosAgentContainer extends MesosContainerImpl implements MesosAgen
                 .withName(getName())
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
-                .withPid("host")
+                .withPidMode("host")
                 .withLinks(new Link(getZooKeeper().getContainerId(), "minimesos-zookeeper"))
                 .withBinds(binds.stream().toArray(Bind[]::new));
     }
