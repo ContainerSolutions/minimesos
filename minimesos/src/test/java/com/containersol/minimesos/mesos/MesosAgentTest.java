@@ -6,7 +6,11 @@ import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.MesosAgentConfig;
 import org.junit.Test;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 public class MesosAgentTest {
+
     private static final ZooKeeper zooKeeper = new ZooKeeperContainer();
 
     /**
@@ -19,6 +23,26 @@ public class MesosAgentTest {
 
         MesosAgentContainer agent = new MesosAgentContainer(zooKeeper, config);
         agent.pullImage();
+    }
+
+    /**
+     * Test error message
+     */
+    @Test
+    public void testPullingWrongContainerMessage() {
+
+        String imageTag = "non-existing-one";
+
+        MesosAgentConfig config = new MesosAgentConfig();
+        config.setImageTag(imageTag);
+
+        MesosAgentContainer agent = new MesosAgentContainer(zooKeeper, config);
+        try {
+            agent.pullImage();
+            fail("Pulling non-existing image should result in an exception");
+        } catch (MinimesosException mme) {
+            assertTrue("Name of the image should be in the error message: " + mme.getMessage(), mme.getMessage().contains(imageTag));
+        }
     }
 
 }
