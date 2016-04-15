@@ -21,6 +21,8 @@ public class DockerClientFactory {
                 builder.withDockerHost("unix:///var/run/docker.sock");
             }
 
+            builder.withDockerTlsVerify(false);
+
             DockerClientConfig config = builder.build();
             dockerClient = DockerClientBuilder.getInstance(config).build();
         }
