@@ -12,7 +12,12 @@ import com.github.dockerjava.api.model.PullResponseItem;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -238,13 +243,33 @@ public class DockerContainersUtil {
      * @return IP Address of the container's gateway (which would be docker0)
      */
     public static String getGatewayIpAddress() {
-        List<Container> containers = DockerClientFactory.build().listContainersCmd().exec();
-        if (containers == null || containers.size() == 0) {
-            throw new IllegalStateException("Cannot get docker0 IP address because no containers are running");
-        }
+        String gatewayIpAddress = System.getenv("GATEWAY_IP");
+        if (gatewayIpAddress == null) {
+            List<InetAddress> ipAddresses = new ArrayList<>();
+            Enumeration networkInterfaces;
+            try {
+                networkInterfaces = NetworkInterface.getNetworkInterfaces();
+                while (networkInterfaces.hasMoreElements()) {
+                    NetworkInterface ni = (NetworkInterface) networkInterfaces.nextElement();
+                    if (ni.isLoopback() || !ni.isUp() || ni.getName().startsWith("veth") || ni.getName().startsWith("docker")) continue;
 
-        InspectContainerResponse response = DockerClientFactory.build().inspectContainerCmd(containers.get(0).getId()).exec();
-        return response.getNetworkSettings().getGateway();
+                    for (Enumeration e2 = ni.getInetAddresses(); e2.hasMoreElements(); ) {
+                        InetAddress ip = (InetAddress) e2.nextElement();
+                        if (ip instanceof Inet6Address) {
+                            continue;
+                        }
+                        ipAddresses.add(ip);
+                    }
+                }
+                if (ipAddresses.isEmpty()) {
+                    throw new MinimesosException("No gateway IP address found. Check your network connection.");
+                }
+                gatewayIpAddress = ipAddresses.get(0).getHostAddress();
+            } catch (SocketException e) {
+                throw new MinimesosException("Could not determine gateway IP address: " + e.getMessage());
+            }
+        }
+        return gatewayIpAddress;
     }
 
     /**

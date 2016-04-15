@@ -12,19 +12,16 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.Link;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -112,19 +109,6 @@ public class MesosClusterTest {
         String ipAddress = DockerContainersUtil.getIpAddress(containerId);
         String url = "http://" + ipAddress + ":" + HelloWorldContainer.SERVICE_PORT;
         assertEquals(200, Unirest.get(url).asString().getStatus());
-    }
-
-    @Ignore
-    public void testMasterLinkedToAgents() throws UnirestException {
-        List<MesosAgent> containers = CLUSTER.getAgents();
-        for (MesosAgent container : containers) {
-            InspectContainerResponse exec = DockerClientFactory.build().inspectContainerCmd(container.getContainerId()).exec();
-
-            List<Link> links = Arrays.asList(exec.getHostConfig().getLinks());
-
-            assertNotNull(links);
-            assertEquals("link to zookeeper is expected", 1, links.size());
-        }
     }
 
     @Test(expected = MinimesosException.class)

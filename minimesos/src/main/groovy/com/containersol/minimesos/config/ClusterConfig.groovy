@@ -10,6 +10,7 @@ class ClusterConfig extends GroovyBlock {
     public static final String DEFAULT_MESOS_VERSION = "0.25"
     public static final String DEFAULT_CONFIG_FILE = "minimesosFile"
     public static final String DEFAULT_LOGGING_LEVEL = "INFO"
+    public static final String DEFAULT_NETWORK_MODE = "bridge"
 
     def call(Closure cl) {
         cl.setDelegate(this);
@@ -24,6 +25,7 @@ class ClusterConfig extends GroovyBlock {
     String mesosVersion = DEFAULT_MESOS_VERSION
     String clusterName = null
     String loggingLevel = DEFAULT_LOGGING_LEVEL
+    String networkMode = DEFAULT_NETWORK_MODE
 
     MesosMasterConfig master = null
     List<MesosAgentConfig> agents = new ArrayList<>()
@@ -94,5 +96,16 @@ class ClusterConfig extends GroovyBlock {
 
     String getLoggingLevel() {
         return loggingLevel
+    }
+
+    String getNetworkMode() {
+        return networkMode
+    }
+
+    void setNetworkMode(String networkMode) {
+        if (!StringUtils.equalsIgnoreCase(networkMode, "bridge") && !StringUtils.equalsIgnoreCase(networkMode, "host")) {
+            throw new RuntimeException("Property 'networkMode' can only have the values 'bridge' or 'host'")
+        }
+        this.networkMode = networkMode
     }
 }

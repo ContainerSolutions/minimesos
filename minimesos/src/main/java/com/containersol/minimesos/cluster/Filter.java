@@ -26,4 +26,8 @@ public class Filter {
     public static Predicate<ClusterProcess> marathon() {
         return process -> process instanceof Marathon;
     }
+
+    public static Predicate<ClusterProcess> registrator() {
+        return process -> process instanceof Registrator;
+    }
 }

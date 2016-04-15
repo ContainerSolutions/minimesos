@@ -1,0 +1,14 @@
+<configuration debug="false">
+
+    <appender name="JAVA" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.out</target>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="com.containersol.minimesos" level="debug">
+        <appender-ref ref="JAVA" />
+    </logger>
+
+</configuration>

@@ -66,6 +66,7 @@ docker run --rm -v "${MINIMESOS_HOST_DIR}":"${MINIMESOS_HOST_DIR}" \
        -v /var/run/docker.sock:/var/run/docker.sock \
        -v /sys/fs/cgroup:/sys/fs/cgroup \
        -v ${DOCKER_BIN}:/usr/bin/docker \
+       -e GATEWAY_IP=$(ip route show 0.0.0.0/0 | grep -Eo 'via \S+' | awk '{ print $2 }') \
        -i \
        --env DOCKER_HOST_IP=${DOCKER_HOST_IP} \
        --entrypoint java \

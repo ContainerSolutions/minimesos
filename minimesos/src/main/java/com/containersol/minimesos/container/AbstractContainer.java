@@ -149,13 +149,11 @@ public abstract class AbstractContainer implements ClusterProcess {
 
     private synchronized void retrieveIpAddress() {
         String res = "";
-        if (!getContainerId().isEmpty()) {
+        if (getCluster().getClusterConfig().getNetworkMode().equals("host")) {
+            res = DockerContainersUtil.getGatewayIpAddress();
+        } else if (!getContainerId().isEmpty()) {
             res = DockerContainersUtil.getIpAddress(getContainerId());
         }
-        if (res.equals("")) {
-            res = DockerContainersUtil.getGatewayIpAddress();
-        }
-
         this.ipAddress = res;
     }
 

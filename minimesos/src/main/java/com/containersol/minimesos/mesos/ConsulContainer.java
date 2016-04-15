@@ -15,7 +15,8 @@ import com.github.dockerjava.api.model.Ports;
  */
 public class ConsulContainer extends AbstractContainer implements Consul {
 
-    public static final int DNS_PORT = 53;
+    public static final int DNS_PORT = 8600;
+
     private final ConsulConfig config;
 
     public ConsulContainer(ConsulConfig config) {
@@ -39,6 +40,23 @@ public class ConsulContainer extends AbstractContainer implements Consul {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
+        envVars.put("SERVICE_IGNORE", "1");
+
+        CreateContainerCmd cmd = DockerClientFactory.build().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
+                .withName(getName())
+                .withNetworkMode(getCluster().getClusterConfig().getNetworkMode())
+                .withEnv(createEnvironment());
+
+        if (getCluster().getClusterConfig().getNetworkMode().equals("bridge")) {
+            cmd = bindPortsToHost(cmd);
+        } else {
+            cmd = cmd.withCmd("-advertise", getIpAddress());
+        }
+
+        return cmd;
+    }
+
+    private CreateContainerCmd bindPortsToHost(CreateContainerCmd cmd) {
         ExposedPort consulHTTPPort = ExposedPort.tcp(ConsulConfig.CONSUL_HTTP_PORT);
         ExposedPort consulDNSPort = ExposedPort.udp(ConsulConfig.CONSUL_DNS_PORT);
 
@@ -47,17 +65,11 @@ public class ConsulContainer extends AbstractContainer implements Consul {
             portBindings.bind(consulHTTPPort, Ports.Binding(ConsulConfig.CONSUL_HTTP_PORT));
         }
 
-
         String gatewayIpAddress = DockerContainersUtil.getGatewayIpAddress();
         portBindings.bind(consulDNSPort, Ports.Binding(gatewayIpAddress, DNS_PORT));
 
-        envVars.put("SERVICE_IGNORE", "1");
-
-        return DockerClientFactory.build().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
-                .withName(getName())
-                .withPortBindings(portBindings)
-                .withEnv(createEnvironment())
-                .withExposedPorts(consulHTTPPort, consulDNSPort);
+        cmd = cmd.withPortBindings(portBindings).withExposedPorts(consulHTTPPort, consulDNSPort);
+        return cmd;
     }
 
 }
