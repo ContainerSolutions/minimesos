@@ -1,8 +1,11 @@
 #!/bin/bash
 set -ev
 
-if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then
-	./gradlew clean build --info --stacktrace
-else
-    ./gradlew clean build jacocoTestReport sonarqube --info --stacktrace -Dsonar.analysis.mode=preview -Dsonar.host.url=$SQ_URL -Dsonar.github.oauth=$GH_TOKEN -Dsonar.github.repository=$TRAVIS_REPO_SLUG -Dsonar.github.pullRequest=$TRAVIS_PULL_REQUEST
+GH_SONARQ_PARAMS=""
+
+if [ [ ! -z "$TRAVIS_PULL_REQUEST" ] && "${TRAVIS_PULL_REQUEST}" != "false" ]; then
+    echo "PR build. Will execute SonarQube preview scan"
+    GH_SONARQ_PARAMS="jacocoTestReport sonarqube -Dsonar.analysis.mode=preview -Dsonar.host.url=$SQ_URL -Dsonar.github.oauth=$GH_TOKEN -Dsonar.github.repository=$TRAVIS_REPO_SLUG -Dsonar.github.pullRequest=$TRAVIS_PULL_REQUEST"
 fi
+
+./gradlew --info --stacktrace clean build ${GH_SONARQ_PARAMS}
