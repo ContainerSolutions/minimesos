@@ -6,11 +6,9 @@ import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ConfigParser;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.container.ContainerName;
-import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.marathon.MarathonContainer;
 import com.github.dockerjava.api.model.Container;
-import com.github.dockerjava.api.model.ContainerPort;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -52,7 +50,8 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
         String clusterId = cluster.getClusterId();
         List<ClusterProcess> containers = cluster.getMemberProcesses();
 
-        List<Container> dockerContainers = DockerClientFactory.build().listContainersCmd().exec();
+        DockerContainersUtil dockerUtil = new DockerContainersUtil();
+        List<Container> dockerContainers = dockerUtil.getContainers(false).getContainers();
         Collections.sort(dockerContainers, (c1, c2) -> Long.compare(c1.getCreated(), c2.getCreated()));
 
         for (Container container : dockerContainers) {
@@ -78,9 +77,9 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
                             MesosMaster master = createMesosMaster(cluster, uuid, containerId);
                             containers.add(master);
                             // restore "exposed ports" attribute
-                            ContainerPort[] ports = container.getPorts();
+                            Container.Port[] ports = container.getPorts();
                             if (ports != null) {
-                                for (ContainerPort port : ports) {
+                                for (Container.Port port : ports) {
                                     if (port.getIp() != null && port.getPrivatePort() == MesosMasterConfig.MESOS_MASTER_PORT) {
                                         cluster.setExposedHostPorts(true);
                                     }

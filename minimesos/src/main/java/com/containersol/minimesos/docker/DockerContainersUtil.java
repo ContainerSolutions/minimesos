@@ -3,7 +3,7 @@ package com.containersol.minimesos.docker;
 import com.containersol.minimesos.MinimesosException;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.LogContainerCmd;
-import com.github.dockerjava.api.exception.DockerException;
+import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.PullResponseItem;
@@ -24,13 +24,14 @@ import java.util.concurrent.TimeoutException;
  * Immutable utility class, which represents set of docker containers with filters and operations on this list
  */
 public class DockerContainersUtil {
-    private final Set<Container> containers;
+
+    private final List<Container> containers;
 
     public DockerContainersUtil() {
         this.containers = null;
     }
 
-    private DockerContainersUtil(Set<Container> containers) {
+    private DockerContainersUtil(List<Container> containers) {
         this.containers = containers;
     }
 
@@ -38,7 +39,7 @@ public class DockerContainersUtil {
      * Use this getter if you need to iterate over docker objects
      * @return set of docker containers
      */
-    public Set<Container> getContainers() {
+    public List<Container> getContainers() {
         return containers;
     }
 
@@ -47,7 +48,7 @@ public class DockerContainersUtil {
      * @return set of docker containers
      */
     public DockerContainersUtil getContainers(boolean showAll) {
-        Set<Container> containers = new HashSet<>(DockerClientFactory.build().listContainersCmd().withShowAll(showAll).exec());
+        List<Container> containers = new ArrayList<>(DockerClientFactory.build().listContainersCmd().withShowAll(showAll).exec());
         return new DockerContainersUtil(containers);
     }
 
@@ -66,7 +67,7 @@ public class DockerContainersUtil {
             return this;
         }
 
-        Set<Container> matched = new HashSet<>();
+        List<Container> matched = new ArrayList<>();
         for (Container container : containers) {
             String[] names = container.getNames();
             for (String name : names) {
@@ -91,7 +92,7 @@ public class DockerContainersUtil {
             return this;
         }
 
-        Set<Container> matched = new HashSet<>();
+        List<Container> matched = new ArrayList<>();
         for (Container container : containers) {
             if (container.getImage().matches(pattern)) {
                 matched.add(container);
