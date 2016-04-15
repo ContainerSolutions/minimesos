@@ -62,11 +62,11 @@ public class ConsulContainer extends AbstractContainer implements Consul {
 
         Ports portBindings = new Ports();
         if (getCluster().isExposedHostPorts()) {
-            portBindings.bind(consulHTTPPort, Ports.Binding(ConsulConfig.CONSUL_HTTP_PORT));
+            portBindings.bind(consulHTTPPort, new Ports.Binding(ConsulConfig.CONSUL_HTTP_PORT));
         }
 
         String gatewayIpAddress = DockerContainersUtil.getGatewayIpAddress();
-        portBindings.bind(consulDNSPort, Ports.Binding(gatewayIpAddress, DNS_PORT));
+        portBindings.bind(consulDNSPort, new Ports.Binding(gatewayIpAddress, DNS_PORT));
 
         cmd = cmd.withPortBindings(portBindings).withExposedPorts(consulHTTPPort, consulDNSPort);
         return cmd;

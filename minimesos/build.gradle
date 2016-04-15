@@ -35,7 +35,7 @@ group = "com.containersol.minimesos"
 
 dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.4.5'
-    compile 'com.github.docker-java:docker-java:4f094c112'
+    compile 'com.github.docker-java:docker-java:2.2.3'
     compile 'junit:junit:4.11'
     compile 'com.jayway.awaitility:awaitility:1.6.3'
     compile 'com.mashape.unirest:unirest-java:1.4.8'

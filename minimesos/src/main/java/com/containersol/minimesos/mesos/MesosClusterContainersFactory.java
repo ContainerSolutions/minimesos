@@ -6,7 +6,6 @@ import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ConfigParser;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.container.ContainerName;
-import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.marathon.MarathonContainer;
 import com.github.dockerjava.api.model.Container;
@@ -51,7 +50,8 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
         String clusterId = cluster.getClusterId();
         List<ClusterProcess> containers = cluster.getMemberProcesses();
 
-        List<Container> dockerContainers = DockerClientFactory.build().listContainersCmd().exec();
+        DockerContainersUtil dockerUtil = new DockerContainersUtil();
+        List<Container> dockerContainers = dockerUtil.getContainers(false).getContainers();
         Collections.sort(dockerContainers, (c1, c2) -> Long.compare(c1.getCreated(), c2.getCreated()));
 
         for (Container container : dockerContainers) {
