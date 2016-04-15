@@ -18,4 +18,4 @@ install:
   - chmod +x pull-containers.sh && sudo ./pull-containers.sh
 
 # Has to run the build script with sudo because custom installation does not allow $USER to use docker and it's not possible to relogin
-script: sudo ./gradlew clean build --info --stacktrace
+script: sudo ./gradlew clean build jacocoTestReport sonarqube --info --stacktrace -Dsonar.analysis.mode=preview -Dsonar.host.url=$SQ_URL -Dsonar.github.oauth=$GH_TOKEN -Dsonar.github.repository=$TRAVIS_REPO_SLUG -Dsonar.github.pullRequest=$TRAVIS_PULL_REQUEST
