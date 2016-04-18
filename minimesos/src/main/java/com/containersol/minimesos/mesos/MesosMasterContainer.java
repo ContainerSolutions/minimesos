@@ -26,16 +26,12 @@ import static com.jayway.awaitility.Awaitility.await;
  */
 public class MesosMasterContainer extends MesosContainerImpl implements MesosMaster {
 
-    // is here for future extension of Master configuration
-    private final MesosMasterConfig config;
-
     public MesosMasterContainer(ZooKeeper zooKeeperContainer) {
         this(zooKeeperContainer, new MesosMasterConfig());
     }
 
     public MesosMasterContainer(ZooKeeper zooKeeperContainer, MesosMasterConfig config) {
         super(zooKeeperContainer, config);
-        this.config = config;
     }
 
     public MesosMasterContainer(MesosCluster cluster, String uuid, String containerId) {
@@ -44,7 +40,6 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
 
     private MesosMasterContainer(MesosCluster cluster, String uuid, String containerId, MesosMasterConfig config) {
         super(cluster, uuid, containerId, config);
-        this.config = config;
     }
 
     @Override
@@ -56,6 +51,10 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
     public Map<String, String> getDefaultEnvVars() {
         Map<String, String> envs = new TreeMap<>();
         envs.put("MESOS_QUORUM", "1");
+        if (((MesosMasterConfig) config).getAuthenticate() && ((MesosMasterConfig) config).getAclJson() != null) {
+            envs.put("MESOS_AUTHENTICATE", String.valueOf(((MesosMasterConfig) config).getAuthenticate()));
+            envs.put("MESOS_ACLS", ((MesosMasterConfig) config).getAclJson());
+        }
         envs.put("MESOS_ZK", getFormattedZKAddress());
         envs.put("MESOS_LOGGING_LEVEL", getLoggingLevel());
         if (getCluster() != null) {
@@ -76,16 +75,17 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
 
         Ports portBindings = new Ports();
         if (getCluster().isExposedHostPorts()) {
-            portBindings.bind(exposedPort, Ports.Binding(port));
+            portBindings.bind(exposedPort, new Ports.Binding(port));
         }
 
-        return DockerClientFactory.getDockerClient().createContainerCmd(getMesosImageName() + ":" + getMesosImageTag())
+        return DockerClientFactory.getDockerClient().createContainerCmd(getImageName() + ":" + getImageTag())
                 .withName(getName())
                 .withExposedPorts(new ExposedPort(getPortNumber()))
                 .withEnv(createMesosLocalEnvironment())
                 .withPortBindings(portBindings);
     }
 
+    @Override
     public Map<String, String> getFlags() throws UnirestException {
         JSONObject flagsJson = this.getStateInfoJSON().getJSONObject("flags");
         Map<String, String> flags = new TreeMap<>();
@@ -97,13 +97,14 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
         return flags;
     }
 
+    @Override
     public void waitFor() {
         new MesosMasterContainer.MesosClusterStateResponse(getCluster()).waitFor();
     }
 
     public static class MesosClusterStateResponse implements Callable<Boolean> {
 
-        private final Logger LOGGER = LoggerFactory.getLogger(MesosClusterStateResponse.class);
+        private static final Logger LOGGER = LoggerFactory.getLogger(MesosClusterStateResponse.class);
 
         private final MesosCluster mesosCluster;
 
@@ -120,10 +121,12 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
                     LOGGER.debug("Waiting for " + mesosCluster.getAgents().size() + " activated agents - current number of activated agents: " + activatedAgents);
                     return false;
                 }
-            } catch (UnirestException e) {
+            } catch (UnirestException e) { //NOSONAR
+                // in case of error just return false
                 LOGGER.debug("Polling Mesos Master state on host: \"" + stateUrl + "\"...");
                 return false;
-            } catch (Exception e) {
+            } catch (Exception e) { //NOSONAR
+                // in case of error just return false
                 LOGGER.error("An error occured while polling Mesos master", e);
                 return false;
             }

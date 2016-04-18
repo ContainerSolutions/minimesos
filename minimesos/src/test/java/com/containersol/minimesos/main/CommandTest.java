@@ -37,7 +37,9 @@ public class CommandTest {
     @Test
     public void testUpAndDestroy() {
         CommandUp commandUp = new CommandUp();
+        commandUp.setClusterConfigPath("src/test/resources/configFiles/minimal-minimesosFile");
         commandUp.execute();
+
         MesosCluster cluster = commandUp.getCluster();
 
         File minimesosFile = ClusterRepository.getMinimesosFile();
@@ -57,6 +59,7 @@ public class CommandTest {
         FileUtils.write(ClusterRepository.getMinimesosFile(), "invalid");
 
         CommandUp commandUp = new CommandUp();
+        commandUp.setClusterConfigPath("src/test/resources/configFiles/minimal-minimesosFile");
         commandUp.execute();
         MesosCluster cluster = commandUp.getCluster();
 
@@ -74,6 +77,7 @@ public class CommandTest {
     @Test
     public void testUp_alreadyRunning() {
         CommandUp commandUp = new CommandUp();
+        commandUp.setClusterConfigPath("src/test/resources/configFiles/minimal-minimesosFile");
 
         commandUp.execute();
         MesosCluster firstCluster = commandUp.getCluster();
@@ -94,6 +98,7 @@ public class CommandTest {
     @Test
     public void testInfo_runningCluster() throws IOException {
         CommandUp commandUp = new CommandUp();
+        commandUp.setClusterConfigPath("src/test/resources/configFiles/minimal-minimesosFile");
         commandUp.execute();
 
         CommandInfo commandInfo = new CommandInfo(ps);
@@ -117,6 +122,7 @@ public class CommandTest {
     @Test
     public void testState() throws IOException {
         CommandUp commandUp = new CommandUp();
+        commandUp.setClusterConfigPath("src/test/resources/configFiles/minimal-minimesosFile");
         commandUp.execute();
         MesosCluster cluster = commandUp.getCluster();
 
@@ -155,7 +161,6 @@ public class CommandTest {
         install.setMarathonFile("src/test/resources/app.json");
 
         install.execute();
-
         install.execute();
     }
 

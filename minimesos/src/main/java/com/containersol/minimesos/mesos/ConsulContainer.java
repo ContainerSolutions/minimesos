@@ -19,7 +19,7 @@ public class ConsulContainer extends AbstractContainer implements Consul {
     private final ConsulConfig config;
 
     public ConsulContainer(ConsulConfig config) {
-        super();
+        super(config);
         this.config = config;
     }
 
@@ -28,7 +28,7 @@ public class ConsulContainer extends AbstractContainer implements Consul {
     }
 
     private ConsulContainer(MesosCluster cluster, String uuid, String containerId, ConsulConfig config) {
-        super(cluster, uuid, containerId);
+        super(cluster, uuid, containerId, config);
         this.config = config;
     }
 
@@ -38,23 +38,18 @@ public class ConsulContainer extends AbstractContainer implements Consul {
     }
 
     @Override
-    protected void pullImage() {
-        pullImage(config.getImageName(), config.getImageTag());
-    }
-
-    @Override
     protected CreateContainerCmd dockerCommand() {
         ExposedPort consulHTTPPort = ExposedPort.tcp(ConsulConfig.CONSUL_HTTP_PORT);
         ExposedPort consulDNSPort = ExposedPort.udp(ConsulConfig.CONSUL_DNS_PORT);
 
         Ports portBindings = new Ports();
         if (getCluster().isExposedHostPorts()) {
-            portBindings.bind(consulHTTPPort, Ports.Binding(ConsulConfig.CONSUL_HTTP_PORT));
+            portBindings.bind(consulHTTPPort, new Ports.Binding(ConsulConfig.CONSUL_HTTP_PORT));
         }
 
 
         String gatewayIpAddress = DockerContainersUtil.getGatewayIpAddress();
-        portBindings.bind(consulDNSPort, Ports.Binding(gatewayIpAddress, DNS_PORT));
+        portBindings.bind(consulDNSPort, new Ports.Binding(gatewayIpAddress, DNS_PORT));
 
         envVars.put("SERVICE_IGNORE", "1");
 

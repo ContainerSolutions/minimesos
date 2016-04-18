@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  */
 public class MesosCluster {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(MesosCluster.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MesosCluster.class);
 
     public static final String MINIMESOS_HOST_DIR_PROPERTY = "minimesos.host.dir";
 
@@ -350,9 +350,8 @@ public class MesosCluster {
         Awaitility.await().atMost(clusterConfig.getTimeout(), TimeUnit.SECONDS).until(() -> {
             try {
                 return predicate.test(State.fromJSON(getMaster().getStateInfoJSON().toString()));
-            } catch (InternalServerErrorException e) {
-                LOGGER.error(e.toString());
-                // This probably means that the mesos cluster isn't ready yet..
+            } catch (InternalServerErrorException e) { //NOSONAR
+                // This means that the mesos cluster isn't ready yet..
                 return false;
             }
         });
@@ -382,15 +381,15 @@ public class MesosCluster {
         InputStream is = null;
 
         if (location != null) {
-
-            URI uri = null;
+            URI uri;
             try {
                 uri = URI.create(location);
                 if (!uri.isAbsolute()) {
                     uri = null;
                 }
-            } catch (IllegalArgumentException ignored) {
-                // means this is not a valid URI
+            } catch (IllegalArgumentException ignored) { //NOSONAR
+                // means this is not a valid URI, could be filepath
+                uri = null;
             }
 
             if (uri != null) {
@@ -416,7 +415,6 @@ public class MesosCluster {
                     }
                 }
             }
-
         }
 
         return is;

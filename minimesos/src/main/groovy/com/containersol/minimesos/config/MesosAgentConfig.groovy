@@ -10,10 +10,12 @@ class MesosAgentConfig extends MesosContainerConfig {
 
     int portNumber = DEFAULT_MESOS_AGENT_PORT
 
-    String imageName        = MESOS_AGENT_IMAGE
-    String imageTag         = MESOS_IMAGE_TAG
-
     AgentResourcesConfig resources = new AgentResourcesConfig()
+
+    public MesosAgentConfig() {
+        imageName        = MESOS_AGENT_IMAGE
+        imageTag         = MESOS_IMAGE_TAG
+    }
 
     def resources(@DelegatesTo(AgentResourcesConfig) Closure cl) {
         delegateTo(resources, cl)

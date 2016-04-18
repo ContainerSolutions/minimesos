@@ -1,5 +1,6 @@
 package com.containersolutions.mesoshelloworld.systemtest;
 
+import com.containersol.minimesos.config.ContainerConfigBlock;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersolutions.mesoshelloworld.scheduler.Configuration;
@@ -21,7 +22,7 @@ public class SchedulerContainer extends AbstractContainer {
     private final int containerIndex;
 
     protected SchedulerContainer(String mesosIp) {
-        super();
+        super( new ContainerConfigBlock(SCHEDULER_IMAGE, "latest"));
 
         this.mesosIp = mesosIp;
         containerCount++;
@@ -32,11 +33,6 @@ public class SchedulerContainer extends AbstractContainer {
     @Override
     public String getRole() {
         return "helloworld-scheduler";
-    }
-
-    @Override
-    protected void pullImage() {
-        DockerClientFactory.getDockerClient().pullImageCmd(SCHEDULER_IMAGE);
     }
 
     @Override

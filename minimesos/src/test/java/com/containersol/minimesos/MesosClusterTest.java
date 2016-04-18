@@ -1,17 +1,12 @@
 package com.containersol.minimesos;
 
-import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosMaster;
-import com.containersol.minimesos.config.ConsulConfig;
-import com.containersol.minimesos.config.RegistratorConfig;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.junit.MesosClusterTestRule;
-import com.containersol.minimesos.main.factory.MesosClusterContainersFactory;
-import com.containersol.minimesos.marathon.MarathonContainer;
-import com.containersol.minimesos.mesos.*;
+import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 import com.containersol.minimesos.util.ResourceUtil;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -23,7 +18,6 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.json.JSONObject;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -37,38 +31,15 @@ import static org.junit.Assert.*;
 
 public class MesosClusterTest {
 
-    protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder()
-            .withZooKeeper()
-            .withMaster()
-            .withAgent(MesosAgentContainer::new)
-            .withAgent(MesosAgentContainer::new)
-            .withAgent(MesosAgentContainer::new)
-            .withMarathon(MarathonContainer::new)
-            .withConsul(new ConsulContainer(new ConsulConfig()))
-            .withRegistrator(consul -> new RegistratorContainer(consul, new RegistratorConfig()))
-            .build();
-
     @ClassRule
-    public static final MesosClusterTestRule CLUSTER = new MesosClusterTestRule(CONFIG);
+    public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromFile("src/test/resources/configFiles/minimesosFile-mesosClusterTest");
+
+    public static final MesosCluster CLUSTER = RULE.getMesosCluster();
 
     @After
     public void after() {
         DockerContainersUtil util = new DockerContainersUtil();
         util.getContainers(false).filterByName(HelloWorldContainer.CONTAINER_NAME_PATTERN).kill().remove();
-    }
-
-    @Test
-    public void testLoadCluster() {
-        String clusterId = CLUSTER.getClusterId();
-
-        MesosCluster cluster = MesosCluster.loadCluster(clusterId, new MesosClusterContainersFactory());
-
-        assertArrayEquals(CLUSTER.getMemberProcesses().toArray(), cluster.getMemberProcesses().toArray());
-
-        assertEquals(CLUSTER.getZooKeeper().getIpAddress(), cluster.getZooKeeper().getIpAddress());
-        assertEquals(CLUSTER.getMaster().getStateUrl(), cluster.getMaster().getStateUrl());
-
-        assertFalse("Deserialize cluster is expected to remember exposed ports setting", cluster.isExposedHostPorts());
     }
 
     @Test(expected = MinimesosException.class)

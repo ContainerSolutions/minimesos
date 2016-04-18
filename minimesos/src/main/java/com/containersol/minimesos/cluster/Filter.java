@@ -3,6 +3,10 @@ package com.containersol.minimesos.cluster;
 import java.util.function.Predicate;
 
 public class Filter {
+
+    private Filter() {
+    }
+
     public static Predicate<ClusterProcess> zooKeeper() {
         return process -> process instanceof ZooKeeper;
     }

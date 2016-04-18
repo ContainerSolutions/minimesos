@@ -1,6 +1,5 @@
 package com.containersol.minimesos.mesos;
 
-import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.ZooKeeper;
@@ -11,8 +10,6 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Link;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,11 +21,9 @@ import java.util.TreeMap;
  */
 public class MesosAgentContainer extends MesosContainerImpl implements MesosAgent {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MesosAgentContainer.class);
-
     private final MesosAgentConfig config;
 
-    private final String MESOS_AGENT_SANDBOX_DIR = "/tmp/mesos";
+    private final static String MESOS_AGENT_SANDBOX_DIR = "/tmp/mesos";
 
     public MesosAgentContainer(ZooKeeper zooKeeperContainer) {
         this(zooKeeperContainer, new MesosAgentConfig());
@@ -71,11 +66,11 @@ public class MesosAgentContainer extends MesosContainerImpl implements MesosAgen
         if (getCluster().getMapAgentSandboxVolume()) {
             binds.add(Bind.parse(String.format("%s:%s:rw", hostDir + "/.minimesos/sandbox-" + getClusterId() + "/agent-" + getUuid(), MESOS_AGENT_SANDBOX_DIR)));
         }
-        return DockerClientFactory.getDockerClient().createContainerCmd(getMesosImageName() + ":" + getMesosImageTag())
+        return DockerClientFactory.getDockerClient().createContainerCmd(getImageName() + ":" + getImageTag())
                 .withName(getName())
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
-                .withPid("host")
+                .withPidMode("host")
                 .withLinks(new Link(getZooKeeper().getContainerId(), "minimesos-zookeeper"))
                 .withBinds(binds.stream().toArray(Bind[]::new));
     }
@@ -89,13 +84,10 @@ public class MesosAgentContainer extends MesosContainerImpl implements MesosAgen
     protected CreateContainerCmd dockerCommand() {
         ArrayList<ExposedPort> exposedPorts = new ArrayList<>();
         exposedPorts.add(new ExposedPort(getPortNumber()));
-        try {
-            ArrayList<Integer> resourcePorts = ResourceUtil.parsePorts(getResources());
-            for (Integer port : resourcePorts) {
-                exposedPorts.add(new ExposedPort(port));
-            }
-        } catch (MinimesosException e) {
-            LOGGER.error("Port binding is incorrect: " + e.getMessage());
+
+        ArrayList<Integer> resourcePorts = ResourceUtil.parsePorts(getResources());
+        for (Integer port : resourcePorts) {
+            exposedPorts.add(new ExposedPort(port));
         }
 
         return getBaseCommand()
