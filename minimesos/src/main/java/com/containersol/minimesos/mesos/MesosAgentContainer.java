@@ -76,7 +76,7 @@ public class MesosAgentContainer extends MesosContainerImpl implements MesosAgen
                 .withName(getName())
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
-                .withPid("host")
+                .withPidMode("host")
                 .withNetworkMode(getCluster().getClusterConfig().getNetworkMode())
                 .withBinds(binds.stream().toArray(Bind[]::new));
     }
