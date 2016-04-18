@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import java.io.File;
+import java.util.Map;
 import java.util.Properties;
 
 import static com.github.dockerjava.core.DockerClientConfig.*;
@@ -21,6 +22,7 @@ public class DockerClientFactory {
     private static String dockerUri;
     private static String dockerCertPath;
     private static Properties properties = System.getProperties();
+    private static Map<String,String> environment = System.getenv();
 
     public static DockerClient build() {
         DockerClientConfig config = populateConfigBuilder(configBuilder).build();
@@ -33,12 +35,17 @@ public class DockerClientFactory {
         return build();
     }
 
+    public static DockerClient build(Map<String,String> env) {
+        environment = env;
+        return build();
+    }
+
     public static DockerClientConfigBuilder populateConfigBuilder(DockerClientConfigBuilder builder) {
         builder.withVersion("");
         builder.withDockerCertPath("");
 
-        dockerHostEnv = System.getenv("DOCKER_HOST");
-        dockerCertPathEnv = System.getenv("DOCKER_CERT_PATH");
+        dockerHostEnv = environment.get("DOCKER_HOST");
+        dockerCertPathEnv = environment.get("DOCKER_CERT_PATH");
         dockerHostPrp = properties.getProperty("docker.io.url");
         dockerCertPathPrp = properties.getProperty("docker.io.dockerCertPath");
         dockerUri = "unix:///var/run/docker.sock";
