@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import java.io.File;
+import java.util.Properties;
 
 import static com.github.dockerjava.core.DockerClientConfig.*;
 
@@ -17,13 +18,19 @@ public class DockerClientFactory {
     private static String dockerCertPathEnv;
     private static String dockerHostPrp;
     private static String dockerCertPathPrp;
-    private static String dockerUri = "unix:///var/run/docker.sock";
+    private static String dockerUri;
     private static String dockerCertPath;
+    private static Properties properties = System.getProperties();
 
     public static DockerClient build() {
         DockerClientConfig config = populateConfigBuilder(configBuilder).build();
         dockerClient = DockerClientBuilder.getInstance(config).build();
         return dockerClient;
+    }
+
+    public static DockerClient build(Properties argProperties) {
+        properties = argProperties;
+        return build();
     }
 
     public static DockerClientConfigBuilder populateConfigBuilder(DockerClientConfigBuilder builder) {
@@ -32,14 +39,15 @@ public class DockerClientFactory {
 
         dockerHostEnv = System.getenv("DOCKER_HOST");
         dockerCertPathEnv = System.getenv("DOCKER_CERT_PATH");
-        dockerHostPrp = System.getProperty("docker.io.url");
-        dockerCertPathPrp = System.getProperty("docker.io.dockerCertPath");
-
+        dockerHostPrp = properties.getProperty("docker.io.url");
+        dockerCertPathPrp = properties.getProperty("docker.io.dockerCertPath");
+        dockerUri = "unix:///var/run/docker.sock";
+        
         if (dockerHostEnv != null) {
             dockerUri = dockerHostEnv;
         } else if (dockerHostPrp != null) {
             dockerUri = dockerHostPrp;
-            builder.withProperties(System.getProperties());
+            builder.withProperties(properties);
         }
         if (dockerCertPathPrp != null && new File(dockerCertPathPrp).exists()) {
             dockerCertPath = dockerCertPathPrp;
