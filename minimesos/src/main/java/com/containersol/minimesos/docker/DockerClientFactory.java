@@ -12,6 +12,8 @@ public class DockerClientFactory {
 
     private static DockerClient dockerClient;
 
+    private final static String bad_example = "bad example";
+
     public static DockerClient build() {
         if (dockerClient == null) {
             DockerClientConfig.DockerClientConfigBuilder builder = DockerClientConfig.createDefaultConfigBuilder();
