@@ -141,12 +141,12 @@ test {
 docker {
     url = "unix:///var/run/docker.sock"
     certPath = null
-    if (!System.properties.getProperty("docker.host", "").isEmpty()) {
-        url = System.properties.getProperty("docker.host")
+    if (!System.properties.getProperty("docker.io.url", "").isEmpty()) {
+        url = System.properties.getProperty("docker.io.url")
     }
 
-    if (!System.properties.getProperty("docker.cert.path", "").isEmpty()) {
-        certPath = new File(System.properties.getProperty("docker.cert.path"))
+    if (!System.properties.getProperty("docker.io.dockerCertPath", "").isEmpty()) {
+        certPath = new File(System.properties.getProperty("docker.io.dockerCertPath"))
     }
 
     if (System.getenv("DOCKER_HOST") != null) {

@@ -125,7 +125,7 @@ public class MesosClusterTest {
 
         for (MesosAgent container : containers) {
             ArrayList<Integer> ports = ResourceUtil.parsePorts(container.getResources());
-            InspectContainerResponse response = DockerClientFactory.build().inspectContainerCmd(container.getContainerId()).exec();
+            InspectContainerResponse response = DockerClientFactory.getDockerClient().inspectContainerCmd(container.getContainerId()).exec();
             Map bindings = response.getNetworkSettings().getPorts().getBindings();
             for (Integer port : ports) {
                 assertTrue(bindings.containsKey(new ExposedPort(port)));
@@ -146,7 +146,7 @@ public class MesosClusterTest {
     public void testMasterLinkedToAgents() throws UnirestException {
         List<MesosAgent> containers = CLUSTER.getAgents();
         for (MesosAgent container : containers) {
-            InspectContainerResponse exec = DockerClientFactory.build().inspectContainerCmd(container.getContainerId()).exec();
+            InspectContainerResponse exec = DockerClientFactory.getDockerClient().inspectContainerCmd(container.getContainerId()).exec();
 
             List<Link> links = Arrays.asList(exec.getHostConfig().getLinks());
 

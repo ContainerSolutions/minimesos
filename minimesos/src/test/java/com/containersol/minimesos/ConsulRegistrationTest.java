@@ -27,7 +27,7 @@ import static org.junit.Assert.assertFalse;
 
 public class ConsulRegistrationTest {
 
-    protected static final DockerClient dockerClient = DockerClientFactory.build();
+    protected static final DockerClient dockerClient = DockerClientFactory.getDockerClient();
 
     // using Marathon slows down destruction of the cluster
     protected static final ClusterArchitecture CONFIG = new ClusterArchitecture.Builder()

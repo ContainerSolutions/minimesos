@@ -78,12 +78,12 @@ public abstract class AbstractContainer implements ClusterProcess {
         LOGGER.debug("Creating container [" + createCommand.getName() + "]");
         containerId = createCommand.exec().getId();
 
-        DockerClientFactory.build().startContainerCmd(containerId).exec();
+        DockerClientFactory.getDockerClient().startContainerCmd(containerId).exec();
 
         try {
 
             await().atMost(timeout, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(() -> {
-                List<Container> containers = DockerClientFactory.build().listContainersCmd().withShowAll(true).exec();
+                List<Container> containers = DockerClientFactory.getDockerClient().listContainersCmd().withShowAll(true).exec();
                 for (Container container : containers) {
                     if (container.getId().equals(containerId)) {
                         return true;
@@ -114,7 +114,7 @@ public abstract class AbstractContainer implements ClusterProcess {
     public String getHostname() {
         String res = "";
         if (!getContainerId().isEmpty()) {
-            res = DockerClientFactory.build().inspectContainerCmd(containerId).exec().getConfig().getHostName();
+            res = DockerClientFactory.getDockerClient().inspectContainerCmd(containerId).exec().getConfig().getHostName();
         }
         return res;
     }
@@ -163,7 +163,7 @@ public abstract class AbstractContainer implements ClusterProcess {
     public void remove() {
         try {
             if (DockerContainersUtil.getContainer(containerId) != null) {
-                DockerClientFactory.build().removeContainerCmd(containerId).withForce().withRemoveVolumes(true).exec();
+                DockerClientFactory.getDockerClient().removeContainerCmd(containerId).withForce().withRemoveVolumes(true).exec();
             }
             this.removed = true;
         } catch (Exception e) {
@@ -192,7 +192,7 @@ public abstract class AbstractContainer implements ClusterProcess {
         LOGGER.debug("Image [" + imageName + ":" + registryTag + "] not found. Pulling...");
 
         final CompletableFuture<Void> result = new CompletableFuture<>();
-        DockerClientFactory.build().pullImageCmd(imageName).withTag(registryTag).exec(new PullImageResultCallback() {
+        DockerClientFactory.getDockerClient().pullImageCmd(imageName).withTag(registryTag).exec(new PullImageResultCallback() {
 
             @Override
             public void onNext(PullResponseItem item) {

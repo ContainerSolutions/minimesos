@@ -59,7 +59,7 @@ public class RunTaskTest {
 
             @Override
             protected CreateContainerCmd dockerCommand() {
-                return DockerClientFactory.build().createContainerCmd("containersol/mesos-agent:0.25.0-0.2.70.ubuntu1404")
+                return DockerClientFactory.getDockerClient().createContainerCmd("containersol/mesos-agent:0.25.0-0.2.70.ubuntu1404")
                         .withName( getName() )
                         .withEntrypoint(
                                 "mesos-execute",
@@ -73,12 +73,12 @@ public class RunTaskTest {
 
         cluster.addAndStartProcess(mesosAgent);
         LogContainerTestCallback cb = new LogContainerTestCallback();
-        DockerClientFactory.build().logContainerCmd(mesosAgent.getContainerId()).withStdOut().exec(cb);
+        DockerClientFactory.getDockerClient().logContainerCmd(mesosAgent.getContainerId()).withStdOut().exec(cb);
         cb.awaitCompletion();
 
         Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
             LogContainerTestCallback cb1 = new LogContainerTestCallback();
-            DockerClientFactory.build().logContainerCmd(mesosAgent.getContainerId()).withStdOut().exec(cb1);
+            DockerClientFactory.getDockerClient().logContainerCmd(mesosAgent.getContainerId()).withStdOut().exec(cb1);
             cb1.awaitCompletion();
             String log = cb1.toString();
             return log.contains("Received status update TASK_FINISHED for task test-cmd");

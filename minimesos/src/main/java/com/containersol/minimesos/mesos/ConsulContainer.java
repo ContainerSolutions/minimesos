@@ -58,7 +58,7 @@ public class ConsulContainer extends AbstractContainer implements Consul {
 
         envVars.put("SERVICE_IGNORE", "1");
 
-        return DockerClientFactory.build().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
+        return DockerClientFactory.getDockerClient().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withName(getName())
                 .withPortBindings(portBindings)
                 .withEnv(createEnvironment())

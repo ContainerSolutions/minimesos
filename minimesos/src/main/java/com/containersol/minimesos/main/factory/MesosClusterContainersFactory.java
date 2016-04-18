@@ -47,7 +47,7 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
         String clusterId = cluster.getClusterId();
         List<ClusterProcess> containers = cluster.getMemberProcesses();
 
-        List<Container> dockerContainers = DockerClientFactory.build().listContainersCmd().exec();
+        List<Container> dockerContainers = DockerClientFactory.getDockerClient().listContainersCmd().exec();
         Collections.sort(dockerContainers, (c1, c2) -> Long.compare(c1.getCreated(), c2.getCreated()));
 
         for (Container container : dockerContainers) {
