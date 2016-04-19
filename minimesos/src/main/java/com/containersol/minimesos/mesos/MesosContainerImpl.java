@@ -39,8 +39,6 @@ public abstract class MesosContainerImpl extends AbstractContainer implements Me
 
     public abstract int getPortNumber();
 
-    protected abstract Map<String, String> getDefaultEnvVars();
-
     @Override
     public String getImageTag() {
         String imageTag = config.getImageTag();
@@ -51,13 +49,7 @@ public abstract class MesosContainerImpl extends AbstractContainer implements Me
         return imageTag;
     }
 
-    protected String[] createMesosLocalEnvironment() {
-        envVars.putAll(getDefaultEnvVars());
-        envVars.putAll(getSharedEnvVars());
-        return createEnvironment();
-    }
-
-    protected Map<String, String> getSharedEnvVars() {
+    protected final Map<String, String> getSharedEnvVars() {
         Map<String, String> envs = new TreeMap<>();
         envs.put("GLOG_v", "1");
         envs.put("MESOS_EXECUTOR_REGISTRATION_TIMEOUT", "5mins");
