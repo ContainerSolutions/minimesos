@@ -21,6 +21,6 @@ public class ExposedPortsTest {
         MesosCluster cluster = MesosCluster.loadCluster(clusterId, new MesosClusterContainersFactory());
 
         assertTrue("Deserialize cluster is expected to remember exposed ports setting", cluster.isExposedHostPorts());
-   }
+    }
 
 }

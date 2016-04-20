@@ -27,6 +27,7 @@ public class ZooKeeperContainer extends AbstractContainer implements ZooKeeper {
     public ZooKeeperContainer(MesosCluster cluster, String uuid, String containerId) {
         this(cluster, uuid, containerId, new ZooKeeperConfig());
     }
+
     public ZooKeeperContainer(MesosCluster cluster, String uuid, String containerId, ZooKeeperConfig config) {
         super(cluster, uuid, containerId, config);
         this.config = config;

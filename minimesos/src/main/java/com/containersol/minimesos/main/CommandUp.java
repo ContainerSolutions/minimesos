@@ -3,13 +3,18 @@ package com.containersol.minimesos.main;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MinimesosException;
-import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.config.*;
+import com.containersol.minimesos.config.ClusterConfig;
+import com.containersol.minimesos.config.ConfigParser;
+import com.containersol.minimesos.config.ConsulConfig;
+import com.containersol.minimesos.config.MarathonConfig;
+import com.containersol.minimesos.config.MesosAgentConfig;
+import com.containersol.minimesos.config.MesosMasterConfig;
+import com.containersol.minimesos.config.RegistratorConfig;
+import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
@@ -140,9 +145,8 @@ public class CommandUp implements Command {
     /**
      * Reads ClusterConfig from minimesosFile.
      *
-     * @throws MinimesosException if minimesosFile is not found or malformed
-     *
      * @return configuration of the cluster from the minimesosFile
+     * @throws MinimesosException if minimesosFile is not found or malformed
      */
     public ClusterConfig readClusterConfigFromMinimesosFile() {
         InputStream clusterConfigFile = MesosCluster.getInputStream(getClusterConfigPath());

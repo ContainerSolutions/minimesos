@@ -1,5 +1,5 @@
-import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
 import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
 
 ext {
@@ -71,11 +71,11 @@ jar {
     baseName = "minimesos"
     manifest {
         attributes(
-                'Main-Class'                : mainClassName,
-                'Implementation-Version'    : project.version
+                'Main-Class': mainClassName,
+                'Implementation-Version': project.version
         )
     }
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
 }
 
 jacocoTestReport {
@@ -92,16 +92,16 @@ task executableJar(type: Jar) {
     with jar
     manifest {
         attributes(
-                'Main-Class'                : mainClassName,
-                'Implementation-Version'    : project.version
+                'Main-Class': mainClassName,
+                'Implementation-Version': project.version
         )
     }
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
 }
 
 task installMinimesosScript(type: Copy) {
-    from        "$rootDir/bin/minimesos"
-    into        "/usr/local/bin"
+    from "$rootDir/bin/minimesos"
+    into "/usr/local/bin"
 }
 
 task copyExecutableJar(type: Copy) {
@@ -109,23 +109,23 @@ task copyExecutableJar(type: Copy) {
     rename { String fileName ->
         fileName.replace("-${project.version}-all", "")
     }
-    from        "build/libs/minimesos-${project.version}-all.jar"
-    into        'build/libs'
+    from "build/libs/minimesos-${project.version}-all.jar"
+    into 'build/libs'
 }
 
 task copyFilesForDocker(type: Copy) {
-    dependsOn   'copyExecutableJar'
-    from        "build/libs/minimesos.jar"
-    into        'build/docker'
+    dependsOn 'copyExecutableJar'
+    from "build/libs/minimesos.jar"
+    into 'build/docker'
     rename { String fileName ->
         fileName.replace("-${project.version}", "")
     }
 }
 
 task copyDockerfile(type: Copy) {
-    dependsOn   'copyFilesForDocker'
-    from        "Dockerfile"
-    into        'build/docker'
+    dependsOn 'copyFilesForDocker'
+    from "Dockerfile"
+    into 'build/docker'
 }
 
 artifacts {
@@ -145,35 +145,35 @@ afterEvaluate { project ->
                     + ' contains Dockerfile, but it does not define project.ext.imageName value')
         }
         docker.url = 'unix:///var/run/docker.sock'
-        if(!System.properties['os.name'].equals('Mac OS X')) {
+        if (!System.properties['os.name'].equals('Mac OS X')) {
             docker.certPath = null
         }
         if (System.env.DOCKER_HOST) {
-            docker.url = "$System.env.DOCKER_HOST".replace("tcp","https")
+            docker.url = "$System.env.DOCKER_HOST".replace("tcp", "https")
             if (System.env.DOCKER_CERT_PATH) {
                 docker.certPath = new File(System.env.DOCKER_CERT_PATH)
             }
         }
         task buildDockerImage(type: DockerBuildImage, dependsOn: [copyDockerfile], description: 'build Docker image') {
-            inputDir = new File( "${buildDir}/docker")
+            inputDir = new File("${buildDir}/docker")
             tag = project.imageName
         }
         project.build.dependsOn buildDockerImage
-        [ 'snapshot', 'version' ].each { aTag ->
+        ['snapshot', 'version'].each { aTag ->
             String uppercasedName = aTag.capitalize()
             task "tagDockerImageWith$uppercasedName"(type: DockerTagImage, description: 'tag Docker image') {
                 imageId = project.imageName
-                tag = ( 'version'.equals(aTag) ) ? project.version : aTag
+                tag = ('version'.equals(aTag)) ? project.version : aTag
                 repository = project.imageName
                 force = true
             }
             task "publishDockerImageWith$uppercasedName"(type: DockerPushImage, dependsOn: ["tagDockerImageWith$uppercasedName"],
                     description: 'publish Docker image') {
                 imageName = project.imageName
-                tag = ( 'version'.equals(aTag) ) ? project.version : aTag
+                tag = ('version'.equals(aTag)) ? project.version : aTag
                 doFirst {
                     ['dockerHubUsername', 'dockerHubPassword', 'dockerHubEmail'].each {
-                        assert project.hasProperty(it) : 'Undefined "' + it + '" property'
+                        assert project.hasProperty(it): 'Undefined "' + it + '" property'
                     }
                     docker {
                         registryCredentials {

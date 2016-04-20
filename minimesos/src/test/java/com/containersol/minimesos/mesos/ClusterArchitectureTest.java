@@ -1,6 +1,10 @@
 package com.containersol.minimesos.mesos;
 
-import com.containersol.minimesos.cluster.*;
+import com.containersol.minimesos.cluster.ClusterProcess;
+import com.containersol.minimesos.cluster.Filter;
+import com.containersol.minimesos.cluster.MesosAgent;
+import com.containersol.minimesos.cluster.MesosMaster;
+import com.containersol.minimesos.cluster.ZooKeeper;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -21,12 +25,12 @@ public class ClusterArchitectureTest {
         assertTrue(clusterArchitecture.getClusterContainers().getContainers().stream().filter(Filter.mesosAgent()).findFirst().isPresent());
     }
 
-    @Test( expected = ClusterArchitecture.MesosArchitectureException.class)
+    @Test(expected = ClusterArchitecture.MesosArchitectureException.class)
     public void shouldErrorIfNoZooKeeperIsPresentAndMasterAdded() {
         new ClusterArchitecture.Builder().withMaster();
     }
 
-    @Test( expected = ClusterArchitecture.MesosArchitectureException.class)
+    @Test(expected = ClusterArchitecture.MesosArchitectureException.class)
     public void shouldErrorIfNoZooKeeperIsPresentAndAgentAdded() {
         new ClusterArchitecture.Builder().withAgent();
     }

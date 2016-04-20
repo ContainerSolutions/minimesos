@@ -4,7 +4,6 @@ import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ClusterConfig;
 import org.apache.commons.io.FileUtils;
-
 import org.junit.Before;
 import org.junit.Test;
 

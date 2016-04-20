@@ -1,6 +1,6 @@
 package com.containersol.minimesos.mesos;
 
-import com.containersol.minimesos.cluster.*;
+import com.containersol.minimesos.cluster.ClusterProcess;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +23,7 @@ public class ClusterContainers {
 
     /**
      * Create a container List from another List
+     *
      * @param containers another List of {@link ClusterProcess}
      */
     public ClusterContainers(List<ClusterProcess> containers) {
@@ -31,6 +32,7 @@ public class ClusterContainers {
 
     /**
      * Add a container to the list of containers.
+     *
      * @param container of type {@link ClusterProcess}
      * @return this, for fluent adding.
      */
@@ -48,7 +50,7 @@ public class ClusterContainers {
      * If it doesn't find that type, the optional is empty so the cast doesn't need to be performed.
      *
      * @param filter A predicate that is true when an {@link ClusterProcess} in the list is of type T
-     * @param <T> A container of type T that extends {@link ClusterProcess}
+     * @param <T>    A container of type T that extends {@link ClusterProcess}
      * @return the first container it comes across.
      */
     @SuppressWarnings("unchecked")
@@ -58,6 +60,7 @@ public class ClusterContainers {
 
     /**
      * Checks to see whether a container exists
+     *
      * @param filter A predicate that is true when an {@link ClusterProcess} in the list is of type T
      * @return true if it exists
      */
