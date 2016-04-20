@@ -53,6 +53,16 @@ public abstract class AbstractContainer implements ClusterProcess {
     }
 
     /**
+     * Returns lenght of the give statement
+     *
+     * @param claim string to check the length
+     * @return
+     */
+    private int getLengthOrNpe(String statement) {
+        return statement.length();
+    }
+
+    /**
      * Implement this method to pull your image. This will be called before the container is run.
      */
     public void pullImage() {
