@@ -52,14 +52,8 @@ public abstract class AbstractContainer implements ClusterProcess {
         this.config = config;
     }
 
-    /**
-     * Returns lenght of the give statement
-     *
-     * @param claim string to check the length
-     * @return
-     */
-    private int getLengthOrNpe(String statement) {
-        return statement.length();
+    private int getSystemPropertyLength(String property) {
+        return System.getProperty(property).length();
     }
 
     /**
