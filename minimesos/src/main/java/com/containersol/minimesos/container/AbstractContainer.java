@@ -53,7 +53,11 @@ public abstract class AbstractContainer implements ClusterProcess {
     }
 
     private int getSystemPropertyLength(String property) {
-        return System.getProperty(property).length();
+        String value = System.getProperty(property);
+        if (value == null) {
+            throw new NullPointerException();
+        }
+        return value.length();
     }
 
     /**
