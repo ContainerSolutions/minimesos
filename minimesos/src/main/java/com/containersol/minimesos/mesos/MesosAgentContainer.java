@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static com.containersol.minimesos.util.EnvironmentBuilder.newEnvironment;
+
 /**
  * Mesos Master adds the "agent" component for Apache Mesos
  */
@@ -69,7 +71,10 @@ public class MesosAgentContainer extends MesosContainerImpl implements MesosAgen
         return DockerClientFactory.build().createContainerCmd(getImageName() + ":" + getImageTag())
                 .withName(getName())
                 .withPrivileged(true)
-                .withEnv(createMesosLocalEnvironment())
+                .withEnv(newEnvironment()
+                        .withValues(getMesosAgentEnvVars())
+                        .withValues(getSharedEnvVars())
+                        .createEnvironment())
                 .withPidMode("host")
                 .withLinks(new Link(getZooKeeper().getContainerId(), "minimesos-zookeeper"))
                 .withBinds(binds.stream().toArray(Bind[]::new));
@@ -95,8 +100,7 @@ public class MesosAgentContainer extends MesosContainerImpl implements MesosAgen
 
     }
 
-    @Override
-    public Map<String, String> getDefaultEnvVars() {
+    private Map<String, String> getMesosAgentEnvVars() {
         Map<String, String> envs = new TreeMap<>();
         envs.put("MESOS_RESOURCES", getResources());
         envs.put("MESOS_PORT", String.valueOf(getPortNumber()));

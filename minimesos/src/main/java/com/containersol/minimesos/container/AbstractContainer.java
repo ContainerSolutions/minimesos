@@ -16,8 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import java.security.SecureRandom;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.await;
@@ -37,8 +35,6 @@ public abstract class AbstractContainer implements ClusterProcess {
     private String containerId;
     private String ipAddress = null;
     private boolean removed;
-
-    protected Map<String, String> envVars = new TreeMap<>();
 
     protected AbstractContainer(ContainerConfig config) {
         this.config = config;
@@ -217,11 +213,6 @@ public abstract class AbstractContainer implements ClusterProcess {
     public String getClusterId() {
         return (cluster != null) ? cluster.getClusterId() : null;
     }
-
-    protected String[] createEnvironment() {
-        return envVars.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).toArray(String[]::new);
-    }
-
 
     @Override
     public String toString() {

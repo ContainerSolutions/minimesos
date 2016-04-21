@@ -19,6 +19,7 @@ import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import static com.containersol.minimesos.util.EnvironmentBuilder.newEnvironment;
 import static com.jayway.awaitility.Awaitility.await;
 
 /**
@@ -47,8 +48,7 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
         return MesosMasterConfig.MESOS_MASTER_PORT;
     }
 
-    @Override
-    public Map<String, String> getDefaultEnvVars() {
+    protected Map<String, String> getMesosMasterEnvVars() {
         Map<String, String> envs = new TreeMap<>();
         envs.put("MESOS_QUORUM", "1");
         if (((MesosMasterConfig) config).getAuthenticate() && ((MesosMasterConfig) config).getAclJson() != null) {
@@ -81,7 +81,10 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
         return DockerClientFactory.build().createContainerCmd(getImageName() + ":" + getImageTag())
                 .withName(getName())
                 .withExposedPorts(new ExposedPort(getPortNumber()))
-                .withEnv(createMesosLocalEnvironment())
+                .withEnv(newEnvironment()
+                        .withValues(getMesosMasterEnvVars())
+                        .withValues(getSharedEnvVars())
+                        .createEnvironment())
                 .withPortBindings(portBindings);
     }
 
