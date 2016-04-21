@@ -3,7 +3,7 @@ package com.containersol.minimesos.mesos;
 import com.containersol.minimesos.cluster.MesosAgent;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
 /**

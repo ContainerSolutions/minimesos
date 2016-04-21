@@ -33,7 +33,7 @@ public class JDependCyclesTest {
     public void testAllPackages() {
 
         jdepend.analyze();
-        assertTrue("Something is wrong with JDepend setup", jdepend.getPackages().size() > 0 );
+        assertTrue("Something is wrong with JDepend setup", jdepend.getPackages().size() > 0);
         assertNotNull("Package " + EXPECTED_PACKAGE + " is not found. Please, check", jdepend.getPackage(EXPECTED_PACKAGE));
         assertEquals("Dependency Cycles are introduced", false, jdepend.containsCycles());
 

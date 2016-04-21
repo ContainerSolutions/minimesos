@@ -1,7 +1,15 @@
 package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.MinimesosException;
-import com.containersol.minimesos.cluster.*;
+import com.containersol.minimesos.cluster.ClusterProcess;
+import com.containersol.minimesos.cluster.Consul;
+import com.containersol.minimesos.cluster.Marathon;
+import com.containersol.minimesos.cluster.MesosAgent;
+import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.cluster.MesosClusterFactory;
+import com.containersol.minimesos.cluster.MesosMaster;
+import com.containersol.minimesos.cluster.Registrator;
+import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ConfigParser;
 import com.containersol.minimesos.config.MesosMasterConfig;

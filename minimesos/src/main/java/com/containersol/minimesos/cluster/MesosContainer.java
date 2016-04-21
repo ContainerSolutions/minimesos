@@ -9,6 +9,7 @@ import org.json.JSONObject;
 public interface MesosContainer extends ClusterProcess {
 
     void setZooKeeper(ZooKeeper zookeeper);
+
     JSONObject getStateInfoJSON() throws UnirestException;
 
 }

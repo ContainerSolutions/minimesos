@@ -20,10 +20,10 @@ class ConfigParser {
 
     private final Map<String, String> propsDictionary = [
             "agents": "agent",
-            "cpus": "cpu",
-            "mems": "mem",
-            "disks": "disk",
-            "apps": "app"
+            "cpus"  : "cpu",
+            "mems"  : "mem",
+            "disks" : "disk",
+            "apps"  : "app"
     ]
     private final List<String> ignoredProperties = ["class", "format"]
 

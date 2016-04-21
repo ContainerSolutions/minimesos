@@ -6,8 +6,8 @@ public class RegistratorConfig extends ContainerConfigBlock implements Container
     public static final String REGISTRATOR_TAG_NAME = "v6"
 
     public RegistratorConfig() {
-        imageName     = REGISTRATOR_IMAGE_NAME
-        imageTag      = REGISTRATOR_TAG_NAME
+        imageName = REGISTRATOR_IMAGE_NAME
+        imageTag = REGISTRATOR_TAG_NAME
     }
 
 }
