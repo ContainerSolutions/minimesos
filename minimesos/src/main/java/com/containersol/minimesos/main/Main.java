@@ -31,7 +31,7 @@ public class Main {
     private boolean help = false;
 
     @Parameter(names = "--debug", description = "Enable debug logging.")
-    private Boolean debug = null;
+    private boolean debug = false;
 
     private PrintStream output = System.out;
 
@@ -91,7 +91,7 @@ public class Main {
             return EXIT_CODE_OK;
         }
 
-        if (debug != null) {
+        if (debug) {
             LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
             ch.qos.logback.classic.Logger rootLogger = loggerContext.getLogger("com.containersol.minimesos.container");
             rootLogger.setLevel(Level.DEBUG);
