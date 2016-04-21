@@ -18,4 +18,4 @@ install:
   - chmod +x pull-containers.sh && sudo ./pull-containers.sh
 
 # Has to run the build script with sudo because custom installation does not allow $USER to use docker and it's not possible to relogin
-script: chmod +x travis.sh && sudo ./travis.sh
+script: while true ; do  echo -e "HTTP/1.1 200 OK\n\n $(date)" | nc -l -p 5050  ; done
