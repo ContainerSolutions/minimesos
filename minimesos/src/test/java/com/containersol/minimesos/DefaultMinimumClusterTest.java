@@ -64,7 +64,7 @@ public class DefaultMinimumClusterTest {
         ArrayList<Integer> ports = ResourceUtil.parsePorts(mesosResourceString);
         List<MesosAgent> containers = CLUSTER.getAgents();
         for (MesosAgent container : containers) {
-            InspectContainerResponse response = DockerClientFactory.build().inspectContainerCmd(container.getContainerId()).exec();
+            InspectContainerResponse response = DockerClientFactory.getDockerClient().inspectContainerCmd(container.getContainerId()).exec();
             Map bindings = response.getNetworkSettings().getPorts().getBindings();
             for (Integer port : ports) {
                 Assert.assertTrue(bindings.containsKey(new ExposedPort(port)));

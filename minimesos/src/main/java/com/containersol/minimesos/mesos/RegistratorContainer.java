@@ -40,7 +40,7 @@ public class RegistratorContainer extends AbstractContainer implements Registrat
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        return DockerClientFactory.build().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
+        return DockerClientFactory.getDockerClient().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withNetworkMode("host")
                 .withBinds(Bind.parse("/var/run/docker.sock:/tmp/docker.sock"))
                 .withCmd("-internal", String.format("consul://%s:%d", consulContainer.getIpAddress(), ConsulConfig.CONSUL_HTTP_PORT))

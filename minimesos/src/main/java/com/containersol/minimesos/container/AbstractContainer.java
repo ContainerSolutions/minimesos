@@ -93,12 +93,12 @@ public abstract class AbstractContainer implements ClusterProcess {
         LOGGER.debug("Creating container [" + createCommand.getName() + "]");
         containerId = createCommand.exec().getId();
 
-        DockerClientFactory.build().startContainerCmd(containerId).exec();
+        DockerClientFactory.getDockerClient().startContainerCmd(containerId).exec();
 
         try {
 
             await().atMost(timeout, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(() -> {
-                List<Container> containers = DockerClientFactory.build().listContainersCmd().withShowAll(true).exec();
+                List<Container> containers = DockerClientFactory.getDockerClient().listContainersCmd().withShowAll(true).exec();
                 for (Container container : containers) {
                     if (container.getId().equals(containerId)) {
                         return true;
@@ -167,7 +167,7 @@ public abstract class AbstractContainer implements ClusterProcess {
     public void remove() {
         try {
             if (DockerContainersUtil.getContainer(containerId) != null) {
-                DockerClientFactory.build().removeContainerCmd(containerId).withForce(true).withRemoveVolumes(true).exec();
+                DockerClientFactory.getDockerClient().removeContainerCmd(containerId).withForce().withRemoveVolumes(true).exec();
             }
             this.removed = true;
         } catch (Exception e) {
@@ -176,7 +176,7 @@ public abstract class AbstractContainer implements ClusterProcess {
     }
 
     protected Boolean imageExists(String imageName, String registryTag) {
-        List<Image> images = DockerClientFactory.build().listImagesCmd().exec();
+        List<Image> images = DockerClientFactory.getDockerClient().listImagesCmd().exec();
         for (Image image : images) {
             for (String repoTag : image.getRepoTags()) {
                 if (repoTag.equals(imageName + ":" + registryTag)) {
