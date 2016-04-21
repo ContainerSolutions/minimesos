@@ -8,8 +8,8 @@ public class ZooKeeperConfig extends ContainerConfigBlock implements ContainerCo
     public static final String ZOOKEEPER_IMAGE_TAG = "3.4.6"
 
     public ZooKeeperConfig() {
-        imageName     = MESOS_LOCAL_IMAGE
-        imageTag      = ZOOKEEPER_IMAGE_TAG
+        imageName = MESOS_LOCAL_IMAGE
+        imageTag = ZOOKEEPER_IMAGE_TAG
     }
 
 }

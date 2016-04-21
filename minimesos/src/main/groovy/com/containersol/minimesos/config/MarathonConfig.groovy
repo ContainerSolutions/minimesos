@@ -11,8 +11,8 @@ public class MarathonConfig extends ContainerConfigBlock implements ContainerCon
     List<AppConfig> apps = new ArrayList<>();
 
     public MarathonConfig() {
-        imageName     = MARATHON_IMAGE
-        imageTag      = MARATHON_IMAGE_TAG
+        imageName = MARATHON_IMAGE
+        imageTag = MARATHON_IMAGE_TAG
     }
 
     def app(@DelegatesTo(AppConfig) Closure cl) {

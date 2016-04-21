@@ -1,7 +1,19 @@
 package com.containersol.minimesos.mesos;
 
-import com.containersol.minimesos.cluster.*;
-import com.containersol.minimesos.config.*;
+import com.containersol.minimesos.cluster.ClusterProcess;
+import com.containersol.minimesos.cluster.Consul;
+import com.containersol.minimesos.cluster.Filter;
+import com.containersol.minimesos.cluster.Marathon;
+import com.containersol.minimesos.cluster.MesosAgent;
+import com.containersol.minimesos.cluster.MesosMaster;
+import com.containersol.minimesos.cluster.Registrator;
+import com.containersol.minimesos.cluster.ZooKeeper;
+import com.containersol.minimesos.config.AgentResourcesConfig;
+import com.containersol.minimesos.config.ClusterConfig;
+import com.containersol.minimesos.config.ConsulConfig;
+import com.containersol.minimesos.config.MesosAgentConfig;
+import com.containersol.minimesos.config.RegistratorConfig;
+import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.marathon.MarathonContainer;
 import org.slf4j.Logger;

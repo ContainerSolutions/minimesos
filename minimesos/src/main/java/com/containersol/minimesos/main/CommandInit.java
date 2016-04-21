@@ -3,7 +3,15 @@ package com.containersol.minimesos.main;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.config.*;
+import com.containersol.minimesos.config.AppConfig;
+import com.containersol.minimesos.config.ClusterConfig;
+import com.containersol.minimesos.config.ConfigParser;
+import com.containersol.minimesos.config.ConsulConfig;
+import com.containersol.minimesos.config.MarathonConfig;
+import com.containersol.minimesos.config.MesosAgentConfig;
+import com.containersol.minimesos.config.MesosMasterConfig;
+import com.containersol.minimesos.config.RegistratorConfig;
+import com.containersol.minimesos.config.ZooKeeperConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -9,8 +9,8 @@ public class ConsulConfig extends ContainerConfigBlock implements ContainerConfi
     public static final int CONSUL_DNS_PORT = 8600
 
     public ConsulConfig() {
-        imageName     = CONSUL_IMAGE_NAME
-        imageTag      = CONSUL_TAG_NAME
+        imageName = CONSUL_IMAGE_NAME
+        imageTag = CONSUL_TAG_NAME
     }
 
 }

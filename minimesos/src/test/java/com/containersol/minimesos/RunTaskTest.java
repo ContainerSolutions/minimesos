@@ -6,8 +6,8 @@ import com.containersol.minimesos.config.ContainerConfigBlock;
 import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.config.MesosContainerConfig;
 import com.containersol.minimesos.container.AbstractContainer;
-import com.containersol.minimesos.junit.MesosClusterTestRule;
 import com.containersol.minimesos.docker.DockerClientFactory;
+import com.containersol.minimesos.junit.MesosClusterTestRule;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
@@ -52,7 +52,7 @@ public class RunTaskTest {
             @Override
             protected CreateContainerCmd dockerCommand() {
                 return DockerClientFactory.build().createContainerCmd(String.format("%s:%s", MesosAgentConfig.MESOS_AGENT_IMAGE, MesosContainerConfig.MESOS_IMAGE_TAGS.get("0.25")))
-                        .withName( getName() )
+                        .withName(getName())
                         .withEntrypoint(
                                 "mesos-execute",
                                 "--master=" + CLUSTER.getMaster().getIpAddress() + ":5050",

@@ -4,11 +4,11 @@ minimesos {
     agent {
         resources {
             cpu {
-                role  = "*"
+                role = "*"
                 value = 2
             }
             mem {
-                role  = "*"
+                role = "*"
                 value = 1024
             }
             disk {

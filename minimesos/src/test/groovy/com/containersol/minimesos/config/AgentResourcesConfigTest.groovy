@@ -1,8 +1,8 @@
-package com.containersol.minimesos.config;
+package com.containersol.minimesos.config
 
-import org.junit.Test;
+import org.junit.Test
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class AgentResourcesConfigTest {
 
@@ -61,10 +61,10 @@ public class AgentResourcesConfigTest {
         assertEquals("one role is expected for mem", 1, resourcesConfig.mems.size())
         assertEquals("one role is expected for disk", 1, resourcesConfig.disks.size())
 
-        assertEquals( "[9200-9200,9300-9300]", resourcesConfig.ports["testRole"].value)
-        assertEquals( 0.2, resourcesConfig.cpus["testRole"].value, 0.0001)
-        assertEquals( 256, resourcesConfig.mems["testRole"].value, 0.0001)
-        assertEquals( 200, resourcesConfig.disks["testRole"].value, 0.0001)
+        assertEquals("[9200-9200,9300-9300]", resourcesConfig.ports["testRole"].value)
+        assertEquals(0.2, resourcesConfig.cpus["testRole"].value, 0.0001)
+        assertEquals(256, resourcesConfig.mems["testRole"].value, 0.0001)
+        assertEquals(200, resourcesConfig.disks["testRole"].value, 0.0001)
 
     }
 

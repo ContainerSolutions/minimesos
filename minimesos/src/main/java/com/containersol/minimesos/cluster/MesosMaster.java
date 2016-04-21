@@ -10,6 +10,7 @@ import java.util.Map;
 public interface MesosMaster extends MesosContainer {
 
     String getStateUrl();
+
     void waitFor();
 
     Map<String, String> getFlags() throws UnirestException;

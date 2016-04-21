@@ -220,7 +220,7 @@ public class MesosCluster {
      * Starts a container. This container will be removed when the Mesos cluster is shut down.
      *
      * @param process container to be started
-     * @param timeout   in seconds
+     * @param timeout in seconds
      * @return container ID
      */
     public String addAndStartProcess(ClusterProcess process, int timeout) {
@@ -374,7 +374,6 @@ public class MesosCluster {
      * Taking either URI or path to a file, returns string with its content
      *
      * @param location either absolute URI or path to a file
-     *
      * @return input stream with location content or null
      */
     public static InputStream getInputStream(String location) {

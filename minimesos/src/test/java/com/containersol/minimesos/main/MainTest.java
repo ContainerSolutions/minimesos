@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 public class MainTest {
 
@@ -101,7 +103,7 @@ public class MainTest {
     public void testInstallNoParameters() throws IOException {
         main.run(new String[]{"install"});
         String output = outputStream.toString();
-        assertTrue( output.contains("Usage: install [options]") );
+        assertTrue(output.contains("Usage: install [options]"));
     }
 
     @Test
@@ -112,12 +114,12 @@ public class MainTest {
     }
 
     private static void assertUsageText(String output) {
-        assertTrue( output.contains("Usage: minimesos [options] [command] [command options]") );
-        assertTrue( output.contains("Options:") );
-        assertTrue( output.contains("Commands:") );
-        assertTrue( output.contains("Usage: up [options]") );
-        assertTrue( output.contains("Usage: install [options]") );
-        assertTrue( output.contains("Usage: state [options]") );
+        assertTrue(output.contains("Usage: minimesos [options] [command] [command options]"));
+        assertTrue(output.contains("Options:"));
+        assertTrue(output.contains("Commands:"));
+        assertTrue(output.contains("Usage: up [options]"));
+        assertTrue(output.contains("Usage: install [options]"));
+        assertTrue(output.contains("Usage: state [options]"));
     }
 
 }

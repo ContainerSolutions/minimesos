@@ -7,7 +7,8 @@ import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Scanner;
 
 /**
