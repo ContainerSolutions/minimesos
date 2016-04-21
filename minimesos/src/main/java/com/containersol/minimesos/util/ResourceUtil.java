@@ -16,13 +16,11 @@ public class ResourceUtil {
 
     /**
      * Turns a Mesos resource string into a List of ports.
-     *
+     * <p>
      * Example: 'ports(*):[31000-32000],;cpus(*):0.2; mem(*):256; disk(*):200' returns [31000, 32000]
      *
      * @param mesosResourceString Mesos resource string
-     *
      * @return list of ports if any
-     *
      * @throws MinimesosException if resource string is incorrect
      */
     public static ArrayList<Integer> parsePorts(String mesosResourceString) {

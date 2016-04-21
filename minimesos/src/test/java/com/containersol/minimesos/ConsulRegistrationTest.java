@@ -37,7 +37,7 @@ public class ConsulRegistrationTest {
 
         String ipAddress = DockerContainersUtil.getIpAddress(CLUSTER.getConsul().getContainerId());
         String url = String.format("http://%s:%d/v1/catalog/service/%s",
-				   ipAddress, ConsulConfig.CONSUL_HTTP_PORT, HelloWorldContainer.SERVICE_NAME);
+                ipAddress, ConsulConfig.CONSUL_HTTP_PORT, HelloWorldContainer.SERVICE_NAME);
 
         final JSONArray[] body = new JSONArray[1];
 

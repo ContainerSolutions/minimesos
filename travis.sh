@@ -17,3 +17,4 @@ if [ "${TRAVIS_PULL_REQUEST}" == "false" ] && [ "${TRAVIS_BRANCH}" == "master" ]
 fi
 
 ./gradlew --info --stacktrace clean build $GH_SONARQ_PARAMS
+

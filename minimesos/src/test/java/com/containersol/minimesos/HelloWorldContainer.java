@@ -16,7 +16,7 @@ class HelloWorldContainer extends AbstractContainer {
     public static final String CONTAINER_NAME_PATTERN = "^helloworld-[0-9a-f\\-]*$";
 
     public HelloWorldContainer() {
-        super( new ContainerConfigBlock(HELLO_WORLD_IMAGE, "latest"));
+        super(new ContainerConfigBlock(HELLO_WORLD_IMAGE, "latest"));
     }
 
     @Override

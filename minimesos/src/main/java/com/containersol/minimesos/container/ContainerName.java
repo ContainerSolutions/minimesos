@@ -37,9 +37,9 @@ public class ContainerName {
     /**
      * Based on container name check if it has the given role in the cluster
      *
-     * @param dockerNames   as returned by <code>container.getNames()</code>
-     * @param clusterId     cluster to check
-     * @param role          role to check
+     * @param dockerNames as returned by <code>container.getNames()</code>
+     * @param clusterId   cluster to check
+     * @param role        role to check
      * @return true if container has the role
      */
     public static boolean hasRoleInCluster(String[] dockerNames, String clusterId, String role) {

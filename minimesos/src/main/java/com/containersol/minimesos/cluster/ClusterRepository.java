@@ -19,7 +19,8 @@ public class ClusterRepository {
 
     public static final String MINIMESOS_FILE_PROPERTY = "minimesos.cluster";
 
-    private ClusterRepository() {}
+    private ClusterRepository() {
+    }
 
     /**
      * Loads representation of the running cluster

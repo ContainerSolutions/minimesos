@@ -6,6 +6,7 @@ package com.containersol.minimesos.cluster;
 public interface ClusterProcess {
 
     MesosCluster getCluster();
+
     void setCluster(MesosCluster mesosCluster);
 
     /**

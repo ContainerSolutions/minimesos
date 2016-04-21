@@ -1,9 +1,9 @@
 package com.containersol.minimesos.docker;
 
 import com.containersol.minimesos.MinimesosException;
+import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.LogContainerCmd;
-import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.PullResponseItem;
@@ -37,6 +37,7 @@ public class DockerContainersUtil {
 
     /**
      * Use this getter if you need to iterate over docker objects
+     *
      * @return set of docker containers
      */
     public List<Container> getContainers() {
@@ -164,6 +165,7 @@ public class DockerContainersUtil {
 
     /**
      * Synchronized method for returning logs of docker container
+     *
      * @param containerId - ID of the container ot lookup logs
      * @return list of strings, where every string is log line
      */
