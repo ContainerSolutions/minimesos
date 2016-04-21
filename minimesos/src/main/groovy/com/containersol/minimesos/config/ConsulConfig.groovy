@@ -14,3 +14,4 @@ public class ConsulConfig extends ContainerConfigBlock implements ContainerConfi
     }
 
 }
+

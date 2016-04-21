@@ -444,4 +444,21 @@ public class ConfigParserTest {
         assertEquals("[514-514]", agent.resources.ports["logstash"].value)
     }
 
+    @Test
+    public void testNetworkMode() {
+        String config = """
+                minimesos {
+                    networkMode = "host"
+
+                    agent {
+
+                    }
+                }
+        """
+
+        ClusterConfig dsl = parser.parse(config)
+        assertEquals(1, dsl.agents.size())
+        assertEquals("host", dsl.networkMode)
+    }
+
 }

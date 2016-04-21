@@ -5,6 +5,7 @@ import com.containersol.minimesos.cluster.MesosMaster;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.docker.DockerClientFactory;
+import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports;
@@ -50,6 +51,9 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
     @Override
     public Map<String, String> getDefaultEnvVars() {
         Map<String, String> envs = new TreeMap<>();
+        if (getCluster().getClusterConfig().getNetworkMode().equals("host")) {
+            envs.put("LIBPROCESS_IP", DockerContainersUtil.getGatewayIpAddress());
+        }
         envs.put("MESOS_QUORUM", "1");
         if (((MesosMasterConfig) config).getAuthenticate() && ((MesosMasterConfig) config).getAclJson() != null) {
             envs.put("MESOS_AUTHENTICATE", String.valueOf(((MesosMasterConfig) config).getAuthenticate()));
@@ -80,6 +84,7 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
 
         return DockerClientFactory.build().createContainerCmd(getImageName() + ":" + getImageTag())
                 .withName(getName())
+                .withNetworkMode(getCluster().getClusterConfig().getNetworkMode())
                 .withExposedPorts(new ExposedPort(getPortNumber()))
                 .withEnv(createMesosLocalEnvironment())
                 .withPortBindings(portBindings);

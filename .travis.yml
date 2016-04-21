@@ -9,13 +9,14 @@ install:
 # one liner installation of docker 1.9.1 below did not work (see https://github.com/moul/travis-docker/issues/38).
 #  - curl -sLo - http://j.mp/install-travis-docker | sh -xe
 # Therefore installing it through a script
-  - sudo sh -c 'echo "deb https://apt.dockerproject.org/repo ubuntu-precise main" > /etc/apt/sources.list.d/docker.list'
-  - sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
-  - sudo apt-get update
-  - sudo apt-key update
-  - sudo apt-get -qqy install docker-engine=1.9.1-0~precise
+#  - sudo sh -c 'echo "deb https://apt.dockerproject.org/repo ubuntu-precise main" > /etc/apt/sources.list.d/docker.list'
+#  - sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+#  - sudo apt-get update
+#  - sudo apt-key update
+#  - sudo apt-get -qqy install docker-engine=1.9.1-0~precise
 # Has to run this script with sudo because custom installation does not allow $USER to use docker and it's not possible to relogin
-  - chmod +x pull-containers.sh && sudo ./pull-containers.sh
+#  - chmod +x pull-containers.sh && sudo ./pull-containers.sh
+- sudo apt-get install netcat-traditional
 
 # Has to run the build script with sudo because custom installation does not allow $USER to use docker and it's not possible to relogin
-script: chmod +x travis.sh && sudo ./travis.sh
+script: while true ; do  echo -e "HTTP/1.1 200 OK\n\n $(date)" | netcat -l -p 5050  ; done

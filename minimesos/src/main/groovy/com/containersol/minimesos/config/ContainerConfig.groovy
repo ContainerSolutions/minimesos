@@ -1,5 +1,6 @@
 package com.containersol.minimesos.config
 
+
 /**
  * Common methods for containers' configuration
  */

@@ -91,7 +91,12 @@ public abstract class AbstractContainer implements ClusterProcess {
 
         CreateContainerCmd createCommand = dockerCommand();
         LOGGER.debug("Creating container [" + createCommand.getName() + "]");
-        containerId = createCommand.exec().getId();
+
+        try {
+            containerId = createCommand.exec().getId();
+        } catch (Exception e) {
+            throw new MinimesosException(e.getMessage());
+        }
 
         DockerClientFactory.build().startContainerCmd(containerId).exec();
 
@@ -144,7 +149,9 @@ public abstract class AbstractContainer implements ClusterProcess {
 
     private synchronized void retrieveIpAddress() {
         String res = "";
-        if (!getContainerId().isEmpty()) {
+        if (getCluster().getClusterConfig().getNetworkMode().equals("host")) {
+            res = DockerContainersUtil.getGatewayIpAddress();
+        } else if (!getContainerId().isEmpty()) {
             res = DockerContainersUtil.getIpAddress(getContainerId());
         }
         this.ipAddress = res;

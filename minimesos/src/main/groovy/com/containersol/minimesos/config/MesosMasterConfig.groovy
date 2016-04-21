@@ -1,6 +1,7 @@
 package com.containersol.minimesos.config
 
 import groovy.util.logging.Slf4j
+import org.apache.commons.lang.StringUtils
 
 @Slf4j
 class MesosMasterConfig extends MesosContainerConfig {

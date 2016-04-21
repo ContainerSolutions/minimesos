@@ -1,14 +1,15 @@
 package com.containersol.minimesos.config
 
 import groovy.util.logging.Slf4j
+import org.apache.commons.lang.StringUtils
 
 @Slf4j
 class MesosAgentConfig extends MesosContainerConfig {
 
-    public static final String MESOS_AGENT_IMAGE = "containersol/mesos-agent"
-    public static final int DEFAULT_MESOS_AGENT_PORT = 5051
+    public static final String MESOS_AGENT_IMAGE        = "containersol/mesos-agent"
+    public static final int DEFAULT_MESOS_AGENT_PORT    = 5051
 
-    int portNumber = DEFAULT_MESOS_AGENT_PORT
+    int portNumber          = DEFAULT_MESOS_AGENT_PORT
 
     AgentResourcesConfig resources = new AgentResourcesConfig()
 

@@ -5,11 +5,11 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.docker.DockerClientFactory;
+import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.util.ResourceUtil;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.Link;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +54,13 @@ public class MesosAgentContainer extends MesosContainerImpl implements MesosAgen
 
     @Override
     public int getPortNumber() {
-        return config.getPortNumber();
+        int portNumber;
+        if (getCluster().getClusterConfig().getNetworkMode().equals("host")) {
+            portNumber = 0;
+        } else {
+            portNumber = config.getPortNumber();
+        }
+        return portNumber;
     }
 
     public CreateContainerCmd getBaseCommand() {
@@ -71,7 +77,7 @@ public class MesosAgentContainer extends MesosContainerImpl implements MesosAgen
                 .withPrivileged(true)
                 .withEnv(createMesosLocalEnvironment())
                 .withPidMode("host")
-                .withLinks(new Link(getZooKeeper().getContainerId(), "minimesos-zookeeper"))
+                .withNetworkMode(getCluster().getClusterConfig().getNetworkMode())
                 .withBinds(binds.stream().toArray(Bind[]::new));
     }
 
@@ -92,12 +98,16 @@ public class MesosAgentContainer extends MesosContainerImpl implements MesosAgen
 
         return getBaseCommand()
                 .withExposedPorts(exposedPorts.toArray(new ExposedPort[exposedPorts.size()]));
-
     }
 
     @Override
     public Map<String, String> getDefaultEnvVars() {
         Map<String, String> envs = new TreeMap<>();
+
+        if (getCluster().getClusterConfig().getNetworkMode().equals("host")) {
+            envs.put("LIBPROCESS_IP", DockerContainersUtil.getGatewayIpAddress());
+        }
+
         envs.put("MESOS_RESOURCES", getResources());
         envs.put("MESOS_PORT", String.valueOf(getPortNumber()));
         envs.put("MESOS_MASTER", getFormattedZKAddress());

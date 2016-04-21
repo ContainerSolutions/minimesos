@@ -8,6 +8,7 @@ import com.containersol.minimesos.config.AppConfig;
 import com.containersol.minimesos.config.MarathonConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerClientFactory;
+import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports;
@@ -40,6 +41,7 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
     private static final Logger LOGGER = LoggerFactory.getLogger(MarathonContainer.class);
 
     private static final String END_POINT_EXT = "/v2/apps";
+
     private static final String HEADER_ACCEPT = "accept";
 
     private final MarathonConfig config;
@@ -77,17 +79,23 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        ExposedPort exposedPort = ExposedPort.tcp(MarathonConfig.MARATHON_PORT);
-        Ports portBindings = new Ports();
-        if (getCluster().isExposedHostPorts()) {
-            portBindings.bind(exposedPort, new Ports.Binding(MarathonConfig.MARATHON_PORT));
-        }
-        return DockerClientFactory.build().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
+        CreateContainerCmd cmd = DockerClientFactory.build().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withName(getName())
-                .withExtraHosts("minimesos-zookeeper:" + this.zooKeeper.getIpAddress())
-                .withCmd("--master", "zk://minimesos-zookeeper:2181/mesos", "--zk", "zk://minimesos-zookeeper:2181/marathon")
-                .withExposedPorts(exposedPort)
-                .withPortBindings(portBindings);
+                .withNetworkMode(getCluster().getClusterConfig().getNetworkMode())
+                .withCmd("--master", zooKeeper.getFormattedZKAddress() + "/mesos", "--zk", zooKeeper.getFormattedZKAddress() + "/marathon");
+
+        if (getCluster().getClusterConfig().getNetworkMode().equals("host")) {
+            cmd = cmd.withEnv("LIBPROCESS_IP", DockerContainersUtil.getGatewayIpAddress());
+        } else {
+            ExposedPort exposedPort = ExposedPort.tcp(getPortNumber());
+            Ports portBindings = new Ports();
+            if (getCluster().isExposedHostPorts()) {
+                portBindings.bind(exposedPort, Ports.Binding(getPortNumber()));
+            }
+            cmd = cmd.withExposedPorts(exposedPort).withPortBindings(portBindings);
+        }
+
+        return cmd;
     }
 
     /**
@@ -145,7 +153,11 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
     }
 
     public String getMarathonEndpoint() {
-        return "http://" + getIpAddress() + ":" + MarathonConfig.MARATHON_PORT;
+        return "http://" + getIpAddress() + ":" + getPortNumber();
+    }
+
+    private int getPortNumber() {
+        return MarathonConfig.MARATHON_PORT;
     }
 
     public void waitFor() {

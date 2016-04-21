@@ -42,6 +42,7 @@ public class ZooKeeperContainer extends AbstractContainer implements ZooKeeper {
     protected CreateContainerCmd dockerCommand() {
         return DockerClientFactory.build().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withName(getName())
+                .withNetworkMode(getCluster().getClusterConfig().getNetworkMode())
                 .withExposedPorts(new ExposedPort(ZooKeeperConfig.DEFAULT_ZOOKEEPER_PORT), new ExposedPort(2888), new ExposedPort(3888));
     }
 
