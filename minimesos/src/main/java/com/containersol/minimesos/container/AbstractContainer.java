@@ -120,7 +120,7 @@ public abstract class AbstractContainer implements ClusterProcess {
             throw new MinimesosException(errorMessage + " See container logs above");
         }
 
-        LOGGER.debug("Container is up and running");
+        LOGGER.debug(String.format("Container %s is up and running", containerId));
     }
 
     /**
