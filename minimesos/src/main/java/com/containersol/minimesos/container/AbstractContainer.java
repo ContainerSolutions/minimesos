@@ -52,6 +52,14 @@ public abstract class AbstractContainer implements ClusterProcess {
         this.config = config;
     }
 
+    private int getSystemPropertyLength(String property) {
+        String value = System.getProperty(property);
+        if (value == null) {
+            throw new NullPointerException();
+        }
+        return value.length();
+    }
+
     /**
      * Implement this method to pull your image. This will be called before the container is run.
      */
