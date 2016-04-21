@@ -1,6 +1,10 @@
 package com.containersol.minimesos.mesos;
 
-import com.containersol.minimesos.cluster.*;
+import com.containersol.minimesos.cluster.ClusterProcess;
+import com.containersol.minimesos.cluster.Filter;
+import com.containersol.minimesos.cluster.MesosAgent;
+import com.containersol.minimesos.cluster.MesosMaster;
+import com.containersol.minimesos.cluster.ZooKeeper;
 import org.junit.Test;
 
 import java.util.ArrayList;

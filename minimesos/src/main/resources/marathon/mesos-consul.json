@@ -1,15 +1,15 @@
 {
   "args": [
-    "--zk={{MINIMESOS_ZOOKEEPER}}",
-    "--consul=1",
-    "--consul-ip={{MINIMESOS_CONSUL_IP}}"
+	"--zk={{MINIMESOS_ZOOKEEPER}}",
+	"--consul=1",
+	"--consul-ip={{MINIMESOS_CONSUL_IP}}"
   ],
   "container": {
-    "type": "DOCKER",
-    "docker": {
-      "network": "BRIDGE",
-      "image": "containersol/mesos-consul:latest"
-    }
+	"type": "DOCKER",
+	"docker": {
+	  "network": "BRIDGE",
+	  "image": "containersol/mesos-consul:latest"
+	}
   },
   "id": "mesos-consul",
   "instances": 1,

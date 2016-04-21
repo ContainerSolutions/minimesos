@@ -16,13 +16,13 @@ public class CollectionsUtils {
 
     public static <T> List<T> typedList(List original, Class<T> clazz) {
 
-        ArrayList<T> typed = new ArrayList<>( original.size() );
+        ArrayList<T> typed = new ArrayList<>(original.size());
 
-        for( Object obj : original ) {
-            if( (obj == null ) || clazz.isAssignableFrom(obj.getClass() ) ) {
-                typed.add( clazz.cast(obj) );
+        for (Object obj : original) {
+            if ((obj == null) || clazz.isAssignableFrom(obj.getClass())) {
+                typed.add(clazz.cast(obj));
             } else {
-                throw new MinimesosException( "Not possible to cast " + obj + " to " + clazz.getCanonicalName() );
+                throw new MinimesosException("Not possible to cast " + obj + " to " + clazz.getCanonicalName());
             }
         }
 

@@ -1,12 +1,10 @@
 package com.containersol.minimesos.config
 
 import com.containersol.minimesos.MinimesosException
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.Before
+import org.junit.Test
 
-import static org.junit.Assert.assertEquals
-import static org.junit.Assert.assertNotNull
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*
 
 public class ConfigParserTest {
 
@@ -121,7 +119,7 @@ public class ConfigParserTest {
 
     @Test
     public void testLoadTwoAgents() {
-    String config = """
+        String config = """
                 minimesos {
                     agent {
                     }
@@ -207,7 +205,7 @@ public class ConfigParserTest {
         ClusterConfig dsl = parser.parse(config)
         assertNotNull(dsl.master)
         assertEquals("containersol/mesos-master", dsl.master.imageName)
-        assertEquals( MesosContainerConfig.MESOS_IMAGE_TAG, dsl.master.imageTag)
+        assertEquals(MesosContainerConfig.MESOS_IMAGE_TAG, dsl.master.imageTag)
     }
 
     @Test

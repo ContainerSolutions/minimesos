@@ -9,8 +9,8 @@ class MesosMasterConfig extends MesosContainerConfig {
     public static final int MESOS_MASTER_PORT = 5050
 
     public MesosMasterConfig() {
-        imageName     = MESOS_MASTER_IMAGE
-        imageTag      = MESOS_IMAGE_TAG
+        imageName = MESOS_MASTER_IMAGE
+        imageTag = MESOS_IMAGE_TAG
     }
 
     boolean authenticate = false
