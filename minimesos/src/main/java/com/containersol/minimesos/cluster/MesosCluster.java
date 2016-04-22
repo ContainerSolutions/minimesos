@@ -84,12 +84,15 @@ public class MesosCluster {
         }
 
         ZooKeeper zookeeper = getZooKeeper();
+        MesosMaster master = getMaster();
 
-        if (zookeeper != null) {
+        if (master != null && zookeeper != null) {
             for (MesosAgent mesosAgent : getAgents()) {
                 mesosAgent.setZooKeeper(zookeeper);
             }
-            getMaster().setZooKeeper(zookeeper);
+
+            master.setZooKeeper(zookeeper);
+
             if (getMarathon() != null) {
                 getMarathon().setZooKeeper(zookeeper);
             }
