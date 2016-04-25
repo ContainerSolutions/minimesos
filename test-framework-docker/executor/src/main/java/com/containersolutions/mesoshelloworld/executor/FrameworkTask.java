@@ -26,6 +26,7 @@ public class FrameworkTask extends Thread {
         this.task = task;
     }
 
+    @Override
     public void run() {
         try {
             Integer port = task.getDiscovery().getPorts().getPorts(0).getNumber();

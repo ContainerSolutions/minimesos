@@ -27,7 +27,7 @@ public class FrameworkExecutor implements Executor {
     public static void main(String[] args) throws Exception {
         MesosExecutorDriver driver = new MesosExecutorDriver(new FrameworkExecutor());
         if (driver.run() != Status.DRIVER_STOPPED) {
-            throw new RuntimeException("Mesos Executor Driver is not stopped");
+            throw new IllegalStateException("Mesos Executor Driver is not stopped");
         }
     }
 
