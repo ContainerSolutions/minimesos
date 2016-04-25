@@ -36,10 +36,9 @@ public class InstallCommandTest {
     public void testMesosInstall() throws IOException {
         deployApp();
 
-        DockerContainersUtil util = new DockerContainersUtil();
         List<String> ipAddresses = new ArrayList<>();
         await("executors are expected to come up").atMost(60, TimeUnit.SECONDS).until(() -> {
-            Set<String> runningNow = util.getContainers(false).filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE).getIpAddresses();
+            Set<String> runningNow = DockerContainersUtil.getContainers(false).filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE).getIpAddresses();
             if (runningNow.size() > 0) {
                 ipAddresses.addAll(runningNow);
             }
@@ -81,12 +80,12 @@ public class InstallCommandTest {
 
     @AfterClass
     public static void removeExecutors() {
-        DockerContainersUtil util = new DockerContainersUtil();
+        DockerContainersUtil running = DockerContainersUtil.getContainers(false);
 
         // stop container, otherwise it keeps on scheduling new executors as soon as they are stopped
-        util.getContainers(false).filterByImage(SchedulerContainer.SCHEDULER_IMAGE).kill().remove();
+        running.filterByImage(SchedulerContainer.SCHEDULER_IMAGE).kill().remove();
         // remove executors
-        util.getContainers(false).filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE).kill().remove();
+        running.filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE).kill().remove();
     }
 
 }

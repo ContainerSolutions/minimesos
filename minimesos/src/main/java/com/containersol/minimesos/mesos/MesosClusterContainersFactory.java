@@ -58,8 +58,7 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
         String clusterId = cluster.getClusterId();
         List<ClusterProcess> containers = cluster.getMemberProcesses();
 
-        DockerContainersUtil dockerUtil = new DockerContainersUtil();
-        List<Container> dockerContainers = dockerUtil.getContainers(false).getContainers();
+        List<Container> dockerContainers = DockerContainersUtil.getContainers(false).getContainers();
         Collections.sort(dockerContainers, (c1, c2) -> Long.compare(c1.getCreated(), c2.getCreated()));
 
         for (Container container : dockerContainers) {
@@ -111,8 +110,7 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
 
     @Override
     public void destroyRunningCluster(String clusterId) {
-        DockerContainersUtil dockerUtil = new DockerContainersUtil();
-        dockerUtil.getContainers(true).filterByName(ContainerName.getContainerNamePattern(clusterId)).kill(true).remove();
+        DockerContainersUtil.getContainers(true).filterByName(ContainerName.getContainerNamePattern(clusterId)).kill(true).remove();
     }
 
     public MesosCluster createMesosCluster(InputStream inputStream) {
