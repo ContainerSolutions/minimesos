@@ -24,6 +24,4 @@ notifications:
   email: true
   # see details on https://docs.travis-ci.com/user/notifications
   slack: containersolutions:CoDpiSYXLQd1yF5AHD05X8xN#minimesos-internal
-    on_success: always # default: always
-    on_failure: always # default: always
-    on_start: never    # default: never
+
