@@ -10,9 +10,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 
-public class FrameworkTask extends Thread {
+import static com.containersolutions.mesoshelloworld.executor.FrameworkExecutor.RESPONSE_STRING;
 
-    public static final String RESPONSE_STRING = "Hello world";
+public class FrameworkTask extends Thread {
 
     private final Protos.TaskInfo task;
     private final ExecutorDriver driver;

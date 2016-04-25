@@ -14,6 +14,8 @@ import org.apache.mesos.Protos.TaskInfo;
  */
 public class FrameworkExecutor implements org.apache.mesos.Executor {
 
+    public static final String RESPONSE_STRING = "Hello world";
+
     private Thread thread;
 
     public static void main(String[] args) throws Exception {
