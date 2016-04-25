@@ -40,8 +40,7 @@ public class MesosClusterTest {
 
     @After
     public void after() {
-        DockerContainersUtil util = new DockerContainersUtil();
-        util.getContainers(false).filterByName(HelloWorldContainer.CONTAINER_NAME_PATTERN).kill().remove();
+        DockerContainersUtil.getContainers(false).filterByName(HelloWorldContainer.CONTAINER_NAME_PATTERN).kill().remove();
     }
 
     @Test(expected = MinimesosException.class)

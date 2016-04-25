@@ -27,7 +27,7 @@ public class DockerContainersUtil {
 
     private final List<Container> containers;
 
-    public DockerContainersUtil() {
+    private DockerContainersUtil() {
         this.containers = null;
     }
 
@@ -48,9 +48,9 @@ public class DockerContainersUtil {
      * @param showAll should the list include stopped containers
      * @return set of docker containers
      */
-    public DockerContainersUtil getContainers(boolean showAll) {
-        List<Container> containers = new ArrayList<>(DockerClientFactory.build().listContainersCmd().withShowAll(showAll).exec());
-        return new DockerContainersUtil(containers);
+    public static DockerContainersUtil getContainers(boolean showAll) {
+        List<Container> newContainers = new ArrayList<>(DockerClientFactory.build().listContainersCmd().withShowAll(showAll).exec());
+        return new DockerContainersUtil(newContainers);
     }
 
     public int size() {

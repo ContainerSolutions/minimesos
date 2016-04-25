@@ -51,19 +51,18 @@ public class DiscoverySystemTest {
 
     @Test
     public void testNodeDiscoveryRest() {
-        DockerContainersUtil util = new DockerContainersUtil();
 
         final Set<String> ipAddresses = new HashSet<>();
         try {
 
             Awaitility.await("9 expected executors did not come up").atMost(TIMEOUT, TimeUnit.SECONDS).pollDelay(5, TimeUnit.SECONDS).until(() -> {
                 ipAddresses.clear();
-                ipAddresses.addAll(util.getContainers(false).filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE).getIpAddresses());
+                ipAddresses.addAll(DockerContainersUtil.getContainers(false).filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE).getIpAddresses());
                 return ipAddresses.size() == 9;
             });
 
         } catch (ConditionTimeoutException cte) {
-            for (Container container : util.getContainers(true).getContainers()) {
+            for (Container container : DockerContainersUtil.getContainers(true).getContainers()) {
                 LOGGER.error("Containers:");
                 LOGGER.error(String.format("  Container ID:%s, IMAGE:%s, STATUS:%s, NAMES:%s", container.getId(), container.getImage(), container.getStatus(), Arrays.toString(container.getNames())));
                 LOGGER.error("Scheduler logs:");
@@ -80,12 +79,12 @@ public class DiscoverySystemTest {
 
     @AfterClass
     public static void removeExecutors() {
-        DockerContainersUtil util = new DockerContainersUtil();
+        DockerContainersUtil running = DockerContainersUtil.getContainers(false);
 
         // stop scheduler, otherwise it keeps on scheduling new executors as soon as they are stopped
-        util.getContainers(false).filterByImage(SchedulerContainer.SCHEDULER_IMAGE).kill().remove();
+        running.filterByImage(SchedulerContainer.SCHEDULER_IMAGE).kill().remove();
 
-        DockerContainersUtil executors = util.getContainers(false).filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE);
+        DockerContainersUtil executors = running.filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE);
         LOGGER.info(String.format("Found %d containers to stop and remove", executors.size()));
         executors.kill(true).remove();
     }
