@@ -18,10 +18,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Adapted from: https://github.com/apache/mesos/blob/0.22.1/src/examples/java/TestFramework.java
  */
 public class FrameworkScheduler implements Scheduler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FrameworkScheduler.class);
 
     public static final double CPUS_PER_TASK = 0.1;
     public static final double MEM_PER_TASK = 128;
@@ -43,7 +48,7 @@ public class FrameworkScheduler implements Scheduler {
             ResourceOffer currentOffer = new ResourceOffer(offer.getResourcesList());
             if (currentOffer.isAcceptable() && (acceptedOffers < MAX_OFFERS)) {
 
-                System.out.println(
+                LOGGER.info(
                     "Received acceptable offer " + offer.getId().getValue() + " with cpus: " + currentOffer.offerCpus +
                         " and mem: " + currentOffer.offerMem + " with ports: " + currentOffer.offerPorts);
 
@@ -57,12 +62,12 @@ public class FrameworkScheduler implements Scheduler {
                 }
 
                 Status status = driver.launchTasks(Collections.singletonList(offer.getId()), newTaskList);
-                System.out.println(String.format("Launched %d tasks. Status is %s", newTaskList.size(), status.toString()));
+                LOGGER.info(String.format("Launched %d tasks. Status is %s", newTaskList.size(), status.toString()));
 
                 acceptedOffers++;
 
             } else if (!currentOffer.isAcceptable()) {
-                System.out.println(
+                LOGGER.info(
                     "Received unacceptable offer " + offer.getId().getValue() + " with cpus: " + currentOffer.offerCpus +
                         " and mem: " + currentOffer.offerMem + " with ports: " + currentOffer.offerPorts);
             }
@@ -79,14 +84,14 @@ public class FrameworkScheduler implements Scheduler {
     @Override
     public void statusUpdate(SchedulerDriver driver, TaskStatus status) {
 
-        System.out.println("Status update: task " + status.getTaskId().getValue() +
+        LOGGER.info("Status update: task " + status.getTaskId().getValue() +
             " is in state " + status.getState().getValueDescriptor().getName());
 
         if (status.getState() == TaskState.TASK_LOST ||
             status.getState() == TaskState.TASK_KILLED ||
             status.getState() == TaskState.TASK_FAILED) {
 
-            System.err.println("Aborting because task " + status.getTaskId().getValue() +
+            LOGGER.error("Aborting because task " + status.getTaskId().getValue() +
                 " is in unexpected state " +
                 status.getState().getValueDescriptor().getName() +
                 " with reason '" +
@@ -123,7 +128,7 @@ public class FrameworkScheduler implements Scheduler {
     public void registered(SchedulerDriver driver,
                            FrameworkID frameworkId,
                            MasterInfo masterInfo) {
-        System.out.println("Registered! ID = " + frameworkId.getValue());
+        LOGGER.info("Registered! ID = " + frameworkId.getValue());
     }
 
     @Override
@@ -150,11 +155,11 @@ public class FrameworkScheduler implements Scheduler {
         public ResourceOffer(List<Resource> resourcesList) {
             offerPorts = new ArrayList<>(resourcesList.size());
             for (Resource resource : resourcesList) {
-                if (resource.getName().equals("cpus")) {
+                if ("cpus".equals(resource.getName())) {
                     offerCpus += resource.getScalar().getValue();
-                } else if (resource.getName().equals("mem")) {
+                } else if ("mem".equals(resource.getName())) {
                     offerMem += resource.getScalar().getValue();
-                } else if (resource.getName().equals("ports")) {
+                } else if ("ports".equals(resource.getName())) {
                     for (Long p = resource.getRanges().getRange(0).getBegin(); p <= resource.getRanges().getRange(0).getEnd(); p++) {
                         offerPorts.add(p);
                     }
@@ -163,7 +168,7 @@ public class FrameworkScheduler implements Scheduler {
         }
 
         public boolean isAcceptable() {
-            return offerCpus >= CPUS_PER_TASK && offerMem >= MEM_PER_TASK && (offerPorts.size() >= 1);
+            return offerCpus >= CPUS_PER_TASK && offerMem >= MEM_PER_TASK && (!offerPorts.isEmpty());
         }
 
     }
