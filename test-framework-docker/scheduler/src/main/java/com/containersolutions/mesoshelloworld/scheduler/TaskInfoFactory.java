@@ -13,7 +13,7 @@ public class TaskInfoFactory {
         this.configuration = configuration;
     }
 
-    TaskInfo newTask(Offer offer, Scheduler.ResourceOffer currentOffer) {
+    TaskInfo newTask(Offer offer, FrameworkScheduler.ResourceOffer currentOffer) {
 
         TaskID taskId = TaskID.newBuilder().setValue(UUID.randomUUID().toString()).build();
         Long port = currentOffer.offerPorts.get(0);
@@ -30,11 +30,11 @@ public class TaskInfoFactory {
                 .addResources(Resource.newBuilder()
                         .setName("cpus")
                         .setType(Value.Type.SCALAR)
-                        .setScalar(Value.Scalar.newBuilder().setValue(Scheduler.CPUS_PER_TASK)))
+                        .setScalar(Value.Scalar.newBuilder().setValue(FrameworkScheduler.CPUS_PER_TASK)))
                 .addResources(Resource.newBuilder()
                         .setName("mem")
                         .setType(Value.Type.SCALAR)
-                        .setScalar(Value.Scalar.newBuilder().setValue(Scheduler.MEM_PER_TASK)))
+                        .setScalar(Value.Scalar.newBuilder().setValue(FrameworkScheduler.MEM_PER_TASK)))
                 .addResources(Resource.newBuilder()
                                 .setName("ports")
                                 .setType(Value.Type.RANGES)
@@ -46,8 +46,8 @@ public class TaskInfoFactory {
                 .build();
 
 
-        currentOffer.offerCpus -= Scheduler.CPUS_PER_TASK;
-        currentOffer.offerMem -= Scheduler.MEM_PER_TASK;
+        currentOffer.offerCpus -= FrameworkScheduler.CPUS_PER_TASK;
+        currentOffer.offerMem -= FrameworkScheduler.MEM_PER_TASK;
         currentOffer.offerPorts.remove(0);
         return task;
     }

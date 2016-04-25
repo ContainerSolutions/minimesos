@@ -21,7 +21,7 @@ public class Main {
             frameworkBuilder.setPrincipal(principal);
         }
 
-        org.apache.mesos.Scheduler scheduler = new Scheduler(configuration);
+        org.apache.mesos.Scheduler scheduler = new FrameworkScheduler(configuration);
 
         Protos.FrameworkInfo frameworkInfo = frameworkBuilder.build();
         String mesosMaster = configuration.getMesosMaster();

@@ -19,3 +19,11 @@ install:
 
 # Has to run the build script with sudo because custom installation does not allow $USER to use docker and it's not possible to relogin
 script: chmod +x travis.sh && sudo ./travis.sh
+
+notifications:
+  email: true
+  # see details on https://docs.travis-ci.com/user/notifications
+  slack: containersolutions:CoDpiSYXLQd1yF5AHD05X8xN#minimesos-internal
+    on_success: always # default: always
+    on_failure: always # default: always
+    on_start: never    # default: never
