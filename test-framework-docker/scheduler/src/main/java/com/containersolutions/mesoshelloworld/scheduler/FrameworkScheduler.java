@@ -143,7 +143,7 @@ public class FrameworkScheduler implements Scheduler {
 
     @Override
     public void error(SchedulerDriver driver, String message) {
-        System.out.println("Error: " + message);
+        LOGGER.info("Error: " + message);
     }
 
     class ResourceOffer {
