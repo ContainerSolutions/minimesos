@@ -1,5 +1,6 @@
 package com.containersolutions.mesoshelloworld.executor;
 
+import org.apache.mesos.Executor;
 import org.apache.mesos.ExecutorDriver;
 import org.apache.mesos.MesosExecutorDriver;
 import org.apache.mesos.Protos.ExecutorInfo;
@@ -9,10 +10,15 @@ import org.apache.mesos.Protos.Status;
 import org.apache.mesos.Protos.TaskID;
 import org.apache.mesos.Protos.TaskInfo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Adapted from https://github.com/apache/mesos/blob/0.22.1/src/examples/java/TestExecutor.java
  */
-public class FrameworkExecutor implements org.apache.mesos.Executor {
+public class FrameworkExecutor implements Executor {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FrameworkExecutor.class);
 
     public static final String RESPONSE_STRING = "Hello world";
 
@@ -30,7 +36,7 @@ public class FrameworkExecutor implements org.apache.mesos.Executor {
                            ExecutorInfo executorInfo,
                            FrameworkInfo frameworkInfo,
                            SlaveInfo slaveInfo) {
-        System.out.println("Registered executor on " + slaveInfo.getHostname());
+        LOGGER.info("Registered executor on " + slaveInfo.getHostname());
     }
 
     @Override

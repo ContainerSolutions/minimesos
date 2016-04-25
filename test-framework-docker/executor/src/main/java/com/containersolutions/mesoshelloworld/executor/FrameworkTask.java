@@ -5,6 +5,8 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import org.apache.mesos.ExecutorDriver;
 import org.apache.mesos.Protos;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -13,6 +15,8 @@ import java.net.InetSocketAddress;
 import static com.containersolutions.mesoshelloworld.executor.FrameworkExecutor.RESPONSE_STRING;
 
 public class FrameworkTask extends Thread {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FrameworkTask.class);
 
     private final Protos.TaskInfo task;
     private final ExecutorDriver driver;
@@ -25,7 +29,7 @@ public class FrameworkTask extends Thread {
     public void run() {
         try {
             Integer port = task.getDiscovery().getPorts().getPorts(0).getNumber();
-            System.out.println("Starting webserver on port " + port);
+            LOGGER.info("Starting webserver on port " + port);
             startWebServer(port);
 
             Protos.TaskStatus status = Protos.TaskStatus.newBuilder()
@@ -34,9 +38,9 @@ public class FrameworkTask extends Thread {
 
             driver.sendStatusUpdate(status);
 
-            System.out.println("Running task " + task.getTaskId().getValue());
+            LOGGER.info("Running task " + task.getTaskId().getValue());
         } catch (Exception e) {
-            System.out.println("Unable to start webserver:" + e);
+            LOGGER.info("Unable to start webserver:" + e);
 
             Protos.TaskStatus status = Protos.TaskStatus.newBuilder()
                 .setTaskId(task.getTaskId())
