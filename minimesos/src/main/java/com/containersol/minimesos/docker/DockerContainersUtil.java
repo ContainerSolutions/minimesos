@@ -27,10 +27,6 @@ public class DockerContainersUtil {
 
     private final List<Container> containers;
 
-    private DockerContainersUtil() {
-        this.containers = null;
-    }
-
     private DockerContainersUtil(List<Container> containers) {
         this.containers = containers;
     }
