@@ -41,12 +41,12 @@ public class FrameworkExecutor implements Executor {
 
     @Override
     public void reregistered(ExecutorDriver driver, SlaveInfo executorInfo) {
-        // not implemented in test framework
+        LOGGER.info("Not implemented: executor re-registers with a restarted slave");
     }
 
     @Override
     public void disconnected(ExecutorDriver driver) {
-        // not implemented in test framework
+        LOGGER.info("Not implemented: executor becomes \"disconnected\" from the slave");
     }
 
     @Override
@@ -64,18 +64,18 @@ public class FrameworkExecutor implements Executor {
 
     @Override
     public void frameworkMessage(ExecutorDriver driver, byte[] data) {
-        // not implemented in test framework
+        LOGGER.info("Not implemented: framework message has arrived");
     }
 
 
     @Override
     public void shutdown(ExecutorDriver driver) {
-        // not implemented in test framework
+        LOGGER.info("Not implemented: executor should terminate all of it's currently running tasks");
     }
 
     @Override
     public void error(ExecutorDriver driver, String message) {
-        // not implemented in test framework
+        LOGGER.info("Not implemented: fatal error has occurred with the executor");
     }
 
 }

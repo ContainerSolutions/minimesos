@@ -1,8 +1,8 @@
 package com.containersolutions.mesoshelloworld.executor;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
+import com.sun.net.httpserver.HttpExchange; //NOSONAR it's acceptable for test framework
+import com.sun.net.httpserver.HttpHandler; //NOSONAR it's acceptable for test framework
+import com.sun.net.httpserver.HttpServer; //NOSONAR it's acceptable for test framework
 import org.apache.mesos.ExecutorDriver;
 import org.apache.mesos.Protos;
 import org.slf4j.Logger;
