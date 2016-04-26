@@ -1,0 +1,28 @@
+{
+  "id": "elasticsearch-scheduler",
+  "uris": [
+    "file:///Users/vik/projects/cs/devbox/sources/mini-mesos/apps/elasticsearch-mesos-scheduler-1.0.0-withDependencies.jar"
+  ],
+  "args": ["java",
+    "-jar",
+    "elasticsearch-mesos-scheduler-1.0.0-withDependencies.jar",
+    "--zookeeperMesosUrl",
+    "${MINIMESOS_ZOOKEEPER}",
+    "--javaHome",
+    "/usr/lib/jvm/java-8-openjdk-amd64/bin",
+    "--frameworkUseDocker",
+    "false",
+    "--elasticsearchCpu",
+    "1",
+    "--elasticsearchNodes",
+    "2",
+    "--useIpAddress",
+    "true"
+  ],
+  "cpus": 1,
+  "mem": 512.0,
+  "env": {
+    "JAVA_OPTS": "-Xms128m -Xmx256m"
+  },
+  "instances": 1
+}

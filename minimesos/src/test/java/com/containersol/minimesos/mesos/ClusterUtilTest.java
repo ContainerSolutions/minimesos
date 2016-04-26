@@ -1,7 +1,7 @@
 package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.cluster.ClusterProcess;
-import com.containersol.minimesos.cluster.MesosAgent;
+import com.containersol.minimesos.cluster.ClusterUtil;
 import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.config.MesosMasterConfig;
@@ -14,24 +14,11 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 
 /**
  * Tests helper methods
  */
 public class ClusterUtilTest {
-    @Test
-    public void shouldBeAbleToAddAgents() {
-        ClusterArchitecture.Builder builder = ClusterUtil.withAgent(3);
-        assertEquals(3 + 1 + 1, builder.build().getClusterContainers().getContainers().size());
-    }
-
-    @Test
-    public void shouldBeAbleToAddCustomAgents() {
-        MesosAgent mock = mock(MesosAgent.class);
-        ClusterArchitecture.Builder builder = ClusterUtil.withAgent(3, zk -> mock);
-        assertEquals(3 + 1 + 1, builder.build().getClusterContainers().getContainers().size());
-    }
 
     @Test
     public void testGetDistinctRoleProcesses() throws Exception {

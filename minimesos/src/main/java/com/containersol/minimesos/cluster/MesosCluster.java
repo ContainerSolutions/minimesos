@@ -168,8 +168,27 @@ public class MesosCluster {
         String marathonIp = marathon.getIpAddress();
         LOGGER.debug(String.format("Installing %s app on marathon %s", marathonJson, marathonIp));
 
-        marathon.deployApp(marathonJson);
+        marathon.deployApp(replaceTokens(marathonJson));
     }
+
+    public String replaceTokens(String marathonJson) {
+        // received JSON might contain tokens, which should be replaced before the installation
+        List<ClusterProcess> uniqueRoles = ClusterUtil.getDistinctRoleProcesses(memberPocesses);
+        for( ClusterProcess process : uniqueRoles ) {
+            URI serviceUri = process.getServiceUrl();
+            if (serviceUri != null) {
+                marathonJson = replaceToken(marathonJson, "MINIMESOS_" + process.getRole().toUpperCase(), serviceUri.toString());
+                marathonJson = replaceToken(marathonJson, "MINIMESOS_" + process.getRole().toUpperCase() + "_IP", serviceUri.getHost());
+            }
+        }
+        return marathonJson;
+    }
+
+    private String replaceToken(String input, String token, String value) {
+        String tokenRegex = String.format("\\$\\{%s\\}", token);
+        return input.replaceAll(tokenRegex, value);
+    }
+
 
     /**
      * Destroys the Mesos cluster and its containers

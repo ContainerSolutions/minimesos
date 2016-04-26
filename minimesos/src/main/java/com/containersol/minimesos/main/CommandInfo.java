@@ -3,8 +3,8 @@ package com.containersol.minimesos.main;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.ClusterRepository;
+import com.containersol.minimesos.cluster.ClusterUtil;
 import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.mesos.ClusterUtil;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 
 import java.io.PrintStream;
@@ -53,15 +53,12 @@ public class CommandInfo implements Command {
 
         for (ClusterProcess process : uniqueMembers) {
 
-            String processIp = process.getIpAddress();
-
             URI serviceUrl = process.getServiceUrl();
             if (serviceUrl != null) {
                 String service = String.format("export MINIMESOS_%s=%s", process.getRole().toUpperCase(), serviceUrl.toString());
-                String serviceIp = String.format("export MINIMESOS_%s_IP=%s", process.getRole().toUpperCase(), processIp);
+                String serviceIp = String.format("export MINIMESOS_%s_IP=%s", process.getRole().toUpperCase(), serviceUrl.getHost());
 
-                output.println(service);
-                output.println(serviceIp);
+                output.println(String.format("%s; %s", service, serviceIp));
             }
 
         }

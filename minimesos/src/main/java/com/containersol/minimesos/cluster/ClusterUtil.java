@@ -1,16 +1,10 @@
-package com.containersol.minimesos.mesos;
-
-import com.containersol.minimesos.cluster.ClusterProcess;
-import com.containersol.minimesos.cluster.MesosAgent;
-import com.containersol.minimesos.cluster.ZooKeeper;
+package com.containersol.minimesos.cluster;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.IntStream;
 
 import static com.containersol.minimesos.cluster.Filter.withRole;
 
@@ -23,18 +17,6 @@ public class ClusterUtil {
      * Disable constructors
      */
     private ClusterUtil() {
-    }
-
-    public static ClusterArchitecture.Builder withAgent(Integer numberOfAgents) {
-        ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder().withZooKeeper();
-        IntStream.range(0, numberOfAgents).forEach(x -> builder.withAgent());
-        return builder;
-    }
-
-    public static <T extends MesosAgent> ClusterArchitecture.Builder withAgent(Integer numberOfAgents, Function<ZooKeeper, T> agent) {
-        ClusterArchitecture.Builder builder = new ClusterArchitecture.Builder().withZooKeeper();
-        IntStream.range(0, numberOfAgents).forEach(x -> builder.withAgent(agent::apply));
-        return builder;
     }
 
     /**
