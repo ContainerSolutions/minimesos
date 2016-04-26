@@ -1,5 +1,7 @@
 package com.containersol.minimesos.cluster;
 
+import java.net.URI;
+
 /**
  * Generic functionality of every cluster member
  */
@@ -13,6 +15,11 @@ public interface ClusterProcess {
      * @return the IP address of the container
      */
     String getIpAddress();
+
+    /**
+     *
+     */
+    URI getServiceUrl();
 
     /**
      * Builds container name following the naming convention

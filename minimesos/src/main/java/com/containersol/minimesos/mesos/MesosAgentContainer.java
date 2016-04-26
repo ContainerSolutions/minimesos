@@ -55,7 +55,7 @@ public class MesosAgentContainer extends MesosContainerImpl implements MesosAgen
     }
 
     @Override
-    public int getPortNumber() {
+    public int getServicePort() {
         return config.getPortNumber();
     }
 
@@ -88,7 +88,7 @@ public class MesosAgentContainer extends MesosContainerImpl implements MesosAgen
     @Override
     protected CreateContainerCmd dockerCommand() {
         ArrayList<ExposedPort> exposedPorts = new ArrayList<>();
-        exposedPorts.add(new ExposedPort(getPortNumber()));
+        exposedPorts.add(new ExposedPort(getServicePort()));
 
         ArrayList<Integer> resourcePorts = ResourceUtil.parsePorts(getResources());
         for (Integer port : resourcePorts) {
@@ -103,7 +103,7 @@ public class MesosAgentContainer extends MesosContainerImpl implements MesosAgen
     private Map<String, String> getMesosAgentEnvVars() {
         Map<String, String> envs = new TreeMap<>();
         envs.put("MESOS_RESOURCES", getResources());
-        envs.put("MESOS_PORT", String.valueOf(getPortNumber()));
+        envs.put("MESOS_PORT", String.valueOf(getServicePort()));
         envs.put("MESOS_MASTER", getFormattedZKAddress());
         envs.put("MESOS_SWITCH_USER", "false");
         envs.put("MESOS_LOGGING_LEVEL", getLoggingLevel());

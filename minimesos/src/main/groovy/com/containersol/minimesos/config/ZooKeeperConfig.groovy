@@ -2,6 +2,7 @@ package com.containersol.minimesos.config
 
 public class ZooKeeperConfig extends ContainerConfigBlock implements ContainerConfig {
 
+    public static final String DEFAULT_MESOS_ZK_PATH = "/mesos";
     public static final int DEFAULT_ZOOKEEPER_PORT = 2181;
 
     public static final String MESOS_LOCAL_IMAGE = "jplock/zookeeper"

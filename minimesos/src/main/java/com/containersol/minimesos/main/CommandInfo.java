@@ -4,14 +4,17 @@ import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.config.ConsulConfig;
-import com.containersol.minimesos.config.MarathonConfig;
-import com.containersol.minimesos.config.MesosMasterConfig;
-import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
-import org.apache.commons.lang.StringUtils;
 
 import java.io.PrintStream;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static com.containersol.minimesos.cluster.Filter.withRole;
 
 /**
  * Info command
@@ -38,48 +41,65 @@ public class CommandInfo implements Command {
             if (cluster.getMesosVersion() != null) {
                 output.println("Mesos version: " + cluster.getMesosVersion());
             }
-            printServiceUrls(cluster, output);
+            printServiceUrls(cluster);
         } else {
             output.println("Minimesos cluster is not running");
         }
     }
 
-    public void printServiceUrls(MesosCluster cluster, PrintStream out) {
-        boolean exposedHostPorts = cluster.isExposedHostPorts();
-        String dockerHostIp = System.getenv("DOCKER_HOST_IP");
+    /**
+     * Prints cluster services URLs and IPs
+     *
+     * @param cluster to examine
+     */
+    private void printServiceUrls(MesosCluster cluster) {
 
-        for (ClusterProcess process : cluster.getMemberProcesses()) {
-            String ip;
-            if (!exposedHostPorts || StringUtils.isEmpty(dockerHostIp)) {
-                ip = process.getIpAddress();
-            } else {
-                ip = dockerHostIp;
+        List<ClusterProcess> uniqueMembers = getDistinctRoleProcesses(cluster.getMemberProcesses());
+
+        for (ClusterProcess process : uniqueMembers) {
+
+            String processIp = process.getIpAddress();
+
+            URI serviceUrl = process.getServiceUrl();
+            if (serviceUrl != null) {
+                String service = String.format("export MINIMESOS_%s=%s", process.getRole().toUpperCase(), serviceUrl.toString());
+                String serviceIp = String.format("export MINIMESOS_%s_IP=%s", process.getRole().toUpperCase(), processIp);
+
+                output.println(service);
+                output.println(serviceIp);
             }
 
-            switch (process.getRole()) {
-                case "master":
-                    out.println("export MINIMESOS_MASTER=http://" + ip + ":" + MesosMasterConfig.MESOS_MASTER_PORT);
-                    break;
-                case "marathon":
-                    out.println("export MINIMESOS_MARATHON=http://" + ip + ":" + MarathonConfig.MARATHON_PORT);
-                    break;
-                case "zookeeper":
-                    out.println("export MINIMESOS_ZOOKEEPER=" + getFormattedZKAddress(ip));
-                    break;
-                case "consul":
-                    out.println("export MINIMESOS_CONSUL=http://" + ip + ":" + ConsulConfig.CONSUL_HTTP_PORT);
-                    out.println("export MINIMESOS_CONSUL_IP=" + ip);
-                    break;
-            }
         }
+
     }
 
     /**
-     * @param ipAddress overwrites real IP of ZooKeeper container
-     * @return ZooKeeper URL based on given IP address
+     * Filters given list of processes and returns only those with distinct roles
+     *
+     * @param processes complete list of processes
+     * @return processes with distinct roles
      */
-    public static String getFormattedZKAddress(String ipAddress) {
-        return "zk://" + ipAddress + ":" + ZooKeeperConfig.DEFAULT_ZOOKEEPER_PORT;
+    public List<ClusterProcess> getDistinctRoleProcesses(List<ClusterProcess> processes) {
+
+        List<ClusterProcess> distinct = new ArrayList<>();
+        Map<String, Integer> roles = new HashMap<>();
+
+        // count processes per role
+        for (ClusterProcess process : processes) {
+            Integer prev = roles.get(process.getRole());
+            int count = (prev != null) ? prev : 0;
+            roles.put(process.getRole(), count+1 );
+        }
+
+        for (Map.Entry<String, Integer> role : roles.entrySet() ) {
+            if (role.getValue() == 1) {
+                Optional<ClusterProcess> process = processes.stream().filter(withRole(role.getKey())).findFirst();
+                distinct.add(process.get());
+            }
+        }
+
+        return distinct;
+
     }
 
     @Override

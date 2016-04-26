@@ -45,6 +45,21 @@ public class ZooKeeperContainer extends AbstractContainer implements ZooKeeper {
                 .withExposedPorts(new ExposedPort(ZooKeeperConfig.DEFAULT_ZOOKEEPER_PORT), new ExposedPort(2888), new ExposedPort(3888));
     }
 
+    @Override
+    protected String getServiceProtocol() {
+        return "zk";
+    }
+
+    @Override
+    protected int getServicePort() {
+        return ZooKeeperConfig.DEFAULT_ZOOKEEPER_PORT;
+    }
+
+    @Override
+    protected String getServicePath() {
+        return ZooKeeperConfig.DEFAULT_MESOS_ZK_PATH;
+    }
+
     /**
      * @return ZooKeeper URL based on real IP address
      */

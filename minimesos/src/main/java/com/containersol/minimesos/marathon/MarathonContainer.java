@@ -46,10 +46,6 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
 
     private ZooKeeper zooKeeper;
 
-    public MarathonContainer(ZooKeeper zooKeeper) {
-        this(zooKeeper, new MarathonConfig());
-    }
-
     public MarathonContainer(ZooKeeper zooKeeper, MarathonConfig config) {
         super(config);
         this.zooKeeper = zooKeeper;
@@ -97,7 +93,7 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
      */
     @Override
     public void deployApp(String marathonJson) {
-        String marathonEndpoint = getMarathonEndpoint();
+        String marathonEndpoint = getServiceUrl().toString();
         try {
             byte[] app = marathonJson.getBytes(Charset.forName("UTF-8"));
             HttpResponse<JsonNode> response = Unirest.post(marathonEndpoint + END_POINT_EXT).header(HEADER_ACCEPT, APPLICATION_JSON).body(app).asJson();
@@ -112,7 +108,7 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
             LOGGER.error(msg);
             throw new MinimesosException(msg, e);
         }
-        LOGGER.debug(String.format("Installing an app on marathon %s", getMarathonEndpoint()));
+        LOGGER.debug(String.format("Installing an app on marathon %s", marathonEndpoint));
     }
 
     /**
@@ -120,7 +116,7 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
      */
     @Override
     public void killAllApps() {
-        String marathonEndpoint = getMarathonEndpoint();
+        String marathonEndpoint = getServiceUrl().toString();
         JSONObject appsResponse;
         try {
             appsResponse = Unirest.get(marathonEndpoint + END_POINT_EXT).header(HEADER_ACCEPT, APPLICATION_JSON).asJson().getBody().getObject();
@@ -144,12 +140,13 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
         }
     }
 
-    public String getMarathonEndpoint() {
-        return "http://" + getIpAddress() + ":" + MarathonConfig.MARATHON_PORT;
+    @Override
+    protected int getServicePort() {
+        return MarathonConfig.MARATHON_PORT;
     }
 
     public void waitFor() {
-        LOGGER.debug("Waiting for Marathon to be ready at " + getMarathonEndpoint());
+        LOGGER.debug("Waiting for Marathon to be ready at " + getServiceUrl().toString());
         await("Marathon did not start responding").atMost(getCluster().getClusterConfig().getTimeout(), TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(new MarathonApiIsReady());
     }
 
@@ -161,7 +158,7 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
         @Override
         public Boolean call() throws Exception {
             try {
-                Unirest.get(getMarathonEndpoint() + END_POINT_EXT).header(HEADER_ACCEPT, APPLICATION_JSON).asJson().getBody().getObject();
+                Unirest.get(getServiceUrl().toString() + END_POINT_EXT).header(HEADER_ACCEPT, APPLICATION_JSON).asJson().getBody().getObject();
             } catch (UnirestException e) { //NOSONAR
                 // meaning API is not ready
                 return false;
