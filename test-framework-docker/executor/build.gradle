@@ -1,6 +1,6 @@
 apply plugin: 'application'
 
-mainClassName = "com.containersolutions.mesoshelloworld.executor.Executor"
+mainClassName = "com.containersolutions.mesoshelloworld.executor.FrameworkExecutor"
 ext {
     imageName = imagePrefix + '/mesos-hello-world-executor'
 }
@@ -29,6 +29,7 @@ jar {
 }
 
 dependencies {
+    compile 'org.slf4j:slf4j-api:1.7.12'
 }
 
 task taskCopyFilesForDocker(type: Copy) {

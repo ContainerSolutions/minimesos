@@ -3,7 +3,7 @@ package com.containersolutions.mesoshelloworld.systemtest;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.junit.MesosClusterTestRule;
-import com.containersolutions.mesoshelloworld.executor.Executor;
+import com.containersolutions.mesoshelloworld.executor.FrameworkExecutor;
 import com.containersolutions.mesoshelloworld.scheduler.Configuration;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -61,7 +61,7 @@ public class InstallCommandTest {
                 response2 = "";
             }
 
-            return response1.equals(Executor.RESPONSE_STRING) || response2.equals(Executor.RESPONSE_STRING);
+            return response1.equals(FrameworkExecutor.RESPONSE_STRING) || response2.equals(FrameworkExecutor.RESPONSE_STRING);
         });
     }
 
