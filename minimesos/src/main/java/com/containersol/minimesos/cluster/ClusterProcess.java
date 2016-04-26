@@ -17,7 +17,7 @@ public interface ClusterProcess {
     String getIpAddress();
 
     /**
-     *
+     * @return URI the service is available at (or null)
      */
     URI getServiceUrl();
 

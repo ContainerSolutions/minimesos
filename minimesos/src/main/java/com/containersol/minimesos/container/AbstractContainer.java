@@ -14,10 +14,8 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -132,15 +130,23 @@ public abstract class AbstractContainer implements ClusterProcess {
 
     @Override
     public URI getServiceUrl() {
+
+        URI serviceUri = null;
+
         String protocol = getServiceProtocol();
         String host = getIpAddress();
         int port = getServicePort();
         String path = getServicePath();
-        try {
-            return new URI(protocol, null, host, port, path, null, null);
-        } catch (URISyntaxException e) {
-            throw new MinimesosException("Failed to form service URL", e);
+
+        if (StringUtils.isNotEmpty(host)) {
+            try {
+                serviceUri = new URI(protocol, null, host, port, path, null, null);
+            } catch (URISyntaxException e) {
+                throw new MinimesosException("Failed to form service URL for " + getName(), e);
+            }
         }
+
+        return serviceUri;
     }
 
     /**

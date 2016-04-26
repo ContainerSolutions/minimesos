@@ -52,6 +52,11 @@ public class CommandUp implements Command {
         mesosClusterFactory = new MesosClusterContainersFactory();
     }
 
+    public CommandUp(PrintStream ps) {
+        this();
+        this.output = ps;
+    }
+
     public Boolean isExposedHostPorts() {
         return exposedHostPorts;
     }
@@ -108,7 +113,7 @@ public class CommandUp implements Command {
         startedCluster.start();
         startedCluster.waitForState(state -> state != null);
 
-        new CommandInfo().execute();
+        new CommandInfo(output).execute();
     }
 
     /**
