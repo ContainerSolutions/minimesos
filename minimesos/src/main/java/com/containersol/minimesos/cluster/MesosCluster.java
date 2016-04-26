@@ -171,11 +171,17 @@ public class MesosCluster {
         marathon.deployApp(replaceTokens(marathonJson));
     }
 
-    public String replaceTokens(String marathonJson) {
+    /**
+     * Replaces ${MINIMESOS_[ROLE]}, ${MINIMESOS_[ROLE]_IP} and ${MINIMESOS_[ROLE]_PORT} tokens in the given string with actual values
+     *
+     * @param source string to replace values in
+     * @return updated string
+     */
+    public String replaceTokens(String source) {
         // received JSON might contain tokens, which should be replaced before the installation
         List<ClusterProcess> uniqueRoles = ClusterUtil.getDistinctRoleProcesses(memberPocesses);
-        String updatedJson = marathonJson;
-        for( ClusterProcess process : uniqueRoles ) {
+        String updatedJson = source;
+        for (ClusterProcess process : uniqueRoles) {
             URI serviceUri = process.getServiceUrl();
             if (serviceUri != null) {
                 updatedJson = replaceToken(updatedJson, "MINIMESOS_" + process.getRole().toUpperCase(), serviceUri.toString());
@@ -491,9 +497,9 @@ public class MesosCluster {
     @Override
     public String toString() {
         return "MesosCluster{" +
-                "clusterId='" + clusterId + '\'' +
-                ", processes=" + memberPocesses +
-                '}';
+            "clusterId='" + clusterId + '\'' +
+            ", processes=" + memberPocesses +
+            '}';
     }
 
 }
