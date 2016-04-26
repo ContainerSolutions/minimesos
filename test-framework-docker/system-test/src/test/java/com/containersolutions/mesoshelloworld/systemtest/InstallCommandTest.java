@@ -25,8 +25,6 @@ import static org.junit.Assert.fail;
 
 public class InstallCommandTest {
 
-    public static final String MESOS_MASTER_IP_TOKEN = "${MESOS_MASTER_IP}";
-
     @ClassRule
     public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromFile("src/test/resources/configFiles/minimesosFile-install-command-test");
 
@@ -73,7 +71,6 @@ public class InstallCommandTest {
 
         try (FileInputStream fis = new FileInputStream(taskFile)) {
             String appJson = IOUtils.toString(fis);
-            appJson = appJson.replace(MESOS_MASTER_IP_TOKEN, CLUSTER.getMaster().getIpAddress());
             CLUSTER.getMarathon().deployApp(appJson);
         }
     }

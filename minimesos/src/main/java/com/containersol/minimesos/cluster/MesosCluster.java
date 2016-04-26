@@ -174,17 +174,19 @@ public class MesosCluster {
     public String replaceTokens(String marathonJson) {
         // received JSON might contain tokens, which should be replaced before the installation
         List<ClusterProcess> uniqueRoles = ClusterUtil.getDistinctRoleProcesses(memberPocesses);
+        String updatedJson = marathonJson;
         for( ClusterProcess process : uniqueRoles ) {
             URI serviceUri = process.getServiceUrl();
             if (serviceUri != null) {
-                marathonJson = replaceToken(marathonJson, "MINIMESOS_" + process.getRole().toUpperCase(), serviceUri.toString());
-                marathonJson = replaceToken(marathonJson, "MINIMESOS_" + process.getRole().toUpperCase() + "_IP", serviceUri.getHost());
+                updatedJson = replaceToken(updatedJson, "MINIMESOS_" + process.getRole().toUpperCase(), serviceUri.toString());
+                updatedJson = replaceToken(updatedJson, "MINIMESOS_" + process.getRole().toUpperCase() + "_IP", serviceUri.getHost());
+                updatedJson = replaceToken(updatedJson, "MINIMESOS_" + process.getRole().toUpperCase() + "_PORT", Integer.toString(serviceUri.getPort()));
             }
         }
-        return marathonJson;
+        return updatedJson;
     }
 
-    private String replaceToken(String input, String token, String value) {
+    private static String replaceToken(String input, String token, String value) {
         String tokenRegex = String.format("\\$\\{%s\\}", token);
         return input.replaceAll(tokenRegex, value);
     }
