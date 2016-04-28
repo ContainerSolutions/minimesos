@@ -151,54 +151,6 @@ public class MesosCluster {
     }
 
     /**
-     * Installs a Marathon app
-     *
-     * @param marathonJson JSON representation of Marathon app
-     */
-    public void install(String marathonJson) {
-        if (marathonJson == null) {
-            throw new MinimesosException("Specify a Marathon JSON app definition");
-        }
-
-        Marathon marathon = getMarathon();
-        if (marathon == null) {
-            throw new MinimesosException("Marathon container is not found in cluster " + clusterId);
-        }
-
-        String marathonIp = marathon.getIpAddress();
-        LOGGER.debug(String.format("Installing %s app on marathon %s", marathonJson, marathonIp));
-
-        marathon.deployApp(replaceTokens(marathonJson));
-    }
-
-    /**
-     * Replaces ${MINIMESOS_[ROLE]}, ${MINIMESOS_[ROLE]_IP} and ${MINIMESOS_[ROLE]_PORT} tokens in the given string with actual values
-     *
-     * @param source string to replace values in
-     * @return updated string
-     */
-    public String replaceTokens(String source) {
-        // received JSON might contain tokens, which should be replaced before the installation
-        List<ClusterProcess> uniqueRoles = ClusterUtil.getDistinctRoleProcesses(memberPocesses);
-        String updatedJson = source;
-        for (ClusterProcess process : uniqueRoles) {
-            URI serviceUri = process.getServiceUrl();
-            if (serviceUri != null) {
-                updatedJson = replaceToken(updatedJson, "MINIMESOS_" + process.getRole().toUpperCase(), serviceUri.toString());
-                updatedJson = replaceToken(updatedJson, "MINIMESOS_" + process.getRole().toUpperCase() + "_IP", serviceUri.getHost());
-                updatedJson = replaceToken(updatedJson, "MINIMESOS_" + process.getRole().toUpperCase() + "_PORT", Integer.toString(serviceUri.getPort()));
-            }
-        }
-        return updatedJson;
-    }
-
-    private static String replaceToken(String input, String token, String value) {
-        String tokenRegex = String.format("\\$\\{%s\\}", token);
-        return input.replaceAll(tokenRegex, value);
-    }
-
-
-    /**
      * Destroys the Mesos cluster and its containers
      */
     public void destroy(MesosClusterFactory factory) {

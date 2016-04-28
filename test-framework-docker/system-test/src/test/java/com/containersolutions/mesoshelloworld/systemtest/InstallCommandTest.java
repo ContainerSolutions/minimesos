@@ -77,12 +77,12 @@ public class InstallCommandTest {
 
     @AfterClass
     public static void removeExecutors() {
-        DockerContainersUtil running = DockerContainersUtil.getContainers(false);
+        DockerContainersUtil containers = DockerContainersUtil.getContainers(true);
 
         // stop container, otherwise it keeps on scheduling new executors as soon as they are stopped
-        running.filterByImage(SchedulerContainer.SCHEDULER_IMAGE).kill().remove();
+        containers.filterByImage(SchedulerContainer.SCHEDULER_IMAGE).kill(true).remove();
         // remove executors
-        running.filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE).kill().remove();
+        containers.filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE).kill(true).remove();
     }
 
 }

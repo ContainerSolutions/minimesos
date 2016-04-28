@@ -1,6 +1,8 @@
 package com.containersol.minimesos.marathon;
 
 import com.containersol.minimesos.MinimesosException;
+import com.containersol.minimesos.cluster.ClusterProcess;
+import com.containersol.minimesos.cluster.ClusterUtil;
 import com.containersol.minimesos.cluster.Marathon;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.ZooKeeper;
@@ -24,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -93,9 +96,10 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
      */
     @Override
     public void deployApp(String marathonJson) {
+        String tokenisedJson = replaceTokens(marathonJson);
         String marathonEndpoint = getServiceUrl().toString();
         try {
-            byte[] app = marathonJson.getBytes(Charset.forName("UTF-8"));
+            byte[] app = tokenisedJson.getBytes(Charset.forName("UTF-8"));
             HttpResponse<JsonNode> response = Unirest.post(marathonEndpoint + END_POINT_EXT).header(HEADER_ACCEPT, APPLICATION_JSON).body(app).asJson();
             JSONObject deployResponse = response.getBody().getObject();
             if (response.getStatus() == HttpStatus.SC_CREATED) {
@@ -109,6 +113,32 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
             throw new MinimesosException(msg, e);
         }
         LOGGER.debug(String.format("Installing an app on marathon %s", marathonEndpoint));
+    }
+
+    /**
+     * Replaces ${MINIMESOS_[ROLE]}, ${MINIMESOS_[ROLE]_IP} and ${MINIMESOS_[ROLE]_PORT} tokens in the given string with actual values
+     *
+     * @param source string to replace values in
+     * @return updated string
+     */
+    public String replaceTokens(String source) {
+        // received JSON might contain tokens, which should be replaced before the installation
+        List<ClusterProcess> uniqueRoles = ClusterUtil.getDistinctRoleProcesses(getCluster().getMemberProcesses());
+        String updatedJson = source;
+        for (ClusterProcess process : uniqueRoles) {
+            URI serviceUri = process.getServiceUrl();
+            if (serviceUri != null) {
+                updatedJson = replaceToken(updatedJson, "MINIMESOS_" + process.getRole().toUpperCase(), serviceUri.toString());
+                updatedJson = replaceToken(updatedJson, "MINIMESOS_" + process.getRole().toUpperCase() + "_IP", serviceUri.getHost());
+                updatedJson = replaceToken(updatedJson, "MINIMESOS_" + process.getRole().toUpperCase() + "_PORT", Integer.toString(serviceUri.getPort()));
+            }
+        }
+        return updatedJson;
+    }
+
+    private static String replaceToken(String input, String token, String value) {
+        String tokenRegex = String.format("\\$\\{%s\\}", token);
+        return input.replaceAll(tokenRegex, value);
     }
 
     /**

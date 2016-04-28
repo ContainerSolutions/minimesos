@@ -128,22 +128,6 @@ public class MesosClusterTest {
         }
     }
 
-    @Test
-    public void testFindMesosMaster() {
-        String initString = "start ${MINIMESOS_MASTER} ${MINIMESOS_MASTER_IP} end";
-
-        String expected = CLUSTER.getMaster().getServiceUrl().toString();
-        String ip = CLUSTER.getMaster().getIpAddress();
-
-        String updated = CLUSTER.replaceTokens(initString);
-        assertEquals("MINIMESOS_MASTER should be replaced", String.format("start %s %s end", expected, ip), updated);
-    }
-
-    @Test(expected = MinimesosException.class)
-    public void testInstall() {
-        CLUSTER.install(null);
-    }
-
     @Test(expected = IllegalStateException.class)
     public void testStartingClusterSecondTime() {
         CLUSTER.start(30);
