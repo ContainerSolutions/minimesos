@@ -37,6 +37,7 @@ public class MesosCluster {
     private static final Logger LOGGER = LoggerFactory.getLogger(MesosCluster.class);
 
     public static final String MINIMESOS_HOST_DIR_PROPERTY = "minimesos.host.dir";
+    public static final String MINIMESOS_TOKEN_PREFIX = "MINIMESOS_";
 
     private String clusterId;
 

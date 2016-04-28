@@ -55,8 +55,8 @@ public class CommandInfo implements Command {
 
             URI serviceUrl = process.getServiceUrl();
             if (serviceUrl != null) {
-                String service = String.format("export MINIMESOS_%s=%s", process.getRole().toUpperCase(), serviceUrl.toString());
-                String serviceIp = String.format("export MINIMESOS_%s_IP=%s", process.getRole().toUpperCase(), serviceUrl.getHost());
+                String service = String.format("export %s%s=%s", MesosCluster.MINIMESOS_TOKEN_PREFIX, process.getRole().toUpperCase(), serviceUrl.toString());
+                String serviceIp = String.format("export %s%s_IP=%s", MesosCluster.MINIMESOS_TOKEN_PREFIX, process.getRole().toUpperCase(), serviceUrl.getHost());
 
                 output.println(String.format("%s; %s", service, serviceIp));
             }

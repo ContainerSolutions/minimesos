@@ -128,9 +128,9 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
         for (ClusterProcess process : uniqueRoles) {
             URI serviceUri = process.getServiceUrl();
             if (serviceUri != null) {
-                updatedJson = replaceToken(updatedJson, "MINIMESOS_" + process.getRole().toUpperCase(), serviceUri.toString());
-                updatedJson = replaceToken(updatedJson, "MINIMESOS_" + process.getRole().toUpperCase() + "_IP", serviceUri.getHost());
-                updatedJson = replaceToken(updatedJson, "MINIMESOS_" + process.getRole().toUpperCase() + "_PORT", Integer.toString(serviceUri.getPort()));
+                updatedJson = replaceToken(updatedJson, MesosCluster.MINIMESOS_TOKEN_PREFIX + process.getRole().toUpperCase(), serviceUri.toString());
+                updatedJson = replaceToken(updatedJson, MesosCluster.MINIMESOS_TOKEN_PREFIX + process.getRole().toUpperCase() + "_IP", serviceUri.getHost());
+                updatedJson = replaceToken(updatedJson, MesosCluster.MINIMESOS_TOKEN_PREFIX + process.getRole().toUpperCase() + "_PORT", Integer.toString(serviceUri.getPort()));
             }
         }
         return updatedJson;
