@@ -64,12 +64,6 @@ public class CommandInstall implements Command {
 
     @Override
     public void execute() throws MinimesosException {
-        String marathonJson;
-        try {
-            marathonJson = getMarathonJson();
-        } catch (IOException e) {
-            throw new MinimesosException("Failed to read JSON", e);
-        }
 
         MesosCluster cluster = ClusterRepository.loadCluster(new MesosClusterContainersFactory());
         if (cluster != null) {
@@ -77,6 +71,14 @@ public class CommandInstall implements Command {
             if (marathon == null) {
                 throw new MinimesosException("Marathon container is not found in cluster " + cluster.getClusterId());
             }
+
+            String marathonJson;
+            try {
+                marathonJson = getMarathonJson();
+            } catch (IOException e) {
+                throw new MinimesosException("Failed to read JSON", e);
+            }
+
             marathon.deployApp(marathonJson);
         } else {
             throw new MinimesosException("Running cluster is not found");
