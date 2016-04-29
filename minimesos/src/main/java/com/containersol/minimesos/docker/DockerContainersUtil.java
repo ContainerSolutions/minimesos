@@ -235,13 +235,8 @@ public class DockerContainersUtil {
     /**
      * @return IP Address of the container's gateway (which would be docker0)
      */
-    public static String getGatewayIpAddress() {
-        List<Container> containers = DockerClientFactory.build().listContainersCmd().exec();
-        if (containers == null || containers.size() == 0) {
-            throw new IllegalStateException("Cannot get docker0 IP address because no containers are running");
-        }
-
-        InspectContainerResponse response = DockerClientFactory.build().inspectContainerCmd(containers.get(0).getId()).exec();
+    public static String getGatewayIpAddress(String masterId) {
+        InspectContainerResponse response = DockerClientFactory.build().inspectContainerCmd(masterId).exec();
         return response.getNetworkSettings().getGateway();
     }
 
