@@ -10,6 +10,7 @@ import com.containersol.minimesos.config.AppConfig;
 import com.containersol.minimesos.config.MarathonConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerClientFactory;
+import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports;
@@ -41,6 +42,8 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 public class MarathonContainer extends AbstractContainer implements Marathon {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MarathonContainer.class);
+
+    private static final String TOKEN_NETWORK_GATEWAY = "NETWORK_GATEWAY";
 
     private static final String END_POINT_EXT = "/v2/apps";
     private static final String HEADER_ACCEPT = "accept";
@@ -116,7 +119,8 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
     }
 
     /**
-     * Replaces ${MINIMESOS_[ROLE]}, ${MINIMESOS_[ROLE]_IP} and ${MINIMESOS_[ROLE]_PORT} tokens in the given string with actual values
+     * Replaces ${MINIMESOS_[ROLE]}, ${MINIMESOS_[ROLE]_IP} and ${MINIMESOS_[ROLE]_PORT} tokens in the given string with actual values.
+     * Also supports ${NETWORK_GATEWAY}
      *
      * @param source string to replace values in
      * @return updated string
@@ -133,6 +137,10 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
                 updatedJson = replaceToken(updatedJson, MesosCluster.MINIMESOS_TOKEN_PREFIX + process.getRole().toUpperCase() + "_PORT", Integer.toString(serviceUri.getPort()));
             }
         }
+
+        // replace independent from roles tokens
+        updatedJson = replaceToken(updatedJson, TOKEN_NETWORK_GATEWAY, DockerContainersUtil.getGatewayIpAddress());
+
         return updatedJson;
     }
 
