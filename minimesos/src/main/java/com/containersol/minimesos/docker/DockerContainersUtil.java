@@ -235,8 +235,8 @@ public class DockerContainersUtil {
     /**
      * @return IP Address of the container's gateway (which would be docker0)
      */
-    public static String getGatewayIpAddress(String masterId) {
-        InspectContainerResponse response = DockerClientFactory.build().inspectContainerCmd(masterId).exec();
+    public static String getGatewayIpAddress(String containerId) {
+        InspectContainerResponse response = DockerClientFactory.build().inspectContainerCmd(containerId).exec();
         return response.getNetworkSettings().getGateway();
     }
 
