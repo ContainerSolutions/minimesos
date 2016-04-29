@@ -25,8 +25,6 @@ import static org.junit.Assert.fail;
 
 public class InstallCommandTest {
 
-    public static final String MESOS_MASTER_IP_TOKEN = "${MESOS_MASTER_IP}";
-
     @ClassRule
     public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromFile("src/test/resources/configFiles/minimesosFile-install-command-test");
 
@@ -73,19 +71,18 @@ public class InstallCommandTest {
 
         try (FileInputStream fis = new FileInputStream(taskFile)) {
             String appJson = IOUtils.toString(fis);
-            appJson = appJson.replace(MESOS_MASTER_IP_TOKEN, CLUSTER.getMaster().getIpAddress());
             CLUSTER.getMarathon().deployApp(appJson);
         }
     }
 
     @AfterClass
     public static void removeExecutors() {
-        DockerContainersUtil running = DockerContainersUtil.getContainers(false);
+        DockerContainersUtil containers = DockerContainersUtil.getContainers(true);
 
         // stop container, otherwise it keeps on scheduling new executors as soon as they are stopped
-        running.filterByImage(SchedulerContainer.SCHEDULER_IMAGE).kill().remove();
+        containers.filterByImage(SchedulerContainer.SCHEDULER_IMAGE).kill(true).remove();
         // remove executors
-        running.filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE).kill().remove();
+        containers.filterByImage(Configuration.DEFAULT_EXECUTOR_IMAGE).kill(true).remove();
     }
 
 }

@@ -1,6 +1,6 @@
 {
   "id": "hello-world-scheduler",
-  "cmd": "docker run containersol/mesos-hello-world-scheduler --mesosMaster ${MESOS_MASTER_IP}:5050",
+  "cmd": "docker run containersol/mesos-hello-world-scheduler --mesosMaster ${MINIMESOS_MASTER_IP}:${MINIMESOS_MASTER_PORT}",
   "cpus": 0.2,
   "mem": 512.0,
   "env": {

@@ -173,4 +173,19 @@ public class CommandTest {
         assertTrue(result.contains("Minimesos cluster is not running"));
     }
 
+    @Test
+    public void testCompleteInitFile() {
+        CommandUp commandUp = new CommandUp(ps);
+        commandUp.setClusterConfigPath("src/test/resources/configFiles/complete-minimesosFile");
+        commandUp.execute();
+
+        String result = outputStream.toString();
+
+        assertTrue("Command up output does not contain expected line", result.contains("Minimesos cluster is running"));
+        assertTrue(result.contains("Mesos version"));
+
+        assertTrue(result.contains("MINIMESOS_MARATHON"));
+
+    }
+
 }

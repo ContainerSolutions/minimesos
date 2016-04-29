@@ -128,11 +128,6 @@ public class MesosClusterTest {
         }
     }
 
-    @Test(expected = MinimesosException.class)
-    public void testInstall() {
-        CLUSTER.install(null);
-    }
-
     @Test(expected = IllegalStateException.class)
     public void testStartingClusterSecondTime() {
         CLUSTER.start(30);

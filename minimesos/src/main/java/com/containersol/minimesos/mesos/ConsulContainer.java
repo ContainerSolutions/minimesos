@@ -40,6 +40,11 @@ public class ConsulContainer extends AbstractContainer implements Consul {
     }
 
     @Override
+    protected int getServicePort() {
+        return ConsulConfig.CONSUL_HTTP_PORT;
+    }
+
+    @Override
     protected CreateContainerCmd dockerCommand() {
         ExposedPort consulHTTPPort = ExposedPort.tcp(ConsulConfig.CONSUL_HTTP_PORT);
         ExposedPort consulDNSPort = ExposedPort.udp(ConsulConfig.CONSUL_DNS_PORT);

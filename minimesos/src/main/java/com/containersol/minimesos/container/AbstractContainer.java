@@ -14,6 +14,8 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +36,6 @@ public abstract class AbstractContainer implements ClusterProcess {
     private final String uuid;
     private String containerId;
     private String ipAddress = null;
-    private boolean removed;
 
     protected AbstractContainer(ContainerConfig config) {
         this.config = config;
@@ -127,6 +128,51 @@ public abstract class AbstractContainer implements ClusterProcess {
         return containerId;
     }
 
+    @Override
+    public URI getServiceUrl() {
+
+        URI serviceUri = null;
+
+        String protocol = getServiceProtocol();
+        String host = getIpAddress();
+        int port = getServicePort();
+        String path = getServicePath();
+
+        if (StringUtils.isNotEmpty(host)) {
+            try {
+                serviceUri = new URI(protocol, null, host, port, path, null, null);
+            } catch (URISyntaxException e) {
+                throw new MinimesosException("Failed to form service URL for " + getName(), e);
+            }
+        }
+
+        return serviceUri;
+    }
+
+    /**
+     * Enables derived classes to override
+     * @return protocol of the service
+     */
+    protected String getServiceProtocol() {
+        return "http";
+    }
+
+    /**
+     * Enables derived classes to override
+     * @return port of the service
+     */
+    protected int getServicePort() {
+        return 80;
+    }
+
+    /**
+     * Enables derived classes to override
+     * @return protocol of the service
+     */
+    protected String getServicePath() {
+        return "";
+    }
+
     /**
      * @return the IP address of the container
      */
@@ -165,7 +211,6 @@ public abstract class AbstractContainer implements ClusterProcess {
             if (DockerContainersUtil.getContainer(containerId) != null) {
                 DockerClientFactory.build().removeContainerCmd(containerId).withForce(true).withRemoveVolumes(true).exec();
             }
-            this.removed = true;
         } catch (Exception e) {
             LOGGER.error("Could not remove container " + dockerCommand().getName(), e);
         }

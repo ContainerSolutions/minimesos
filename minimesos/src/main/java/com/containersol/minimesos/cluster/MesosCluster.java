@@ -37,6 +37,7 @@ public class MesosCluster {
     private static final Logger LOGGER = LoggerFactory.getLogger(MesosCluster.class);
 
     public static final String MINIMESOS_HOST_DIR_PROPERTY = "minimesos.host.dir";
+    public static final String MINIMESOS_TOKEN_PREFIX = "MINIMESOS_";
 
     private String clusterId;
 
@@ -148,27 +149,6 @@ public class MesosCluster {
         } else {
             throw new MinimesosException("Did not find the cluster or requested container");
         }
-    }
-
-    /**
-     * Installs a Marathon app
-     *
-     * @param marathonJson JSON representation of Marathon app
-     */
-    public void install(String marathonJson) {
-        if (marathonJson == null) {
-            throw new MinimesosException("Specify a Marathon JSON app definition");
-        }
-
-        Marathon marathon = getMarathon();
-        if (marathon == null) {
-            throw new MinimesosException("Marathon container is not found in cluster " + clusterId);
-        }
-
-        String marathonIp = marathon.getIpAddress();
-        LOGGER.debug(String.format("Installing %s app on marathon %s", marathonJson, marathonIp));
-
-        marathon.deployApp(marathonJson);
     }
 
     /**
@@ -470,9 +450,9 @@ public class MesosCluster {
     @Override
     public String toString() {
         return "MesosCluster{" +
-                "clusterId='" + clusterId + '\'' +
-                ", processes=" + memberPocesses +
-                '}';
+            "clusterId='" + clusterId + '\'' +
+            ", processes=" + memberPocesses +
+            '}';
     }
 
 }

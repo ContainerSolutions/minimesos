@@ -4,6 +4,7 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosContainer;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.MesosContainerConfig;
+import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
@@ -21,8 +22,6 @@ import java.util.TreeMap;
  */
 public abstract class MesosContainerImpl extends AbstractContainer implements MesosContainer {
 
-    public static final String DEFAULT_MESOS_ZK_PATH = "/mesos";
-
     private ZooKeeper zooKeeperContainer;
     protected MesosContainerConfig config;
 
@@ -36,8 +35,6 @@ public abstract class MesosContainerImpl extends AbstractContainer implements Me
         super(cluster, uuid, containerId, config);
         this.config = config;
     }
-
-    public abstract int getPortNumber();
 
     @Override
     public String getImageTag() {
@@ -71,11 +68,11 @@ public abstract class MesosContainerImpl extends AbstractContainer implements Me
     }
 
     public String getFormattedZKAddress() {
-        return zooKeeperContainer.getFormattedZKAddress() + DEFAULT_MESOS_ZK_PATH;
+        return zooKeeperContainer.getFormattedZKAddress() + ZooKeeperConfig.DEFAULT_MESOS_ZK_PATH;
     }
 
     public String getStateUrl() {
-        return "http://" + getIpAddress() + ":" + getPortNumber() + "/state.json";
+        return getServiceUrl().toString() + "/state.json";
     }
 
     @Override

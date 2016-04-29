@@ -26,4 +26,9 @@ public class Filter {
     public static Predicate<ClusterProcess> marathon() {
         return process -> process instanceof Marathon;
     }
+
+    public static Predicate<ClusterProcess> withRole(String role) {
+        return process -> role.equals(process.getRole());
+    }
+
 }

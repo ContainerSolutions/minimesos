@@ -7,11 +7,8 @@ import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ConfigParser;
-import com.containersol.minimesos.config.ConsulConfig;
-import com.containersol.minimesos.config.MarathonConfig;
 import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.config.MesosMasterConfig;
-import com.containersol.minimesos.config.RegistratorConfig;
 import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 import org.apache.commons.io.IOUtils;
@@ -35,18 +32,6 @@ public class CommandUp implements Command {
     @Parameter(names = "--exposedHostPorts", description = "Expose the Mesos and Marathon UI ports on the host level (we recommend to enable this on Mac (e.g. when using docker-machine) and disable on Linux).")
     private Boolean exposedHostPorts = null;
 
-    @Parameter(names = "--marathonImageTag", description = "The tag of the Marathon Docker image.")
-    private String marathonImageTag = null;
-
-    @Parameter(names = "--mesosImageTag", description = "The tag of the Mesos master and agent Docker images.")
-    private String mesosImageTag = null;
-
-    @Parameter(names = "--zooKeeperImageTag", description = "The tag of the ZooKeeper Docker images.")
-    private String zooKeeperImageTag = null;
-
-    @Parameter(names = "--timeout", description = "Time to wait for a container to get responsive, in seconds.")
-    private Integer timeout = null;
-
     /**
      * As number of agents can be determined either in config file or command line parameters, it defaults to invalid value.
      * Logic to select the actual number of agent is in the field getter
@@ -67,16 +52,9 @@ public class CommandUp implements Command {
         mesosClusterFactory = new MesosClusterContainersFactory();
     }
 
-    public String getMarathonImageTag() {
-        return marathonImageTag;
-    }
-
-    public String getMesosImageTag() {
-        return mesosImageTag;
-    }
-
-    public String getZooKeeperImageTag() {
-        return zooKeeperImageTag;
+    public CommandUp(PrintStream ps) {
+        this();
+        this.output = ps;
     }
 
     public Boolean isExposedHostPorts() {
@@ -85,10 +63,6 @@ public class CommandUp implements Command {
 
     public void setExposedHostPorts(Boolean exposedHostPorts) {
         this.exposedHostPorts = exposedHostPorts;
-    }
-
-    public Integer getTimeout() {
-        return timeout;
     }
 
     /**
@@ -139,7 +113,7 @@ public class CommandUp implements Command {
         startedCluster.start();
         startedCluster.waitForState(state -> state != null);
 
-        new CommandInfo().execute();
+        new CommandInfo(output).execute();
     }
 
     /**
@@ -168,36 +142,19 @@ public class CommandUp implements Command {
      * @param clusterConfig cluster configuration to update
      */
     public void updateWithParameters(ClusterConfig clusterConfig) {
+
         if (isExposedHostPorts() != null) {
             clusterConfig.setExposePorts(isExposedHostPorts());
         }
-        if (getTimeout() != null) {
-            clusterConfig.setTimeout(getTimeout());
-        }
-
-        boolean defaultMesosTags = (getMesosImageTag() == null);
 
         // ZooKeeper
-        ZooKeeperConfig zooKeeperConfig = (clusterConfig.getZookeeper() != null) ? clusterConfig.getZookeeper() : new ZooKeeperConfig();
-        if (getZooKeeperImageTag() != null) {
-            zooKeeperConfig.setImageTag(getZooKeeperImageTag());
+        if (clusterConfig.getZookeeper() == null) {
+            clusterConfig.setZookeeper(new ZooKeeperConfig());
         }
-        clusterConfig.setZookeeper(zooKeeperConfig);
 
         // Mesos Master
-        MesosMasterConfig masterConfig = (clusterConfig.getMaster() != null) ? clusterConfig.getMaster() : new MesosMasterConfig();
-        if (!defaultMesosTags) {
-            masterConfig.setImageTag(getMesosImageTag());
-        }
-        clusterConfig.setMaster(masterConfig);
-
-        // Marathon (optional)
-        if (clusterConfig.getMarathon() != null) {
-            MarathonConfig marathonConfig = clusterConfig.getMarathon();
-            if (getMarathonImageTag() != null) {
-                marathonConfig.setImageTag(getMarathonImageTag());
-            }
-            clusterConfig.setMarathon(marathonConfig);
+        if (clusterConfig.getMaster() == null) {
+            clusterConfig.setMaster(new MesosMasterConfig());
         }
 
         // creation of agents
@@ -205,30 +162,10 @@ public class CommandUp implements Command {
         List<MesosAgentConfig> updatedConfigs = new ArrayList<>();
         for (int i = 0; i < getNumAgents(); i++) {
             MesosAgentConfig agentConfig = (agentConfigs.size() > i) ? agentConfigs.get(i) : new MesosAgentConfig();
-            if (!defaultMesosTags) {
-                agentConfig.setImageTag(getMesosImageTag());
-            }
             updatedConfigs.add(agentConfig);
         }
         clusterConfig.setAgents(updatedConfigs);
 
-        // Consul (optional)
-        if (clusterConfig.getConsul() != null) {
-            ConsulConfig consulConfig = clusterConfig.getConsul();
-            if (consulConfig == null) {
-                consulConfig = new ConsulConfig();
-            }
-            clusterConfig.setConsul(consulConfig);
-        }
-
-        // Registrator (optional)
-        if (clusterConfig.getRegistrator() != null) {
-            RegistratorConfig registratorConfig = clusterConfig.getRegistrator();
-            if (registratorConfig == null) {
-                registratorConfig = new RegistratorConfig();
-            }
-            clusterConfig.setRegistrator(registratorConfig);
-        }
     }
 
     public MesosCluster getCluster() {
@@ -249,7 +186,4 @@ public class CommandUp implements Command {
         this.mesosClusterFactory = mesosClusterFactory;
     }
 
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
-    }
 }

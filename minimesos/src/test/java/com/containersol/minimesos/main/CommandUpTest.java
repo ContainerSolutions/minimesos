@@ -10,7 +10,6 @@ import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -54,15 +53,6 @@ public class CommandUpTest {
         commandUp.execute();
 
         verify(mesosCluster).start();
-    }
-
-    @Test
-    public void testExecute_setTimeout() {
-        commandUp.setClusterConfigPath("src/test/resources/configFiles/minimal-minimesosFile");
-        commandUp.setTimeout(30);
-        commandUp.execute();
-
-        assertEquals(30, capturedClusterConfig.getValue().getTimeout());
     }
 
     @Test

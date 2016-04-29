@@ -44,7 +44,7 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
     }
 
     @Override
-    public int getPortNumber() {
+    public int getServicePort() {
         return MesosMasterConfig.MESOS_MASTER_PORT;
     }
 
@@ -70,7 +70,7 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        int port = getPortNumber();
+        int port = getServicePort();
         ExposedPort exposedPort = ExposedPort.tcp(port);
 
         Ports portBindings = new Ports();
@@ -80,7 +80,7 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
 
         return DockerClientFactory.build().createContainerCmd(getImageName() + ":" + getImageTag())
                 .withName(getName())
-                .withExposedPorts(new ExposedPort(getPortNumber()))
+                .withExposedPorts(new ExposedPort(getServicePort()))
                 .withEnv(newEnvironment()
                         .withValues(getMesosMasterEnvVars())
                         .withValues(getSharedEnvVars())
