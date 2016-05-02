@@ -31,15 +31,20 @@ public class CommandInfo implements Command {
 
     @Override
     public void execute() {
-        MesosCluster cluster = ClusterRepository.loadCluster(new MesosClusterContainersFactory());
-        if (cluster != null) {
-            output.println("Minimesos cluster is running: " + cluster.getClusterId());
-            if (cluster.getMesosVersion() != null) {
-                output.println("Mesos version: " + cluster.getMesosVersion());
+        String clusterId = ClusterRepository.readClusterId();
+        if (clusterId != null) {
+            MesosCluster cluster = ClusterRepository.loadCluster(new MesosClusterContainersFactory());
+            if (cluster != null) {
+                output.println("Minimesos cluster is running: " + cluster.getClusterId());
+                if (cluster.getMesosVersion() != null) {
+                    output.println("Mesos version: " + cluster.getMesosVersion());
+                }
+                printServiceUrls(cluster);
+            } else {
+                output.println(String.format("Minimesos cluster %s is not running. %s is removed", clusterId, ClusterRepository.getMinimesosFile().getAbsolutePath()));
             }
-            printServiceUrls(cluster);
         } else {
-            output.println("Minimesos cluster is not running");
+            output.println("Cluster ID is not found in " + ClusterRepository.getMinimesosFile().getAbsolutePath());
         }
     }
 

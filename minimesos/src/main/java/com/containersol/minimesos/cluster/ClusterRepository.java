@@ -65,7 +65,7 @@ public class ClusterRepository {
         ClusterRepository.deleteMinimesosFile();
     }
 
-    private static String readClusterId() {
+    public static String readClusterId() {
         try {
             File minimesosFile = getMinimesosFile();
             String clusterId = FileUtils.readFileToString(minimesosFile);
