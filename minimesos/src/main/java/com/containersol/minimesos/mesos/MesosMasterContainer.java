@@ -7,7 +7,6 @@ import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.Ports;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONObject;
@@ -70,22 +69,13 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        int port = getServicePort();
-        ExposedPort exposedPort = ExposedPort.tcp(port);
-
-        Ports portBindings = new Ports();
-        if (getCluster().isExposedHostPorts()) {
-            portBindings.bind(exposedPort, new Ports.Binding(port));
-        }
-
         return DockerClientFactory.build().createContainerCmd(getImageName() + ":" + getImageTag())
                 .withName(getName())
                 .withExposedPorts(new ExposedPort(getServicePort()))
                 .withEnv(newEnvironment()
                         .withValues(getMesosMasterEnvVars())
                         .withValues(getSharedEnvVars())
-                        .createEnvironment())
-                .withPortBindings(portBindings);
+                        .createEnvironment());
     }
 
     @Override

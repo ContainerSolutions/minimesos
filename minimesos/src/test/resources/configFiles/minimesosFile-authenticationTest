@@ -1,6 +1,5 @@
 minimesos {
     clusterName = "authentication-test"
-    exposePorts = false
     loggingLevel = "INFO"
     mapAgentSandboxVolume = false
     mesosVersion = "0.25"

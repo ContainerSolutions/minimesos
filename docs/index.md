@@ -16,8 +16,8 @@ If you have used Vagrant and Docker before, the set of the commands will be very
 minimesos runs Docker containers with a configurable version version of Mesos. See the [minimesos-docker](https://github.com/ContainerSolutions/minimesos-docker) repository
 with an overview of the images supported by minimesos.
 
-The Docker client in these Mesos images should be able to talk to Docker daemon on your host machine. The Docker daemon is expected to run version 1.10 or higher 
-of Docker or Docker Machine. See Docker [API compatibility](https://docs.docker.com/engine/reference/api/docker_remote_api/) table. 
+The Docker client in these Mesos images should be able to talk to Docker daemon on your host machine. The Docker daemon is expected to run version 1.10 or higher
+of Docker or Docker Machine. See Docker [API compatibility](https://docs.docker.com/engine/reference/api/docker_remote_api/) table.
 
 
 
@@ -122,7 +122,6 @@ Scalar values are simple key-value strings.
 | Option name           | type    | Meaning                                                                            |
 |-----------------------|---------|------------------------------------------------------------------------------------|
 | clusterName           | String  | The name of the Mesos cluster                                                      |
-| exposePorts           | Boolean | Whether to expose docker bind ports on the host                                    |
 | loggingLevel          | String  | Debug level in the terminal output                                                 |
 | mapAgentSandboxVolume | Boolean | Creates a volume mapping to the agent sandbox under ${PWD}/.minimesos/sandbox-.../ |
 | mesosVersion          | String  | Mesos version                                                                      |
@@ -138,7 +137,7 @@ By default, minimesos starts consul and registrator containers giving you abilit
 
 ## Java API
 
-In this snippet we're configuring the Mesos cluster to start 3 agents with different resources. 
+In this snippet we're configuring the Mesos cluster to start 3 agents with different resources.
 
 ```
 public class MesosClusterTest {
@@ -150,7 +149,7 @@ public class MesosClusterTest {
         .withAgent("ports(*):[9201-9201,9301-9301]")
         .withAgent("ports(*):[9202-9202,9302-9302]")
         .build());
-            
+
     @Test
     public void mesosClusterCanBeStarted() throws Exception {
         JSONObject stateInfo = cluster.getStateInfoJSON();
@@ -162,7 +161,7 @@ public class MesosClusterTest {
 ## TDD for Mesos frameworks
 
 A possible testing scenario could be:
- 
+
  1. In the test setup launch the Mesos cluster container
  2. Call the scheduler directly from your test and point to Zookeeper to detect the master or passing the master URL directly.
  3. The scheduler launches a task on a suitable agent.
@@ -177,7 +176,7 @@ A possible testing scenario could be:
 
 ### Install DockerToolbox (including docker-machine)
 
-Download package from <https://www.docker.com/docker-toolbox> and install it. 
+Download package from <https://www.docker.com/docker-toolbox> and install it.
 Tested with [DockerToolbox-1.9.0d.pkg](https://github.com/docker/toolbox/releases/download/v1.9.0d/DockerToolbox-1.9.0d.pkg)
 
 ### Creating VM for minimesos
@@ -225,7 +224,7 @@ To create minimesos cluster execute ```minimesos up```. It will create temporary
 When cluster is started ```.minimesos/minimesos.cluster``` file with cluster ID is created in local directory. This cluster is destroyed with ```minimesos destroy```
 
 ```
-$ minimesos up 
+$ minimesos up
 export MINIMESOS_ZOOKEEPER=zk://172.17.0.3:2181
 export MINIMESOS_MASTER=http://172.17.0.4:5050
 export MINIMESOS_MARATHON=http://172.17.0.5:8080$ minimesos up
@@ -261,7 +260,7 @@ The table below is an attempt to summarize mappings, which enable execution of m
 
 ## Caveats
 
-`minimesos up` command supports `--mesosImageTag` parameter, which can be used to override the version of Mesos to be used. 
+`minimesos up` command supports `--mesosImageTag` parameter, which can be used to override the version of Mesos to be used.
 When running an older version of Mesos, you may encounter [compatibility issues between Mesos 0.22 and Docker v. greater than 1.7](https://issues.apache.org/jira/browse/INFRA-10621).
 
 Since version 0.3.0 minimesos uses 'flat' container structure, which means that all containers (agents, master, zookeeper) as well as all Docker executor tasks are run in the same Docker context - the host machine.
@@ -277,7 +276,7 @@ Libprocess tries to bind on a loopback interface and fails to establish communic
 
 To work around this, start the executor using [```--bridge``` mode](https://issues.apache.org/jira/browse/MESOS-1621) and provide LIBPROCESS_IP environment variable with the IP address of the executor container, for example using this:
 
-``` 
+```
 export LIBPROCESS_IP=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | head -n 1)
 
 ```

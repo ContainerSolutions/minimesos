@@ -1,6 +1,5 @@
 minimesos {
     clusterName = "minimesos-test"
-    exposePorts = false
     loggingLevel = "INFO"
     mapAgentSandboxVolume = false
     mesosVersion = "0.25"
@@ -47,7 +46,7 @@ minimesos {
         app {
           marathonJson = "src/test/resources/app.json"
         }
-     
+
     }
 
     master {

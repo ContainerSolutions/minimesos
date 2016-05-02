@@ -29,9 +29,6 @@ public class CommandUp implements Command {
 
     public static final String CLINAME = "up";
 
-    @Parameter(names = "--exposedHostPorts", description = "Expose the Mesos and Marathon UI ports on the host level (we recommend to enable this on Mac (e.g. when using docker-machine) and disable on Linux).")
-    private Boolean exposedHostPorts = null;
-
     /**
      * As number of agents can be determined either in config file or command line parameters, it defaults to invalid value.
      * Logic to select the actual number of agent is in the field getter
@@ -55,14 +52,6 @@ public class CommandUp implements Command {
     public CommandUp(PrintStream ps) {
         this();
         this.output = ps;
-    }
-
-    public Boolean isExposedHostPorts() {
-        return exposedHostPorts;
-    }
-
-    public void setExposedHostPorts(Boolean exposedHostPorts) {
-        this.exposedHostPorts = exposedHostPorts;
     }
 
     /**
@@ -142,10 +131,6 @@ public class CommandUp implements Command {
      * @param clusterConfig cluster configuration to update
      */
     public void updateWithParameters(ClusterConfig clusterConfig) {
-
-        if (isExposedHostPorts() != null) {
-            clusterConfig.setExposePorts(isExposedHostPorts());
-        }
 
         // ZooKeeper
         if (clusterConfig.getZookeeper() == null) {

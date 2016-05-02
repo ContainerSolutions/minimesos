@@ -81,9 +81,6 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
     protected CreateContainerCmd dockerCommand() {
         ExposedPort exposedPort = ExposedPort.tcp(MarathonConfig.MARATHON_PORT);
         Ports portBindings = new Ports();
-        if (getCluster().isExposedHostPorts()) {
-            portBindings.bind(exposedPort, new Ports.Binding(MarathonConfig.MARATHON_PORT));
-        }
         return DockerClientFactory.build().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withName(getName())
                 .withExtraHosts("minimesos-zookeeper:" + this.zooKeeper.getIpAddress())

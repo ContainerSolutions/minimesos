@@ -1,6 +1,5 @@
 minimesos {
     clusterName = "exposed-ports-test"
-    exposePorts = true
     loggingLevel = "INFO"
     mapAgentSandboxVolume = false
     mesosVersion = "0.25"
