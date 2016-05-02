@@ -139,7 +139,7 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
         }
 
         // replace independent from roles tokens
-        updatedJson = replaceToken(updatedJson, TOKEN_NETWORK_GATEWAY, DockerContainersUtil.getGatewayIpAddress());
+        updatedJson = replaceToken(updatedJson, TOKEN_NETWORK_GATEWAY, DockerContainersUtil.getGatewayIpAddress(getCluster().getMaster().getContainerId()));
 
         return updatedJson;
     }
