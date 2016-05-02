@@ -18,6 +18,10 @@ We would like to know what you think of minimesos and how you use it. Check out 
 
 Join the mailinglist at [https://groups.google.com/forum/#!forum/minimesos](https://groups.google.com/forum/#!forum/minimesos)
 
+## Twitter
+
+Follow us on Twitter at [@minimesos](https://twitter.com/minimesos)
+
 ## Videos
 
 #### Introduction to Minimesos by Viktor Sadovnikov [@sadovnikov](https://twitter.com/sadovnikov)
