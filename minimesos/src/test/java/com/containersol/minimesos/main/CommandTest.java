@@ -116,7 +116,7 @@ public class CommandTest {
         commandInfo.execute();
 
         String result = outputStream.toString();
-        assertTrue(result.contains("Minimesos cluster is not running"));
+        assertTrue("Expected phrase not found in: " + result, result.contains("Cluster ID is not found"));
     }
 
     @Test
