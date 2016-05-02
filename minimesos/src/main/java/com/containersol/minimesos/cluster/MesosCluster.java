@@ -39,6 +39,8 @@ public class MesosCluster {
     public static final String MINIMESOS_HOST_DIR_PROPERTY = "minimesos.host.dir";
     public static final String MINIMESOS_TOKEN_PREFIX = "MINIMESOS_";
 
+    public static final String TOKEN_NETWORK_GATEWAY = MINIMESOS_TOKEN_PREFIX + "NETWORK_GATEWAY";
+
     private String clusterId;
 
     private final ClusterConfig clusterConfig;

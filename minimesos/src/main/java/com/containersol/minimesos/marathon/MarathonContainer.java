@@ -43,7 +43,7 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MarathonContainer.class);
 
-    private static final String TOKEN_NETWORK_GATEWAY = "NETWORK_GATEWAY";
+    private static final String TOKEN_HOST_DIR = "MINIMESOS_HOST_DIR";
 
     private static final String END_POINT_EXT = "/v2/apps";
     private static final String HEADER_ACCEPT = "accept";
@@ -126,8 +126,9 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
      * @return updated string
      */
     public String replaceTokens(String source) {
+        MesosCluster cluster = getCluster();
         // received JSON might contain tokens, which should be replaced before the installation
-        List<ClusterProcess> uniqueRoles = ClusterUtil.getDistinctRoleProcesses(getCluster().getMemberProcesses());
+        List<ClusterProcess> uniqueRoles = ClusterUtil.getDistinctRoleProcesses(cluster.getMemberProcesses());
         String updatedJson = source;
         for (ClusterProcess process : uniqueRoles) {
             URI serviceUri = process.getServiceUrl();
@@ -139,7 +140,9 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
         }
 
         // replace independent from roles tokens
-        updatedJson = replaceToken(updatedJson, TOKEN_NETWORK_GATEWAY, DockerContainersUtil.getGatewayIpAddress(getCluster().getMaster().getContainerId()));
+        String masterContainer = cluster.getMaster().getContainerId();
+        updatedJson = replaceToken(updatedJson, MesosCluster.TOKEN_NETWORK_GATEWAY, DockerContainersUtil.getGatewayIpAddress(masterContainer));
+        updatedJson = replaceToken(updatedJson, TOKEN_HOST_DIR, MesosCluster.getHostDir().getAbsolutePath());
 
         return updatedJson;
     }

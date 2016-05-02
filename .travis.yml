@@ -15,7 +15,7 @@ install:
   - sudo apt-key update
   - sudo apt-get -qqy install docker-engine=1.9.1-0~precise
 # Has to run this script with sudo because custom installation does not allow $USER to use docker and it's not possible to relogin
-  - chmod +x pull-containers.sh && sudo ./pull-containers.sh
+  - sudo make deps
 
 # Has to run the build script with sudo because custom installation does not allow $USER to use docker and it's not possible to relogin
 script: chmod +x travis.sh && sudo ./travis.sh

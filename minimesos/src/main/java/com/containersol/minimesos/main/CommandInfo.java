@@ -5,6 +5,7 @@ import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.ClusterUtil;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 
 import java.io.PrintStream;
@@ -49,8 +50,12 @@ public class CommandInfo implements Command {
      */
     private void printServiceUrls(MesosCluster cluster) {
 
-        List<ClusterProcess> uniqueMembers = ClusterUtil.getDistinctRoleProcesses(cluster.getMemberProcesses());
+        // print independent from roles variables
+        String masterContainer = cluster.getMaster().getContainerId();
+        String gateway = String.format("export %s=%s", MesosCluster.TOKEN_NETWORK_GATEWAY, DockerContainersUtil.getGatewayIpAddress(masterContainer));
+        output.println(gateway);
 
+        List<ClusterProcess> uniqueMembers = ClusterUtil.getDistinctRoleProcesses(cluster.getMemberProcesses());
         for (ClusterProcess process : uniqueMembers) {
 
             URI serviceUrl = process.getServiceUrl();
