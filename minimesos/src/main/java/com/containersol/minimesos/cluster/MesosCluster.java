@@ -319,16 +319,8 @@ public class MesosCluster {
         return clusterId;
     }
 
-    public boolean isExposedHostPorts() {
-        return clusterConfig.getExposePorts();
-    }
-
     public boolean getMapAgentSandboxVolume() {
         return clusterConfig.getMapAgentSandboxVolume();
-    }
-
-    public void setExposedHostPorts(boolean exposedHostPorts) {
-        clusterConfig.setExposePorts(exposedHostPorts);
     }
 
     public void waitForState(final Predicate<State> predicate) {

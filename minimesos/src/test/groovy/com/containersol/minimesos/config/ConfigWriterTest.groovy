@@ -57,7 +57,6 @@ public class ConfigWriterTest {
 
         assertEquals(first.timeout, second.timeout)
         assertEquals(first.clusterName, second.clusterName)
-        assertEquals(first.exposePorts, second.exposePorts)
         assertEquals(first.loggingLevel, second.loggingLevel)
 
         compareContainers(first.marathon, second.marathon)

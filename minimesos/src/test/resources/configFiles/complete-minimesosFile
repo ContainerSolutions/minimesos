@@ -1,6 +1,5 @@
 minimesos {
     clusterName = "Change Cluster Name in minimesosFile file"
-    exposePorts = false
     loggingLevel = "INFO"
     mapAgentSandboxVolume = false
     mesosVersion = "0.25"
