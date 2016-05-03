@@ -6,6 +6,7 @@ import com.containersol.minimesos.config.AgentResourcesConfig;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.junit.MesosClusterTestRule;
+import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.ResourceUtil;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -43,9 +44,9 @@ public class DefaultMinimumClusterTest {
 
     @Test
     public void mesosClusterCanBeStarted() throws Exception {
-        JSONObject stateInfo = CLUSTER.getMaster().getStateInfoJSON();
+        State state = CLUSTER.getMaster().getState();
 
-        assertEquals(1, stateInfo.getInt("activated_slaves")); // Only one agent is actually _required_ to have a cluster
+        assertEquals(1, state.getActivatedAgents());
     }
 
     @Test

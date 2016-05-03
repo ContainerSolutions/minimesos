@@ -1,20 +1,15 @@
 package com.containersol.minimesos.mesos;
 
-import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.docker.DockerClientFactory;
-import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.ResourceUtil;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Link;
-import com.mashape.unirest.http.exceptions.UnirestException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -117,12 +112,4 @@ public class MesosAgentContainer extends MesosContainerImpl implements MesosAgen
         return envs;
     }
 
-    @Override
-    public State getState() {
-        try {
-            return State.fromJSON(getStateInfoJSON().toString());
-        } catch (JsonParseException | JsonMappingException | UnirestException e) {
-            throw new MinimesosException("Could not retrieve state from Mesos Agent: " + getName(), e);
-        }
-    }
 }

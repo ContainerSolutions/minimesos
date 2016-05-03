@@ -7,6 +7,7 @@ import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.junit.MesosClusterTestRule;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.ResourceUtil;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -58,9 +59,9 @@ public class MesosClusterTest {
     @Test
     public void mesosClusterCanBeStarted() throws Exception {
         MesosMaster master = CLUSTER.getMaster();
-        JSONObject stateInfo = master.getStateInfoJSON();
+        State state = master.getState();
 
-        assertEquals(3, stateInfo.getInt("activated_slaves"));
+        assertEquals(3, state.getActivatedAgents());
     }
 
     @Test

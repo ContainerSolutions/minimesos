@@ -13,6 +13,11 @@ public interface MesosContainer extends ClusterProcess {
 
     JSONObject getStateInfoJSON() throws UnirestException;
 
+    /**
+     * Retrieve state of the Master or Agent.
+     *
+     * @return state object with frameworks and tasks
+     */
     State getState();
 
 }
