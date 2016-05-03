@@ -87,7 +87,7 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
         try {
             return State.fromJSON(getStateInfoJSON().toString());
         } catch (JsonParseException | JsonMappingException | UnirestException e) {
-            throw new MinimesosException("Could not retrieve state from Mesos Master: " + getName());
+            throw new MinimesosException("Could not retrieve state from Mesos Master: " + getName(), e.getCause());
         }
     }
 

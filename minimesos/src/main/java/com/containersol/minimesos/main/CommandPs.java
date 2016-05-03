@@ -17,14 +17,14 @@ public class CommandPs implements Command {
 
     private ClusterRepository repository = new ClusterRepository();
 
-    private PrintStream output = System.out;
+    private PrintStream output = System.out; // NOSONAR
 
     public CommandPs(PrintStream output) {
         this.output = output;
     }
 
     public CommandPs() {
-        this.output = System.out;
+
     }
 
     @Override
@@ -38,7 +38,7 @@ public class CommandPs implements Command {
     }
 
     @Override
-    public void execute() throws MinimesosException {
+    public void execute() {
         MesosCluster cluster = repository.loadCluster(new MesosClusterContainersFactory());
 
         if (cluster == null) {

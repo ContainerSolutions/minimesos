@@ -122,7 +122,7 @@ public class MesosAgentContainer extends MesosContainerImpl implements MesosAgen
         try {
             return State.fromJSON(getStateInfoJSON().toString());
         } catch (JsonParseException | JsonMappingException | UnirestException e) {
-            throw new MinimesosException("Could not retrieve state from Mesos Agent: " + getName());
+            throw new MinimesosException("Could not retrieve state from Mesos Agent: " + getName(), e.getCause());
         }
     }
 }
