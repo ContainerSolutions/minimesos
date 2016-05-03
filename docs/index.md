@@ -45,6 +45,9 @@ These are the options you might want to change to configure your cluster.
 ```
 Usage: minimesos [options] [command] [command options]
   Options:
+    --debug
+       Enable debug logging.
+       Default: false
     --help, -help, -?, -h
        Show help
        Default: false
@@ -59,7 +62,7 @@ Usage: minimesos [options] [command] [command options]
       Usage: install [options]
         Options:
           --marathonFile
-             Marathon JSON app install file location. Either this or --stdin
+             Marathon JSON app install file path or URL. Either this or --stdin
              parameter must be used
           --stdin
              Use JSON from standard import. Allow piping JSON from other
@@ -75,29 +78,9 @@ Usage: minimesos [options] [command] [command options]
           --clusterConfig
              Path to file with cluster configuration. Defaults to minimesosFile
              Default: minimesosFile
-          --consul
-             Start consul container
-             Default: false
-          --exposedHostPorts
-             Expose the Mesos and Marathon UI ports on the host level (we
-             recommend to enable this on Mac (e.g. when using docker-machine) and disable
-             on Linux).
-             Default: false
-          --marathonImageTag
-             The tag of the Marathon Docker image.
-             Default: v0.15.3
-          --mesosImageTag
-             The tag of the Mesos master and agent Docker images.
-             Default: INHERIT
           --num-agents
              Number of agents to start
              Default: -1
-          --timeout
-             Time to wait for a container to get responsive, in seconds.
-             Default: 60
-          --zooKeeperImageTag
-             The tag of the ZooKeeper Docker images.
-             Default: 3.4.6
 
     state      Display state.json file of a master or an agent
       Usage: state [options]
@@ -141,21 +124,19 @@ In this snippet we're configuring the Mesos cluster to start 3 agents with diffe
 
 ```
 public class MesosClusterTest {
+
     @ClassRule
-    public static MesosCluster cluster = new MesosCluster(new ClusterArchitecture.Builder()
-        .withZooKeeper()
-        .withMaster()
-        .withAgent("ports(*):[9200-9200,9300-9300]")
-        .withAgent("ports(*):[9201-9201,9301-9301]")
-        .withAgent("ports(*):[9202-9202,9302-9302]")
-        .build());
+    public static MesosClusterTestRule testRule =
+        MesosClusterTestRule.fromFile("src/test/resources/configFiles/testMinimesosFile");
+
+    public static MesosCluster cluster = testRule.getMesosCluster();
 
     @Test
     public void mesosClusterCanBeStarted() throws Exception {
         JSONObject stateInfo = cluster.getStateInfoJSON();
         Assert.assertEquals(3, stateInfo.getInt("activated_slaves"));
         Assert.assertTrue(cluster.getMesosMasterURL().contains(":5050"));
-     }
+    }
 }
 ```
 ## TDD for Mesos frameworks
@@ -184,7 +165,7 @@ Tested with [DockerToolbox-1.9.0d.pkg](https://github.com/docker/toolbox/release
 Create a docker machine, make sure its environment variables are visible to the test, ensure the docker containers' IP addresses are available on the host
 
 ```
-$ docker-machine create -d virtualbox --virtualbox-memory 2048 --virtualbox-cpu-count 1 minimesos
+$ docker-machine create -d virtualbox --virtualbox-memory 8192 --virtualbox-cpu-count 1 minimesos
 $ eval $(docker-machine env minimesos)
 ```
 
@@ -224,26 +205,31 @@ To create minimesos cluster execute ```minimesos up```. It will create temporary
 When cluster is started ```.minimesos/minimesos.cluster``` file with cluster ID is created in local directory. This cluster is destroyed with ```minimesos destroy```
 
 ```
+$ minimesos init
+Initialized minimesosFile in this directory
+
 $ minimesos up
-export MINIMESOS_ZOOKEEPER=zk://172.17.0.3:2181
-export MINIMESOS_MASTER=http://172.17.0.4:5050
-export MINIMESOS_MARATHON=http://172.17.0.5:8080$ minimesos up
-$ curl -s http://172.17.0.4:5050/state.json | jq ".version"
+Minimesos cluster is running: 3878417609
+Mesos version: 0.25
+export MINIMESOS_NETWORK_GATEWAY=172.17.0.1
+export MINIMESOS_AGENT=http://172.17.0.5:5051; export MINIMESOS_AGENT_IP=172.17.0.5
+export MINIMESOS_ZOOKEEPER=zk://172.17.0.3:2181/mesos; export MINIMESOS_ZOOKEEPER_IP=172.17.0.3
+export MINIMESOS_MARATHON=http://172.17.0.6:8080; export MINIMESOS_MARATHON_IP=172.17.0.6
+export MINIMESOS_CONSUL=http://172.17.0.7:8500; export MINIMESOS_CONSUL_IP=172.17.0.7
+export MINIMESOS_MASTER=http://172.17.0.4:5050; export MINIMESOS_MASTER_IP=172.17.0.4
+
+$ minimesos state | jq ".version"
 0.25.0
+
 $ minimesos destroy
 Destroyed minimesos cluster 3878417609
 ```
 
-The `minimesos up` command supports `--exposedHostPorts` flag, that automatically binds Mesos and Marathon ports `5050`, resp. `8080` to the host machine, providing you with easy access to the services. Let the following table explain what the host machine is in different contexts:
+If you use docker-machine, in order to be able to access the reported IP address in browser, it's necessary to add routing of docker IP range to IP address of the docker machine
 
-| --exposedHostPorts | Linux                            | OS X                                |
-|--------------------|----------------------------------|-------------------------------------|
-| disabled           | container IP addresses (default) | n/a                                 |
-| enabled            | host computer                    | docker-machine IP address (default) |
-
-Having `--exposedHostPorts` enabled on Linux makes minimesos containers effectively accessible to anyone who has network access to your computer.
-We don't recommend this. Not using `--exposedHostPorts` flag on Max OS X on the other hand makes the containers inaccessible, because they run inside another virtual machine. This machine is typically managed by `docker-machine`.
-Minimesos tries to choose the appropriate configuration for your system automatically.
+```
+sudo route delete 172.17.0.0/16; sudo route -n add 172.17.0.0/16 $(docker-machine ip ${DOCKER_MACHINE_NAME})
+```
 
 ### Mappings of volumes
 
