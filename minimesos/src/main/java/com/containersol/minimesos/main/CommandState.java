@@ -21,6 +21,8 @@ public class CommandState implements Command {
 
     private PrintStream output = System.out;
 
+    private ClusterRepository repository = new ClusterRepository();
+
     public CommandState() {
     }
 
@@ -30,7 +32,7 @@ public class CommandState implements Command {
 
     @Override
     public void execute() {
-        MesosCluster cluster = ClusterRepository.loadCluster(new MesosClusterContainersFactory());
+        MesosCluster cluster = repository.loadCluster(new MesosClusterContainersFactory());
         if (cluster != null) {
             cluster.state(output, agent);
         } else {

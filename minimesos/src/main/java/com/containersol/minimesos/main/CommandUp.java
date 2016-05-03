@@ -29,6 +29,8 @@ public class CommandUp implements Command {
 
     public static final String CLINAME = "up";
 
+    private ClusterRepository repository = new ClusterRepository();
+
     /**
      * As number of agents can be determined either in config file or command line parameters, it defaults to invalid value.
      * Logic to select the actual number of agent is in the field getter
@@ -97,7 +99,7 @@ public class CommandUp implements Command {
 
         startedCluster = mesosClusterFactory.createMesosCluster(clusterConfig);
         // save cluster ID first, so it becomes available for 'destroy' even if its part failed to start
-        ClusterRepository.saveClusterFile(startedCluster);
+        repository.saveClusterFile(startedCluster);
 
         startedCluster.start();
         startedCluster.waitForState(state -> state != null);
@@ -154,7 +156,7 @@ public class CommandUp implements Command {
     }
 
     public MesosCluster getCluster() {
-        return (startedCluster != null) ? startedCluster : ClusterRepository.loadCluster(new MesosClusterContainersFactory());
+        return (startedCluster != null) ? startedCluster : repository.loadCluster(new MesosClusterContainersFactory());
     }
 
     @Override

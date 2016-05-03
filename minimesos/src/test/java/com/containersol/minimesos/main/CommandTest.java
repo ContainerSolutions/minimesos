@@ -21,7 +21,10 @@ import static org.junit.Assert.assertTrue;
 public class CommandTest {
 
     private ByteArrayOutputStream outputStream;
+
     private PrintStream ps;
+
+    private ClusterRepository repository = new ClusterRepository();
 
     @Before
     public void initTest() {
@@ -42,7 +45,7 @@ public class CommandTest {
 
         MesosCluster cluster = commandUp.getCluster();
 
-        File minimesosFile = ClusterRepository.getMinimesosFile();
+        File minimesosFile = repository.getMinimesosFile();
 
         assertTrue("Minimesos file at " + minimesosFile + " should exist", minimesosFile.exists());
 
@@ -56,20 +59,20 @@ public class CommandTest {
 
     @Test
     public void testUp_invalidMinimesosFile() throws IOException {
-        FileUtils.write(ClusterRepository.getMinimesosFile(), "invalid");
+        FileUtils.write(repository.getMinimesosFile(), "invalid");
 
         CommandUp commandUp = new CommandUp();
         commandUp.setClusterConfigPath("src/test/resources/configFiles/minimal-minimesosFile");
         commandUp.execute();
         MesosCluster cluster = commandUp.getCluster();
 
-        String fileContent = FileUtils.readFileToString(ClusterRepository.getMinimesosFile());
+        String fileContent = FileUtils.readFileToString(repository.getMinimesosFile());
         assertEquals("Invalid state file has not been overwritten", cluster.getClusterId(), fileContent);
 
         CommandDestroy commandDestroy = new CommandDestroy();
         commandDestroy.execute();
 
-        File minimesosFile = ClusterRepository.getMinimesosFile();
+        File minimesosFile = repository.getMinimesosFile();
 
         assertFalse("Minimesos file at " + minimesosFile + " should be removed", minimesosFile.exists());
     }
@@ -90,7 +93,7 @@ public class CommandTest {
         CommandDestroy commandDestroy = new CommandDestroy();
         commandDestroy.execute();
 
-        File minimesosFile = ClusterRepository.getMinimesosFile();
+        File minimesosFile = repository.getMinimesosFile();
 
         assertFalse("Minimesos file at " + minimesosFile + " should be removed", minimesosFile.exists());
     }

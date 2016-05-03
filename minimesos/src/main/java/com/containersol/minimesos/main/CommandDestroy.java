@@ -17,15 +17,17 @@ public class CommandDestroy implements Command {
 
     public static final String CLINAME = "destroy";
 
+    private ClusterRepository repository = new ClusterRepository();
+
     @Override
     public void execute() {
 
         MesosClusterContainersFactory clusterFactory = new MesosClusterContainersFactory();
 
-        MesosCluster cluster = ClusterRepository.loadCluster(clusterFactory);
+        MesosCluster cluster = repository.loadCluster(clusterFactory);
         if (cluster != null) {
             cluster.destroy(clusterFactory);
-            ClusterRepository.deleteClusterFile();
+            repository.deleteClusterFile();
             LOGGER.info("Destroyed minimesos cluster with ID " + cluster.getClusterId());
         } else {
             LOGGER.info("Minimesos cluster is not running");

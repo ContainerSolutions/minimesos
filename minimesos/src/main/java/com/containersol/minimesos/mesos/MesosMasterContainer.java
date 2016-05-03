@@ -1,10 +1,14 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosMaster;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.docker.DockerClientFactory;
+import com.containersol.minimesos.state.State;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.mashape.unirest.http.Unirest;
@@ -76,6 +80,15 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
                         .withValues(getMesosMasterEnvVars())
                         .withValues(getSharedEnvVars())
                         .createEnvironment());
+    }
+
+    @Override
+    public State getState() {
+        try {
+            return State.fromJSON(getStateInfoJSON().toString());
+        } catch (JsonParseException | JsonMappingException | UnirestException e) {
+            throw new MinimesosException("Could not retrieve state from Mesos Master: " + getName());
+        }
     }
 
     @Override

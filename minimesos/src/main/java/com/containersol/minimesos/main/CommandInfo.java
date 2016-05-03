@@ -22,6 +22,8 @@ public class CommandInfo implements Command {
 
     private PrintStream output = System.out;
 
+    private ClusterRepository repository = new ClusterRepository();
+
     public CommandInfo() {
     }
 
@@ -31,9 +33,9 @@ public class CommandInfo implements Command {
 
     @Override
     public void execute() {
-        String clusterId = ClusterRepository.readClusterId();
+        String clusterId = repository.readClusterId();
         if (clusterId != null) {
-            MesosCluster cluster = ClusterRepository.loadCluster(new MesosClusterContainersFactory());
+            MesosCluster cluster = repository.loadCluster(new MesosClusterContainersFactory());
             if (cluster != null) {
                 output.println("Minimesos cluster is running: " + cluster.getClusterId());
                 if (cluster.getMesosVersion() != null) {
@@ -41,10 +43,10 @@ public class CommandInfo implements Command {
                 }
                 printServiceUrls(cluster);
             } else {
-                output.println(String.format("Minimesos cluster %s is not running. %s is removed", clusterId, ClusterRepository.getMinimesosFile().getAbsolutePath()));
+                output.println(String.format("Minimesos cluster %s is not running. %s is removed", clusterId, repository.getMinimesosFile().getAbsolutePath()));
             }
         } else {
-            output.println("Cluster ID is not found in " + ClusterRepository.getMinimesosFile().getAbsolutePath());
+            output.println("Cluster ID is not found in " + repository.getMinimesosFile().getAbsolutePath());
         }
     }
 
