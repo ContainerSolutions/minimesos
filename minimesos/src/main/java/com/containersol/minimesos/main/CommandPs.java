@@ -1,6 +1,5 @@
 package com.containersol.minimesos.main;
 
-import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
@@ -24,7 +23,7 @@ public class CommandPs implements Command {
     }
 
     public CommandPs() {
-
+        // NOSONAR
     }
 
     @Override
