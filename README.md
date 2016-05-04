@@ -26,4 +26,4 @@ Follow us on Twitter at [@minimesos](https://twitter.com/minimesos)
 
 #### Introduction to Minimesos by Viktor Sadovnikov [@sadovnikov](https://twitter.com/sadovnikov)
 
-[![Introduction to minimesos by Viktor](https://raw.githubusercontent.com/containersolutions/minimesos/master/images/introduction-to-minimesos-screenshot.jpg)](https://www.youtube.com/watch?v=jVGyz8sCZSU)
+[![Introduction to minimesos by Viktor](https://raw.githubusercontent.com/containersolutions/minimesos/master/docs/images/introduction-to-minimesos-screenshot.jpg)](https://www.youtube.com/watch?v=jVGyz8sCZSU)
