@@ -86,7 +86,7 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
                 throw new MinimesosException("Could not delete app: " + app);
             }
         } catch (UnirestException e) {
-            throw new MinimesosException("Could not delete app: " + app);
+            throw new MinimesosException("Could not delete app: " + app, e);
         }
     }
 

@@ -41,7 +41,7 @@ public class CommandUninstall implements Command {
     }
 
     @Override
-    public void execute() throws MinimesosException {
+    public void execute() {
         MesosCluster cluster = repository.loadCluster(new MesosClusterContainersFactory());
 
         if (cluster == null) {
@@ -57,7 +57,7 @@ public class CommandUninstall implements Command {
         try {
             marathon.deleteApp(app);
         } catch (MinimesosException e) {
-            return;
+            return; // NOSONAR Only print message when uninstall succeeds
         }
         output.println("Deleted app '" + app + "'");
     }
