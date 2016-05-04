@@ -4,6 +4,9 @@ minimesosFile
 .gradle/
 build/
 
+# Vagrant working files
+.vagrant
+
 # Build system
 .gradle/
 build/
