@@ -78,6 +78,19 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
     }
 
     @Override
+    public void deleteApp(String app) {
+        try {
+            HttpResponse<JsonNode> deleteResponse = Unirest.delete(getServiceUrl().toString() + END_POINT_EXT + "/" + app).header(HEADER_ACCEPT, APPLICATION_JSON).asJson();
+            deleteResponse.getBody().getObject();
+            if (!(deleteResponse.getStatus() == HttpStatus.SC_OK)) {
+                throw new MinimesosException("Could not delete app: " + app);
+            }
+        } catch (UnirestException e) {
+            throw new MinimesosException("Could not delete app: " + app);
+        }
+    }
+
+    @Override
     protected CreateContainerCmd dockerCommand() {
         ExposedPort exposedPort = ExposedPort.tcp(MarathonConfig.MARATHON_PORT);
         Ports portBindings = new Ports();
