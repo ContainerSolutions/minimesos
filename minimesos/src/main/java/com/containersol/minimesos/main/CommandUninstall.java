@@ -56,9 +56,9 @@ public class CommandUninstall implements Command {
 
         try {
             marathon.deleteApp(app);
-        } catch (MinimesosException e) {
+        } catch (MinimesosException e) { // NOSONAR
             // Only print message when uninstall succeeds
-            return; // NOSONAR
+            return;
         }
         output.println("Deleted app '" + app + "'");
     }
