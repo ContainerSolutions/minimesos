@@ -24,4 +24,10 @@ public interface Marathon extends ClusterProcess {
 
     void setZooKeeper(ZooKeeper zookeeper);
 
+    /**
+     * Delete the given app
+     *
+     * @param app to be deleted
+     */
+    void deleteApp(String app);
 }

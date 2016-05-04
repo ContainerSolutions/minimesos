@@ -47,6 +47,7 @@ public class Main {
         main.addCommand(new CommandDestroy());
         main.addCommand(new CommandHelp());
         main.addCommand(new CommandInstall());
+        main.addCommand(new CommandUninstall());
         main.addCommand(new CommandState());
         main.addCommand(new CommandInfo());
         main.addCommand(new CommandInit());
