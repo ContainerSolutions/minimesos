@@ -1,5 +1,6 @@
 package com.containersol.minimesos.main;
 
+import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
@@ -12,6 +13,7 @@ import java.io.PrintStream;
 /**
  * Lists tasks on the cluster
  */
+@Parameters(separators = "=", commandDescription = "List running tasks")
 public class CommandPs implements Command {
 
     private ClusterRepository repository = new ClusterRepository();

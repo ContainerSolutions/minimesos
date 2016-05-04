@@ -1,6 +1,7 @@
 package com.containersol.minimesos.main;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.Marathon;
@@ -11,6 +12,7 @@ import java.io.PrintStream;
 /**
  * Uninstalls a Marathon app or framework
  */
+@Parameters(separators = "=", commandDescription = "Uninstall a Marathon app")
 public class CommandUninstall implements Command {
 
     @Parameter(names = "--app", description = "Marathon app to uninstall", required = true)
