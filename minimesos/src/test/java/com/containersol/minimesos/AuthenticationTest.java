@@ -19,7 +19,7 @@ public class AuthenticationTest {
 
     @Test
     public void clusterHasZookeeperUrl() throws UnirestException {
-        assertEquals("zk://" + CLUSTER.getZooKeeper().getIpAddress() + ":2181/mesos", CLUSTER.getMaster().getFlags().get("zk"));
+        assertEquals("zk://" + CLUSTER.getZooKeeper().getIpAddress() + ":2181/mesos", CLUSTER.getMaster().getState().getFlags().get("zk"));
     }
 
     /**
@@ -28,8 +28,8 @@ public class AuthenticationTest {
      */
     @Test
     public void extraEnvironmentVariablesPassedToMesosMaster() throws UnirestException {
-        assertEquals("true", CLUSTER.getMaster().getFlags().get("authenticate"));
-        assertEquals(aclExampleUnknownSyntaxUsedInStateJson, CLUSTER.getMaster().getFlags().get("acls"));
+        assertEquals("true", CLUSTER.getMaster().getState().getFlags().get("authenticate"));
+        assertEquals(aclExampleUnknownSyntaxUsedInStateJson, CLUSTER.getMaster().getState().getFlags().get("acls"));
     }
 
 }

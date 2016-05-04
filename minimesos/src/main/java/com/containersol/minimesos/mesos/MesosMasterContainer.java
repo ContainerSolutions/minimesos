@@ -9,7 +9,6 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,18 +75,6 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
                         .withValues(getMesosMasterEnvVars())
                         .withValues(getSharedEnvVars())
                         .createEnvironment());
-    }
-
-    @Override
-    public Map<String, String> getFlags() throws UnirestException {
-        JSONObject flagsJson = this.getStateInfoJSON().getJSONObject("flags");
-        Map<String, String> flags = new TreeMap<>();
-        for (Object key : flagsJson.keySet()) {
-            String keyString = (String) key;
-            String value = flagsJson.getString(keyString);
-            flags.put(keyString, value);
-        }
-        return flags;
     }
 
     @Override

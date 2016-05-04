@@ -19,21 +19,18 @@ public class ClusterRepository {
 
     public static final String MINIMESOS_FILE_PROPERTY = "minimesos.cluster";
 
-    private ClusterRepository() {
-    }
-
     /**
      * Loads representation of the running cluster
      *
      * @return representation of the cluster, which ID is found in the file
      */
-    public static MesosCluster loadCluster(MesosClusterFactory factory) {
-        String clusterId = ClusterRepository.readClusterId();
+    public MesosCluster loadCluster(MesosClusterFactory factory) {
+        String clusterId = readClusterId();
         if (clusterId != null) {
             try {
                 return MesosCluster.loadCluster(clusterId, factory);
             } catch (MinimesosException e) {
-                ClusterRepository.deleteMinimesosFile();
+                deleteMinimesosFile();
             }
         }
         return null;
@@ -44,9 +41,9 @@ public class ClusterRepository {
      *
      * @param cluster cluster to store ID
      */
-    public static void saveClusterFile(MesosCluster cluster) {
+    public void saveClusterFile(MesosCluster cluster) {
         String clusterId = cluster.getClusterId();
-        File dotMinimesosDir = ClusterRepository.getMinimesosDir();
+        File dotMinimesosDir = getMinimesosDir();
         try {
             FileUtils.forceMkdir(dotMinimesosDir);
             String clusterIdPath = dotMinimesosDir.getAbsolutePath() + "/" + MINIMESOS_FILE_PROPERTY;
@@ -61,11 +58,11 @@ public class ClusterRepository {
     /**
      * Deletes cluster file
      */
-    public static void deleteClusterFile() {
-        ClusterRepository.deleteMinimesosFile();
+    public void deleteClusterFile() {
+        deleteMinimesosFile();
     }
 
-    public static String readClusterId() {
+    public String readClusterId() {
         try {
             File minimesosFile = getMinimesosFile();
             String clusterId = FileUtils.readFileToString(minimesosFile);
@@ -79,14 +76,14 @@ public class ClusterRepository {
     /**
      * @return file, possibly non-existing, where cluster information is stored
      */
-    public static File getMinimesosFile() {
+    public File getMinimesosFile() {
         return new File(getMinimesosDir(), MINIMESOS_FILE_PROPERTY);
     }
 
     /**
      * @return directory, where minimesos stores ID file
      */
-    public static File getMinimesosDir() {
+    public File getMinimesosDir() {
         File hostDir = MesosCluster.getHostDir();
         File minimesosDir = new File(hostDir, ".minimesos");
         if (!minimesosDir.exists()) {
@@ -98,7 +95,7 @@ public class ClusterRepository {
         return minimesosDir;
     }
 
-    private static void deleteMinimesosFile() {
+    private void deleteMinimesosFile() {
         File minimesosFile = getMinimesosFile();
         LOGGER.debug("Deleting minimesos.cluster file at " + getMinimesosFile());
         if (minimesosFile.exists()) {

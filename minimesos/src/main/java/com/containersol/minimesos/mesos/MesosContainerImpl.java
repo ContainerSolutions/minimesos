@@ -1,11 +1,15 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosContainer;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.MesosContainerConfig;
 import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.container.AbstractContainer;
+import com.containersol.minimesos.state.State;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -91,4 +95,12 @@ public abstract class MesosContainerImpl extends AbstractContainer implements Me
         return level;
     }
 
+    @Override
+    public State getState() {
+        try {
+            return State.fromJSON(getStateInfoJSON().toString());
+        } catch (JsonParseException | JsonMappingException | UnirestException e) {
+            throw new MinimesosException("Could not retrieve state from Mesos container: " + getName(), e);
+        }
+    }
 }

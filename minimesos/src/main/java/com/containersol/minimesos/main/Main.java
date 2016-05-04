@@ -39,6 +39,8 @@ public class Main {
 
     private HashMap<String, Command> commands = new HashMap<>();
 
+    private ClusterRepository repository = new ClusterRepository();
+
     public static void main(String[] args) {
         Main main = new Main();
         main.addCommand(new CommandUp());
@@ -48,6 +50,7 @@ public class Main {
         main.addCommand(new CommandState());
         main.addCommand(new CommandInfo());
         main.addCommand(new CommandInit());
+        main.addCommand(new CommandPs());
         try {
             int rc = main.run(args);
             if (EXIT_CODE_OK != rc) {
@@ -99,7 +102,7 @@ public class Main {
         }
 
         if (jc.getParsedCommand() == null) {
-            MesosCluster cluster = ClusterRepository.loadCluster(new MesosClusterContainersFactory());
+            MesosCluster cluster = repository.loadCluster(new MesosClusterContainersFactory());
             if (cluster != null) {
                 new CommandInfo().execute();
                 return EXIT_CODE_OK;

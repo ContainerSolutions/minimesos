@@ -26,6 +26,8 @@ public class CommandInstall implements Command {
     @Parameter(names = "--stdin", description = "Use JSON from standard import. Allow piping JSON from other processes. Either this or --marathonFile parameter must be used")
     private boolean stdin = false;
 
+    private ClusterRepository repository = new ClusterRepository();
+
     /**
      * Getting content of <code>marathonFile</code>, if provided, or standard input
      *
@@ -64,8 +66,7 @@ public class CommandInstall implements Command {
 
     @Override
     public void execute() throws MinimesosException {
-
-        MesosCluster cluster = ClusterRepository.loadCluster(new MesosClusterContainersFactory());
+        MesosCluster cluster = repository.loadCluster(new MesosClusterContainersFactory());
         if (cluster != null) {
             Marathon marathon = cluster.getMarathon();
             if (marathon == null) {
