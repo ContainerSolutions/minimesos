@@ -17,6 +17,13 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class State {
 
+    private Map<String, String> flags = new HashMap<>();
+
+    @JsonProperty("activated_slaves")
+    private int activatedAgents = 0; // NOSONAR
+
+    private ArrayList<Framework> frameworks = new ArrayList<>();
+
     public static State fromJSON(String jsonString) throws JsonParseException, JsonMappingException {
         ObjectMapper mapper = new ObjectMapper();
         try {
@@ -25,13 +32,6 @@ public class State {
             throw new RuntimeException(e);
         }
     }
-
-    private Map<String, String> flags = new HashMap<>();
-
-    @JsonProperty("activated_slaves")
-    private int activatedAgents = 0; // NOSONAR
-
-    private ArrayList<Framework> frameworks = new ArrayList<>();
 
     public ArrayList<Framework> getFrameworks() {
         return frameworks;
