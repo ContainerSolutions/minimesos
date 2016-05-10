@@ -8,7 +8,8 @@ abstract class MesosContainerConfig extends ContainerConfigBlock implements Cont
     public static final HashMap<String, String> MESOS_IMAGE_TAGS = [
             "0.25": "0.25.0-0.2.70.ubuntu1404",
             "0.26": "0.26.0-0.2.145.ubuntu1404",
-            "0.27": "0.27.1-2.0.226.ubuntu1404"
+            "0.27": "0.27.1-2.0.226.ubuntu1404",
+            "0.28": "0.28.1-2.0.20.ubuntu1404"
     ]
 
     private String loggingLevel = MESOS_LOGGING_LEVEL_INHERIT

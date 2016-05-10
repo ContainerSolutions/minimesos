@@ -2,7 +2,7 @@ minimesos {
     clusterName = "Change Cluster Name in minimesosFile file"
     loggingLevel = "INFO"
     mapAgentSandboxVolume = false
-    mesosVersion = "0.25"
+    mesosVersion = "0.28"
     timeout = 60
 
     agent {
