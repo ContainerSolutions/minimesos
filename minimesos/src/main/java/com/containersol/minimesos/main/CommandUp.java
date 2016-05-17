@@ -124,7 +124,7 @@ public class CommandUp implements Command {
                 throw new MinimesosException(msg, e);
             }
         }
-        throw new MinimesosException("minimesos configuration file is not found. Please generate one with 'minimesos init'");
+        throw new MinimesosException("No minimesosFile found in current directory. Please generate one with 'minimesos init'");
     }
 
     /**
