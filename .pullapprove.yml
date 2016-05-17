@@ -12,5 +12,6 @@ reviewers:
   - sadovnikov
   - philwinder
   - lguminski
+  - adam-sandor
   name: default
   required: 1
