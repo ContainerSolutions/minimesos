@@ -1,0 +1,18 @@
+{
+  "name": "minimesos-mdns",
+  "version": "1.0.0",
+  "description": "",
+  "main": "minimesos-mdns.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Frank Scholten",
+  "license": "Apache 2.0",
+  "dependencies": {
+    "docker-events": "0.0.2",
+    "dockerode": "^2.2.10"
+  },
+  "devDependencies": {
+    "docker-events": "0.0.2"
+  }
+}

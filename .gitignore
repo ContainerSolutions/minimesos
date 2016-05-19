@@ -31,3 +31,5 @@ hs_err_pid*
 
 # private docker registry images
 .registry
+
+node_modules
