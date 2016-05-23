@@ -165,7 +165,7 @@ Tested with [DockerToolbox-1.9.0d.pkg](https://github.com/docker/toolbox/release
 Create a docker machine, make sure its environment variables are visible to the test, ensure the docker containers' IP addresses are available on the host
 
 ```
-$ docker-machine create -d virtualbox --virtualbox-memory 8192 --virtualbox-cpu-count 1 minimesos
+$ docker-machine create -d virtualbox --virtualbox-memory 8192 --virtualbox-cpu-count 1 --engine-opt dns=8.8.8.8 minimesos
 $ eval $(docker-machine env minimesos)
 ```
 
