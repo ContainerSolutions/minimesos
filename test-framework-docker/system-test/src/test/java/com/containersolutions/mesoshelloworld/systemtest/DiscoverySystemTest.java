@@ -1,5 +1,10 @@
 package com.containersolutions.mesoshelloworld.systemtest;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.junit.MesosClusterTestRule;
@@ -7,16 +12,13 @@ import com.containersolutions.mesoshelloworld.scheduler.Configuration;
 import com.github.dockerjava.api.model.Container;
 import com.jayway.awaitility.Awaitility;
 import com.jayway.awaitility.core.ConditionTimeoutException;
-import org.apache.log4j.Logger;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertTrue;
 
@@ -25,7 +27,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class DiscoverySystemTest {
 
-    public static final Logger LOGGER = Logger.getLogger(DiscoverySystemTest.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(DiscoverySystemTest.class);
 
     @ClassRule
     public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromFile("src/test/resources/configFiles/minimesosFile-discoverySystemTest");
