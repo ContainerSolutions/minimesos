@@ -25,7 +25,14 @@ var Registrator = function () {
 		registerContainer: function (container, hostName, ip) {
 			console.log("Publishing container " + container + " on ip " + ip + " with hostname: " + hostName);
 			var command = createCommand(container, hostName, ip);
-			childProcesses[container] = exec(command);
+			console.log(command);
+			childProcesses[container] = exec(command, function(error, stdout, stderr) {
+				console.log('stdout: ' + stdout);
+				console.log('stderr: ' + stderr);
+				if (error !== null) {
+					console.log("Error for container " + container + ":" + error);
+				}
+			});
 		},
 
 		unregisterContainer: function (container) {

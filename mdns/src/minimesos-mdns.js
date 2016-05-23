@@ -10,7 +10,7 @@ var emitter = new DockerEvents({
 	docker: dockerode
 });
 
-console.log("Started listening for Docker events");
+console.log("Started listening for Docker events 001");
 
 emitter.start();
 
