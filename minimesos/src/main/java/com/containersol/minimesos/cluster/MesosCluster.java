@@ -381,7 +381,7 @@ public class MesosCluster {
                 try {
                     is = uri.toURL().openStream();
                 } catch (IOException e) {
-                    throw new MinimesosException("Failed to open " + location + " as URL", e);
+                    throw new MinimesosException("Failed to open URL " + location + ". Check URL syntax, your network connectivity or DNS settings.", e);
                 }
 
             } else {
