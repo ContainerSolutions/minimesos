@@ -12,7 +12,7 @@ import static org.junit.Assert.assertTrue;
 public class RestoreConfigurationFromRunningClusterTest {
 
     @ClassRule
-    public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromClassPath("/configFiles/minimesosFile-mapPortsToHostTest");
+    public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromClassPath("/configFiles/minimesosFile-restoreConfigTest");
 
     public static MesosCluster CLUSTER = RULE.getMesosCluster();
 

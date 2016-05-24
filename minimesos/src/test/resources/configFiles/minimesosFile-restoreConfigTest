@@ -1,5 +1,5 @@
 minimesos {
-    clusterName = "map-ports-to-host-test"
+    clusterName = "restore-config-test"
     mapPortsToHost = true
     loggingLevel = "INFO"
     mapAgentSandboxVolume = false
