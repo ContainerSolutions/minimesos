@@ -6,17 +6,13 @@ import com.containersol.minimesos.cluster.Marathon;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosClusterFactory;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
 
 import java.io.PrintStream;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class CommandUninstallTest {
 
@@ -33,13 +29,13 @@ public class CommandUninstallTest {
         outputStream = new ByteArrayOutputStream();
         ps = new PrintStream(outputStream, true);
 
-        marathon = mock(Marathon.class);
+        marathon = Mockito.mock(Marathon.class);
 
-        mesosCluster = mock(MesosCluster.class);
-        when(mesosCluster.getMarathon()).thenReturn(marathon);
+        mesosCluster = Mockito.mock(MesosCluster.class);
+        Mockito.when(mesosCluster.getMarathon()).thenReturn(marathon);
 
-        repository = mock(ClusterRepository.class);
-        when(repository.loadCluster(any(MesosClusterFactory.class))).thenReturn(mesosCluster);
+        repository = Mockito.mock(ClusterRepository.class);
+        Mockito.when(repository.loadCluster(Matchers.any(MesosClusterFactory.class))).thenReturn(mesosCluster);
 
         commandUninstall = new CommandUninstall(ps);
         commandUninstall.setRepository(repository);
@@ -48,21 +44,21 @@ public class CommandUninstallTest {
 
     @Test
     public void execute() {
-        doNothing().when(marathon).deleteApp("app");
+        Mockito.doNothing().when(marathon).deleteApp("app");
 
         commandUninstall.execute();
 
         String result = outputStream.toString();
-        assertEquals("Deleted app 'app'\n", result);
+        Assert.assertEquals("Deleted app 'app'\n", result);
     }
 
     @Test
     public void execute_appDoesNotExist() {
-        doThrow(new MinimesosException("App does not exist")).when(marathon).deleteApp("app");
+        Mockito.doThrow(new MinimesosException("App does not exist")).when(marathon).deleteApp("app");
 
         commandUninstall.execute();
 
         String result = outputStream.toString();
-        assertEquals("", result);
+        Assert.assertEquals("", result);
     }
 }
