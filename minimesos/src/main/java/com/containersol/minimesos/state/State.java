@@ -1,15 +1,15 @@
 package com.containersol.minimesos.state;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * This class is populated with the results from a GET request to /state.json on a mesos-master.
@@ -21,6 +21,9 @@ public class State {
 
     @JsonProperty("activated_slaves")
     private int activatedAgents = 0; // NOSONAR
+
+    @JsonProperty("version")
+    private String version;
 
     private ArrayList<Framework> frameworks = new ArrayList<>();
 
@@ -54,5 +57,9 @@ public class State {
 
     public int getActivatedAgents() {
         return activatedAgents;
+    }
+
+    public String getVersion() {
+        return version;
     }
 }
