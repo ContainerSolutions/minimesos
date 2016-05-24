@@ -2,6 +2,7 @@ package clusterconfig
 
 minimesos {
 
+    mapPortsToHost = true
     timeout = 60
     mesosVersion = 0.25
     clusterName = "minimesos-test"

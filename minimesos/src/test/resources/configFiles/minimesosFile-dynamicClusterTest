@@ -1,5 +1,6 @@
 minimesos {
     clusterName = "dynamic-cluster-test"
+    mapPortsToHost = false
     loggingLevel = "INFO"
     mapAgentSandboxVolume = false
     mesosVersion = "0.25"

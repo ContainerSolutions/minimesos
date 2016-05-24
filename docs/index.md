@@ -16,7 +16,7 @@ If you have used Vagrant and Docker before, the set of the commands will be very
 minimesos runs Docker containers with a configurable version version of Mesos. See the [minimesos-docker](https://github.com/ContainerSolutions/minimesos-docker) repository
 with an overview of the images supported by minimesos.
 
-The Docker client in these Mesos images should be able to talk to Docker daemon on your host machine. The Docker daemon is expected to run version 1.10 or higher
+The Docker client in these Mesos images should be able to talk to Docker daemon on your host machine. The Docker daemon is expected to run version 1.11.0 or higher
 of Docker or Docker Machine. See Docker [API compatibility](https://docs.docker.com/engine/reference/api/docker_remote_api/) table.
 
 
@@ -62,7 +62,7 @@ Usage: minimesos [options] [command] [command options]
       Usage: install [options]
         Options:
           --marathonFile
-             Marathon JSON app install file path or URL. Either this or --stdin
+             Marathon JSON app install file location. Either this or --stdin
              parameter must be used
           --stdin
              Use JSON from standard import. Allow piping JSON from other
@@ -78,9 +78,17 @@ Usage: minimesos [options] [command] [command options]
           --clusterConfig
              Path to file with cluster configuration. Defaults to minimesosFile
              Default: minimesosFile
+          --mapPortsToHost
+             Map the Mesos and Marathon UI ports on the host level (we
+             recommend to enable this on Mac (e.g. when using docker-machine) and disable
+             on Linux).
+             Default: false
           --num-agents
              Number of agents to start
              Default: -1
+          --timeout
+             Time to wait for a container to get responsive, in seconds.
+             Default: 60
 
     state      Display state.json file of a master or an agent
       Usage: state [options]
@@ -105,6 +113,7 @@ Scalar values are simple key-value strings.
 | Option name           | type    | Meaning                                                                            |
 |-----------------------|---------|------------------------------------------------------------------------------------|
 | clusterName           | String  | The name of the Mesos cluster                                                      |
+| mapPortsToHost        | Boolean | Whether to map container ports to the host network                                     |
 | loggingLevel          | String  | Debug level in the terminal output                                                 |
 | mapAgentSandboxVolume | Boolean | Creates a volume mapping to the agent sandbox under ${PWD}/.minimesos/sandbox-.../ |
 | mesosVersion          | String  | Mesos version                                                                      |
@@ -225,7 +234,18 @@ $ minimesos destroy
 Destroyed minimesos cluster 3878417609
 ```
 
-If you use docker-machine, in order to be able to access the reported IP address in browser, it's necessary to add routing of docker IP range to IP address of the docker machine
+The `minimesos up` command supports `--mapPortsToHost` flag, that automatically binds Mesos and Marathon ports `5050`, resp. `8080` to the host machine, providing you with easy access to the services. Let the following table explain what the host machine is in different contexts:
+
+| --mapPortsToHost   | Linux                            | OS X                                |
+|--------------------|----------------------------------|-------------------------------------|
+| disabled           | container IP addresses (default) | n/a                                 |
+| enabled            | host computer                    | docker-machine IP address (default) |
+
+Having `--mapPortsToHost` enabled on Linux makes minimesos containers effectively accessible to anyone who has network access to your computer.
+We don't recommend this. Not using `--mapPortsToHost` flag on Max OS X on the other hand makes the containers inaccessible, because they run inside another virtual machine. This machine is typically managed by `docker-machine`.
+Minimesos tries to choose the appropriate configuration for your system automatically.
+
+An other alternative if you use docker-machine, is to access the reported IP address in browser, it's necessary to add routing of docker IP range to IP address of the docker machine
 
 ```
 sudo route delete 172.17.0.0/16; sudo route -n add 172.17.0.0/16 $(docker-machine ip ${DOCKER_MACHINE_NAME})
