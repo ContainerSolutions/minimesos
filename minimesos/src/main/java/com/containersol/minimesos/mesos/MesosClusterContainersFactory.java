@@ -12,6 +12,7 @@ import com.containersol.minimesos.cluster.Registrator;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ConfigParser;
+import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.container.ContainerName;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.marathon.MarathonContainer;
@@ -82,6 +83,15 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
                         case "master":
                             MesosMaster master = createMesosMaster(cluster, uuid, containerId);
                             containers.add(master);
+                            // Restore "map ports to host" attribute
+                            Container.Port[] ports = container.getPorts();
+                            if (ports != null) {
+                                for (Container.Port port : ports) {
+                                    if (port.getIp() != null && port.getPrivatePort() == MesosMasterConfig.MESOS_MASTER_PORT) {
+                                        cluster.setMapPortsToHost(true);
+                                    }
+                                }
+                            }
                             break;
                         case "marathon":
                             containers.add(createMarathon(cluster, uuid, containerId));

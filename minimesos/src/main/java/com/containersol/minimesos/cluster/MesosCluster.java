@@ -319,8 +319,16 @@ public class MesosCluster {
         return clusterId;
     }
 
+    public boolean isMapPortsToHost() {
+        return clusterConfig.getMapPortsToHost();
+    }
+
     public boolean getMapAgentSandboxVolume() {
         return clusterConfig.getMapAgentSandboxVolume();
+    }
+
+    public void setMapPortsToHost(boolean mapPortsToHost) {
+        clusterConfig.setMapPortsToHost(mapPortsToHost);
     }
 
     public void waitForState(final Predicate<State> predicate) {

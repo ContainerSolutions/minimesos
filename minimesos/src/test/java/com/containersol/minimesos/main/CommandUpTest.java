@@ -10,6 +10,7 @@ import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,6 +18,8 @@ import static org.mockito.Mockito.when;
 public class CommandUpTest {
 
     private CommandUp commandUp;
+
+    private ArgumentCaptor<ClusterConfig> capturedClusterConfig;
 
     private MesosCluster mesosCluster;
 
@@ -26,7 +29,7 @@ public class CommandUpTest {
         mesosCluster = mock(MesosCluster.class);
         when(mesosCluster.getClusterId()).thenReturn("123456");
 
-        ArgumentCaptor<ClusterConfig> capturedClusterConfig = ArgumentCaptor.forClass(ClusterConfig.class);
+        capturedClusterConfig = ArgumentCaptor.forClass(ClusterConfig.class);
         when(mesosClusterFactory.createMesosCluster(capturedClusterConfig.capture())).thenReturn(mesosCluster);
 
         commandUp = new CommandUp();
@@ -50,6 +53,15 @@ public class CommandUpTest {
         commandUp.execute();
 
         verify(mesosCluster).start();
+    }
+
+    @Test
+    public void testExecute_mapPortsToHost() {
+        commandUp.setClusterConfigPath("src/test/resources/configFiles/minimal-minimesosFile");
+        commandUp.setMapPortsToHost(true);
+        commandUp.execute();
+
+        assertTrue("Map ports to host from configuration is expected to remain", capturedClusterConfig.getValue().isMapPortsToHost());
     }
 
 }
