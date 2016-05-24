@@ -30,7 +30,7 @@ public class MesosClusterTestRule implements TestRule {
             MesosCluster cluster = new MesosClusterContainersFactory().createMesosCluster(is);
             return new MesosClusterTestRule(cluster);
         } catch (IOException e) {
-            throw new MinimesosException("Could not read minimesosFile on classpath " + path);
+            throw new MinimesosException("Could not read minimesosFile on classpath " + path, e);
         }
     }
 
@@ -39,7 +39,7 @@ public class MesosClusterTestRule implements TestRule {
             MesosCluster cluster = new MesosClusterContainersFactory().createMesosCluster(new FileInputStream(minimesosFilePath));
             return new MesosClusterTestRule(cluster);
         } catch (FileNotFoundException e) {
-            throw new MinimesosException("Could not read minimesosFile at " + minimesosFilePath);
+            throw new MinimesosException("Could not read minimesosFile at " + minimesosFilePath, e);
         }
     }
 
