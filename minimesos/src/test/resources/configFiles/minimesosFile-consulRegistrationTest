@@ -1,5 +1,6 @@
 minimesos {
-    clusterName = "exposed-ports-test"
+    clusterName = "consul-registration-test"
+    mapPortsToHost = true
     loggingLevel = "INFO"
     mapAgentSandboxVolume = false
     mesosVersion = "0.25"

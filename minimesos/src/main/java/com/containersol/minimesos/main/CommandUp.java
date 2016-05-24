@@ -31,6 +31,9 @@ public class CommandUp implements Command {
 
     private ClusterRepository repository = new ClusterRepository();
 
+    @Parameter(names = "--mapPortsToHost", description = "Map the Mesos and Marathon UI ports to the host level (we recommend to enable this on Mac (e.g. when using docker-machine) and disable on Linux).")
+    private Boolean mapPortsToHost = null;
+
     /**
      * As number of agents can be determined either in config file or command line parameters, it defaults to invalid value.
      * Logic to select the actual number of agent is in the field getter
@@ -54,6 +57,14 @@ public class CommandUp implements Command {
     public CommandUp(PrintStream ps) {
         this();
         this.output = ps;
+    }
+
+    public Boolean isMapPortsToHost() {
+        return mapPortsToHost;
+    }
+
+    public void setMapPortsToHost(Boolean mapPortsToHost) {
+        this.mapPortsToHost = mapPortsToHost;
     }
 
     /**
@@ -133,6 +144,10 @@ public class CommandUp implements Command {
      * @param clusterConfig cluster configuration to update
      */
     public void updateWithParameters(ClusterConfig clusterConfig) {
+
+        if (isMapPortsToHost() != null) {
+            clusterConfig.setMapPortsToHost(isMapPortsToHost());
+        }
 
         // ZooKeeper
         if (clusterConfig.getZookeeper() == null) {

@@ -1,6 +1,6 @@
 minimesos {
-    clusterName = "minimesos-test"
-    mapPortsToHost = false
+    clusterName = "map-ports-to-host-test"
+    mapPortsToHost = true
     loggingLevel = "INFO"
     mapAgentSandboxVolume = false
     mesosVersion = "0.25"
@@ -9,23 +9,24 @@ minimesos {
     agent {
         imageName = "containersol/mesos-agent"
         imageTag = "# derive from mesos version"
+        loggingLevel = "# INHERIT FROM CLUSTER"
         portNumber = 5051
 
         resources {
 
             cpu {
                 role = "*"
-                value = 8
+                value = 1
             }
 
             disk {
                 role = "*"
-                value = 10000
+                value = 200
             }
 
             mem {
                 role = "*"
-                value = 1024
+                value = 256
             }
 
             ports {
@@ -35,38 +36,15 @@ minimesos {
         }
     }
 
-    agent {
-        imageName = "containersol/mesos-agent"
-        imageTag = "# derive from mesos version"
-        portNumber = 5051
-
-        resources {
-
-            cpu {
-                role = "*"
-                value = 8
-            }
-
-            disk {
-                role = "*"
-                value = 10000
-            }
-
-            mem {
-                role = "*"
-                value = 1024
-            }
-
-            ports {
-                role = "*"
-                value = "[31000-32000]"
-            }
-        }
+    consul {
+        imageName = "containersol/consul-server"
+        imageTag = "0.6"
     }
 
     master {
         imageName = "containersol/mesos-master"
         imageTag = "# derive from mesos version"
+        loggingLevel = "# INHERIT FROM CLUSTER"
     }
 
     zookeeper {

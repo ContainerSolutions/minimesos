@@ -17,6 +17,7 @@ class ClusterConfig extends GroovyBlock {
         cl.call();
     }
 
+    boolean mapPortsToHost = false
     boolean mapAgentSandboxVolume = false
 
     int timeout = DEFAULT_TIMEOUT_SECS
