@@ -1,19 +1,5 @@
 package com.containersol.minimesos.cluster;
 
-import com.containersol.minimesos.MinimesosException;
-import com.containersol.minimesos.config.ClusterConfig;
-import com.containersol.minimesos.state.State;
-import com.containersol.minimesos.util.Predicate;
-import com.github.dockerjava.api.InternalServerErrorException;
-import com.github.dockerjava.api.NotFoundException;
-import com.jayway.awaitility.Awaitility;
-import com.mashape.unirest.http.exceptions.UnirestException;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -28,6 +14,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import com.containersol.minimesos.MinimesosException;
+import com.containersol.minimesos.config.ClusterConfig;
+import com.containersol.minimesos.state.State;
+import com.containersol.minimesos.util.Predicate;
+import com.github.dockerjava.api.InternalServerErrorException;
+import com.github.dockerjava.api.NotFoundException;
+import com.jayway.awaitility.Awaitility;
+import com.mashape.unirest.http.exceptions.UnirestException;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Mesos cluster with lifecycle methods such as start, install, info, state, stop and destroy.
@@ -416,6 +417,10 @@ public class MesosCluster {
      */
     public String getMesosVersion() {
         return clusterConfig.getMesosVersion();
+    }
+
+    public void setMesosVersion(String version) {
+        clusterConfig.setMesosVersion(version);
     }
 
     /**

@@ -1,5 +1,10 @@
 package com.containersol.minimesos.mesos;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
+
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.Consul;
@@ -17,12 +22,8 @@ import com.containersol.minimesos.container.ContainerName;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.marathon.MarathonContainer;
 import com.github.dockerjava.api.model.Container;
-import org.apache.commons.io.IOUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Docker based factory of minimesos cluster members
@@ -83,15 +84,9 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
                         case "master":
                             MesosMaster master = createMesosMaster(cluster, uuid, containerId);
                             containers.add(master);
-                            // Restore "map ports to host" attribute
-                            Container.Port[] ports = container.getPorts();
-                            if (ports != null) {
-                                for (Container.Port port : ports) {
-                                    if (port.getIp() != null && port.getPrivatePort() == MesosMasterConfig.MESOS_MASTER_PORT) {
-                                        cluster.setMapPortsToHost(true);
-                                    }
-                                }
-                            }
+
+                            restoreMapToPorts(cluster, container);
+                            restoreMesosVersion(cluster, master);
                             break;
                         case "marathon":
                             containers.add(createMarathon(cluster, uuid, containerId));
@@ -103,6 +98,24 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
                             containers.add(createRegistrator(cluster, uuid, containerId));
                             break;
                     }
+                }
+            }
+        }
+    }
+
+    private void restoreMesosVersion(MesosCluster cluster, MesosMaster master) {
+        String mesosVersion = master.getState().getVersion();
+        String[] versionComponents = mesosVersion.split("\\.");
+        cluster.setMesosVersion(versionComponents[0] + "." + versionComponents[1]);
+    }
+
+    private void restoreMapToPorts(MesosCluster cluster, Container container) {
+        // Restore "map ports to host" attribute
+        Container.Port[] ports = container.getPorts();
+        if (ports != null) {
+            for (Container.Port port : ports) {
+                if (port.getIp() != null && port.getPrivatePort() == MesosMasterConfig.MESOS_MASTER_PORT) {
+                    cluster.setMapPortsToHost(true);
                 }
             }
         }
