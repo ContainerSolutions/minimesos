@@ -1,15 +1,18 @@
 package com.containersol.minimesos.junit;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosClusterFactory;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 
 /**
  * JUnit Rule extension of Mesos Cluster to use in JUnit.
@@ -22,12 +25,21 @@ public class MesosClusterTestRule implements TestRule {
 
     private MesosCluster mesosCluster;
 
+    public static MesosClusterTestRule fromClassPath(String path) {
+        try (InputStream is = MesosClusterTestRule.class.getResourceAsStream(path)) {
+            MesosCluster cluster = new MesosClusterContainersFactory().createMesosCluster(is);
+            return new MesosClusterTestRule(cluster);
+        } catch (IOException e) {
+            throw new MinimesosException("Could not read minimesosFile on classpath " + path, e);
+        }
+    }
+
     public static MesosClusterTestRule fromFile(String minimesosFilePath) {
         try {
             MesosCluster cluster = new MesosClusterContainersFactory().createMesosCluster(new FileInputStream(minimesosFilePath));
             return new MesosClusterTestRule(cluster);
         } catch (FileNotFoundException e) {
-            throw new MinimesosException("Could not read minimesosFile at " + minimesosFilePath);
+            throw new MinimesosException("Could not read minimesosFile at " + minimesosFilePath, e);
         }
     }
 

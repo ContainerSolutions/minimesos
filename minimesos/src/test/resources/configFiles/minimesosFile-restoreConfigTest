@@ -1,9 +1,9 @@
 minimesos {
-    clusterName = "map-ports-to-host-test"
+    clusterName = "restore-config-test"
     mapPortsToHost = true
     loggingLevel = "INFO"
     mapAgentSandboxVolume = false
-    mesosVersion = "0.25"
+    mesosVersion = "0.27"
     timeout = 60
 
     agent {

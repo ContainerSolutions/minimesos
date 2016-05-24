@@ -304,5 +304,6 @@ public class ParseStateJSONTest {
         assertEquals("20150907-122934-3858764204-5050-23-0000", framework.getId());
         assertEquals("elasticsearch", framework.getName());
         assertEquals("*", framework.getRole());
+        assertEquals("0.22.1", parsedState.getVersion());
     }
 }
