@@ -23,7 +23,7 @@ public class CommandState implements Command {
 
     private ClusterRepository repository = new ClusterRepository();
 
-    public CommandState() {
+    public CommandState() { //NOSONAR
     }
 
     public CommandState(PrintStream ps) {
