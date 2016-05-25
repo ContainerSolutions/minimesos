@@ -112,6 +112,7 @@ public class Main {
 
             return EXIT_CODE_OK;
         } catch (Exception ex) {
+            LOGGER.debug("Exception while processing", ex);
             return EXIT_CODE_ERR;
         }
     }
