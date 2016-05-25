@@ -1,7 +1,5 @@
 package com.containersol.minimesos.main;
 
-import com.containersol.minimesos.MinimesosException;
-
 public interface Command {
 
     /**
@@ -19,6 +17,6 @@ public interface Command {
     /**
      * Executes the command
      */
-    void execute() throws MinimesosException;
+    void execute();
 
 }
