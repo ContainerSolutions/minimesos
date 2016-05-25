@@ -64,6 +64,6 @@ docker run --rm -v "${MINIMESOS_HOST_DIR}":"${MINIMESOS_HOST_DIR}" \
        -i \
        --env DOCKER_HOST_IP=${DOCKER_HOST_IP} \
        --entrypoint java \
-       containersol/minimesos:${MINIMESOS_TAG} \
+       containersol/minimesos-cli:${MINIMESOS_TAG} \
        -Dminimesos.host.dir="${MINIMESOS_HOST_DIR}" \
-       -jar /usr/local/share/minimesos/minimesos.jar ${PARAMS}
+       -jar /usr/local/share/minimesos/minimesos-cli.jar ${PARAMS}

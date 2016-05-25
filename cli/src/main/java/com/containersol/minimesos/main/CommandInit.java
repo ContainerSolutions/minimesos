@@ -1,5 +1,14 @@
 package com.containersol.minimesos.main;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.attribute.UserPrincipalLookupService;
+
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
@@ -12,17 +21,9 @@ import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.config.RegistratorConfig;
 import com.containersol.minimesos.config.ZooKeeperConfig;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.UserPrincipal;
-import java.nio.file.attribute.UserPrincipalLookupService;
 
 import static java.lang.String.format;
 
@@ -49,7 +50,7 @@ public class CommandInit implements Command {
     }
 
     @Override
-    public void execute() throws MinimesosException {
+    public void execute() {
         File minimesosFile = new File(MesosCluster.getHostDir(), ClusterConfig.DEFAULT_CONFIG_FILE);
 
         if (minimesosFile.exists()) {
@@ -72,7 +73,7 @@ public class CommandInit implements Command {
             UserPrincipal owner = lookupService.lookupPrincipalByName(DEFAULT_HOST_USERID);
             Files.setOwner(minimesosPath, owner);
         } catch (IOException e) {
-            throw new MinimesosException("NOTE: minimesosFile remains owned by root instead of user ID " + DEFAULT_HOST_USERID + ": " + e.getMessage());
+            throw new MinimesosException("NOTE: minimesosFile remains owned by root instead of user ID " + DEFAULT_HOST_USERID + ": " + e.getMessage(), e);
         }
 
     }

@@ -1,0 +1,8 @@
+minimesos {
+    clusterName = "minimesos-test"
+    mapPortsToHost = false
+    loggingLevel = "INFO"
+    mapAgentSandboxVolume = false
+    mesosVersion = "0.25"
+    timeout = 60
+}

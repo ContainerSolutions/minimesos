@@ -1,5 +1,10 @@
 package com.containersol.minimesos.main;
 
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MinimesosException;
@@ -11,13 +16,9 @@ import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+
 import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
-
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Parameters for the 'up' command
@@ -46,7 +47,7 @@ public class CommandUp implements Command {
 
     private MesosCluster startedCluster = null;
 
-    private PrintStream output = System.out;
+    private PrintStream output = System.out; //NOSONAR
 
     private MesosClusterContainersFactory mesosClusterFactory;
 
@@ -74,18 +75,16 @@ public class CommandUp implements Command {
      * @return Number of agents to create
      */
     public int getNumAgents() {
-        int numAgents;
+        int num = 1;
         if (this.numAgents > 0) {
-            numAgents = this.numAgents;
+            num = this.numAgents;
         } else {
             ClusterConfig clusterConfig = readClusterConfigFromMinimesosFile();
-            if ((clusterConfig != null) && (clusterConfig.getAgents() != null) && (clusterConfig.getAgents().size() > 0)) {
-                numAgents = clusterConfig.getAgents().size();
-            } else {
-                numAgents = 1;
+            if ((clusterConfig != null) && (clusterConfig.getAgents() != null) && !clusterConfig.getAgents().isEmpty()) {
+                num = clusterConfig.getAgents().size();
             }
         }
-        return numAgents;
+        return num;
     }
 
     public String getClusterConfigPath() {

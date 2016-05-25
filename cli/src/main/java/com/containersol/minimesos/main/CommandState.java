@@ -1,12 +1,12 @@
 package com.containersol.minimesos.main;
 
+import java.io.PrintStream;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
-
-import java.io.PrintStream;
 
 /**
  * Parameters for the 'state' command
@@ -19,11 +19,11 @@ public class CommandState implements Command {
     @Parameter(names = "--agent", description = "Specify an agent to query, otherwise query a master")
     private String agent = "";
 
-    private PrintStream output = System.out;
+    private PrintStream output = System.out; //NOSONAR
 
     private ClusterRepository repository = new ClusterRepository();
 
-    public CommandState() {
+    public CommandState() { //NOSONAR
     }
 
     public CommandState(PrintStream ps) {

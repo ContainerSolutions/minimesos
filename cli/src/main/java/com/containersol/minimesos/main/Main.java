@@ -1,7 +1,9 @@
 package com.containersol.minimesos.main;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
+import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -9,12 +11,12 @@ import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.PrintStream;
-import java.util.HashMap;
-import java.util.Map;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 
 /**
  * Main method for interacting with minimesos.
@@ -33,9 +35,9 @@ public class Main {
     @Parameter(names = "--debug", description = "Enable debug logging.")
     private boolean debug = false;
 
-    private PrintStream output = System.out;
+    private PrintStream output = System.out; //NOSONAR
 
-    private final JCommander jc;
+    private final JCommander jc = new JCommander(this);
 
     private HashMap<String, Command> commands = new HashMap<>();
 
@@ -67,69 +69,88 @@ public class Main {
         }
     }
 
-    public Main() {
-        jc = new JCommander(this);
-        jc.setProgramName("minimesos");
-    }
 
     public void setOutput(PrintStream output) {
         this.output = output;
     }
 
     public int run(String[] args) {
+        initJCommander();
 
+        try {
+            parseParams(jc, args);
+
+            if (help) {
+                printUsage(null);
+                return EXIT_CODE_OK;
+            }
+
+            if (debug) {
+                initializeDebugLogging();
+            }
+
+            if (jc.getParsedCommand() == null) {
+                return handleNoCommand();
+            }
+
+            if (!commands.containsKey(jc.getParsedCommand())) {
+                LOGGER.error("Unknown command: " + jc.getParsedCommand());
+                return EXIT_CODE_ERR;
+            }
+
+            Command parsedCommand = commands.get(jc.getParsedCommand());
+            if (CommandHelp.CLINAME.equals(parsedCommand.getName())) {
+                printUsage(null);
+            } else {
+                if (parsedCommand.validateParameters()) {
+                    parsedCommand.execute();
+                } else {
+                    printUsage(jc.getParsedCommand());
+                    return EXIT_CODE_ERR;
+                }
+            }
+
+            return EXIT_CODE_OK;
+        } catch (Exception ex) {
+            LOGGER.debug("Exception while processing", ex);
+            return EXIT_CODE_ERR;
+        }
+    }
+
+    private JCommander initJCommander() {
+        jc.setProgramName("minimesos");
         for (Map.Entry<String, Command> entry : commands.entrySet()) {
             jc.addCommand(entry.getKey(), entry.getValue());
         }
+        return jc;
+    }
 
+    private void parseParams(JCommander jc, String[] args) {
         try {
             jc.parse(args);
         } catch (Exception e) {
             LOGGER.error("Failed to parse parameters. " + e.getMessage() + "\n");
             printUsage(null);
-            return EXIT_CODE_ERR;
+            throw e;
         }
+    }
 
-        if (help) {
-            printUsage(null);
+    private static void initializeDebugLogging() {
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        ch.qos.logback.classic.Logger rootLogger = loggerContext.getLogger("com.containersol.minimesos.container");
+        rootLogger.setLevel(Level.DEBUG);
+        LOGGER.debug("Initialized debug logging");
+    }
+
+    private int handleNoCommand() {
+        MesosCluster cluster = repository.loadCluster(new MesosClusterContainersFactory());
+        if (cluster != null) {
+            new CommandInfo().execute();
             return EXIT_CODE_OK;
-        }
-
-        if (debug) {
-            LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-            ch.qos.logback.classic.Logger rootLogger = loggerContext.getLogger("com.containersol.minimesos.container");
-            rootLogger.setLevel(Level.DEBUG);
-            LOGGER.debug("Initialized debug logging");
-        }
-
-        if (jc.getParsedCommand() == null) {
-            MesosCluster cluster = repository.loadCluster(new MesosClusterContainersFactory());
-            if (cluster != null) {
-                new CommandInfo().execute();
-                return EXIT_CODE_OK;
-            } else {
-                printUsage(null);
-                return EXIT_CODE_ERR;
-            }
-        }
-
-        Command parsedCommand = commands.get(jc.getParsedCommand());
-
-        if (parsedCommand == null) {
-            LOGGER.error("No such command: " + jc.getParsedCommand());
-            return EXIT_CODE_ERR;
-        } else if (CommandHelp.CLINAME.equals(parsedCommand.getName())) {
-            printUsage(null);
         } else {
-            if (parsedCommand.validateParameters()) {
-                parsedCommand.execute();
-            } else {
-                printUsage(jc.getParsedCommand());
-                return EXIT_CODE_ERR;
-            }
+            printUsage(null);
+            return EXIT_CODE_ERR;
         }
-
-        return EXIT_CODE_OK;
     }
 
     private void printUsage(String commandName) {
