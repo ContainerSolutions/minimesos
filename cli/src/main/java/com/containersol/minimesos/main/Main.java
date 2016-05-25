@@ -1,7 +1,9 @@
 package com.containersol.minimesos.main;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
+import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -9,12 +11,12 @@ import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.PrintStream;
-import java.util.HashMap;
-import java.util.Map;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 
 /**
  * Main method for interacting with minimesos.
@@ -33,7 +35,7 @@ public class Main {
     @Parameter(names = "--debug", description = "Enable debug logging.")
     private boolean debug = false;
 
-    private PrintStream output = System.out;
+    private PrintStream output = System.out; //NOSONAR
 
     private final JCommander jc;
 

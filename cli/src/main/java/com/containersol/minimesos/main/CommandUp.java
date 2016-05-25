@@ -1,5 +1,10 @@
 package com.containersol.minimesos.main;
 
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MinimesosException;
@@ -11,13 +16,9 @@ import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+
 import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
-
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Parameters for the 'up' command
@@ -46,7 +47,7 @@ public class CommandUp implements Command {
 
     private MesosCluster startedCluster = null;
 
-    private PrintStream output = System.out;
+    private PrintStream output = System.out; //NOSONAR
 
     private MesosClusterContainersFactory mesosClusterFactory;
 

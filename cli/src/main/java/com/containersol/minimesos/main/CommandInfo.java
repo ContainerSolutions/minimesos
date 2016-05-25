@@ -1,5 +1,9 @@
 package com.containersol.minimesos.main;
 
+import java.io.PrintStream;
+import java.net.URI;
+import java.util.List;
+
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.ClusterRepository;
@@ -7,10 +11,6 @@ import com.containersol.minimesos.cluster.ClusterUtil;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
-
-import java.io.PrintStream;
-import java.net.URI;
-import java.util.List;
 
 /**
  * Info command
@@ -20,7 +20,7 @@ public class CommandInfo implements Command {
 
     public static final String CLINAME = "info";
 
-    private PrintStream output = System.out;
+    private PrintStream output = System.out; //NOSONAR
 
     private ClusterRepository repository = new ClusterRepository();
 
