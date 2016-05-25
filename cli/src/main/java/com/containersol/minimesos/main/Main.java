@@ -37,16 +37,11 @@ public class Main {
 
     private PrintStream output = System.out; //NOSONAR
 
-    private final JCommander jc;
+    private final JCommander jc = new JCommander(this);
 
     private HashMap<String, Command> commands = new HashMap<>();
 
     private ClusterRepository repository = new ClusterRepository();
-
-    public Main() {
-        jc = new JCommander(this);
-        jc.setProgramName("minimesos");
-    }
 
     public static void main(String[] args) {
         Main main = new Main();
@@ -80,59 +75,81 @@ public class Main {
     }
 
     public int run(String[] args) {
+        initJCommander();
 
+        try {
+            parseParams(jc, args);
+
+            if (help) {
+                printUsage(null);
+                return EXIT_CODE_OK;
+            }
+
+            if (debug) {
+                initializeDebugLogging();
+            }
+
+            if (jc.getParsedCommand() == null) {
+                return handleNoCommand();
+            }
+
+            if (!commands.containsKey(jc.getParsedCommand())) {
+                LOGGER.error("Unknown command: " + jc.getParsedCommand());
+                return EXIT_CODE_ERR;
+            }
+
+            Command parsedCommand = commands.get(jc.getParsedCommand());
+            if (CommandHelp.CLINAME.equals(parsedCommand.getName())) {
+                printUsage(null);
+            } else {
+                if (parsedCommand.validateParameters()) {
+                    parsedCommand.execute();
+                } else {
+                    printUsage(jc.getParsedCommand());
+                    return EXIT_CODE_ERR;
+                }
+            }
+
+            return EXIT_CODE_OK;
+        } catch (Exception ex) {
+            return EXIT_CODE_ERR;
+        }
+    }
+
+    private JCommander initJCommander() {
+        jc.setProgramName("minimesos");
         for (Map.Entry<String, Command> entry : commands.entrySet()) {
             jc.addCommand(entry.getKey(), entry.getValue());
         }
+        return jc;
+    }
 
+    private void parseParams(JCommander jc, String[] args) {
         try {
             jc.parse(args);
         } catch (Exception e) {
             LOGGER.error("Failed to parse parameters. " + e.getMessage() + "\n");
             printUsage(null);
-            return EXIT_CODE_ERR;
+            throw e;
         }
+    }
 
-        if (help) {
-            printUsage(null);
+    private static void initializeDebugLogging() {
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        ch.qos.logback.classic.Logger rootLogger = loggerContext.getLogger("com.containersol.minimesos.container");
+        rootLogger.setLevel(Level.DEBUG);
+        LOGGER.debug("Initialized debug logging");
+    }
+
+    private int handleNoCommand() {
+        MesosCluster cluster = repository.loadCluster(new MesosClusterContainersFactory());
+        if (cluster != null) {
+            new CommandInfo().execute();
             return EXIT_CODE_OK;
-        }
-
-        if (debug) {
-            LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-            ch.qos.logback.classic.Logger rootLogger = loggerContext.getLogger("com.containersol.minimesos.container");
-            rootLogger.setLevel(Level.DEBUG);
-            LOGGER.debug("Initialized debug logging");
-        }
-
-        if (jc.getParsedCommand() == null) {
-            MesosCluster cluster = repository.loadCluster(new MesosClusterContainersFactory());
-            if (cluster != null) {
-                new CommandInfo().execute();
-                return EXIT_CODE_OK;
-            } else {
-                printUsage(null);
-                return EXIT_CODE_ERR;
-            }
-        }
-
-        Command parsedCommand = commands.get(jc.getParsedCommand());
-
-        if (parsedCommand == null) {
-            LOGGER.error("No such command: " + jc.getParsedCommand());
-            return EXIT_CODE_ERR;
-        } else if (CommandHelp.CLINAME.equals(parsedCommand.getName())) {
-            printUsage(null);
         } else {
-            if (parsedCommand.validateParameters()) {
-                parsedCommand.execute();
-            } else {
-                printUsage(jc.getParsedCommand());
-                return EXIT_CODE_ERR;
-            }
+            printUsage(null);
+            return EXIT_CODE_ERR;
         }
-
-        return EXIT_CODE_OK;
     }
 
     private void printUsage(String commandName) {
