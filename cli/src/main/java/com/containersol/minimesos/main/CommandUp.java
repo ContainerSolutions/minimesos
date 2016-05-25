@@ -80,7 +80,7 @@ public class CommandUp implements Command {
             num = this.numAgents;
         } else {
             ClusterConfig clusterConfig = readClusterConfigFromMinimesosFile();
-            if ((clusterConfig != null) && (clusterConfig.getAgents() != null) && (clusterConfig.getAgents().size() > 0)) {
+            if ((clusterConfig != null) && (clusterConfig.getAgents() != null) && !clusterConfig.getAgents().isEmpty()) {
                 num = clusterConfig.getAgents().size();
             }
         }
