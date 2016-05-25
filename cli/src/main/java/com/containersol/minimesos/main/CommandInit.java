@@ -73,7 +73,7 @@ public class CommandInit implements Command {
             UserPrincipal owner = lookupService.lookupPrincipalByName(DEFAULT_HOST_USERID);
             Files.setOwner(minimesosPath, owner);
         } catch (IOException e) {
-            throw new MinimesosException("NOTE: minimesosFile remains owned by root instead of user ID " + DEFAULT_HOST_USERID + ": " + e.getMessage());
+            throw new MinimesosException("NOTE: minimesosFile remains owned by root instead of user ID " + DEFAULT_HOST_USERID + ": " + e.getMessage(), e);
         }
 
     }
