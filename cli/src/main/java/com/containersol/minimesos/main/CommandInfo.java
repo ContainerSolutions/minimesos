@@ -25,6 +25,7 @@ public class CommandInfo implements Command {
     private ClusterRepository repository = new ClusterRepository();
 
     public CommandInfo() {
+        //default constructor (comment needed to satisfy sonar rule https://ci.infra.container-solutions.com/sonar/coding_rules#rule_key=squid%3AS1186)
     }
 
     public CommandInfo(PrintStream ps) {
