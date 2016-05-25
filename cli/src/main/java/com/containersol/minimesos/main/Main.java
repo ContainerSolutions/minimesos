@@ -43,6 +43,11 @@ public class Main {
 
     private ClusterRepository repository = new ClusterRepository();
 
+    public Main() {
+        jc = new JCommander(this);
+        jc.setProgramName("minimesos");
+    }
+
     public static void main(String[] args) {
         Main main = new Main();
         main.addCommand(new CommandUp());
@@ -69,10 +74,6 @@ public class Main {
         }
     }
 
-    public Main() {
-        jc = new JCommander(this);
-        jc.setProgramName("minimesos");
-    }
 
     public void setOutput(PrintStream output) {
         this.output = output;
