@@ -65,7 +65,7 @@ public class CommandInstall implements Command {
     }
 
     @Override
-    public void execute() throws MinimesosException {
+    public void execute() {
         MesosCluster cluster = repository.loadCluster(new MesosClusterContainersFactory());
         if (cluster != null) {
             Marathon marathon = cluster.getMarathon();
