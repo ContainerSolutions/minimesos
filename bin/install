@@ -5,6 +5,8 @@
 #
 # Uses the latest release, unless a version identifier is specified as a parameter of this script.
 
+{ # Prevent execution if the script is only partially downloaded
+
 command_exists() {
     command -v "$@" > /dev/null 2>&1
 }
@@ -40,3 +42,5 @@ else
 fi
 
 exit 0
+} # Prevent execution if the script is only partially downloaded
+
