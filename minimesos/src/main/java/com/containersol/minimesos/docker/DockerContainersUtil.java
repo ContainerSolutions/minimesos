@@ -1,5 +1,14 @@
 package com.containersol.minimesos.docker;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import com.containersol.minimesos.MinimesosException;
 import com.github.dockerjava.api.DockerException;
 import com.github.dockerjava.api.command.InspectContainerResponse;
@@ -9,16 +18,6 @@ import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.PullResponseItem;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.github.dockerjava.core.command.PullImageResultCallback;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Immutable utility class, which represents set of docker containers with filters and operations on this list
@@ -246,14 +245,9 @@ public class DockerContainersUtil {
      */
     public static Container getContainer(String containerId) {
         List<Container> containers = DockerClientFactory.build().listContainersCmd().withShowAll(true).exec();
-        Container container = null;
-        if (containers != null && !containers.isEmpty()) {
-            Optional<Container> optional = containers.stream().filter(c -> c.getId().equals(containerId)).findFirst();
-            if (optional.isPresent()) {
-                container = optional.get();
-            }
-        }
-        return container;
+        if (containers == null) return null;
+
+        return containers.stream().filter(c -> c.getId().equals(containerId)).findFirst().orElse(null);
     }
 
 }
