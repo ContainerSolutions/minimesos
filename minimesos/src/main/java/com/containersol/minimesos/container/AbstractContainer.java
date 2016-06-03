@@ -97,7 +97,7 @@ public abstract class AbstractContainer implements ClusterProcess {
 
             await().atMost(timeout, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(() -> {
                 Container container = DockerContainersUtil.getContainer(containerId);
-                return container != null && container.getStatus().equals("Running");
+                return container != null && container.getStatus().startsWith("Up");
             });
 
         } catch (ConditionTimeoutException cte) {

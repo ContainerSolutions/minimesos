@@ -46,6 +46,7 @@ public class Main {
     public static void main(String[] args) {
         Main main = new Main();
         main.addCommand(new CommandUp());
+        main.addCommand(new CommandServe());
         main.addCommand(new CommandDestroy());
         main.addCommand(new CommandHelp());
         main.addCommand(new CommandInstall());

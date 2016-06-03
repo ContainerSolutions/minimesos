@@ -9,6 +9,7 @@ If you have used Vagrant and Docker before, the set of the commands will be very
  - Website https://minimesos.org/
  - Blog https://minimesos.org/blog
  - Interactive tutorial https://minimesos.org/try
+ - API Webservice ``
 
 
 ## System Requirements
@@ -288,3 +289,126 @@ export LIBPROCESS_IP=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | 
 ```
 
 This ensures your executor task will be assigned an interface to allow communication within the cluster.
+
+# minimesos API Webservice
+
+The minimesos API provides functionality to run and monitor a single Mesos cluster in minimesos.
+
+## Start minimesos cluster [/start]
+
+### POST
+
+Starts the Mesos cluster and returns it's ID.
+
++ Request (text/plain)
+
+    ```
+    Contents of a minimesosFile
+    ```
+
++ Response 200 (application/json)
+
+    ```json
+    {
+      "cluster_id": "123456",
+      "endpoints": {
+        "network-gateway": {
+          "ip": "172.17.0.1"
+        },
+        "master": {
+          "ip": "172.10.0.5",
+          "endpoint": "http://172.17.0.4:5050"
+        },
+        "zookeeper": {
+          "ip": "172.10.0.7",
+          "endpoint": "zk://172.17.0.3:2181/mesos"
+        },
+        "marathon": {
+          "ip": "172.10.0.8",
+          "endpoint": "http://172.17.0.8:8080"
+        },
+        "api": {
+          "ip": "172.10.0.10",
+          "endpoint": "http://172.10.0.10"
+        }
+      }
+    }
+    ```
+
++ Response 500 (text/plain)
+
+    ```
+    Cluster failed to start: <error>
+    ```
+
+## Retrieve cluster info [/info]
+
+### GET
+
+Returns all info about the running cluster.
+
++ Response 200 (application/json)
+
+    ```json
+    {
+      "cluster_id": "123456",
+      "endpoints": {
+        "master": "172.10.0.5",
+        "agent": "172.10.0.6",
+        "zookeeper": "172.10.0.7",
+        "marathon": "172.10.0.8",
+        "api": "172.10.0.1"
+      }
+    }
+    ```
+
+## Install Marathon framework [/install]
+
+Install a Mesos framework using Marathon. The input is expected to be a valid Marathon file.
+
+### POST
+
+* Request (application/json)
+
+    ```json
+    {
+      "id": "elasticsearch",
+      "container": {
+        "docker": {
+          "image": "mesos/elasticsearch-scheduler:1.0.1",
+          "network": "BRIDGE"
+        }
+      },
+      "args": [
+        "--zookeeperMesosUrl", "${MINIMESOS_ZOOKEEPER}",
+        "--useIpAddress", "true",
+        "--frameworkUseDocker", "false",
+        "--elasticsearchNodes", "1"
+      ],
+      "cpus": 0.2,
+      "mem": 512.0,
+      "env": {
+        "JAVA_OPTS": "-Xms128m -Xmx256m"
+      },
+      "instances": 1
+    }
+    ```
+* Response 200 (text/plain)
+
+  ```
+  <framework_id>
+  ```
+* Response 500 (text/plain)
+
+  ```
+  Failed to install <frameworkname> framework: <error>
+  ```
+
+## Uninstall Marathon framework [/uninstall/{framework_id}]
+
+Uninstall a framework using Marathon
+
++ Parameters
+  + framework_id: (string) - The id of the framework that will be uninstalled
+
+### POST
