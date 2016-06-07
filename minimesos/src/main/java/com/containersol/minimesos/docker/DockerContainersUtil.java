@@ -1,15 +1,5 @@
 package com.containersol.minimesos.docker;
 
-import com.containersol.minimesos.MinimesosException;
-import com.github.dockerjava.api.DockerException;
-import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.command.LogContainerCmd;
-import com.github.dockerjava.api.model.Container;
-import com.github.dockerjava.api.model.Frame;
-import com.github.dockerjava.api.model.PullResponseItem;
-import com.github.dockerjava.core.command.LogContainerResultCallback;
-import com.github.dockerjava.core.command.PullImageResultCallback;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -19,6 +9,16 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import com.containersol.minimesos.MinimesosException;
+import com.github.dockerjava.api.DockerException;
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.command.LogContainerCmd;
+import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.api.model.Frame;
+import com.github.dockerjava.api.model.PullResponseItem;
+import com.github.dockerjava.core.command.LogContainerResultCallback;
+import com.github.dockerjava.core.command.PullImageResultCallback;
 
 /**
  * Immutable utility class, which represents set of docker containers with filters and operations on this list
@@ -221,11 +221,14 @@ public class DockerContainersUtil {
 
         try {
             result.get(timeoutSecs, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            String msg = String.format("# Timeout while pulling image from registry. Try executing the command below manually%ndocker pull %s:%s", imageName, imageVersion);
+            throw new MinimesosException(msg, e);
         } catch (ExecutionException e) {
             // we get here on future.completeExceptionally() above
             String msg = String.format("# Error pulling image from registry. Try executing the command below manually%ndocker pull %s:%s", imageName, imageVersion);
             throw new MinimesosException(msg, e);
-        } catch (InterruptedException | TimeoutException | RuntimeException e) {
+        } catch (InterruptedException | RuntimeException e) {
             String msg = "Error pulling image or image not found in registry: " + imageName + ":" + imageVersion;
             throw new MinimesosException(msg, e);
         }
