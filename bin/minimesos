@@ -38,16 +38,7 @@ pullImage() {
 }
 
 if [ "$#" -gt 0 -a "$1" = up ]; then
-
     pullImage "containersol/minimesos" ${MINIMESOS_TAG}
-
-    if [ "$(uname)" = "Darwin" ]; then
-        if [[ ${PARAMS} != *"--mapPortsToHost"* ]]; then
-        	echo "# You are running minimesos on OS X, enabling --mapPortsToHost"
-	        PARAMS="${PARAMS} --mapPortsToHost"
-	    fi
-    fi
-
 fi
 
 MINIMESOS_HOST_DIR="$(pwd)"
