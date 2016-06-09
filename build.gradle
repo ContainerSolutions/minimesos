@@ -43,12 +43,12 @@ idea {
     }
 }
 
-sonarqube {
-    properties {
-        property "sonar.sourceEncoding", "UTF-8"
-        property "sonar.jacoco.reportPath", "${buildDir}/jacoco/test.exec"
-    }
-}
+//sonarqube {
+//    properties {
+//        property "sonar.sourceEncoding", "UTF-8"
+//        property "sonar.jacoco.reportPath", "${buildDir}/jacoco/test.exec"
+//    }
+//}
 
 task checkDockerAuthentication << {
     // command below return 1 when user is not logged in to Docker Hub
