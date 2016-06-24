@@ -1,5 +1,11 @@
 package com.containersol.minimesos.container;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.SecureRandom;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.MesosCluster;
@@ -10,15 +16,10 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Image;
 import com.jayway.awaitility.core.ConditionTimeoutException;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.SecureRandom;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.await;
 
@@ -95,17 +96,13 @@ public abstract class AbstractContainer implements ClusterProcess {
         try {
 
             await().atMost(timeout, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(() -> {
-                List<Container> containers = DockerClientFactory.build().listContainersCmd().withShowAll(true).exec();
-                for (Container container : containers) {
-                    if (container.getId().equals(containerId)) {
-                        return true;
-                    }
-                }
-                return false;
+                Container container = DockerContainersUtil.getContainer(containerId);
+                return container != null && container.getStatus().startsWith("Up");
             });
 
         } catch (ConditionTimeoutException cte) {
-            String errorMessage = String.format("Container [%s] did not start within %d seconds.", createCommand.getName(), timeout);
+            String errorMessage = String.format("Container [%s] did not start within %d seconds. Status is '%s'", createCommand.getName(), timeout,
+                DockerContainersUtil.getContainer(containerId).getStatus());
             LOGGER.error(errorMessage);
             try {
                 for (String logLine : DockerContainersUtil.getDockerLogs(containerId)) {
@@ -151,6 +148,7 @@ public abstract class AbstractContainer implements ClusterProcess {
 
     /**
      * Enables derived classes to override
+     *
      * @return protocol of the service
      */
     protected String getServiceProtocol() {
@@ -159,6 +157,7 @@ public abstract class AbstractContainer implements ClusterProcess {
 
     /**
      * Enables derived classes to override
+     *
      * @return port of the service
      */
     protected int getServicePort() {
@@ -167,6 +166,7 @@ public abstract class AbstractContainer implements ClusterProcess {
 
     /**
      * Enables derived classes to override
+     *
      * @return protocol of the service
      */
     protected String getServicePath() {
