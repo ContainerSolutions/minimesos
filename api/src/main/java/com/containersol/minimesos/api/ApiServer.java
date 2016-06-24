@@ -5,46 +5,58 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ConfigParser;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+import spark.Spark;
 
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 
-import static spark.Spark.exception;
-import static spark.Spark.port;
-import static spark.Spark.post;
-
 /**
- * Start the REST API
+ * minimesos API server
  */
-public class Main {
+public class ApiServer {
+
+    public static final int PORT = 8080;
 
     private ClusterRepository repository;
+
     private final MesosClusterContainersFactory factory;
 
-    public Main() {
+    public ApiServer() {
         repository = new ClusterRepository();
         factory = new MesosClusterContainersFactory();
     }
 
     public static void main(String[] args) throws UnknownHostException {
-        Main main = new Main();
-        main.run();
+        ApiServer apiServer = new ApiServer();
+        apiServer.start();
     }
 
-    private void run() throws UnknownHostException {
-        port(8080);
+    public void start() {
+        Spark.port(PORT);
 
-        post("/start", "text/plain", (request, response) -> {
+        Spark.post("/start", "text/plain", (request, response) -> {
             ClusterConfig clusterConfig = new ConfigParser().parse(request.body());
             MesosCluster mesosCluster = factory.createMesosCluster(clusterConfig);
             mesosCluster.start();
             return new ClusterStartedResponse(mesosCluster.getClusterId());
         }, JsonUtils.json());
 
-        exception(Exception.class, (exception, request, response) -> {
+        Spark.get("/info", (req, res) -> "No cluster is running");
+
+        Spark.exception(Exception.class, (exception, request, response) -> {
             exception.printStackTrace();
         });
+    }
 
-        System.out.println("minimesos is running on http://" + Inet4Address.getLocalHost().getHostAddress());
+    public void stop() {
+        Spark.stop();
+    }
+
+    public String getServiceUrl() {
+        try {
+            return "http://" + Inet4Address.getLocalHost().getHostAddress() + ":" + PORT;
+        } catch (UnknownHostException e) {
+            throw new RuntimeException("Could not determine IP address: " + e.getMessage());
+        }
     }
 }
