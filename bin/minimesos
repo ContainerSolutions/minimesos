@@ -8,8 +8,11 @@ command_exists() {
     command -v "$@" > /dev/null 2>&1
 }
 
-if ! command_exists docker; then
-    echo "Please install docker to use minimesos"
+DOCKER_VERSION=$(docker version --format "{{.Server.Version}}")
+SMALLEST_VERSION=$(printf "%s\n1.11.0\n" $DOCKER_VERSION | sort -t '.' -k 1,1 -k 2,2 -k 3,3 -k 4,4 -g | head -n 1)
+
+if ! command_exists docker || [ $SMALLEST_VERSION != "1.11.0" ]; then
+    echo "Minimesos requires Docker 1.11.0 or higher"
     exit 1
 fi
 
@@ -21,13 +24,6 @@ elif [ $(uname) != "Darwin" ]; then
     DOCKER_HOST_IP=$(ip addr show dev docker0 | grep inet | sed -r "s/.*inet\s([0-9\.]+)\/.*/\1/" | head -n 1)
 else
     DOCKER_HOST_IP=""
-fi
-
-
-docker info > /dev/null 2>&1
-if [ "$?" -ne 0 ]; then
-    echo "Please make sure docker is set up correctly"
-    exit 1
 fi
 
 pullImage() {
