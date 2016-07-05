@@ -11,11 +11,12 @@ import com.containersol.minimesos.junit.MesosClusterTestRule;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
-import com.jayway.awaitility.Awaitility;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
+
+import static com.jayway.awaitility.Awaitility.*;
 
 public class RunTaskTest {
     private static final String TASK_CLUSTER_ROLE = "test";
@@ -63,17 +64,14 @@ public class RunTaskTest {
             }
         };
 
-        CLUSTER.addAndStartProcess(mesosAgent);
-        LogContainerTestCallback cb = new LogContainerTestCallback();
-        DockerClientFactory.build().logContainerCmd(mesosAgent.getContainerId()).withStdOut(true).exec(cb);
-        cb.awaitCompletion();
+        mesosAgent.start(10);
 
-        Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
-            LogContainerTestCallback cb1 = new LogContainerTestCallback();
-            DockerClientFactory.build().logContainerCmd(mesosAgent.getContainerId()).withStdOut(true).exec(cb1);
-            cb1.awaitCompletion();
-            String log = cb1.toString();
-            return log.contains("Received status update TASK_FINISHED for task test-cmd");
+        await().timeout(60, TimeUnit.SECONDS).until(() -> {
+            LogContainerTestCallback cb = new LogContainerTestCallback();
+            DockerClientFactory.build().logContainerCmd(mesosAgent.getContainerId()).withStdErr().withStdOut(true).exec(cb);
+            cb.awaitCompletion();
+
+            return cb.toString().contains("Received status update TASK_FINISHED for task test-cmd");
         });
     }
 

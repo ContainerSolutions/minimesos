@@ -79,7 +79,7 @@ public abstract class AbstractContainer implements ClusterProcess {
     protected abstract CreateContainerCmd dockerCommand();
 
     /**
-     * Starts the container and waits until is started
+     * Starts the container and waits until is started or already exited without error.
      *
      * @param timeout in seconds
      */
@@ -94,12 +94,10 @@ public abstract class AbstractContainer implements ClusterProcess {
         DockerClientFactory.build().startContainerCmd(containerId).exec();
 
         try {
-
             await().atMost(timeout, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(() -> {
                 Container container = DockerContainersUtil.getContainer(containerId);
-                return container != null && container.getStatus().startsWith("Up");
+                return container != null && (container.getStatus().startsWith("Up") || container.getStatus().startsWith("Exited (0)"));
             });
-
         } catch (ConditionTimeoutException cte) {
             String errorMessage = String.format("Container [%s] did not start within %d seconds. Status is '%s'", createCommand.getName(), timeout,
                 DockerContainersUtil.getContainer(containerId).getStatus());

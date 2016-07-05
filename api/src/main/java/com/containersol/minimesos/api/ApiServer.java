@@ -7,7 +7,6 @@ import com.containersol.minimesos.config.ConfigParser;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 import spark.Spark;
 
-import java.net.Inet4Address;
 import java.net.UnknownHostException;
 
 /**
@@ -20,6 +19,8 @@ public class ApiServer {
     private ClusterRepository repository;
 
     private final MesosClusterContainersFactory factory;
+
+    private MesosCluster mesosCluster;
 
     public ApiServer() {
         repository = new ClusterRepository();
@@ -35,10 +36,14 @@ public class ApiServer {
         Spark.port(PORT);
 
         Spark.post("/start", "text/plain", (request, response) -> {
-            ClusterConfig clusterConfig = new ConfigParser().parse(request.body());
-            MesosCluster mesosCluster = factory.createMesosCluster(clusterConfig);
-            mesosCluster.start();
-            return new ClusterStartedResponse(mesosCluster.getClusterId());
+            if (mesosCluster != null) {
+                return new ClusterStartedResponse(mesosCluster.getClusterId());
+            } else {
+                ClusterConfig clusterConfig = new ConfigParser().parse(request.body());
+                mesosCluster = factory.createMesosCluster(clusterConfig);
+                mesosCluster.start();
+                return new ClusterStartedResponse(mesosCluster.getClusterId());
+            }
         }, JsonUtils.json());
 
         Spark.get("/info", (req, res) -> "No cluster is running");
@@ -49,14 +54,14 @@ public class ApiServer {
     }
 
     public void stop() {
+        if (mesosCluster != null) {
+            mesosCluster.destroy(factory);
+        }
+
         Spark.stop();
     }
 
     public String getServiceUrl() {
-        try {
-            return "http://" + Inet4Address.getLocalHost().getHostAddress() + ":" + PORT;
-        } catch (UnknownHostException e) {
-            throw new RuntimeException("Could not determine IP address: " + e.getMessage());
-        }
+        return "http://localhost:" + PORT;
     }
 }
