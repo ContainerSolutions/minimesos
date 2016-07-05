@@ -2,8 +2,6 @@ package com.containersol.minimesos.main;
 
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -12,7 +10,6 @@ import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ConfigParser;
-import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
@@ -34,13 +31,6 @@ public class CommandUp implements Command {
 
     @Parameter(names = "--mapPortsToHost", description = "Map the Mesos and Marathon UI ports to the host level (we recommend to enable this on Mac (e.g. when using docker-machine) and disable on Linux).")
     private Boolean mapPortsToHost = null;
-
-    /**
-     * As number of agents can be determined either in config file or command line parameters, it defaults to invalid value.
-     * Logic to select the actual number of agent is in the field getter
-     */
-    @Parameter(names = "--num-agents", description = "Number of agents to start")
-    private int numAgents = -1;
 
     @Parameter(names = "--clusterConfig", description = "Path to file with cluster configuration. Defaults to minimesosFile")
     private String clusterConfigPath = ClusterConfig.DEFAULT_CONFIG_FILE;
@@ -66,25 +56,6 @@ public class CommandUp implements Command {
 
     public void setMapPortsToHost(Boolean mapPortsToHost) {
         this.mapPortsToHost = mapPortsToHost;
-    }
-
-    /**
-     * Number of agents defined in configuration file, unless overwritten in the command line.
-     * If neither is set, 1 is returned
-     *
-     * @return Number of agents to create
-     */
-    public int getNumAgents() {
-        int num = 1;
-        if (this.numAgents > 0) {
-            num = this.numAgents;
-        } else {
-            ClusterConfig clusterConfig = readClusterConfigFromMinimesosFile();
-            if ((clusterConfig != null) && (clusterConfig.getAgents() != null) && !clusterConfig.getAgents().isEmpty()) {
-                num = clusterConfig.getAgents().size();
-            }
-        }
-        return num;
     }
 
     public String getClusterConfigPath() {
@@ -143,7 +114,6 @@ public class CommandUp implements Command {
      * @param clusterConfig cluster configuration to update
      */
     public void updateWithParameters(ClusterConfig clusterConfig) {
-
         if (isMapPortsToHost() != null) {
             clusterConfig.setMapPortsToHost(isMapPortsToHost());
         }
@@ -157,16 +127,6 @@ public class CommandUp implements Command {
         if (clusterConfig.getMaster() == null) {
             clusterConfig.setMaster(new MesosMasterConfig());
         }
-
-        // creation of agents
-        List<MesosAgentConfig> agentConfigs = clusterConfig.getAgents();
-        List<MesosAgentConfig> updatedConfigs = new ArrayList<>();
-        for (int i = 0; i < getNumAgents(); i++) {
-            MesosAgentConfig agentConfig = (agentConfigs.size() > i) ? agentConfigs.get(i) : new MesosAgentConfig();
-            updatedConfigs.add(agentConfig);
-        }
-        clusterConfig.setAgents(updatedConfigs);
-
     }
 
     public MesosCluster getCluster() {
