@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import static com.containersol.minimesos.config.MarathonConfig.*;
 import static com.jayway.awaitility.Awaitility.await;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
@@ -92,10 +93,10 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        ExposedPort exposedPort = ExposedPort.tcp(MarathonConfig.MARATHON_PORT);
+        ExposedPort exposedPort = ExposedPort.tcp(MARATHON_PORT);
         Ports portBindings = new Ports();
         if (getCluster().isMapPortsToHost()) {
-            portBindings.bind(exposedPort, new Ports.Binding(MarathonConfig.MARATHON_PORT));
+            portBindings.bind(exposedPort, Ports.Binding.bindPort(MARATHON_PORT));
         }
         return DockerClientFactory.build().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withName(getName())
@@ -196,7 +197,7 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
 
     @Override
     protected int getServicePort() {
-        return MarathonConfig.MARATHON_PORT;
+        return MARATHON_PORT;
     }
 
     public void waitFor() {

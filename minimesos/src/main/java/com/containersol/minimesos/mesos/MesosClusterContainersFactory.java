@@ -23,6 +23,7 @@ import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.marathon.MarathonContainer;
 import com.github.dockerjava.api.model.Container;
 
+import com.github.dockerjava.api.model.ContainerPort;
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -111,9 +112,9 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
 
     private void restoreMapToPorts(MesosCluster cluster, Container container) {
         // Restore "map ports to host" attribute
-        Container.Port[] ports = container.getPorts();
+        ContainerPort[] ports = container.getPorts();
         if (ports != null) {
-            for (Container.Port port : ports) {
+            for (ContainerPort port : ports) {
                 if (port.getIp() != null && port.getPrivatePort() == MesosMasterConfig.MESOS_MASTER_PORT) {
                     cluster.setMapPortsToHost(true);
                 }
