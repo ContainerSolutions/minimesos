@@ -18,7 +18,6 @@ import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.PullResponseItem;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
-import com.github.dockerjava.core.command.PullImageResultCallback;
 
 /**
  * Immutable utility class, which represents set of docker containers with filters and operations on this list
@@ -185,54 +184,25 @@ public class DockerContainersUtil {
         return logs;
     }
 
-
     /**
-     * Synchronized method for pulling docker image
+     * Pulls a Docker image with given name and version. Throws exception when it times out after given timeout.
      *
      * @param imageName    image to pull
      * @param imageVersion image version to pull
      * @param timeoutSecs  pulling timeout in seconds
      */
     public static void pullImage(String imageName, String imageVersion, long timeoutSecs) {
-
-        final CompletableFuture<Void> result = new CompletableFuture<>();
-
         try {
-            DockerClientFactory.build().pullImageCmd(imageName).withTag(imageVersion).exec(new PullImageResultCallback() {
-
-                @Override
-                public void onNext(PullResponseItem item) {
-                    String status = item.getStatus();
-                    if (status == null) {
-                        result.completeExceptionally(new MinimesosException("docker failed to pull image"));
-                    }
-                }
-
-                @Override
-                public void onComplete() {
-                    super.onComplete();
-                    result.complete(null);
-                }
-
-            });
-        } catch (RuntimeException rte) {
-            throw new MinimesosException(String.format("Failed to pull %s:%s container", imageName, imageVersion), rte);
-        }
-
-        try {
+            final CompletableFuture<Void> result = new CompletableFuture<>();
+            DockerClientFactory.build().pullImageCmd(imageName).withTag(imageVersion).exec(new PullImageResultCallback(result));
             result.get(timeoutSecs, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
-            String msg = String.format("# Timeout while pulling image from registry. Try executing the command below manually%ndocker pull %s:%s", imageName, imageVersion);
-            throw new MinimesosException(msg, e);
+            throw new MinimesosException(String.format("# Timeout while pulling image from registry. Try executing the command below manually%ndocker pull %s:%s", imageName, imageVersion), e);
         } catch (ExecutionException e) {
-            // we get here on future.completeExceptionally() above
-            String msg = String.format("# Error pulling image from registry. Try executing the command below manually%ndocker pull %s:%s", imageName, imageVersion);
-            throw new MinimesosException(msg, e);
+            throw new MinimesosException(String.format("# Error pulling image from registry. Try executing the command below manually%ndocker pull %s:%s", imageName, imageVersion), e);
         } catch (InterruptedException | RuntimeException e) {
-            String msg = "Error pulling image or image not found in registry: " + imageName + ":" + imageVersion;
-            throw new MinimesosException(msg, e);
+            throw new MinimesosException("Error pulling image or image not found in registry: " + imageName + ":" + imageVersion, e);
         }
-
     }
 
     /**
@@ -259,4 +229,26 @@ public class DockerContainersUtil {
         return container;
     }
 
+    private static class PullImageResultCallback extends com.github.dockerjava.core.command.PullImageResultCallback {
+        private final CompletableFuture<Void> result;
+
+        public PullImageResultCallback(CompletableFuture<Void> result) {
+            this.result = result;
+        }
+
+        @Override
+        public void onNext(PullResponseItem item) {
+            String status = item.getStatus();
+            if (status == null) {
+                result.completeExceptionally(new MinimesosException("docker failed to pull image"));
+            }
+        }
+
+        @Override
+        public void onComplete() {
+            super.onComplete();
+            result.complete(null);
+        }
+
+    }
 }
