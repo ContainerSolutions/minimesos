@@ -16,8 +16,6 @@ import org.junit.runners.model.Statement;
 
 /**
  * JUnit Rule extension of Mesos Cluster to use in JUnit.
- * <p>
- * TODO: see https://github.com/ContainerSolutions/minimesos/issues/8 for completion
  */
 public class MesosClusterTestRule implements TestRule {
 
