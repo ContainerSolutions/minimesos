@@ -1,5 +1,11 @@
 package com.containersol.minimesos.container;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.SecureRandom;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.MesosCluster;
@@ -10,15 +16,10 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Image;
 import com.jayway.awaitility.core.ConditionTimeoutException;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.SecureRandom;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.await;
 
@@ -29,7 +30,7 @@ public abstract class AbstractContainer implements ClusterProcess {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractContainer.class);
 
-    private static final int IMAGE_PULL_TIMEOUT_SECS = 5 * 60;
+    private static final int IMAGE_PULL_TIMEOUT_SECS = 8 * 60;
 
     private MesosCluster cluster;
     private final ContainerConfig config;
