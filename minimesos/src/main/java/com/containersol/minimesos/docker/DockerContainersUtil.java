@@ -18,6 +18,7 @@ import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.PullResponseItem;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
+import com.github.dockerjava.core.command.PullImageResultCallback;
 
 /**
  * Immutable utility class, which represents set of docker containers with filters and operations on this list
@@ -194,7 +195,7 @@ public class DockerContainersUtil {
     public static void pullImage(String imageName, String imageVersion, long timeoutSecs) {
         try {
             final CompletableFuture<Void> result = new CompletableFuture<>();
-            DockerClientFactory.build().pullImageCmd(imageName).withTag(imageVersion).exec(new PullImageResultCallback(result));
+            DockerClientFactory.build().pullImageCmd(imageName).withTag(imageVersion).exec(new FastFailPullImageResultCallback(result));
             result.get(timeoutSecs, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
             throw new MinimesosException(String.format("# Timeout while pulling image from registry. Try executing the command below manually%ndocker pull %s:%s", imageName, imageVersion), e);
@@ -229,10 +230,11 @@ public class DockerContainersUtil {
         return container;
     }
 
-    private static class PullImageResultCallback extends com.github.dockerjava.core.command.PullImageResultCallback {
+    private static class FastFailPullImageResultCallback extends PullImageResultCallback {
+
         private final CompletableFuture<Void> result;
 
-        public PullImageResultCallback(CompletableFuture<Void> result) {
+        public FastFailPullImageResultCallback(CompletableFuture<Void> result) {
             this.result = result;
         }
 
