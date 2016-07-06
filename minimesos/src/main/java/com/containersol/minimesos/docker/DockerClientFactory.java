@@ -14,11 +14,11 @@ public class DockerClientFactory {
 
     public static DockerClient build() {
         if (dockerClient == null) {
-            DockerClientConfig.DockerClientConfigBuilder builder = DockerClientConfig.createDefaultConfigBuilder();
+            DockerClientConfig.DockerClientConfigBuilder builder = DockerClientConfig.createDefaultConfigBuilder().withApiVersion("1.12");
 
             String dockerHostEnv = System.getenv("DOCKER_HOST");
             if (StringUtils.isBlank(dockerHostEnv)) {
-                builder.withUri("unix:///var/run/docker.sock");
+                builder.withDockerHost("unix:///var/run/docker.sock");
             }
 
             DockerClientConfig config = builder.build();
