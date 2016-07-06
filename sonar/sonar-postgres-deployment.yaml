@@ -1,0 +1,36 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sonar-postgres
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: sonar-postgres
+      labels:
+        name: sonar-postgres
+    spec:
+      containers:
+        - image: postgres:9.5.3
+          name: sonar-postgres
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-pwd
+                  key: password
+            - name: POSTGRES_USER
+              value: sonar
+          ports:
+            - containerPort: 5432
+              name: postgresport
+          volumeMounts:
+            # This name must match the volumes.name below.
+            - name: data-disk
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data-disk
+          gcePersistentDisk:
+            # This disk must already exist.
+            pdName: minimesos-sonar-postgres-disk
+            fsType: ext4
