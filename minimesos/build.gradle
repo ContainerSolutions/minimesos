@@ -2,14 +2,6 @@ tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 }
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-    maven {
-        url "https://jitpack.io"
-    }
-}
-
 apply plugin: "groovy"
 apply plugin: 'java'
 apply plugin: 'jacoco'
@@ -106,4 +98,3 @@ test {
         showStandardStreams = true
     }
 }
-

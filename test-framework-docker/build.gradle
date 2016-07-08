@@ -21,14 +21,6 @@ subprojects {
 
     group = "com.containersolutions"
 
-    repositories {
-        mavenLocal()
-        mavenCentral()
-        maven {
-            url "https://jitpack.io"
-        }
-    }
-
     dependencies {
 
         compile "org.apache.mesos:mesos:${mesosVer}"
