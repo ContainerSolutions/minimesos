@@ -35,6 +35,9 @@ subprojects {
         }
     }
 
+    apply plugin: 'java'
+    apply plugin: 'com.bmuschko.docker-remote-api'
+
 }
 
 ext {

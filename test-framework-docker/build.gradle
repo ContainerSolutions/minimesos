@@ -8,9 +8,6 @@ subprojects {
         options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
     }
 
-    apply plugin: 'java'
-    apply plugin: 'com.bmuschko.docker-remote-api'
-
     task showDeps(type: DependencyReportTask) {}
 
     sourceCompatibility = '1.8'
