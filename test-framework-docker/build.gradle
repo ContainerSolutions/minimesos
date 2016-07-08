@@ -19,8 +19,6 @@ subprojects {
 
     [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
-    group = "com.containersolutions"
-
     dependencies {
 
         compile "org.apache.mesos:mesos:${mesosVer}"
