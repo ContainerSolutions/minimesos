@@ -5,7 +5,6 @@ tasks.withType(JavaCompile) {
 apply plugin: "groovy"
 apply plugin: 'jacoco'
 apply plugin: 'maven'
-apply plugin: 'application'
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -47,19 +46,6 @@ sourceSets {
     }
 }
 
-mainClassName = "com.containersol.minimesos.main.Main"
-
-jar {
-    baseName = "minimesos"
-    manifest {
-        attributes(
-                'Main-Class': mainClassName,
-                'Implementation-Version': project.version
-        )
-    }
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
-}
-
 jacocoTestReport {
     reports {
         xml.enabled true
@@ -67,26 +53,7 @@ jacocoTestReport {
     }
 }
 
-task executableJar(type: Jar) {
-    baseName = "minimesos"
-    classifier = "all"
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-    manifest {
-        attributes(
-                'Main-Class': mainClassName,
-                'Implementation-Version': project.version
-        )
-    }
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
-}
-
 task installMinimesosScript(type: Copy) {
     from "$rootDir/bin/minimesos"
     into "/usr/local/bin"
-}
-
-
-artifacts {
-    archives executableJar
 }
