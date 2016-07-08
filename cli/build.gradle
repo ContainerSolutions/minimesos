@@ -22,12 +22,6 @@ ext {
     imageName = imagePrefix + '/minimesos-cli'
 }
 
-test {
-    testLogging {
-        showStandardStreams = true
-    }
-}
-
 task executableJar(type: Jar) {
     baseName = "minimesos-cli"
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }

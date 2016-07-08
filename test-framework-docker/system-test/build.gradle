@@ -15,9 +15,6 @@ dependencies {
 task systemTest(type: Test) {
     testClassesDir = sourceSets.test.output.classesDir
     classpath = sourceSets.test.runtimeClasspath
-    testLogging {
-        showStandardStreams = true
-    }
     outputs.upToDateWhen { false }
 }
 

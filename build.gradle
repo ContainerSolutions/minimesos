@@ -38,6 +38,12 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'com.bmuschko.docker-remote-api'
 
+    test {
+        testLogging {
+            showStandardStreams = true
+        }
+    }
+
 }
 
 ext {

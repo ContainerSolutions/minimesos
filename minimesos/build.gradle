@@ -90,9 +90,3 @@ task installMinimesosScript(type: Copy) {
 artifacts {
     archives executableJar
 }
-
-test {
-    testLogging {
-        showStandardStreams = true
-    }
-}
