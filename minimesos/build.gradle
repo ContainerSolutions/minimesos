@@ -9,8 +9,6 @@ version = rootProject.version.toString()
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
-group = "com.containersol.minimesos"
-
 dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.4.5'
     compile 'com.github.docker-java:docker-java:3.0.0'

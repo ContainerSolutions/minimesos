@@ -27,6 +27,8 @@ plugins {
 
 subprojects {
 
+    group = "com.containersol.minimesos"
+
     repositories {
         mavenCentral()
         mavenLocal()
