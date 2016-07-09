@@ -28,6 +28,7 @@ plugins {
 subprojects {
 
     group = "com.containersol.minimesos"
+    version = rootProject.version.toString()
 
     repositories {
         mavenCentral()
@@ -43,6 +44,12 @@ subprojects {
 
     sourceCompatibility = '1.8'
     targetCompatibility = '1.8'
+
+    [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    }
 
     test {
         testLogging {

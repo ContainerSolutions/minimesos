@@ -1,13 +1,5 @@
-tasks.withType(JavaCompile) {
-    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-}
-
 apply plugin: "groovy"
 apply plugin: 'jacoco'
-
-version = rootProject.version.toString()
-
-[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
 dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.4.5'
