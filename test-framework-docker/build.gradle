@@ -10,8 +10,6 @@ subprojects {
 
     task showDeps(type: DependencyReportTask) {}
 
-    sourceCompatibility = '1.8'
-    targetCompatibility = '1.8'
     version = rootProject.version.toString()
 
     [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'

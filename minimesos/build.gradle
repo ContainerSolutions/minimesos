@@ -4,10 +4,7 @@ tasks.withType(JavaCompile) {
 
 apply plugin: "groovy"
 apply plugin: 'jacoco'
-apply plugin: 'maven'
 
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
 version = rootProject.version.toString()
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
