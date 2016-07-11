@@ -48,6 +48,8 @@ public class ContainerName {
     }
 
     /**
+     * @param containerName TODO(mwl)
+     * @param clusterId TODO(mwl)
      * @return true, if container with this name belongs to the cluster
      */
     public static boolean belongsToCluster(String containerName, String clusterId) {
@@ -56,6 +58,8 @@ public class ContainerName {
     }
 
     /**
+     * @param dockerNames TODO(mwl)
+     * @param clusterId TODO(mwl)
      * @return true, if container with these docker names belongs to the cluster
      */
     public static boolean belongsToCluster(String[] dockerNames, String clusterId) {
