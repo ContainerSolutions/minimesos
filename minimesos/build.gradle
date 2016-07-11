@@ -1,5 +1,4 @@
 apply plugin: "groovy"
-apply plugin: 'jacoco'
 
 dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.4.5'
@@ -30,13 +29,6 @@ sourceSets {
         java {
             srcDirs = [] // don't compile Java code twice
         }
-    }
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        csv.enabled false
     }
 }
 
