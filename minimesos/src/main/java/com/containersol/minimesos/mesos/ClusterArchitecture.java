@@ -165,7 +165,7 @@ public class ClusterArchitecture {
         /**
          * Includes the default {@link ZooKeeperContainer} instance in the cluster
          *
-         * @return The modified builder instance (not a copy)
+         * @return Reference to this object
          */
         public Builder withZooKeeper() {
             return withZooKeeper(new ZooKeeperConfig());
@@ -175,7 +175,7 @@ public class ClusterArchitecture {
          * Be explicit about the version of the image to use.
          *
          * @param zooKeeperConfig Zookeeper configuration
-         * @return The modified builder instance (not a copy)
+         * @return Reference to this object
          */
         public Builder withZooKeeper(ZooKeeperConfig zooKeeperConfig) {
             return withZooKeeper(new ZooKeeperContainer(zooKeeperConfig));
@@ -185,7 +185,7 @@ public class ClusterArchitecture {
          * Provide a custom implementation of the {@link ZooKeeper} container.
          *
          * @param zooKeeper must extend from {@link ZooKeeper}
-         * @return The modified builder instance (not a copy)
+         * @return Reference to this object
          */
         public Builder withZooKeeper(ZooKeeper zooKeeper) {
             getContainers().add(zooKeeper); // You don't need a zookeeper container to add a zookeeper container
@@ -205,7 +205,7 @@ public class ClusterArchitecture {
         /**
          * Includes the default {@link MesosMaster} instance in the cluster
          *
-         * @return The modified builder instance (not a copy)
+         * @return Reference to this object
          */
         public Builder withMaster() {
             return withMaster(MesosMasterContainer::new);
@@ -214,7 +214,7 @@ public class ClusterArchitecture {
         /**
          * Includes the default {@link MesosAgent} instance in the cluster
          *
-         * @return The modified builder instance (not a copy)
+         * @return Reference to this object
          */
         public Builder withAgent() {
             return withAgent(MesosAgentContainer::new);
@@ -224,7 +224,7 @@ public class ClusterArchitecture {
          * All default instance, but with defined resources
          *
          * @param agentResourcesConfig agent resources configuration
-         * @return The modified builder instance (not a copy)
+         * @return Reference to this object
          */
         public Builder withAgent(String agentResourcesConfig) {
             AgentResourcesConfig resources = AgentResourcesConfig.fromString(agentResourcesConfig);
@@ -237,7 +237,7 @@ public class ClusterArchitecture {
          * Provide a custom implementation of the {@link MesosMaster} container.
          *
          * @param master must extend from {@link MesosMaster}. Functional, to allow you to inject a reference to the {@link ZooKeeper} container.
-         * @return The modified builder instance (not a copy)
+         * @return Reference to this object
          */
         public Builder withMaster(Function<ZooKeeper, MesosMaster> master) {
             if (!isPresent(Filter.zooKeeper())) {
@@ -257,7 +257,7 @@ public class ClusterArchitecture {
          * Provide a custom implementation of the {@link MesosAgent} container.
          *
          * @param agent must extend from {@link MesosAgent}. Functional, to allow you to inject a reference to the {@link ZooKeeper} container.
-         * @return The modified builder instance (not a copy)
+         * @return Reference to this object
          */
         public Builder withAgent(Function<ZooKeeper, MesosAgent> agent) {
             if (!isPresent(Filter.zooKeeper())) {
@@ -277,7 +277,7 @@ public class ClusterArchitecture {
          * Includes your own container in the cluster
          *
          * @param container must extend from {@link ClusterProcess}
-         * @return The modified builder instance (not a copy)
+         * @return Reference to this object
          */
         public Builder withContainer(ClusterProcess container) {
             getContainers().add(container); // A simple container may not need any injection. But is available if required.
@@ -290,7 +290,7 @@ public class ClusterArchitecture {
          * @param container container must extend from {@link ClusterProcess}. Functional, to allow you to inject a reference to another {@link ClusterProcess}.
          * @param filter A predicate that returns true if the {@link ClusterProcess} is of type T
          * @param <T> Type extending ClusterProcess
-         * @return The modified builder instance (not a copy)
+         * @return Reference to this object
          */
         public <T extends ClusterProcess> Builder withContainer(Function<T, ClusterProcess> container, Predicate<ClusterProcess> filter) {
             // Dev note: It is not possible to use generics to find the requested type due to generic type erasure. This is why we are explicitly passing a user provided filter.
