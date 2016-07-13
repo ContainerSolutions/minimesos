@@ -22,7 +22,7 @@ public class ClusterRepository {
     /**
      * Loads representation of the running cluster
      *
-     * @param factory TODO(mwl)
+     * @param factory Factory implementing the logic of
      * @return representation of the cluster, which ID is found in the file
      */
     public MesosCluster loadCluster(MesosClusterFactory factory) {

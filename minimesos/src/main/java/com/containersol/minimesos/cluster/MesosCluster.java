@@ -53,8 +53,8 @@ public class MesosCluster {
     /**
      * Create a new MesosCluster with a specified cluster architecture.
      *
-     * @param clusterConfig TODO(mwl)
-     * @param processes TODO(mwl)
+     * @param clusterConfig Cluster configuration
+     * @param processes Existing processes to assign to this cluster
      */
     public MesosCluster(ClusterConfig clusterConfig, List<ClusterProcess> processes) {
         this.memberPocesses = processes;
@@ -70,8 +70,8 @@ public class MesosCluster {
      * Recreate a MesosCluster object based on an existing cluster ID.
      *
      * @param clusterId the cluster ID of the cluster that is already running
-     * @param factory TODO(mwl)
-     * @return TODO(mwl)
+     * @param factory Factory implementing the logic of loading data from running cluster
+     * @return Initialized MesosCluster object
      */
     public static MesosCluster loadCluster(String clusterId, MesosClusterFactory factory) {
         return new MesosCluster(clusterId, factory);
@@ -144,8 +144,8 @@ public class MesosCluster {
     /**
      * Prints the state of the Mesos master or agent
      *
-     * @param out TODO(mwl)
-     * @param agentContainerId TODO(mwl)
+     * @param out A PrintStream to push the output to
+     * @param agentContainerId The Id of a mesos agent container. If null then the state of the master will be printed
      */
     public void state(PrintStream out, String agentContainerId) {
         JSONObject stateInfo;
@@ -165,7 +165,7 @@ public class MesosCluster {
     /**
      * Destroys the Mesos cluster and its containers
      *
-     * @param factory TODO(mwl)
+     * @param factory Factory implementing the logic to destroy the running cluster
      */
     public void destroy(MesosClusterFactory factory) {
 
