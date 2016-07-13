@@ -36,6 +36,8 @@ ext {
     imagePrefix = 'containersol'
 }
 
+version = "0.9.1"
+
 idea {
     project {
         languageLevel = '1.8'

@@ -15,15 +15,15 @@ apply plugin: 'java'
 apply plugin: 'jacoco'
 apply plugin: 'maven'
 apply plugin: 'application'
-apply plugin: 'com.bmuschko.docker-remote-api'
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
-version = rootProject.version.toString()
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
 group = "com.containersol.minimesos"
+version = rootProject.version.toString()
+archivesBaseName = "minimesos"
 
 dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.4.5'
@@ -63,7 +63,6 @@ jar {
     baseName = "minimesos"
     manifest {
         attributes(
-                'Main-Class': mainClassName,
                 'Implementation-Version': project.version
         )
     }
@@ -75,20 +74,6 @@ jacocoTestReport {
         xml.enabled true
         csv.enabled false
     }
-}
-
-task executableJar(type: Jar) {
-    baseName = "minimesos"
-    classifier = "all"
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-    manifest {
-        attributes(
-                'Main-Class': mainClassName,
-                'Implementation-Version': project.version
-        )
-    }
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
 }
 
 task installMinimesosScript(type: Copy) {
@@ -109,7 +94,7 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 artifacts {
     archives sourcesJar
     archives javadocJar
-    archives executableJar
+    archives jar
 }
 
 test {
@@ -118,3 +103,58 @@ test {
     }
 }
 
+def pomDef = {
+    name 'minimesos'
+    packaging 'jar'
+    // optionally artifactId can be defined here
+    description 'minimesos creates a local Mesos cluster for easy local development'
+    url 'https://www.minimesos.org'
+
+    scm {
+        connection 'https://github.com/ContainerSolutions/minimesos.git'
+        developerConnection 'git@github.com:ContainerSolutions/minimesos.git'
+        url 'https://github.com/ContainerSolutions/minimesos'
+    }
+
+    licenses {
+        license {
+            name 'The Apache License, Version 2.0'
+            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+        }
+    }
+
+    developers {
+        developer {
+            id 'frankscholten'
+            name 'Frank Scholten'
+            email 'frank.scholten@container-solutions.com'
+        }
+        developer {
+            id 'adam-sandor'
+            name 'Adam Sandor'
+            email 'adam.sandor@container-solutions.com'
+        }
+    }
+}
+
+task writePom() {
+    pom {
+        project(pomDef).writeTo("$buildDir/poms/fullpom.xml")
+    }
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project(pomDef)
+        }
+    }
+}
