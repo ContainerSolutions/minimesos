@@ -1,12 +1,8 @@
-
 buildscript {
 
     repositories {
         maven {
             url "http://dl.bintray.com/gesellix/gradle-plugins"
-        }
-        maven {
-            url "https://jitpack.io"
         }
         mavenCentral()
         mavenLocal()
@@ -26,9 +22,45 @@ plugins {
     id 'net.researchgate.release' version '2.3.5'
 }
 
+subprojects {
 
-repositories{
-    mavenCentral()
+    group = "com.containersol.minimesos"
+    version = rootProject.version.toString()
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
+
+    apply plugin: 'java'
+    apply plugin: 'com.bmuschko.docker-remote-api'
+    apply plugin: 'maven'
+    apply plugin: 'jacoco'
+
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+
+    [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    }
+
+    task showDeps(type: DependencyReportTask) {}
+
+    test {
+        testLogging {
+            showStandardStreams = true
+        }
+    }
+
+    jacocoTestReport {
+        reports {
+            xml.enabled true
+            csv.enabled false
+        }
+    }
+
 }
 
 ext {

@@ -1,20 +1,8 @@
+apply plugin: 'application'
+
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
 import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
-
-apply plugin: 'java'
-apply plugin: 'application'
-apply plugin: 'com.bmuschko.docker-remote-api'
-
-repositories {
-    mavenLocal()
-    mavenCentral()
-    maven {
-        url "https://jitpack.io"
-    }
-}
-
-group = "com.containersol.minimesos"
 
 dependencies {
     compile 'com.beust:jcommander:1.48'
@@ -24,7 +12,6 @@ dependencies {
 
     testCompile 'junit:junit:4.11'
     testCompile "org.mockito:mockito-core:1.+"
-    // using guru.nidi as maintenanance of the original project is dropped https://github.com/clarkware/jdepend/pull/9
     testCompile "guru.nidi:jdepend:2.9.5"
 }
 
@@ -32,12 +19,6 @@ mainClassName = "com.containersol.minimesos.main.Main"
 
 ext {
     imageName = imagePrefix + '/minimesos-cli'
-}
-
-test {
-    testLogging {
-        showStandardStreams = true
-    }
 }
 
 task executableJar(type: Jar) {
