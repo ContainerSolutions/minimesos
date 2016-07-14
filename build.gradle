@@ -4,9 +4,6 @@ buildscript {
         maven {
             url "http://dl.bintray.com/gesellix/gradle-plugins"
         }
-        maven {
-            url "https://jitpack.io"
-        }
         mavenCentral()
         mavenLocal()
         jcenter()
@@ -33,9 +30,6 @@ subprojects {
     repositories {
         mavenCentral()
         mavenLocal()
-        maven {
-            url "https://jitpack.io"
-        }
     }
 
     apply plugin: 'java'
