@@ -4,24 +4,12 @@ import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
 
 subprojects {
 
-    tasks.withType(JavaCompile) {
-        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-    }
-
-    task showDeps(type: DependencyReportTask) {}
-
-    version = rootProject.version.toString()
-
-    [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
-
     dependencies {
-
         compile "org.apache.mesos:mesos:${mesosVer}"
         compile 'com.google.code.gson:gson:2.3'         // marshalling between the scheduler and executor
 
         testCompile 'junit:junit:4.12'
         testCompile "org.mockito:mockito-all:1.9.5"
-
     }
 
     afterEvaluate { project ->

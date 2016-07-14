@@ -12,7 +12,6 @@ dependencies {
 
     testCompile 'junit:junit:4.11'
     testCompile "org.mockito:mockito-core:1.+"
-    // using guru.nidi as maintenanance of the original project is dropped https://github.com/clarkware/jdepend/pull/9
     testCompile "guru.nidi:jdepend:2.9.5"
 }
 

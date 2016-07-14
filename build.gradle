@@ -52,6 +52,8 @@ subprojects {
         options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
     }
 
+    task showDeps(type: DependencyReportTask) {}
+
     test {
         testLogging {
             showStandardStreams = true
