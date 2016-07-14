@@ -54,6 +54,7 @@ public class Main {
         main.addCommand(new CommandInfo());
         main.addCommand(new CommandInit());
         main.addCommand(new CommandPs());
+        main.addCommand(new CommandVersion());
         try {
             int rc = main.run(args);
             if (EXIT_CODE_OK != rc) {
