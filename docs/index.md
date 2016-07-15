@@ -162,9 +162,9 @@ A possible testing scenario could be:
 
 ![Creative Commons Licence](cc-cc.png "Creative Commons Licence") Licenced under CC BY [remember to play](http://remembertoplay.co/) in collaboration with [Container Solutions](http://www.container-solutions.com/)
 
-## Building and running on MAC with docker-machine
+## Building and running on MAC with Docker Machine
 
-### Install DockerToolbox (including docker-machine)
+### Install DockerToolbox (including Docker Machine)
 
 Download package from <https://www.docker.com/docker-toolbox> and install it.
 Tested with [DockerToolbox-1.9.0d.pkg](https://github.com/docker/toolbox/releases/download/v1.9.0d/DockerToolbox-1.9.0d.pkg)
@@ -251,11 +251,11 @@ An other alternative if you use docker-machine, is to access the reported IP add
 sudo route delete 172.17.0.0/16; sudo route -n add 172.17.0.0/16 $(docker-machine ip ${DOCKER_MACHINE_NAME})
 ```
 
-### Mappings of volumes
+### Volume maappings
 
-The table below is an attempt to summarize mappings, which enable execution of minimesos
+The table below show the volume mappings, on the host, on Docker machine and in the minimesos container.
 
-| OSX Host        | boot2docker VM        | minimesos container           |
+| OSX Host        | Docker Machine        | minimesos container           |
 | --------------- | --------------------- | ----------------------------- |
 | $PWD/.minimesos | $PWD/.minimesos       | /tmp/.minimesos               |
 |                 | /var/lib/docker       | /var/lib/docker               |
