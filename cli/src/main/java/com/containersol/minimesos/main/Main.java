@@ -113,6 +113,7 @@ public class Main {
 
             return EXIT_CODE_OK;
         } catch (Exception ex) {
+            output.println("Failed to run command '" + jc.getParsedCommand() + "'. " + ex.getMessage());
             LOGGER.debug("Exception while processing", ex);
             return EXIT_CODE_ERR;
         }

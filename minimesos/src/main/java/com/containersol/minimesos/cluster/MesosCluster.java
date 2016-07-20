@@ -19,9 +19,10 @@ import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.Predicate;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
-import com.jayway.awaitility.Awaitility;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
 import org.apache.commons.io.FileUtils;
@@ -31,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.jayway.awaitility.Awaitility.*;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Mesos cluster with lifecycle methods such as start, install, info, state, stop and destroy.
@@ -335,12 +337,11 @@ public class MesosCluster {
     }
 
     public void waitForState(final Predicate<State> predicate) {
-        await("Predicate on Mesos Master failed").atMost(clusterConfig.getTimeout(), TimeUnit.SECONDS).until(() -> {
+        await("Mesos master startup" + clusterConfig.getTimeout()).atMost(clusterConfig.getTimeout(), TimeUnit.SECONDS).until(() -> {
             try {
-                return predicate.test(State.fromJSON(getMaster().getStateInfoJSON().toString()));
-            } catch (InternalServerErrorException e) { //NOSONAR
-                // This means that the mesos cluster isn't ready yet..
-                return false;
+                assertTrue(predicate.test(State.fromJSON(getMaster().getStateInfoJSON().toString())));
+            } catch (InternalServerErrorException | JsonParseException | UnirestException | JsonMappingException e) { //NOSONAR
+                throw new AssertionError("Mesos master did not start after " + clusterConfig.getTimeout(), e);
             }
         });
     }
