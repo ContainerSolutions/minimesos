@@ -137,6 +137,7 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
         try (InputStream is = new FileInputStream(path)) {
             return createMesosCluster(is);
         } catch (IOException e) {
+            LOGGER.debug("Could not read minimesos config: ", e.getMessage());
             throw new MinimesosException("Could not read minimesos config: " + e.getMessage());
         }
     }
