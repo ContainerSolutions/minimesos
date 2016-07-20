@@ -12,9 +12,9 @@ class MesosAgentConfig extends MesosContainerConfig {
 
     AgentResourcesConfig resources = new AgentResourcesConfig()
 
-    public MesosAgentConfig() {
+    public MesosAgentConfig(String mesosVersion) {
         imageName = MESOS_AGENT_IMAGE
-        imageTag = MESOS_IMAGE_TAG
+        imageTag = mesosVersion + "-" + MINIMESOS_DOCKER_TAG
     }
 
     def resources(@DelegatesTo(AgentResourcesConfig) Closure cl) {

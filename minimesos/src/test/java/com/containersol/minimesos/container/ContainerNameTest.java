@@ -1,8 +1,8 @@
 package com.containersol.minimesos.container;
 
 import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersol.minimesos.mesos.MesosAgentContainer;
+import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -11,14 +11,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class ContainerNameTest {
+
     private MesosCluster cluster;
     private String clusterId;
 
     @Before
     public void before() {
-
-        ClusterArchitecture architecture = new ClusterArchitecture();
-        cluster = new MesosCluster(architecture.getClusterConfig(), architecture.getClusterContainers().getContainers());
+        cluster = new MesosClusterContainersFactory().createMesosCluster("src/test/resources/configFiles/minimesosFile-defaultMinimumClusterTest");
 
         clusterId = cluster.getClusterId();
     }

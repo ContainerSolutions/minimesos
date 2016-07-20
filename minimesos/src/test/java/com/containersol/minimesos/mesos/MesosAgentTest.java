@@ -2,6 +2,7 @@ package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ZooKeeper;
+import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.MesosAgentConfig;
 import org.junit.Test;
 
@@ -15,12 +16,12 @@ public class MesosAgentTest {
     /**
      * It must be possible to detect wrong image within 30 seconds
      */
-    @Test(expected = MinimesosException.class, timeout = 30 * 1000)
+    @Test(expected = MinimesosException.class, timeout = 60 * 1000)
     public void testPullingWrongContainer() {
-        MesosAgentConfig config = new MesosAgentConfig();
+        MesosAgentConfig config = new MesosAgentConfig(ClusterConfig.DEFAULT_MESOS_VERSION);
         config.setImageTag("non-existing-one");
 
-        MesosAgentContainer agent = new MesosAgentContainer(zooKeeper, config);
+        MesosAgentContainer agent = new MesosAgentContainer(config);
         agent.pullImage();
     }
 
@@ -32,10 +33,10 @@ public class MesosAgentTest {
 
         String imageTag = "non-existing-one";
 
-        MesosAgentConfig config = new MesosAgentConfig();
+        MesosAgentConfig config = new MesosAgentConfig(ClusterConfig.DEFAULT_MESOS_VERSION);
         config.setImageTag(imageTag);
 
-        MesosAgentContainer agent = new MesosAgentContainer(zooKeeper, config);
+        MesosAgentContainer agent = new MesosAgentContainer(config);
         try {
             agent.pullImage();
             fail("Pulling non-existing image should result in an exception");

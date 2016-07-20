@@ -14,7 +14,7 @@ public class MesosClusterContainersFactoryTest {
 
     @Test
     public void testCreateMesosCluster() throws FileNotFoundException {
-        MesosCluster mesosCluster = new MesosClusterContainersFactory().createMesosCluster(new FileInputStream("src/test/resources/configFiles/minimal-minimesosFile"));
+        MesosCluster mesosCluster = new MesosClusterContainersFactory().createMesosCluster(new FileInputStream("src/test/resources/configFiles/minimesosFile-defaultMinimumClusterTest"));
         assertEquals(1, mesosCluster.getAgents().size());
         assertNotNull(mesosCluster.getZooKeeper());
         assertNotNull(mesosCluster.getMaster());
