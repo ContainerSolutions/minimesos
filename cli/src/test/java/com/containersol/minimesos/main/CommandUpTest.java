@@ -57,7 +57,7 @@ public class CommandUpTest {
 
     @Test
     public void testExecute_mapPortsToHost() {
-        commandUp.setClusterConfigPath("src/test/resources/configFiles/minimal-minimesosFile");
+        commandUp.setClusterConfigPath("src/test/resources/configFiles/complete-minimesosFile");
         commandUp.setMapPortsToHost(true);
         commandUp.execute();
 

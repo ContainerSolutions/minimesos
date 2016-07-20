@@ -3,12 +3,11 @@ minimesos {
     mapPortsToHost = false
     loggingLevel = "INFO"
     mapAgentSandboxVolume = false
-    mesosVersion = "0.28"
+    mesosVersion = "0.28.1"
     timeout = 60
 
     agent {
         imageName = "containersol/mesos-agent"
-        imageTag = "# derive from mesos version"
         portNumber = 5051
 
         resources {
@@ -37,7 +36,6 @@ minimesos {
 
     agent {
         imageName = "containersol/mesos-agent"
-        imageTag = "# derive from mesos version"
         portNumber = 5051
 
         resources {
@@ -66,7 +64,6 @@ minimesos {
 
     agent {
         imageName = "containersol/mesos-agent"
-        imageTag = "# derive from mesos version"
         portNumber = 5051
 
         resources {
@@ -95,7 +92,6 @@ minimesos {
 
     master {
         imageName = "containersol/mesos-master"
-        imageTag = "# derive from mesos version"
     }
 
     zookeeper {

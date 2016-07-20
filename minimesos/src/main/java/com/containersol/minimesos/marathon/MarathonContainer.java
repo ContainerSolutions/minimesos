@@ -53,9 +53,8 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
 
     private ZooKeeper zooKeeper;
 
-    public MarathonContainer(ZooKeeper zooKeeper, MarathonConfig config) {
+    public MarathonContainer(MarathonConfig config) {
         super(config);
-        this.zooKeeper = zooKeeper;
         this.config = config;
     }
 

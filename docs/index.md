@@ -219,7 +219,7 @@ Initialized minimesosFile in this directory
 
 $ minimesos up
 Minimesos cluster is running: 3878417609
-Mesos version: 0.25
+Mesos version: 0.25.0
 export MINIMESOS_NETWORK_GATEWAY=172.17.0.1
 export MINIMESOS_AGENT=http://172.17.0.5:5051; export MINIMESOS_AGENT_IP=172.17.0.5
 export MINIMESOS_ZOOKEEPER=zk://172.17.0.3:2181/mesos; export MINIMESOS_ZOOKEEPER_IP=172.17.0.3

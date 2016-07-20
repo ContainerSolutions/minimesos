@@ -17,7 +17,7 @@ public class HelloWorldResponse {
     private boolean discoverySuccessful;
 
     public HelloWorldResponse(Set<String> ipAddresses, List<Integer> ports, long timeout) {
-        await().atMost(timeout, TimeUnit.SECONDS).until(new TasksCall(ipAddresses, ports));
+        await("Hello world container did not start responding").atMost(timeout, TimeUnit.SECONDS).until(new TasksCall(ipAddresses, ports));
     }
 
     public boolean isDiscoverySuccessful() {

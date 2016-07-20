@@ -3,6 +3,8 @@ package com.containersol.minimesos;
 import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.ZooKeeper;
+import com.containersol.minimesos.config.ClusterConfig;
+import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.junit.MesosClusterTestRule;
 import com.containersol.minimesos.mesos.MesosAgentContainer;
@@ -33,8 +35,9 @@ public class DynamicClusterTest {
 
     @Test
     public void stopWithNewContainerTest() {
+        MesosAgent extraAgent = new MesosAgentContainer(new MesosAgentConfig(ClusterConfig.DEFAULT_MESOS_VERSION));
         ZooKeeper zooKeeper = CLUSTER.getZooKeeper();
-        MesosAgent extraAgent = new MesosAgentContainer(zooKeeper);
+        extraAgent.setZooKeeper(zooKeeper);
 
         String containerId = CLUSTER.addAndStartProcess(extraAgent);
         assertNotNull("freshly started container is not found", DockerContainersUtil.getContainer(containerId));

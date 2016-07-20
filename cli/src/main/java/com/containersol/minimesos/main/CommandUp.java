@@ -125,7 +125,7 @@ public class CommandUp implements Command {
 
         // Mesos Master
         if (clusterConfig.getMaster() == null) {
-            clusterConfig.setMaster(new MesosMasterConfig());
+            clusterConfig.setMaster(new MesosMasterConfig(ClusterConfig.DEFAULT_MESOS_VERSION));
         }
     }
 

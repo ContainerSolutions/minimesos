@@ -30,6 +30,8 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.jayway.awaitility.Awaitility.*;
+
 /**
  * Mesos cluster with lifecycle methods such as start, install, info, state, stop and destroy.
  */
@@ -333,7 +335,7 @@ public class MesosCluster {
     }
 
     public void waitForState(final Predicate<State> predicate) {
-        Awaitility.await().atMost(clusterConfig.getTimeout(), TimeUnit.SECONDS).until(() -> {
+        await("Predicate on Mesos Master failed").atMost(clusterConfig.getTimeout(), TimeUnit.SECONDS).until(() -> {
             try {
                 return predicate.test(State.fromJSON(getMaster().getStateInfoJSON().toString()));
             } catch (InternalServerErrorException e) { //NOSONAR
