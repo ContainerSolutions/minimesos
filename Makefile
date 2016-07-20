@@ -16,7 +16,7 @@ deps:
 
 clean:
 	./gradlew clean
-	-docker rmi containersol/minimesos:latest
+	-docker rmi containersol/minimesos-cli:latest
 
 build:
 	./gradlew build --info --stacktrace
