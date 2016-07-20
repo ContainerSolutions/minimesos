@@ -8,7 +8,7 @@ minimesos {
 
     master {
         imageName       = "containersol/mesos-master"
-        imageTag        = "# derive from mesos version"
+        imageTag        = "0.25.0-0.1.0"
         authenticate    = true
         aclJson         = """
                             {
@@ -24,5 +24,35 @@ minimesos {
     zookeeper {
         imageName = "jplock/zookeeper"
         imageTag = "3.4.6"
+    }
+
+    agent {
+        imageName = "containersol/mesos-agent"
+        imageTag = "0.25.0-0.1.0"
+        loggingLevel = "# INHERIT FROM CLUSTER"
+        portNumber = 5051
+
+        resources {
+
+            cpu {
+                role = "*"
+                value = 1
+            }
+
+            disk {
+                role = "*"
+                value = 200
+            }
+
+            mem {
+                role = "*"
+                value = 256
+            }
+
+            ports {
+                role = "*"
+                value = "[31000-32000]"
+            }
+        }
     }
 }

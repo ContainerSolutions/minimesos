@@ -3,8 +3,8 @@ package com.containersol.minimesos;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ConfigParser;
-import com.containersol.minimesos.mesos.ClusterArchitecture;
 import com.containersol.minimesos.mesos.MesosAgentContainer;
+import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 import com.containersol.minimesos.util.CollectionsUtils;
 import org.junit.Test;
 
@@ -18,22 +18,20 @@ public class ClusterBuilderTest {
     public void testInheritedImageTag() {
         String config = "minimesos { \n" +
                 "mesosVersion = \"0.26\" \n" +
-                "agent { imageTag = \"0.27.0-0.2.190.ubuntu1404\"} \n" +
+                "agent { imageTag = \"0.27.0-0.1.0\"} \n" +
                 "agent {} \n" +
                 "}";
 
         ConfigParser parser = new ConfigParser();
         ClusterConfig dsl = parser.parse(config);
 
-        ClusterArchitecture.Builder builder = ClusterArchitecture.Builder.createCluster(dsl);
-        ClusterArchitecture architecture = builder.build();
-        MesosCluster cluster = new MesosCluster(architecture.getClusterConfig(), architecture.getClusterContainers().getContainers());
+        MesosCluster cluster = new MesosClusterContainersFactory().createMesosCluster(dsl);
 
         List<MesosAgentContainer> agents = CollectionsUtils.typedList(cluster.getAgents(), MesosAgentContainer.class);
         assertEquals(2, agents.size());
 
-        assertEquals("0.27.0-0.2.190.ubuntu1404", agents.get(0).getImageTag());
-        assertEquals("0.26.0-0.2.145.ubuntu1404", agents.get(1).getImageTag());
+        assertEquals("0.27.0-" + ClusterConfig.DEFAULT_MINIMESOS_DOCKER_VERSION, agents.get(0).getImageTag());
+        assertEquals("0.26-" + ClusterConfig.DEFAULT_MINIMESOS_DOCKER_VERSION, agents.get(1).getImageTag());
     }
 
     @Test
@@ -47,8 +45,7 @@ public class ClusterBuilderTest {
         ConfigParser parser = new ConfigParser();
         ClusterConfig dsl = parser.parse(config);
 
-        ClusterArchitecture architecture = ClusterArchitecture.Builder.createCluster(dsl).build();
-        MesosCluster cluster = new MesosCluster(architecture.getClusterConfig(), architecture.getClusterContainers().getContainers());
+        MesosCluster cluster = new MesosClusterContainersFactory().createMesosCluster(dsl);
 
         List<MesosAgentContainer> agents = CollectionsUtils.typedList(cluster.getAgents(), MesosAgentContainer.class);
         assertEquals(2, agents.size());
@@ -68,8 +65,7 @@ public class ClusterBuilderTest {
         ConfigParser parser = new ConfigParser();
         ClusterConfig dsl = parser.parse(config);
 
-        ClusterArchitecture architecture = ClusterArchitecture.Builder.createCluster(dsl).build();
-        MesosCluster cluster = new MesosCluster(architecture.getClusterConfig(), architecture.getClusterContainers().getContainers());
+        MesosCluster cluster = new MesosClusterContainersFactory().createMesosCluster(dsl);
 
         List<MesosAgentContainer> agents = CollectionsUtils.typedList(cluster.getAgents(), MesosAgentContainer.class);
         assertEquals(2, agents.size());

@@ -2,7 +2,7 @@ package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosMaster;
-import com.containersol.minimesos.cluster.ZooKeeper;
+import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -26,20 +26,16 @@ import static com.jayway.awaitility.Awaitility.await;
  */
 public class MesosMasterContainer extends MesosContainerImpl implements MesosMaster {
 
-    public MesosMasterContainer(ZooKeeper zooKeeperContainer) {
-        this(zooKeeperContainer, new MesosMasterConfig());
-    }
-
-    public MesosMasterContainer(ZooKeeper zooKeeperContainer, MesosMasterConfig config) {
-        super(zooKeeperContainer, config);
-    }
-
     public MesosMasterContainer(MesosCluster cluster, String uuid, String containerId) {
-        this(cluster, uuid, containerId, new MesosMasterConfig());
+        this(cluster, uuid, containerId, new MesosMasterConfig(ClusterConfig.DEFAULT_MESOS_VERSION));
     }
 
     private MesosMasterContainer(MesosCluster cluster, String uuid, String containerId, MesosMasterConfig config) {
         super(cluster, uuid, containerId, config);
+    }
+
+    public MesosMasterContainer(MesosMasterConfig master) {
+        super(master);
     }
 
     @Override
@@ -125,7 +121,7 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
         }
 
         public void waitFor() {
-            await()
+            await("Mesos master not start responding")
                     .atMost(mesosCluster.getClusterConfig().getTimeout(), TimeUnit.SECONDS)
                     .pollInterval(1, TimeUnit.SECONDS)
                     .until(this);

@@ -29,9 +29,8 @@ public abstract class MesosContainerImpl extends AbstractContainer implements Me
     private ZooKeeper zooKeeperContainer;
     protected MesosContainerConfig config;
 
-    protected MesosContainerImpl(ZooKeeper zooKeeperContainer, MesosContainerConfig config) {
+    protected MesosContainerImpl(MesosContainerConfig config) {
         super(config);
-        this.zooKeeperContainer = zooKeeperContainer;
         this.config = config;
     }
 
@@ -43,9 +42,8 @@ public abstract class MesosContainerImpl extends AbstractContainer implements Me
     @Override
     public String getImageTag() {
         String imageTag = config.getImageTag();
-        if (MesosContainerConfig.MESOS_IMAGE_TAG.equalsIgnoreCase(imageTag)) {
-            String mesosVersion = getCluster().getMesosVersion();
-            imageTag = MesosContainerConfig.MESOS_IMAGE_TAGS.get(mesosVersion);
+        if (MesosContainerConfig.MINIMESOS_DOCKER_TAG.equalsIgnoreCase(imageTag)) {
+            imageTag = MesosContainerConfig.MINIMESOS_DOCKER_TAG;
         }
         return imageTag;
     }

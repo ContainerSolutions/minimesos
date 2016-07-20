@@ -2,7 +2,6 @@ package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.util.ResourceUtil;
@@ -23,26 +22,22 @@ import static com.containersol.minimesos.util.EnvironmentBuilder.newEnvironment;
  */
 public class MesosAgentContainer extends MesosContainerImpl implements MesosAgent {
 
-    private final MesosAgentConfig config;
+    private MesosAgentConfig config;
 
     private final static String MESOS_AGENT_SANDBOX_DIR = "/tmp/mesos";
 
-    public MesosAgentContainer(ZooKeeper zooKeeperContainer) {
-        this(zooKeeperContainer, new MesosAgentConfig());
-    }
-
-    public MesosAgentContainer(ZooKeeper zooKeeperContainer, MesosAgentConfig config) {
-        super(zooKeeperContainer, config);
-        this.config = config;
-    }
-
     public MesosAgentContainer(MesosCluster cluster, String uuid, String containerId) {
-        this(cluster, uuid, containerId, new MesosAgentConfig());
+        this(cluster, uuid, containerId, new MesosAgentConfig(cluster.getMesosVersion()));
     }
 
     private MesosAgentContainer(MesosCluster cluster, String uuid, String containerId, MesosAgentConfig config) {
         super(cluster, uuid, containerId, config);
         this.config = config;
+    }
+
+    public MesosAgentContainer(MesosAgentConfig agentConfig) {
+        super(agentConfig);
+        this.config = agentConfig;
     }
 
     @Override

@@ -31,4 +31,5 @@ public class Filter {
         return process -> role.equals(process.getRole());
     }
 
+    public static Predicate<ClusterProcess> registrator() { return process -> process instanceof Registrator; }
 }

@@ -95,7 +95,7 @@ public abstract class AbstractContainer implements ClusterProcess {
 
         try {
 
-            await().atMost(timeout, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(() -> {
+            await("Container did not start within " + timeout + " seconds").atMost(timeout, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(() -> {
                 List<Container> containers = DockerClientFactory.build().listContainersCmd().withShowAll(true).exec();
                 for (Container container : containers) {
                     if (container.getId().equals(containerId)) {

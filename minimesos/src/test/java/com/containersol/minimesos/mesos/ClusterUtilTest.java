@@ -2,6 +2,7 @@ package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.ClusterUtil;
+import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.config.MesosMasterConfig;
@@ -23,7 +24,7 @@ public class ClusterUtilTest {
     @Test
     public void testGetDistinctRoleProcesses() throws Exception {
 
-        ClusterProcess master = new AbstractContainer(new MesosMasterConfig()) {
+        ClusterProcess master = new AbstractContainer(new MesosMasterConfig(ClusterConfig.DEFAULT_MESOS_VERSION)) {
             @Override
             protected CreateContainerCmd dockerCommand() {
                 return null;
@@ -45,7 +46,7 @@ public class ClusterUtilTest {
                 return "consul";
             }
         };
-        ClusterProcess agent1 = new AbstractContainer(new MesosAgentConfig()) {
+        ClusterProcess agent1 = new AbstractContainer(new MesosAgentConfig(ClusterConfig.DEFAULT_MESOS_VERSION)) {
             @Override
             protected CreateContainerCmd dockerCommand() {
                 return null;
@@ -56,7 +57,7 @@ public class ClusterUtilTest {
                 return "agent";
             }
         };
-        ClusterProcess agent2 = new AbstractContainer(new MesosAgentConfig()) {
+        ClusterProcess agent2 = new AbstractContainer(new MesosAgentConfig(ClusterConfig.DEFAULT_MESOS_VERSION)) {
             @Override
             protected CreateContainerCmd dockerCommand() {
                 return null;
