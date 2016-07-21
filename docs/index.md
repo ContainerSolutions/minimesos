@@ -1,6 +1,6 @@
 # minimesos introduction
 
-The experimentation and testing tool for Mesos. `minimesos` is a tool created for a quick and easy creation of a Mesos cluster. This is achieved by running Mesos processes in Docker containers. `minimesos` implements simple to remember and discover CLI commands that allow creating and destroying local Mesos cluster in seconds.
+The experimentation and testing tool for Apache Mesos. `minimesos` is a tool created for a quick and easy creation of a Mesos cluster. This is achieved by running Mesos processes in Docker containers. `minimesos` implements simple to remember and discover CLI commands that allow creating and destroying local Mesos cluster in seconds.
 
 If you have used Vagrant and Docker before, the set of the commands will be very familiar to you, if you have not - don't worry! We will walk you through them.
 
