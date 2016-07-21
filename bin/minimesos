@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-MINIMESOS_TAG="0.9.1"
+MINIMESOS_TAG="latest"
 DOCKER_BIN="$(command -v docker)"
 PARAMS="$@"
 MINIMESOS_CLI_IMAGE="containersol/minimesos-cli"
