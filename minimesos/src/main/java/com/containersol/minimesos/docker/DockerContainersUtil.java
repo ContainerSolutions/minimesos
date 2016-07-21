@@ -256,5 +256,9 @@ public class DockerContainersUtil {
             result.complete(null);
         }
 
+        @Override
+        public void onError(Throwable throwable) {
+            throw new MinimesosException("Pulling of image. However the image is not found: " + throwable.getMessage());
+        }
     }
 }

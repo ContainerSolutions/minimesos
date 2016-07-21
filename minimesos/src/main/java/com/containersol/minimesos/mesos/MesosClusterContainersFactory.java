@@ -1,13 +1,16 @@
 package com.containersol.minimesos.mesos;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.Consul;
+import com.containersol.minimesos.cluster.Filter;
 import com.containersol.minimesos.cluster.Marathon;
 import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.cluster.MesosCluster;
@@ -25,11 +28,15 @@ import com.github.dockerjava.api.model.Container;
 
 import com.github.dockerjava.api.model.ContainerPort;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Docker based factory of minimesos cluster members
  */
 public class MesosClusterContainersFactory extends MesosClusterFactory {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MesosClusterContainersFactory.class);
 
     public ZooKeeper createZooKeeper(MesosCluster mesosCluster, String uuid, String containerId) {
         return new ZooKeeperContainer(mesosCluster, uuid, containerId);
@@ -106,8 +113,7 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
 
     private void restoreMesosVersion(MesosCluster cluster, MesosMaster master) {
         String mesosVersion = master.getState().getVersion();
-        String[] versionComponents = mesosVersion.split("\\.");
-        cluster.setMesosVersion(versionComponents[0] + "." + versionComponents[1]);
+        cluster.setMesosVersion(mesosVersion);
     }
 
     private void restoreMapToPorts(MesosCluster cluster, Container container) {
@@ -127,6 +133,15 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
         DockerContainersUtil.getContainers(true).filterByName(ContainerName.getContainerNamePattern(clusterId)).kill(true).remove();
     }
 
+    public MesosCluster createMesosCluster(String path) {
+        try (InputStream is = new FileInputStream(path)) {
+            return createMesosCluster(is);
+        } catch (IOException e) {
+            LOGGER.debug("Could not read minimesos config: ", e.getMessage());
+            throw new MinimesosException("Could not read minimesos config: " + e.getMessage());
+        }
+    }
+
     public MesosCluster createMesosCluster(InputStream inputStream) {
         try {
             ClusterConfig clusterConfig = new ConfigParser().parse(IOUtils.toString(inputStream));
@@ -137,9 +152,92 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
     }
 
     public MesosCluster createMesosCluster(ClusterConfig clusterConfig) {
-        ClusterContainers clusterContainers = ClusterArchitecture.Builder.createCluster(clusterConfig).build().getClusterContainers();
-        List<ClusterProcess> processes = clusterContainers.getContainers();
-        return new MesosCluster(clusterConfig, processes);
+        LOGGER.debug("Creating Mesos cluster");
+
+
+        ClusterContainers clusterContainers = createProcesses(clusterConfig);
+
+        validateProcesses(clusterContainers);
+
+        connectProcesses(clusterContainers);
+
+        return new MesosCluster(clusterConfig, clusterContainers.getContainers());
+    }
+
+    private static ClusterContainers createProcesses(ClusterConfig clusterConfig) {
+        LOGGER.debug("Creating cluster processes");
+
+        ClusterContainers clusterContainers = new ClusterContainers();
+
+        ZooKeeperContainer zooKeeper = new ZooKeeperContainer(clusterConfig.getZookeeper());
+        clusterContainers.add(zooKeeper);
+
+        MesosMasterContainer mesosMaster = new MesosMasterContainer(clusterConfig.getMaster());
+        clusterContainers.add(mesosMaster);
+
+        clusterConfig.getAgents().stream().forEach(config -> clusterContainers.add(new MesosAgentContainer(config)));
+
+        if (clusterConfig.getMarathon() != null) {
+            clusterContainers.add(new MarathonContainer(clusterConfig.getMarathon()));
+        }
+
+        if (clusterConfig.getConsul() != null) {
+            clusterContainers.add(new ConsulContainer(clusterConfig.getConsul()));
+        }
+
+        if (clusterConfig.getRegistrator() != null) {
+            clusterContainers.add(new RegistratorContainer(clusterConfig.getRegistrator()));
+        }
+
+        return clusterContainers;
+    }
+
+    private static void validateProcesses(ClusterContainers clusterContainers) {
+        LOGGER.debug("Validating cluster processes");
+
+        if (!isPresent(clusterContainers, Filter.mesosMaster())) {
+            throw new MinimesosException("Cluster requires a single Mesos Master. Please add one in the minimesosFile.");
+        }
+
+        if (!isPresent(clusterContainers, Filter.zooKeeper())) {
+            throw new MinimesosException("Cluster requires a single ZooKeeper. Please add one in the minimesosFile.");
+        }
+
+        if (!isPresent(clusterContainers, Filter.mesosAgent())) {
+            throw new MinimesosException("Cluster requires at least 1 Mesos Agent. Please add one in the minimesosFile.");
+        }
+
+        if (isPresent(clusterContainers, Filter.registrator()) && !isPresent(clusterContainers, Filter.consul())) {
+            throw new MinimesosException("Registrator requires a single Consul. Please add consul in the minimesosFile.");
+        }
+    }
+
+    private static void connectProcesses(ClusterContainers clusterContainers) {
+        LOGGER.debug("Connecting cluster processes");
+
+        ZooKeeper zookeeper = (ZooKeeper) clusterContainers.getOne(Filter.zooKeeper()).get();
+        MesosMaster mesosMaster = (MesosMaster) clusterContainers.getOne(Filter.mesosMaster()).get();
+        mesosMaster.setZooKeeper(zookeeper);
+
+        if (clusterContainers.getOne(Filter.marathon()).isPresent()) {
+            Marathon marathon = (Marathon) clusterContainers.getOne(Filter.marathon()).get();
+            marathon.setZooKeeper(zookeeper);
+        }
+
+        clusterContainers.getContainers().stream().filter(Filter.mesosAgent()).forEach(a -> {
+            MesosAgent agent = (MesosAgent) a;
+            agent.setZooKeeper(zookeeper);
+        });
+
+        if (clusterContainers.getOne(Filter.registrator()).isPresent()) {
+            Consul consul = (Consul) clusterContainers.getOne(Filter.consul()).get();
+            Registrator registrator = (Registrator) clusterContainers.getOne(Filter.registrator()).get();
+            registrator.setConsul(consul);
+        }
+    }
+
+    private static Boolean isPresent(ClusterContainers clusterContainers, Predicate<ClusterProcess> filter) {
+        return clusterContainers.isPresent(filter);
     }
 
 }

@@ -1,6 +1,6 @@
 # minimesos introduction
 
-The experimentation and testing tool for Mesos. `minimesos` is a tool created for a quick and easy creation of a Mesos cluster. This is achieved by running Mesos processes in Docker containers. `minimesos` implements simple to remember and discover CLI commands that allow creating and destroying local Mesos cluster in seconds.
+The experimentation and testing tool for Apache Mesos. `minimesos` is a tool created for a quick and easy creation of a Mesos cluster. This is achieved by running Mesos processes in Docker containers. `minimesos` implements simple to remember and discover CLI commands that allow creating and destroying local Mesos cluster in seconds.
 
 If you have used Vagrant and Docker before, the set of the commands will be very familiar to you, if you have not - don't worry! We will walk you through them.
 
@@ -162,9 +162,9 @@ A possible testing scenario could be:
 
 ![Creative Commons Licence](cc-cc.png "Creative Commons Licence") Licenced under CC BY [remember to play](http://remembertoplay.co/) in collaboration with [Container Solutions](http://www.container-solutions.com/)
 
-## Building and running on MAC with docker-machine
+## Building and running on MAC with Docker Machine
 
-### Install DockerToolbox (including docker-machine)
+### Install DockerToolbox (including Docker Machine)
 
 Download package from <https://www.docker.com/docker-toolbox> and install it.
 Tested with [DockerToolbox-1.9.0d.pkg](https://github.com/docker/toolbox/releases/download/v1.9.0d/DockerToolbox-1.9.0d.pkg)
@@ -203,7 +203,7 @@ One of the minimesos build results is new docker image. E.g.
 ```
 $ docker images
 REPOSITORY                      TAG                     IMAGE ID            CREATED             VIRTUAL SIZE
-containersol/minimesos          latest                  cf854cfb1865        2 minutes ago       529.3 MB
+containersol/minimesos-cli      latest                  cf854cfb1865        2 minutes ago       529.3 MB
 ```
 
 Running ```./gradlew install``` will make latest version of minimesos script available on the PATH
@@ -219,7 +219,7 @@ Initialized minimesosFile in this directory
 
 $ minimesos up
 Minimesos cluster is running: 3878417609
-Mesos version: 0.25
+Mesos version: 0.25.0
 export MINIMESOS_NETWORK_GATEWAY=172.17.0.1
 export MINIMESOS_AGENT=http://172.17.0.5:5051; export MINIMESOS_AGENT_IP=172.17.0.5
 export MINIMESOS_ZOOKEEPER=zk://172.17.0.3:2181/mesos; export MINIMESOS_ZOOKEEPER_IP=172.17.0.3
@@ -251,11 +251,11 @@ An other alternative if you use docker-machine, is to access the reported IP add
 sudo route delete 172.17.0.0/16; sudo route -n add 172.17.0.0/16 $(docker-machine ip ${DOCKER_MACHINE_NAME})
 ```
 
-### Mappings of volumes
+### Volume maappings
 
-The table below is an attempt to summarize mappings, which enable execution of minimesos
+The table below show the volume mappings, on the host, on Docker machine and in the minimesos container.
 
-| OSX Host        | boot2docker VM        | minimesos container           |
+| OSX Host        | Docker Machine        | minimesos container           |
 | --------------- | --------------------- | ----------------------------- |
 | $PWD/.minimesos | $PWD/.minimesos       | /tmp/.minimesos               |
 |                 | /var/lib/docker       | /var/lib/docker               |

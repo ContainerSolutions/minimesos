@@ -2,6 +2,7 @@ package com.containersol.minimesos;
 
 import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ContainerConfigBlock;
 import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.config.MesosContainerConfig;
@@ -16,6 +17,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
+
+import static com.jayway.awaitility.Awaitility.await;
 
 public class RunTaskTest {
     private static final String TASK_CLUSTER_ROLE = "test";
@@ -42,7 +45,7 @@ public class RunTaskTest {
 
     @Test
     public void testMesosExecuteContainerSuccess() throws InterruptedException {
-        ClusterProcess mesosAgent = new AbstractContainer(new ContainerConfigBlock(MesosAgentConfig.MESOS_AGENT_IMAGE, MesosContainerConfig.MESOS_IMAGE_TAGS.get("0.25"))) {
+        ClusterProcess mesosAgent = new AbstractContainer(new ContainerConfigBlock(MesosAgentConfig.MESOS_AGENT_IMAGE, ClusterConfig.DEFAULT_MESOS_CONTAINER_TAG)) {
 
             @Override
             public String getRole() {
@@ -51,7 +54,7 @@ public class RunTaskTest {
 
             @Override
             protected CreateContainerCmd dockerCommand() {
-                return DockerClientFactory.build().createContainerCmd(String.format("%s:%s", MesosAgentConfig.MESOS_AGENT_IMAGE, MesosContainerConfig.MESOS_IMAGE_TAGS.get("0.25")))
+                return DockerClientFactory.build().createContainerCmd(String.format("%s:%s", MesosAgentConfig.MESOS_AGENT_IMAGE, ClusterConfig.DEFAULT_MESOS_CONTAINER_TAG))
                         .withName(getName())
                         .withEntrypoint(
                                 "mesos-execute",
@@ -68,7 +71,7 @@ public class RunTaskTest {
         DockerClientFactory.build().logContainerCmd(mesosAgent.getContainerId()).withStdOut(true).exec(cb);
         cb.awaitCompletion();
 
-        Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+        await("Mesos Execute container did not start responding").atMost(60, TimeUnit.SECONDS).until(() -> {
             LogContainerTestCallback cb1 = new LogContainerTestCallback();
             DockerClientFactory.build().logContainerCmd(mesosAgent.getContainerId()).withStdOut(true).exec(cb1);
             cb1.awaitCompletion();

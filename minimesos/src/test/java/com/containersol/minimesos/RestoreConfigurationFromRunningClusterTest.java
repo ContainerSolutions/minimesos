@@ -12,7 +12,7 @@ import static org.junit.Assert.assertTrue;
 public class RestoreConfigurationFromRunningClusterTest {
 
     @ClassRule
-    public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromClassPath("/configFiles/minimesosFile-restoreConfigTest");
+    public static final MesosClusterTestRule RULE = MesosClusterTestRule.fromFile("src/test/resources/configFiles/minimesosFile-restoreConfigTest");
 
     public static MesosCluster CLUSTER = RULE.getMesosCluster();
 
@@ -29,7 +29,7 @@ public class RestoreConfigurationFromRunningClusterTest {
         String clusterId = CLUSTER.getClusterId();
         MesosCluster cluster = MesosCluster.loadCluster(clusterId, new MesosClusterContainersFactory());
 
-        assertEquals("0.27", cluster.getMesosVersion());
+        assertEquals("0.25.0", cluster.getMesosVersion());
     }
 
 }

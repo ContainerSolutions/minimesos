@@ -23,10 +23,9 @@ fi
 VERSION=$(echo $@ | xargs)
 
 if [ -z "$VERSION" ]; then
-    MAVEN_METADATA=$(curl -s https://jitpack.io/com/github/ContainerSolutions/minimesos/maven-metadata.xml)
-    VERSION=$(echo "$MAVEN_METADATA" | awk -F '[<>]' '/release/{print $3}')
+    VERSION=$(curl -s https://api.github.com/repos/containersolutions/minimesos/releases/latest | grep "tag_name" | awk '{ print $2 }' | tr -d '",')
     if [ ! "$VERSION" ]; then
-	echo "Cannot determine latest release of minimesos"
+	echo "Cannot determine latest release of minimesos. Please check https://github.com/containersolutinos/minimesos/releases"
 	exit 1
     fi
 fi

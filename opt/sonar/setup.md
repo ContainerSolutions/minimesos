@@ -5,12 +5,14 @@
 `gcloud compute instances attach-disk jenkins-ci-4 --disk minimesos-sonar-postgres-disk --device-name postgresdisk`
 
 ### Mount and format disk
-``/usr/share/google/safe_format_and_mount  /dev/disk/by-id/google-postgresdisk /postgresdisk`
+`/usr/share/google/safe_format_and_mount  /dev/disk/by-id/google-postgresdisk /postgresdisk`
 
 ### Detach Disk from linux instance
 `gcloud compute instances detach-disk jenkins-ci-4 --disk minimesos-sonar-postgres-disk`
 
 ### Create cluster
+`gcloud container clusters create minimesos-sonar --machine-type n1-standard-2 --zone europe-west1-d`
+
 
 Did this one from the web console, so couldn't record the command. Here are the details of the cluster:
 Cluster size: 1

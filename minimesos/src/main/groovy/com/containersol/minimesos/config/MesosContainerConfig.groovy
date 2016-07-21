@@ -2,18 +2,19 @@ package com.containersol.minimesos.config
 
 abstract class MesosContainerConfig extends ContainerConfigBlock implements ContainerConfig {
 
-    public static final String MESOS_IMAGE_TAG = "# derive from mesos version"
     public static final String MESOS_LOGGING_LEVEL_INHERIT = "# INHERIT FROM CLUSTER"
+    public static final String MINIMESOS_DOCKER_TAG = "0.1.0"
 
     private String loggingLevel = MESOS_LOGGING_LEVEL_INHERIT
 
-    public static final HashMap<String, String> MESOS_IMAGE_TAGS = [
-            "0.25":     "0.25.0-0.2.70.ubuntu1404",
-            "0.26":     "0.26.0-0.2.145.ubuntu1404",
-            "0.27":     "0.27.1-2.0.226.ubuntu1404",
-            "0.28.0":   "0.28.0-2.0.16.ubuntu1404",
-            "0.28.1":   "0.28.1-2.0.20.ubuntu1404",
-            "0.28":     "0.28.1-2.0.20.ubuntu1404"
+    public static final List<String> MESOS_VERSIONS = [
+            "0.25",
+            "0.25.0",
+            "0.26",
+            "0.27",
+            "0.28.0",
+            "0.28.1",
+            "0.28",
     ]
 
     public String getLoggingLevel() {

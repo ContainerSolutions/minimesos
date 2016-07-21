@@ -82,9 +82,9 @@ public class CommandInit implements Command {
         ClusterConfig config = new ClusterConfig();
         config.setClusterName("Change Cluster Name in " + ClusterConfig.DEFAULT_CONFIG_FILE + " file");
 
-        config.setMaster(new MesosMasterConfig());
+        config.setMaster(new MesosMasterConfig(ClusterConfig.DEFAULT_MESOS_VERSION));
         config.setZookeeper(new ZooKeeperConfig());
-        config.getAgents().add(new MesosAgentConfig());
+        config.getAgents().add(new MesosAgentConfig(ClusterConfig.DEFAULT_MESOS_VERSION));
         config.setConsul(new ConsulConfig());
         config.setRegistrator(new RegistratorConfig());
 

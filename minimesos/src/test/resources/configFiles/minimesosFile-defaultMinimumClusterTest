@@ -8,7 +8,7 @@ minimesos {
 
     agent {
         imageName = "containersol/mesos-agent"
-        imageTag = "# derive from mesos version"
+        imageTag = "0.25.0-0.1.0"
         loggingLevel = "# INHERIT FROM CLUSTER"
         portNumber = 5051
 
@@ -43,7 +43,7 @@ minimesos {
 
     master {
         imageName = "containersol/mesos-master"
-        imageTag = "# derive from mesos version"
+        imageTag = "0.25.0-0.1.0"
         loggingLevel = "# INHERIT FROM CLUSTER"
     }
 

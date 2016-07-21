@@ -54,6 +54,7 @@ public class Main {
         main.addCommand(new CommandInfo());
         main.addCommand(new CommandInit());
         main.addCommand(new CommandPs());
+        main.addCommand(new CommandVersion());
         try {
             int rc = main.run(args);
             if (EXIT_CODE_OK != rc) {
@@ -112,6 +113,7 @@ public class Main {
 
             return EXIT_CODE_OK;
         } catch (Exception ex) {
+            output.println("Failed to run command '" + jc.getParsedCommand() + "'. " + ex.getMessage());
             LOGGER.debug("Exception while processing", ex);
             return EXIT_CODE_ERR;
         }

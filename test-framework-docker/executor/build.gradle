@@ -5,18 +5,6 @@ ext {
     imageName = imagePrefix + '/mesos-hello-world-executor'
 }
 
-buildscript {
-    repositories {
-        jcenter()
-    }
-}
-
-repositories {
-    maven {
-        url "https://jitpack.io"
-    }
-}
-
 jar {
     baseName = "mesos-hello-world-executor"
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } } // Include dependencies

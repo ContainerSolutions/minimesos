@@ -15,14 +15,9 @@ import com.github.dockerjava.api.model.Bind;
  */
 public class RegistratorContainer extends AbstractContainer implements Registrator {
 
-    private final RegistratorConfig config;
-    private Consul consulContainer;
+    private RegistratorConfig config;
 
-    public RegistratorContainer(Consul consulContainer, RegistratorConfig config) {
-        super(config);
-        this.consulContainer = consulContainer;
-        this.config = config;
-    }
+    private Consul consul;
 
     public RegistratorContainer(MesosCluster cluster, String uuid, String containerId) {
         this(cluster, uuid, containerId, new RegistratorConfig());
@@ -33,6 +28,11 @@ public class RegistratorContainer extends AbstractContainer implements Registrat
         this.config = config;
     }
 
+    public RegistratorContainer(RegistratorConfig registrator) {
+        super(registrator);
+        this.config = registrator;
+    }
+
     @Override
     public String getRole() {
         return "registrator";
@@ -40,11 +40,19 @@ public class RegistratorContainer extends AbstractContainer implements Registrat
 
     @Override
     protected CreateContainerCmd dockerCommand() {
-        return DockerClientFactory.build().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
+         return DockerClientFactory.build().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withNetworkMode("host")
                 .withBinds(Bind.parse("/var/run/docker.sock:/tmp/docker.sock"))
-                .withCmd("-internal", String.format("consul://%s:%d", consulContainer.getIpAddress(), ConsulConfig.CONSUL_HTTP_PORT))
+                .withCmd("-internal", String.format("consul://%s:%d", consul.getIpAddress(), ConsulConfig.CONSUL_HTTP_PORT))
                 .withName(getName());
     }
 
+    public void setConsul(ConsulContainer consul) {
+        this.consul = consul;
+    }
+
+    @Override
+    public void setConsul(Consul consul) {
+        this.consul = consul;
+    }
 }

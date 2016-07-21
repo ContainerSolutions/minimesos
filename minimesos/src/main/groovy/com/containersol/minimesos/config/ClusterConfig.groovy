@@ -7,7 +7,9 @@ import org.apache.commons.lang.StringUtils
 class ClusterConfig extends GroovyBlock {
 
     public static final int DEFAULT_TIMEOUT_SECS = 60
-    public static final String DEFAULT_MESOS_VERSION = "0.25"
+    public static final String DEFAULT_MESOS_VERSION = "0.25.0"
+    public static final String DEFAULT_MINIMESOS_DOCKER_VERSION = "0.1.0"
+    public static final String DEFAULT_MESOS_CONTAINER_TAG = DEFAULT_MESOS_VERSION + "-" + DEFAULT_MINIMESOS_DOCKER_VERSION
     public static final String DEFAULT_CONFIG_FILE = "minimesosFile"
     public static final String DEFAULT_LOGGING_LEVEL = "INFO"
 
@@ -36,12 +38,12 @@ class ClusterConfig extends GroovyBlock {
         if (master != null) {
             throw new RuntimeException("Multiple Masters are not supported in this version yet")
         }
-        master = new MesosMasterConfig()
+        master = new MesosMasterConfig(mesosVersion)
         delegateTo(master, cl)
     }
 
     def agent(@DelegatesTo(MesosAgentConfig) Closure cl) {
-        def agent = new MesosAgentConfig()
+        def agent = new MesosAgentConfig(mesosVersion)
         delegateTo(agent, cl)
         agents.add(agent)
     }
@@ -86,8 +88,8 @@ class ClusterConfig extends GroovyBlock {
     }
 
     void setMesosVersion(String mesosVersion) {
-        if (!MesosContainerConfig.MESOS_IMAGE_TAGS.keySet().contains(mesosVersion)) {
-            throw new RuntimeException("Property 'mesosVersion' supports values: " + StringUtils.join(MesosContainerConfig.MESOS_IMAGE_TAGS.keySet(), ","))
+        if (!MesosContainerConfig.MESOS_VERSIONS.contains(mesosVersion)) {
+            throw new RuntimeException("Property 'mesosVersion' supports values: " + StringUtils.join(MesosContainerConfig.MESOS_VERSIONS, ","))
         }
         this.mesosVersion = mesosVersion
     }
