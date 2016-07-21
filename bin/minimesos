@@ -3,6 +3,7 @@
 MINIMESOS_TAG="latest"
 DOCKER_BIN="$(command -v docker)"
 PARAMS="$@"
+MINIMESOS_CLI_IMAGE="containersol/minimesos-cli"
 
 command_exists() {
     command -v "$@" > /dev/null 2>&1
@@ -34,7 +35,7 @@ pullImage() {
 }
 
 if [ "$#" -gt 0 -a "$1" = up ]; then
-    pullImage "containersol/minimesos" ${MINIMESOS_TAG}
+    pullImage ${MINIMESOS_CLI_IMAGE} ${MINIMESOS_TAG}
 fi
 
 MINIMESOS_HOST_DIR="$(pwd)"
@@ -51,6 +52,6 @@ docker run --rm -v "${MINIMESOS_HOST_DIR}":"${MINIMESOS_HOST_DIR}" \
        -i \
        --env DOCKER_HOST_IP=${DOCKER_HOST_IP} \
        --entrypoint java \
-       containersol/minimesos-cli:${MINIMESOS_TAG} \
+       ${MINIMESOS_CLI_IMAGE}:${MINIMESOS_TAG} \
        -Dminimesos.host.dir="${MINIMESOS_HOST_DIR}" \
        -jar /usr/local/share/minimesos/minimesos-cli.jar ${PARAMS}

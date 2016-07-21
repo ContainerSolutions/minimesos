@@ -111,22 +111,24 @@ task resetVersionInBashScript << {
     ant.replaceregexp(file: "bin/minimesos", match: "MINIMESOS_TAG=\".*?\"", replace: "MINIMESOS_TAG=\"latest\"")
 }
 
-task releaseMinimesosContainerImage << {
+task releaseMinimesosCliImage << {
 
-    def command = "docker tag \$(docker images containersol/minimesos | grep 'latest' | awk '{print \$3}') containersol/minimesos:${project.version}"
+    def minimesosCliImage = "containersol/minimesos-cli"
+
+    def command = "docker tag \$(docker images ${minimesosCliImage} | grep 'latest' | awk '{print \$3}') ${minimesosCliImage}:${project.version}"
     // executing via bash, so we can make use of its interpreter of the parameters. Otherwise pipes do not work
     exec {
         commandLine "bash", "-c", command
     }
 
-    println "Pushing containersol/minimesos:${project.version} docker image to Docker Hub..."
+    println "Pushing ${minimesosCliImage}:${project.version} docker image to Docker Hub..."
     exec {
-        commandLine "docker", "push", "containersol/minimesos:${project.version}"
+        commandLine "docker", "push", "${minimesosCliImage}:${project.version}"
     }
 
-    println "Pushing containersol/minimesos:latest docker image to Docker Hub..."
+    println "Pushing ${minimesosCliImage}:latest docker image to Docker Hub..."
     exec {
-        commandLine "docker", "push", "containersol/minimesos:latest"
+        commandLine "docker", "push", "${minimesosCliImage}:latest"
     }
 }
 
@@ -153,7 +155,7 @@ checkUpdateNeeded.dependsOn checkDockerAuthentication
 // set explicit version in minimesos bash script
 preTagCommit.dependsOn setVersionInBashScript
 // project.version changes after execution of updateVersion. Time to tag and to push container
-updateVersion.dependsOn releaseMinimesosContainerImage, createGitHubRelease
+updateVersion.dependsOn releaseMinimesosCliImage, createGitHubRelease
 // project.version changes after execution of updateVersion
 commitNewVersion.dependsOn resetVersionInBashScript, updateReleaseDocs
 

@@ -203,7 +203,7 @@ One of the minimesos build results is new docker image. E.g.
 ```
 $ docker images
 REPOSITORY                      TAG                     IMAGE ID            CREATED             VIRTUAL SIZE
-containersol/minimesos          latest                  cf854cfb1865        2 minutes ago       529.3 MB
+containersol/minimesos-cli      latest                  cf854cfb1865        2 minutes ago       529.3 MB
 ```
 
 Running ```./gradlew install``` will make latest version of minimesos script available on the PATH
