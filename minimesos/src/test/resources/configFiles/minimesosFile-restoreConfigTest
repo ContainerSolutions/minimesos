@@ -3,7 +3,7 @@ minimesos {
     mapPortsToHost = true
     loggingLevel = "INFO"
     mapAgentSandboxVolume = false
-    mesosVersion = "0.27"
+    mesosVersion = "1.0.0"
     timeout = 60
 
     agent {
