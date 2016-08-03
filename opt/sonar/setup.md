@@ -11,15 +11,10 @@
 `gcloud compute instances detach-disk jenkins-ci-4 --disk minimesos-sonar-postgres-disk`
 
 ### Create cluster
-`gcloud container clusters create minimesos-sonar --machine-type n1-standard-2 --zone europe-west1-d`
+`gcloud container clusters create "minimesos-sonar" --zone "europe-west1-d" --machine-type "n1-standard-2" --num-nodes "1" --network "ci-network" --enable-cloud-logging`
 
-
-Did this one from the web console, so couldn't record the command. Here are the details of the cluster:
-Cluster size: 1
-Node type: n1-standard-2 (2 vCPUs, 7.5 GB memory)
-Master zone: europe-west1-d
-Node zones: europe-west1-d
-Network: ci-network
+Download cluster credentials into kubectl:
+`gcloud container clusters get-credentials minimesos-sonar`
 
 ### Create database password secret
 This password gets applied to the postgres database on first start, changin it later is not possible as it's persisted
@@ -28,7 +23,11 @@ to the persistent disk
 echo -n "thepassword" > password
 `kubectl create secret generic postgres-pwd --from-file=./password`
 
-### TODO
+### Create Certificate
+
+kubectl create -f certificate.yaml
+
+
 
 1. Create new domain name as old one can't be shared anymore between Jenkins and Sonar. sonar.minimesos.ci.container-solutions.com
 2. Make https work for sonar
