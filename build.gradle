@@ -168,7 +168,7 @@ task releaseBuild {
     dependsOn(
         'minimesos:clean',
         'minimesos:build',
-        'minimesos-cli:build'
+        'cli:build'
     )
 }
 
