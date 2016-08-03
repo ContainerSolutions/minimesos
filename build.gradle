@@ -92,17 +92,19 @@ task checkDockerAuthentication << {
 }
 
 task setVersionInBashScript << {
-    // set explicit version in bash script
-    ant.replace(file: "bin/minimesos", token: "MINIMESOS_TAG=\"latest\"", value: "MINIMESOS_TAG=\"${project.version}\"")
-    // commit modified files
-    exec {
-        workingDir "${project.rootDir}"
-        commandLine "git", "commit", "-a", "-m", "[Release ${project.version}] pre-tag commit"
-    }
-    // push update to repository
-    exec {
-        workingDir "${project.rootDir}"
-        commandLine "git", "push"
+    if (new File(project.rootDir, "bin/minimesos").text.contains('MINIMESOS_TAG="latest"')) {
+        // set explicit version in bash script
+        ant.replace(file: "bin/minimesos", token: 'MINIMESOS_TAG="latest"', value: "MINIMESOS_TAG=\"${project.version}\"")
+        // commit modified files
+        exec {
+            workingDir "${project.rootDir}"
+            commandLine "git", "commit", "-a", "-m", "[Release ${project.version}] pre-tag commit"
+        }
+        // push update to repository
+        exec {
+            workingDir "${project.rootDir}"
+            commandLine "git", "push"
+        }
     }
 }
 
