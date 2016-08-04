@@ -7,7 +7,7 @@ import org.apache.commons.lang.StringUtils
 class ClusterConfig extends GroovyBlock {
 
     public static final int DEFAULT_TIMEOUT_SECS = 60
-    public static final String DEFAULT_MESOS_VERSION = "0.25.0"
+    public static final String DEFAULT_MESOS_VERSION = "1.0.0"
     public static final String DEFAULT_MINIMESOS_DOCKER_VERSION = "0.1.0"
     public static final String DEFAULT_MESOS_CONTAINER_TAG = DEFAULT_MESOS_VERSION + "-" + DEFAULT_MINIMESOS_DOCKER_VERSION
     public static final String DEFAULT_CONFIG_FILE = "minimesosFile"

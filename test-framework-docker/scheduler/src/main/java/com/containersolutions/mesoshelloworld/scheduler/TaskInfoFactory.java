@@ -4,12 +4,11 @@ import org.apache.mesos.Protos.*;
 
 import java.util.UUID;
 
-
-public class TaskInfoFactory {
+class TaskInfoFactory {
 
     private final Configuration configuration;
 
-    public TaskInfoFactory(Configuration configuration) {
+    TaskInfoFactory(Configuration configuration) {
         this.configuration = configuration;
     }
 
@@ -62,7 +61,6 @@ public class TaskInfoFactory {
     }
 
     private ExecutorInfo.Builder newExecutorInfo(Configuration configuration) {
-
         ContainerInfo.DockerInfo.Builder dockerBuilder = ContainerInfo.DockerInfo.newBuilder()
                 .setNetwork(ContainerInfo.DockerInfo.Network.BRIDGE)
                 .setImage(configuration.getExecutorImage())
@@ -71,18 +69,8 @@ public class TaskInfoFactory {
         return ExecutorInfo.newBuilder()
                 .setExecutorId(ExecutorID.newBuilder().setValue(UUID.randomUUID().toString()))
                 .setName("hello-world-executor-" + UUID.randomUUID().toString())
-                .setCommand(newCommandInfo(configuration))
-                .setContainer(ContainerInfo.newBuilder()
-                        .setType(ContainerInfo.Type.DOCKER)
-                        .setDocker( dockerBuilder )
-                        .build());
+                .setCommand(CommandInfo.newBuilder().setShell(false))
+                .setContainer(ContainerInfo.newBuilder().setType(ContainerInfo.Type.DOCKER).setDocker(dockerBuilder));
     }
-
-    private CommandInfo.Builder newCommandInfo(Configuration configuration) {
-        return CommandInfo.newBuilder()
-                .setShell(false)
-                .setContainer(CommandInfo.ContainerInfo.newBuilder().setImage(configuration.getExecutorImage()).build());
-    }
-
 
 }

@@ -29,7 +29,7 @@ public class RestoreConfigurationFromRunningClusterTest {
         String clusterId = CLUSTER.getClusterId();
         MesosCluster cluster = MesosCluster.loadCluster(clusterId, new MesosClusterContainersFactory());
 
-        assertEquals("0.25.0", cluster.getMesosVersion());
+        assertEquals("1.0.0", cluster.getMesosVersion());
     }
 
 }
