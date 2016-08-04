@@ -1,11 +1,8 @@
 package com.containersolutions.mesoshelloworld.scheduler;
 
-import com.google.protobuf.ByteString;
 import org.apache.mesos.MesosSchedulerDriver;
 import org.apache.mesos.Protos;
 
-/**
- */
 public class Main {
     public static void main(String[] args) throws Exception {
 
@@ -33,8 +30,8 @@ public class Main {
                         frameworkInfo,
                         mesosMaster,
                         Protos.Credential.newBuilder()
-                                .setPrincipal( principal )
-                                .setSecret(ByteString.copyFromUtf8(configuration.getFrameworkSecret()))
+                                .setPrincipal(principal)
+                                .setSecret(configuration.getFrameworkSecret())
                                 .build()
                 )
               : new MesosSchedulerDriver(

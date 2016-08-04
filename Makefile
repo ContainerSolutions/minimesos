@@ -5,8 +5,8 @@ setup:
 	sudo route delete 172.17.0.0/16; sudo route -n add 172.17.0.0/16 $(shell docker-machine ip ${shell DOCKER_MACHINE_NAME})
 
 deps:
-	docker pull containersol/mesos-agent:0.25.0-0.1.0
-	docker pull containersol/mesos-master:0.25.0-0.1.0
+	docker pull containersol/mesos-agent:1.0.0-0.1.0
+	docker pull containersol/mesos-master:1.0.0-0.1.0
 	docker pull gliderlabs/registrator:v6
 	docker pull containersol/consul-server:0.6-1
 	docker pull mesosphere/marathon:v0.15.3

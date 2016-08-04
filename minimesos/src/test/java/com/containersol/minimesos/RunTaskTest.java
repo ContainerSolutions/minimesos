@@ -5,14 +5,12 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ContainerConfigBlock;
 import com.containersol.minimesos.config.MesosAgentConfig;
-import com.containersol.minimesos.config.MesosContainerConfig;
 import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.junit.MesosClusterTestRule;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
-import com.jayway.awaitility.Awaitility;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -28,8 +26,8 @@ public class RunTaskTest {
 
     public static final MesosCluster CLUSTER = RULE.getMesosCluster();
 
-    public static class LogContainerTestCallback extends LogContainerResultCallback {
-        protected final StringBuffer log = new StringBuffer();
+    private static class LogContainerTestCallback extends LogContainerResultCallback {
+        final StringBuffer log = new StringBuffer();
 
         @Override
         public void onNext(Frame frame) {
@@ -66,17 +64,14 @@ public class RunTaskTest {
             }
         };
 
-        CLUSTER.addAndStartProcess(mesosAgent);
-        LogContainerTestCallback cb = new LogContainerTestCallback();
-        DockerClientFactory.build().logContainerCmd(mesosAgent.getContainerId()).withStdOut(true).exec(cb);
-        cb.awaitCompletion();
+        String containerId = CLUSTER.addAndStartProcess(mesosAgent);
 
         await("Mesos Execute container did not start responding").atMost(60, TimeUnit.SECONDS).until(() -> {
             LogContainerTestCallback cb1 = new LogContainerTestCallback();
-            DockerClientFactory.build().logContainerCmd(mesosAgent.getContainerId()).withStdOut(true).exec(cb1);
+            DockerClientFactory.build().logContainerCmd(mesosAgent.getContainerId()).withContainerId(containerId).withStdOut(true).exec(cb1);
             cb1.awaitCompletion();
             String log = cb1.toString();
-            return log.contains("Received status update TASK_FINISHED for task test-cmd");
+            return log.contains("Received status update TASK_FINISHED for task 'test-cmd'");
         });
     }
 

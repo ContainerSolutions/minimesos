@@ -4,7 +4,7 @@ minimesos {
 
     mapPortsToHost = true
     timeout = 60
-    mesosVersion = "0.25.0"
+    mesosVersion = "1.0.0"
     clusterName = "minimesos-test"
 
     master {
@@ -28,7 +28,7 @@ minimesos {
         }
 
         imageName = "containersol/mesos-agent"
-        imageTag = "0.25.0-0.1.0"
+        imageTag = "1.0.0-0.1.0"
 
     }
 
