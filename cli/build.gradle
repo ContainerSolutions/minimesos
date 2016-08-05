@@ -21,10 +21,9 @@ ext {
     imageName = imagePrefix + '/minimesos-cli'
 }
 
-task executableJar(type: Jar) {
+jar {
     baseName = "minimesos-cli"
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
     manifest {
         attributes(
                 'Main-Class': mainClassName,
@@ -35,11 +34,11 @@ task executableJar(type: Jar) {
 }
 
 artifacts {
-    archives executableJar
+    archives jar
 }
 
 task copyFilesForDocker(type: Copy) {
-    dependsOn 'executableJar'
+    dependsOn 'jar'
     from "build/libs/minimesos-cli-${project.version}.jar"
     into 'build/docker'
     rename { String fileName ->
@@ -103,4 +102,4 @@ afterEvaluate { project ->
     }
 }
 
-assemble.dependsOn executableJar
+assemble.dependsOn jar
