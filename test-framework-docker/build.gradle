@@ -14,23 +14,27 @@ subprojects {
 
     afterEvaluate { project ->
         if (new File(project.projectDir, 'Dockerfile').exists()) {
-            task buildDockerImage(type: DockerBuildImage, dependsOn: [taskCopyFilesForDocker], description: 'build Docker image') {
-                inputDir = file(project.projectDir)
-                tag = project.imageName
-            }
             project.build.dependsOn buildDockerImage
-            ['latest', 'version'].each { aTag ->
-                String uppercasedName = aTag.capitalize()
-                task "tagDockerImageWith$uppercasedName"(type: DockerTagImage, description: 'tag Docker image') {
-                    imageId = project.imageName
-                    tag = ('version'.equals(aTag)) ? project.version : aTag
-                    repository = project.imageName
-                    force = true
+
+            task buildDockerImage(type: DockerBuildImage, dependsOn: [taskCopyFilesForDocker], description: 'build Docker image') {
+                setInputDir(file(project.projectDir))
+                setTag(project.imageName)
+            }
+
+            for (tag in ['latest', 'version']) {
+                String uppercasedTag = tag.capitalize()
+
+                task "tagDockerImageWith$uppercasedTag"(type: DockerTagImage, description: 'tag Docker image') {
+                    setImageId(project.imageName)
+                    setTag('version' == tag ? project.version : tag)
+                    setRepository(project.imageName)
+                    setForce(true)
                 }
-                task "publishDockerImageWith$uppercasedName"(type: DockerPushImage, dependsOn: ["tagDockerImageWith$uppercasedName"],
+
+                task "publishDockerImageWith$uppercasedTag"(type: DockerPushImage, dependsOn: ["tagDockerImageWith$uppercasedTag"],
                         description: 'publish Docker image') {
-                    imageName = project.imageName
-                    tag = ('version'.equals(aTag)) ? project.version : aTag
+                    setImageName(project.imageName)
+                    setTag('version' == tag ? project.version : tag)
                 }
             }
         }

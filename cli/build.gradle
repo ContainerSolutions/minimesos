@@ -54,26 +54,27 @@ task copyDockerfile(type: Copy) {
 
 task buildDockerImage(type: DockerBuildImage, dependsOn: [copyDockerfile], description: 'build Docker image') {
     inputDir = new File("${buildDir}/docker")
-    tag = project.imageName
+    setTag(project.imageName)
 }
 
 afterEvaluate { project ->
+    for (tag in ['snapshot', 'version']) {
+        String uppercasedTag = tag.capitalize()
 
-    project.build.dependsOn buildDockerImage
-    ['snapshot', 'version'].each { aTag ->
-        String uppercasedName = aTag.capitalize()
-        task "tagDockerImageWith$uppercasedName"(type: DockerTagImage, description: 'tag Docker image') {
-            imageId = project.imageName
-            tag = ('version'.equals(aTag)) ? project.version : aTag
-            repository = project.imageName
-            force = true
+        task "tagDockerImageWith$uppercasedTag"(type: DockerTagImage, description: 'tag Docker image') {
+            setImageId(project.imageName)
+            setTag('version' == tag ? project.version : tag)
+            setRepository(project.imageName)
+            setForce(true)
         }
-        task "publishDockerImageWith$uppercasedName"(type: DockerPushImage, dependsOn: ["tagDockerImageWith$uppercasedName"],
+
+        task "publishDockerImageWith$uppercasedTag"(type: DockerPushImage, dependsOn: ["tagDockerImageWith$uppercasedTag"],
                 description: 'publish Docker image') {
-            imageName = project.imageName
-            tag = ('version'.equals(aTag)) ? project.version : aTag
+            setImageName(project.imageName)
+            setTag('version' == tag ? project.version : tag)
         }
     }
 }
 
+project.build.dependsOn buildDockerImage
 assemble.dependsOn jar
