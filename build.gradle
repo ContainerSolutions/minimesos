@@ -71,6 +71,16 @@ subprojects {
                 certPath = new File(System.getenv("DOCKER_CERT_PATH").toString())
             }
         }
+
+        ['dockerHubUsername', 'dockerHubPassword', 'dockerHubEmail'].each {
+            assert project.hasProperty(it): 'Undefined "' + it + '" property'
+        }
+
+        registryCredentials {
+                username = project.property('dockerHubUsername')
+                password = project.property('dockerHubPassword')
+                email = project.property('dockerHubEmail')
+        }
     }
 }
 

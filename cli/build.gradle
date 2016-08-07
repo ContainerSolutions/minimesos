@@ -71,18 +71,6 @@ afterEvaluate { project ->
                     description: 'publish Docker image') {
                 imageName = project.imageName
                 tag = ('version'.equals(aTag)) ? project.version : aTag
-                doFirst {
-                    ['dockerHubUsername', 'dockerHubPassword', 'dockerHubEmail'].each {
-                        assert project.hasProperty(it): 'Undefined "' + it + '" property'
-                    }
-                    docker {
-                        registryCredentials {
-                            username = project.property('dockerHubUsername')
-                            password = project.property('dockerHubPassword')
-                            email = project.property('dockerHubEmail')
-                        }
-                    }
-                }
             }
         }
     }
