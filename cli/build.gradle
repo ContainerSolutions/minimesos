@@ -18,7 +18,7 @@ dependencies {
 mainClassName = "com.containersol.minimesos.main.Main"
 
 ext {
-    imageName = imagePrefix + '/minimesos-cli'
+    imageName = repository + '/minimesos-cli'
 }
 
 jar {

@@ -2,7 +2,7 @@ apply plugin: 'application'
 
 mainClassName = "com.containersolutions.mesoshelloworld.scheduler.Main"
 ext {
-    imageName = imagePrefix + '/mesos-hello-world-scheduler'
+    imageName = repository + '/mesos-hello-world-scheduler'
 }
 
 dependencies {

@@ -75,8 +75,8 @@ subprojects {
 }
 
 ext {
-    mesosVer = "1.0.0"
-    imagePrefix = 'containersol'
+    mesosVer    = "1.0.0"
+    repository  = 'containersol'
 }
 
 idea {
