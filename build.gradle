@@ -10,7 +10,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "com.bmuschko:gradle-docker-plugin:2.4.1"
+        classpath 'com.bmuschko:gradle-docker-plugin:3.0.1'
         classpath "de.gesellix:gradle-debian-plugin:16"
     }
 
@@ -20,6 +20,7 @@ plugins {
     id 'idea'
     id "org.sonarqube" version "1.2"
     id 'net.researchgate.release' version '2.3.5'
+    id 'com.bmuschko.docker-remote-api' version '3.0.1'
 }
 
 subprojects {
@@ -61,6 +62,16 @@ subprojects {
         }
     }
 
+    docker {
+        url         = 'unix:///var/run/docker.sock'
+        certPath    = null
+        if (System.getenv("DOCKER_HOST")) {
+            url = System.getenv("DOCKER_HOST").replace("tcp", "https")
+            if (System.getenv("DOCKER_CERT_PATH")) {
+                certPath = new File(System.getenv("DOCKER_CERT_PATH").toString())
+            }
+        }
+    }
 }
 
 ext {
