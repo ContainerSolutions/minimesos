@@ -52,11 +52,13 @@ task copyDockerfile(type: Copy) {
     into 'build/docker'
 }
 
+task buildDockerImage(type: DockerBuildImage, dependsOn: [copyDockerfile], description: 'build Docker image') {
+    inputDir = new File("${buildDir}/docker")
+    tag = project.imageName
+}
+
 afterEvaluate { project ->
-    task buildDockerImage(type: DockerBuildImage, dependsOn: [copyDockerfile], description: 'build Docker image') {
-        inputDir = new File("${buildDir}/docker")
-        tag = project.imageName
-    }
+
     project.build.dependsOn buildDockerImage
     ['snapshot', 'version'].each { aTag ->
         String uppercasedName = aTag.capitalize()
