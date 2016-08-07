@@ -14,12 +14,12 @@ subprojects {
 
     afterEvaluate { project ->
         if (new File(project.projectDir, 'Dockerfile').exists()) {
-            project.build.dependsOn buildDockerImage
-
             task buildDockerImage(type: DockerBuildImage, dependsOn: [taskCopyFilesForDocker], description: 'build Docker image') {
                 setInputDir(file(project.projectDir))
                 setTag(project.imageName)
             }
+
+            project.build.dependsOn buildDockerImage
 
             for (tag in ['latest', 'version']) {
                 String uppercasedTag = tag.capitalize()
