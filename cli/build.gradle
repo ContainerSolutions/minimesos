@@ -53,25 +53,23 @@ task copyDockerfile(type: Copy) {
 }
 
 afterEvaluate { project ->
-    if (new File(project.projectDir, 'Dockerfile').exists()) {
-        task buildDockerImage(type: DockerBuildImage, dependsOn: [copyDockerfile], description: 'build Docker image') {
-            inputDir = new File("${buildDir}/docker")
-            tag = project.imageName
+    task buildDockerImage(type: DockerBuildImage, dependsOn: [copyDockerfile], description: 'build Docker image') {
+        inputDir = new File("${buildDir}/docker")
+        tag = project.imageName
+    }
+    project.build.dependsOn buildDockerImage
+    ['snapshot', 'version'].each { aTag ->
+        String uppercasedName = aTag.capitalize()
+        task "tagDockerImageWith$uppercasedName"(type: DockerTagImage, description: 'tag Docker image') {
+            imageId = project.imageName
+            tag = ('version'.equals(aTag)) ? project.version : aTag
+            repository = project.imageName
+            force = true
         }
-        project.build.dependsOn buildDockerImage
-        ['snapshot', 'version'].each { aTag ->
-            String uppercasedName = aTag.capitalize()
-            task "tagDockerImageWith$uppercasedName"(type: DockerTagImage, description: 'tag Docker image') {
-                imageId = project.imageName
-                tag = ('version'.equals(aTag)) ? project.version : aTag
-                repository = project.imageName
-                force = true
-            }
-            task "publishDockerImageWith$uppercasedName"(type: DockerPushImage, dependsOn: ["tagDockerImageWith$uppercasedName"],
-                    description: 'publish Docker image') {
-                imageName = project.imageName
-                tag = ('version'.equals(aTag)) ? project.version : aTag
-            }
+        task "publishDockerImageWith$uppercasedName"(type: DockerPushImage, dependsOn: ["tagDockerImageWith$uppercasedName"],
+                description: 'publish Docker image') {
+            imageName = project.imageName
+            tag = ('version'.equals(aTag)) ? project.version : aTag
         }
     }
 }
