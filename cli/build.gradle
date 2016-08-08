@@ -10,6 +10,7 @@ dependencies {
 
     compile project(':minimesos')
 
+    testCompile project(':mesos-images')
     testCompile 'junit:junit:4.11'
     testCompile "org.mockito:mockito-core:1.+"
     testCompile "guru.nidi:jdepend:2.9.5"
