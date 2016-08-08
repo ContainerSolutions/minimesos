@@ -2,7 +2,7 @@ apply plugin: 'application'
 
 mainClassName = "com.containersolutions.mesoshelloworld.executor.FrameworkExecutor"
 ext {
-    imageName = imagePrefix + '/mesos-hello-world-executor'
+    imageName = repository + '/mesos-hello-world-executor'
 }
 
 jar {

@@ -14,49 +14,27 @@ subprojects {
 
     afterEvaluate { project ->
         if (new File(project.projectDir, 'Dockerfile').exists()) {
-            if (!project.hasProperty('imageName')) {
-                throw new GradleException('Root directory of ' + project.name
-                        + ' contains Dockerfile, but it does not define project.ext.imageName value')
-            }
-            docker.url = 'unix:///var/run/docker.sock'
-            if (!System.properties['os.name'].equals('Mac OS X')) {
-                docker.certPath = null
-            }
-            if (System.env.DOCKER_HOST) {
-                docker.url = "$System.env.DOCKER_HOST".replace("tcp", "https")
-                if (System.env.DOCKER_CERT_PATH) {
-                    docker.certPath = new File(System.env.DOCKER_CERT_PATH)
-                }
-            }
             task buildDockerImage(type: DockerBuildImage, dependsOn: [taskCopyFilesForDocker], description: 'build Docker image') {
-                inputDir = file(project.projectDir)
-                tag = project.imageName
+                setInputDir(file(project.projectDir))
+                setTag(project.imageName)
             }
+
             project.build.dependsOn buildDockerImage
-            ['latest', 'version'].each { aTag ->
-                String uppercasedName = aTag.capitalize()
-                task "tagDockerImageWith$uppercasedName"(type: DockerTagImage, description: 'tag Docker image') {
-                    imageId = project.imageName
-                    tag = ('version'.equals(aTag)) ? project.version : aTag
-                    repository = project.imageName
-                    force = true
+
+            for (tag in ['latest', 'version']) {
+                String uppercasedTag = tag.capitalize()
+
+                task "tagDockerImageWith$uppercasedTag"(type: DockerTagImage, description: 'tag Docker image') {
+                    setImageId(project.imageName)
+                    setTag('version' == tag ? project.version : tag)
+                    setRepository(project.imageName)
+                    setForce(true)
                 }
-                task "publishDockerImageWith$uppercasedName"(type: DockerPushImage, dependsOn: ["tagDockerImageWith$uppercasedName"],
+
+                task "publishDockerImageWith$uppercasedTag"(type: DockerPushImage, dependsOn: ["tagDockerImageWith$uppercasedTag"],
                         description: 'publish Docker image') {
-                    imageName = project.imageName
-                    tag = ('version'.equals(aTag)) ? project.version : aTag
-                    doFirst {
-                        ['dockerHubUsername', 'dockerHubPassword', 'dockerHubEmail'].each {
-                            assert project.hasProperty(it): 'Undefined "' + it + '" property'
-                        }
-                        docker {
-                            registryCredentials {
-                                username = project.property('dockerHubUsername')
-                                password = project.property('dockerHubPassword')
-                                email = project.property('dockerHubEmail')
-                            }
-                        }
-                    }
+                    setImageName(project.imageName)
+                    setTag('version' == tag ? project.version : tag)
                 }
             }
         }
