@@ -5,7 +5,7 @@ import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
 subprojects {
 
     dependencies {
-        compile "org.apache.mesos:mesos:${mesosVer}"
+        compile "org.apache.mesos:mesos:${mesosVersionDefault}"
         compile 'com.google.code.gson:gson:2.3'         // marshalling between the scheduler and executor
 
         testCompile 'junit:junit:4.12'

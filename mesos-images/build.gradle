@@ -1,0 +1,96 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
+import com.bmuschko.gradle.docker.tasks.image.DockerTagImage
+
+ext {
+    masterImage = repository + '/mesos-master'
+
+    mesosVersionToMesosphereVersionMap = [
+            "0.25.0":   "0.2.70.ubuntu1404",
+            "0.26.0":   "0.2.145.ubuntu1404",
+            "0.27.0":   "0.2.190.ubuntu1404",
+            "0.27.1":   "2.0.226.ubuntu1404",
+            "0.28.0":   "2.0.16.ubuntu1404",
+            "0.28.1":   "2.0.20.ubuntu1404",
+            "1.0.0":    "2.0.89.ubuntu1404"
+    ]
+}
+
+task buildDockerMesosImages(description: "Build Docker Mesos Images") {
+    group "Docker Build"
+    logger.info "Building Mesos and Agent images"
+}
+
+/**
+ * Build Mesos Master and Agent images for each Mesos version in the map
+ *
+ */
+for (entry in mesosVersionToMesosphereVersionMap) {
+    def mesosVersion        = entry.key
+    def mesosphereVersion   = entry.value
+
+    task "buildDockerMesosMaster_${mesosVersion}_${version}"(type: Exec, description: "Build Docker Mesos Master ${mesosVersion}_${version}") {
+        group = "Docker Build"
+        logger.info "Building containersol/mesos-master:${mesosVersion}-${version}"
+        commandLine "docker", "build",
+                "-t", "containersol/mesos-master:${mesosVersion}-${version}",
+                "-f", "master/Dockerfile",
+                "--build-arg", "MESOS_VERSION=${mesosVersion}-${mesosphereVersion}",
+                "."
+    }
+
+    buildDockerMesosImages.dependsOn "buildDockerMesosMaster_${mesosVersion}_${version}"
+
+    task "buildDockerMesosAgent_${mesosVersion}_${version}"(type: Exec, description: "Build Docker Mesos Agent ${mesosVersion}_${version}") {
+        group = "Docker Build"
+        logger.info "Building containersol/mesos-agent:${mesosVersion}-${version}"
+        commandLine "docker", "build",
+                "-t", "containersol/mesos-agent:${mesosVersion}-${version}",
+                "-f", "agent/Dockerfile",
+                "--build-arg", "MESOS_VERSION=${mesosVersion}-${mesosphereVersion}",
+                "."
+    }
+
+    buildDockerMesosImages.dependsOn "buildDockerMesosMaster_${mesosVersion}_${version}"
+
+    for (tagType in ['snapshot', 'version']) {
+        String uppercasedTag = tagType.capitalize()
+
+        def tag = (tagType == 'version') ? "${mesosVersion}_${version}" : "${mesosVersion}_${tagType}"
+
+        task "tagDockerMesosAgent_${mesosVersion}_${version}_With$uppercasedTag"(type: DockerTagImage, description: "Tag Docker Mesos Agent ${tag}") {
+            group = "Docker Tag"
+            setImageId("mesos-agent")
+            setTag(tag)
+            setRepository("containersol")
+            setForce(true)
+        }
+
+        task "pushDockerMesosAgent__${mesosVersion}_${version}_With$uppercasedTag"(type: DockerPushImage, dependsOn: ["tagDockerMesosAgent_${mesosVersion}_${version}_With$uppercasedTag"],
+                description: "Push Docker Mesos Agent ${tag}") {
+            group = "Docker Push"
+            setImageName("containersol/mesos-agent")
+            setTag(tag)
+        }
+
+        rootProject.updateVersion.dependsOn "pushDockerMesosAgent__${mesosVersion}_${version}_With$uppercasedTag"
+
+        task "tagDockerMesosMaster_${mesosVersion}_${version}_With$uppercasedTag"(type: DockerTagImage, description: "Tag Docker Mesos Master ${tag}") {
+            group = "Docker Tag"
+            setImageId("mesos-master")
+            setTag(tag)
+            setRepository("containersol")
+            setForce(true)
+        }
+
+        task "pushDockerMesosMaster__${mesosVersion}_${version}_With$uppercasedTag"(type: DockerPushImage, dependsOn: ["tagDockerMesosMaster_${mesosVersion}_${version}_With$uppercasedTag"],
+                description: "Push Docker Mesos Master ${tag}") {
+            group = "Docker Push"
+            setImageName("containersol/mesos-agent")
+            setTag(tag)
+        }
+
+        rootProject.updateVersion.dependsOn "pushDockerMesosMaster__${mesosVersion}_${version}_With$uppercasedTag"
+    }
+}
+
+build.dependsOn buildDockerMesosImages

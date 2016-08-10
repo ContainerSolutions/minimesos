@@ -75,8 +75,8 @@ subprojects {
 }
 
 ext {
-    mesosVer    = "1.0.0"
-    repository  = 'containersol'
+    mesosVersionDefault = "1.0.0"
+    repository          = 'containersol'
 }
 
 idea {
