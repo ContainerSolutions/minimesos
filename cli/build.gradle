@@ -77,5 +77,6 @@ afterEvaluate { project ->
     }
 }
 
-project.build.dependsOn buildDockerImage
+test.dependsOn rootProject.childProjects."mesos-images".getTasksByName("buildDockerMesosImages", true)
+
 assemble.dependsOn jar
