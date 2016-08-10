@@ -13,28 +13,11 @@ ext {
             "0.28.1":   "2.0.20.ubuntu1404",
             "1.0.0":    "2.0.89.ubuntu1404"
     ]
-
 }
 
 task buildDockerMesosImages(description: "Build Docker Mesos Images") {
     group "Docker Build"
     logger.info "Building Mesos and Agent images"
-}
-
-// TODO Merge base into Master and Agent otherwise we have to hardcode the version of Mesos base in the Master and Agent Dockerfiles.
-
-/**
- * We are using exec tasks because --build-arg is not supported: https://github.com/bmuschko/gradle-docker-plugin/issues/127
- */
-task "buildDockerMesosBase_${version}"(type: Exec, description: "Build Docker Mesos Agent") {
-    group = "Docker Build"
-    logger.info "Building containersol/mesos-base:${version}"
-    commandLine "docker", "build",
-            "-t", "containersol/mesos-base:${version}",
-            "-f", "base/Dockerfile",
-            "."
-
-    buildDockerMesosImages.dependsOn "buildDockerMesosBase_${version}"
 }
 
 /**
@@ -69,8 +52,6 @@ for (entry in mesosVersionToMesosphereVersionMap) {
 
     buildDockerMesosImages.dependsOn "buildDockerMesosMaster_${mesosVersion}_${version}"
 
-    // TODO Add dependencies on release build for tag and push tasks
-
     for (tagType in ['snapshot', 'version']) {
         String uppercasedTag = tagType.capitalize()
 
@@ -91,6 +72,8 @@ for (entry in mesosVersionToMesosphereVersionMap) {
             setTag(tag)
         }
 
+        rootProject.updateVersion.dependsOn "pushDockerMesosAgent__${mesosVersion}_${version}_With$uppercasedTag"
+
         task "tagDockerMesosMaster_${mesosVersion}_${version}_With$uppercasedTag"(type: DockerTagImage, description: "Tag Docker Mesos Master ${tag}") {
             group = "Docker Tag"
             setImageId("mesos-master")
@@ -105,6 +88,8 @@ for (entry in mesosVersionToMesosphereVersionMap) {
             setImageName("containersol/mesos-agent")
             setTag(tag)
         }
+
+        rootProject.updateVersion.dependsOn "pushDockerMesosMaster__${mesosVersion}_${version}_With$uppercasedTag"
     }
 }
 
