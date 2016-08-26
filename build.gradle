@@ -10,10 +10,9 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.bmuschko:gradle-docker-plugin:3.0.1'
+        classpath 'com.bmuschko:gradle-docker-plugin:3.0.2'
         classpath "de.gesellix:gradle-debian-plugin:16"
     }
-
 }
 
 plugins {
@@ -59,6 +58,15 @@ subprojects {
         reports {
             xml.enabled true
             csv.enabled false
+        }
+    }
+
+    configurations {
+        //workaround for build problem using docker4mac (https://github.com/bmuschko/gradle-docker-plugin/issues/235#issuecomment-239982250)
+        dockerJava {
+            resolutionStrategy {
+                force 'de.gesellix:unix-socket-factory:2016-04-06T22-21-19'
+            }
         }
     }
 
