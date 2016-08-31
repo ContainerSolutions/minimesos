@@ -21,6 +21,10 @@ import static org.mockito.Mockito.when;
 
 public class CommandPsTest {
 
+    private static final String FORMAT = "%-20s %-20s %s\n";
+    private static final String[] COLUMNS = { "FRAMEWORK", "TASK", "STATE" };
+    private static final String[] VALUES = { "marathon", "weave-scope", "TASK_RUNNING" };
+
     private ByteArrayOutputStream outputStream;
 
     private PrintStream ps;
@@ -65,7 +69,7 @@ public class CommandPsTest {
         commandPs.execute();
 
         String result = outputStream.toString();
-        assertEquals("marathon\tweave-scope\tTASK_RUNNING\n", result);
+        assertEquals(String.format(FORMAT, COLUMNS) + String.format(FORMAT, VALUES), result);
     }
 
 }
