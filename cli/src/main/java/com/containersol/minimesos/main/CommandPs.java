@@ -17,7 +17,7 @@ import java.io.PrintStream;
 public class CommandPs implements Command {
 
     private static final String FORMAT = "%-20s %-20s %s\n";
-    private static final String[] COLUMNS = { "FRAMEWORK", "TASK", "STATE" };
+    private static final Object[] COLUMNS = { "FRAMEWORK", "TASK", "STATE" };
 
     private ClusterRepository repository = new ClusterRepository();
 

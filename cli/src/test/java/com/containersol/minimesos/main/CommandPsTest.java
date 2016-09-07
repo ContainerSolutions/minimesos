@@ -22,8 +22,8 @@ import static org.mockito.Mockito.when;
 public class CommandPsTest {
 
     private static final String FORMAT = "%-20s %-20s %s\n";
-    private static final String[] COLUMNS = { "FRAMEWORK", "TASK", "STATE" };
-    private static final String[] VALUES = { "marathon", "weave-scope", "TASK_RUNNING" };
+    private static final Object[] COLUMNS = { "FRAMEWORK", "TASK", "STATE" };
+    private static final Object[] VALUES = { "marathon", "weave-scope", "TASK_RUNNING" };
 
     private ByteArrayOutputStream outputStream;
 
