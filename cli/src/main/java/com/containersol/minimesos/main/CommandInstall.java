@@ -26,6 +26,9 @@ public class CommandInstall implements Command {
     @Parameter(names = "--stdin", description = "Use JSON from standard import. Allow piping JSON from other processes. Either this or --marathonFile parameter must be used")
     private boolean stdin = false;
 
+    @Parameter(names = "--update", description = "Update a running application instead of attempting to deploy a new application")
+    private boolean update = false;
+
     private ClusterRepository repository = new ClusterRepository();
 
     /**
@@ -80,7 +83,11 @@ public class CommandInstall implements Command {
                 throw new MinimesosException("Failed to read JSON", e);
             }
 
-            marathon.deployApp(marathonJson);
+            if (update) {
+                marathon.updateApp(marathonJson);
+            } else {
+                marathon.deployApp(marathonJson);
+            }
         } else {
             throw new MinimesosException("Running cluster is not found");
         }

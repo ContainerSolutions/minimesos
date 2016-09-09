@@ -18,6 +18,7 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import com.mashape.unirest.request.HttpRequestWithBody;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
@@ -112,13 +113,40 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
      */
     @Override
     public void deployApp(String marathonJson) {
-        String tokenisedJson = replaceTokens(marathonJson);
         String marathonEndpoint = getServiceUrl().toString();
+        HttpRequestWithBody httpRequest = Unirest.post(marathonEndpoint + END_POINT_EXT);
+        deployOrUpdateApp(marathonJson, httpRequest, HttpStatus.SC_CREATED);
+    }
+
+    /**
+     * Updates a Marathon app by JSON string
+     *
+     * @param marathonJson JSON string
+     */
+    @Override
+    public void updateApp(String marathonJson) {
+        String marathonEndpoint = getServiceUrl().toString();
+        JSONObject marathonObject = new JSONObject(marathonJson);
+        String id = marathonObject.getString("id");
+        HttpRequestWithBody httpRequest = Unirest.put(marathonEndpoint + END_POINT_EXT + "/" + id);
+        deployOrUpdateApp(marathonJson, httpRequest, HttpStatus.SC_OK);
+    }
+
+    /**
+     * Deploys or updates a Marathon app by JSON string
+     *
+     * @param marathonJson JSON string
+     * @param httpRequest The HTTP request to perform
+     * @param httpResponseSuccessStatusCode The HTTP status code to expect from the response of a successful operation
+     */
+    private void deployOrUpdateApp(String marathonJson, HttpRequestWithBody httpRequest, int httpResponseStatusCode) {
+        String marathonEndpoint = getServiceUrl().toString();
+        String tokenisedJson = replaceTokens(marathonJson);
         try {
             byte[] app = tokenisedJson.getBytes(Charset.forName("UTF-8"));
-            HttpResponse<JsonNode> response = Unirest.post(marathonEndpoint + END_POINT_EXT).header(HEADER_ACCEPT, APPLICATION_JSON).body(app).asJson();
+            HttpResponse<JsonNode> response = httpRequest.header(HEADER_ACCEPT, APPLICATION_JSON).body(app).asJson();
             JSONObject deployResponse = response.getBody().getObject();
-            if (response.getStatus() == HttpStatus.SC_CREATED) {
+            if (response.getStatus() == httpResponseSuccessStatusCode) {
                 LOGGER.debug(deployResponse.toString());
             } else {
                 throw new MinimesosException("Marathon did not accept the app: " + deployResponse);
