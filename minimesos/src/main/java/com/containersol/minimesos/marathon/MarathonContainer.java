@@ -139,7 +139,7 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
      * @param httpRequest The HTTP request to perform
      * @param httpResponseSuccessStatusCode The HTTP status code to expect from the response of a successful operation
      */
-    private void deployOrUpdateApp(String marathonJson, HttpRequestWithBody httpRequest, int httpResponseStatusCode) {
+    private void deployOrUpdateApp(String marathonJson, HttpRequestWithBody httpRequest, int httpResponseSuccessStatusCode) {
         String marathonEndpoint = getServiceUrl().toString();
         String tokenisedJson = replaceTokens(marathonJson);
         try {
