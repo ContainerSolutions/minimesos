@@ -68,6 +68,10 @@ Usage: minimesos [options] [command] [command options]
              Use JSON from standard import. Allow piping JSON from other
              processes. Either this or --marathonFile parameter must be used
              Default: false
+          --update
+             Update a running application instead of attempting to deploy a new
+             application
+             Default: false
 
     destroy      Destroy a minimesos cluster
       Usage: destroy [options]

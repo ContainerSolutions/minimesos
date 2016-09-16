@@ -18,6 +18,13 @@ public interface Marathon extends ClusterProcess {
     void deployApp(String marathonJson);
 
     /**
+     * Updates a Marathon app by JSON string
+     *
+     * @param marathonJson JSON string
+     */
+    void updateApp(String marathonJson);
+
+    /**
      * Kill all apps that are currently running.
      */
     void killAllApps();
