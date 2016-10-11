@@ -219,6 +219,9 @@ public abstract class AbstractContainer implements ClusterProcess {
 
     protected Boolean imageExists(String imageName, String registryTag) {
         List<Image> images = DockerClientFactory.build().listImagesCmd().exec();
+        if (images.isEmpty()) {
+            throw new MinimesosException("Failed to find image '" +  imageName + ":" + registryTag + ". No images found");
+        }
         for (Image image : images) {
             for (String repoTag : image.getRepoTags()) {
                 if (repoTag.equals(imageName + ":" + registryTag)) {
@@ -230,6 +233,7 @@ public abstract class AbstractContainer implements ClusterProcess {
     }
 
     protected void pullImage(String imageName, String registryTag) {
+        LOGGER.debug("Checking if image [" + imageName + ":" + registryTag + "] exists.");
 
         if (imageExists(imageName, registryTag)) {
             return;
