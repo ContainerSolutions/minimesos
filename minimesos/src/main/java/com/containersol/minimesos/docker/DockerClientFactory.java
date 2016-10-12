@@ -1,6 +1,7 @@
 package com.containersol.minimesos.docker;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import org.apache.commons.lang.StringUtils;
@@ -14,7 +15,8 @@ public class DockerClientFactory {
 
     public static DockerClient build() {
         if (dockerClient == null) {
-            DockerClientConfig.DockerClientConfigBuilder builder = DockerClientConfig.createDefaultConfigBuilder().withApiVersion("1.12");
+            DefaultDockerClientConfig.Builder builder = new DefaultDockerClientConfig.Builder();
+            builder = builder.withApiVersion("1.12");
 
             String dockerHostEnv = System.getenv("DOCKER_HOST");
             if (StringUtils.isBlank(dockerHostEnv)) {
