@@ -112,6 +112,8 @@ public class DockerContainersUtil {
 
     /**
      * Removes all containers in the util object
+     *
+     * @return this
      */
     public DockerContainersUtil kill() {
         return kill(false);
@@ -121,6 +123,7 @@ public class DockerContainersUtil {
      * Removes all containers in the util object
      *
      * @param ignoreFailure - use <code>true</code> if you expect containers might be stopped by this time
+     * @return this
      */
     public DockerContainersUtil kill(boolean ignoreFailure) {
         if (containers != null) {
@@ -207,6 +210,7 @@ public class DockerContainersUtil {
     }
 
     /**
+     * @param containerId Id of the container
      * @return IP Address of the container's gateway (which would be docker0)
      */
     public static String getGatewayIpAddress(String containerId) {

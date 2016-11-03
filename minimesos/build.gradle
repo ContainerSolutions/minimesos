@@ -1,4 +1,7 @@
 apply plugin: "groovy"
+apply plugin: 'java'
+apply plugin: 'jacoco'
+apply plugin: 'maven'
 
 dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.4.5'
@@ -32,7 +35,95 @@ sourceSets {
     }
 }
 
+jar {
+    baseName = "minimesos"
+    manifest {
+        attributes(
+                'Implementation-Version': project.version
+        )
+    }
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+}
+
 task installMinimesosScript(type: Copy) {
     from "$rootDir/bin/minimesos"
     into "/usr/local/bin"
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+    archives jar
+}
+
+test {
+    testLogging {
+        showStandardStreams = true
+    }
+}
+
+def pomDef = {
+    name 'minimesos'
+    packaging 'jar'
+    // optionally artifactId can be defined here
+    description 'minimesos creates a local Mesos cluster for easy local development'
+    url 'https://www.minimesos.org'
+
+    scm {
+        connection 'https://github.com/ContainerSolutions/minimesos.git'
+        developerConnection 'git@github.com:ContainerSolutions/minimesos.git'
+        url 'https://github.com/ContainerSolutions/minimesos'
+    }
+
+    licenses {
+        license {
+            name 'The Apache License, Version 2.0'
+            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+        }
+    }
+
+    developers {
+        developer {
+            id 'frankscholten'
+            name 'Frank Scholten'
+            email 'frank.scholten@container-solutions.com'
+        }
+        developer {
+            id 'adam-sandor'
+            name 'Adam Sandor'
+            email 'adam.sandor@container-solutions.com'
+        }
+    }
+}
+
+task writePom() {
+    pom {
+        project(pomDef).writeTo("$buildDir/poms/fullpom.xml")
+    }
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: mavenRepoUsername, password: mavenRepoPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: mavenSnapshotRepoUsername, password: mavenSnapshotRepoPassword)
+            }
+
+            pom.project(pomDef)
+        }
+    }
 }
