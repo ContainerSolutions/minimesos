@@ -1,5 +1,28 @@
 apply plugin: "groovy"
 
+sourceSets {
+    main {
+        groovy {
+            // this makes the groovy-compiler compile groovy- as well as java-files.
+            // Needed, because java is normally compiled before groovy.
+            // Since we are using groovy objects from java, we need it the other way round.
+            srcDirs = ['src/main/groovy', 'src/main/java']
+        }
+        java {
+            srcDirs = [] // don't compile Java code twice
+        }
+    }
+
+    integrationTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integration-test/java')
+        }
+        resources.srcDir file('src/integration-test/resources')
+    }
+}
+
 dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.4.5'
     compile 'com.github.docker-java:docker-java:3.0.6'
@@ -16,19 +39,27 @@ dependencies {
     testCompile "org.mockito:mockito-core:1.+"
     // using guru.nidi as maintenanance of the original project is dropped https://github.com/clarkware/jdepend/pull/9
     testCompile "guru.nidi:jdepend:2.9.5"
+
+    integrationTestCompile 'junit:junit:4.11'
+    integrationTestCompile 'com.jayway.awaitility:awaitility:1.6.3'
 }
 
-sourceSets {
-    main {
-        groovy {
-            // this makes the groovy-compiler compile groovy- as well as java-files.
-            // Needed, because java is normally compiled before groovy.
-            // Since we are using groovy objects from java, we need it the other way round.
-            srcDirs = ['src/main/groovy', 'src/main/java']
-        }
-        java {
-            srcDirs = [] // don't compile Java code twice
-        }
+compileGroovy {
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+}
+
+configurations {
+    integrationTestCompile.extendsFrom mainCompile
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestRuntime.extendsFrom mainRuntime
+    integrationTestRuntime.extendsFrom testRuntime
+}
+
+task integrationTest(type: Test) {
+    testClassesDir = sourceSets.integrationTest.output.classesDir
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    testLogging {
+        showStandardStreams = true
     }
 }
 
@@ -36,3 +67,5 @@ task installMinimesosScript(type: Copy) {
     from "$rootDir/bin/minimesos"
     into "/usr/local/bin"
 }
+
+integrationTest.dependsOn project(":cli").buildDockerImage

@@ -144,7 +144,7 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
 
     public MesosCluster createMesosCluster(InputStream inputStream) {
         try {
-            ClusterConfig clusterConfig = new ConfigParser().parse(IOUtils.toString(inputStream));
+            ClusterConfig clusterConfig = new ConfigParser().parse(IOUtils.toString(inputStream, "UTF-8"));
             return createMesosCluster(clusterConfig);
         } catch (IOException e) {
             throw new MinimesosException("Could not read minimesos config:" + e.getCause());
