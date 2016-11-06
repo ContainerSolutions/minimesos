@@ -96,7 +96,7 @@ public class CommandInit implements Command {
 
         MarathonConfig marathonConfig = new MarathonConfig();
         marathonConfig.getApps().add(weaveConfig);
-        marathonConfig.getApps().add(chronosConfig  );
+        marathonConfig.getApps().add(chronosConfig);
         config.setMarathon(marathonConfig);
 
         ConfigParser parser = new ConfigParser();
