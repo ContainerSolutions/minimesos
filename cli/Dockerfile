@@ -1,4 +1,4 @@
-FROM containersol/alpine3.3-java8-jre:v1
+FROM openjdk:8-jre-alpine
 MAINTAINER Container Solutions BV <info@container-solutions.com>
 
 RUN apk add --update curl libstdc++&& \
