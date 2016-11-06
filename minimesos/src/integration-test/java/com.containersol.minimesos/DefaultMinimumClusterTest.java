@@ -23,8 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static com.containersol.minimesos.HelloWorldContainer.*;
 
 /**
  * Replicates MesosClusterTest with new API
@@ -39,7 +38,7 @@ public class DefaultMinimumClusterTest {
 
     @After
     public void after() {
-        DockerContainersUtil.getContainers(false).filterByName(HelloWorldContainer.CONTAINER_NAME_PATTERN).kill().remove();
+        DockerContainersUtil.getContainers(false).filterByName(CONTAINER_NAME_PATTERN).kill().remove();
     }
 
     @Test
@@ -54,7 +53,7 @@ public class DefaultMinimumClusterTest {
         JSONObject stateInfo = CLUSTER.getMaster().getStateInfoJSON();
         for (int i = 0; i < 3; i++) {
             Assert.assertEquals(AgentResourcesConfig.DEFAULT_CPU.getValue(), stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getDouble("cpus"), 0.0001);
-            Assert.assertEquals(256, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getInt("mem"));
+            Assert.assertEquals(512, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getInt("mem"));
         }
     }
 
@@ -78,7 +77,7 @@ public class DefaultMinimumClusterTest {
         String containerId = CLUSTER.addAndStartProcess(container);
         String ipAddress = DockerContainersUtil.getIpAddress(containerId);
 
-        String url = "http://" + ipAddress + ":" + HelloWorldContainer.SERVICE_PORT;
+        String url = "http://" + ipAddress + ":" + SERVICE_PORT;
         HttpResponse<String> response = Unirest.get(url).asString();
 
         Assert.assertEquals(200, response.getStatus());

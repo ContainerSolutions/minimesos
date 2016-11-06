@@ -70,8 +70,8 @@ public class MesosClusterTest {
     public void mesosResourcesCorrect() throws Exception {
         JSONObject stateInfo = CLUSTER.getMaster().getStateInfoJSON();
         for (int i = 0; i < 3; i++) {
-            Assert.assertEquals((long) 1, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getLong("cpus"));
-            Assert.assertEquals(256, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getInt("mem"));
+            Assert.assertEquals((long) 4, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getLong("cpus"));
+            Assert.assertEquals(512, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getInt("mem"));
         }
     }
 
