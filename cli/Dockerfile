@@ -1,7 +1,7 @@
 FROM containersol/alpine3.3-java8-jre:v1
 MAINTAINER Container Solutions BV <info@container-solutions.com>
 
-RUN apk add --update curl && \
+RUN apk add --update curl libstdc++&& \
         rm -rf /var/cache/apk/*
 
 RUN curl https://get.docker.com/builds/Linux/x86_64/docker-1.12.0.tgz -o docker-1.12.0.tgz && \
