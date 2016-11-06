@@ -43,7 +43,7 @@ minimesos {
 
     marathon {
         imageName = "mesosphere/marathon"
-        imageTag = "v0.15.3"
+        imageTag = "v1.3.5"
     }
 
     master {
