@@ -223,6 +223,9 @@ public abstract class AbstractContainer implements ClusterProcess {
             throw new MinimesosException("Failed to find image '" +  imageName + ":" + registryTag + ". No images found");
         }
         for (Image image : images) {
+            if (image.getRepoTags() == null) {
+                continue;
+            }
             for (String repoTag : image.getRepoTags()) {
                 if (repoTag.equals(imageName + ":" + registryTag)) {
                     return true;
