@@ -1,0 +1,34 @@
+{
+  "id": "chronos",
+  "cpus": 1,
+  "mem": 128,
+  "instances": 1,
+  "constraints": [],
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "image": "mesosphere/chronos:latest",
+      "network": "BRIDGE",
+      "portMappings": [
+        { "containerPort": 4400, "hostPort": 0, "protocol": "tcp" }
+      ],
+      "privileged": true,
+      "parameters": []
+    },
+    "volumes": []
+  },
+  "args": [
+    "/usr/bin/chronos", "run_jar",
+    "--http_port","4400",
+    "--zk_hosts","${MINIMESOS_ZOOKEEPER_IP}:2181",
+    "--master", "${MINIMESOS_ZOOKEEPER}"
+  ],
+  "env": {},
+  "portDefinitions": [
+    {
+      "port": 4400,
+      "protocol": "tcp",
+      "name": "http"
+    }
+  ]
+}

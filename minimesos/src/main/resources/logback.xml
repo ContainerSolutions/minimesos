@@ -17,7 +17,7 @@
 		<appender-ref ref="CLI"/>
 	</logger>
 
-	<logger name="com.containersol.minimesos.container" level="info">
+	<logger name="com.containersol.minimesos.integrationtest.container" level="info">
 		<appender-ref ref="JAVA"/>
 	</logger>
 

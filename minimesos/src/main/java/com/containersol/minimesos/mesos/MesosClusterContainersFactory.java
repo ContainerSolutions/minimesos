@@ -21,7 +21,7 @@ import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ConfigParser;
 import com.containersol.minimesos.config.MesosMasterConfig;
-import com.containersol.minimesos.container.ContainerName;
+import com.containersol.minimesos.integrationtest.container.ContainerName;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.marathon.MarathonContainer;
 import com.github.dockerjava.api.model.Container;
@@ -144,7 +144,7 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
 
     public MesosCluster createMesosCluster(InputStream inputStream) {
         try {
-            ClusterConfig clusterConfig = new ConfigParser().parse(IOUtils.toString(inputStream));
+            ClusterConfig clusterConfig = new ConfigParser().parse(IOUtils.toString(inputStream, "UTF-8"));
             return createMesosCluster(clusterConfig);
         } catch (IOException e) {
             throw new MinimesosException("Could not read minimesos config:" + e.getCause());

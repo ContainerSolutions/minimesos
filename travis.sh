@@ -16,5 +16,5 @@ if [ "${TRAVIS_PULL_REQUEST}" == "false" ] && [ "${TRAVIS_BRANCH}" == "master" ]
     GH_SONARQ_PARAMS="jacocoTestReport sonarqube -Dsonar.host.url=$SQ_URL -Dsonar.jdbc.url=$SQ_JDBC_URL -Dsonar.jdbc.driverClassName=org.postgresql.Driver -Dsonar.jdbc.user=$SQ_JDBC_USER -Dsonar.jdbc.password=$SQ_JDBC_PASSWORD"
 fi
 
-./gradlew --info --stacktrace clean build $GH_SONARQ_PARAMS
+./gradlew --info --stacktrace clean build integrationTest $GH_SONARQ_PARAMS
 

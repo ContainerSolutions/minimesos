@@ -22,6 +22,6 @@ script: chmod +x travis.sh && sudo ./travis.sh
 
 notifications:
   email: true
-  # see details on https://docs.travis-ci.com/user/notifications
-  slack: containersolutions:CoDpiSYXLQd1yF5AHD05X8xN#minimesos-internal
-
+   # see details on https://docs.travis-ci.com/user/notifications
+  slack:
+    secure: RWUEmM8nef6hH9+AmVaBWVxcjUt5hVPdbw02x+iBdTqAxPC2wxq3Ya/vlWDwhyyXdUgMujfWTJxks3A15qHAzPH22/mVsmAoz8Duspj/C3x8dp/7IncnkbX5AI1fEJy+z+D8uL4J6ALM90y8kUm2QKoddOq1+xO65xZyzvXoxFJDZ9eIlSVsDv7q7qqkaHnWH8nW+DqtGFPlhu5K/luaw56gy7lChUX/KvAy+8fzaUFNPKdJTVu+GpdgJZrqKeQS8+gY00k0AaAS6fOHxTeAUmyC6eDTL1FgBueS5auBha321qU84sQTCQSTHxl0J8YSQzzrBEiGn506DMKFjZLQZWmR4DxxGSc8jd4sdbVXBoWEBQvNI8jZoAzagFnNig1NKPtRAXIuip28FJUhsvK3WOs1H/XsnkRxKZ52jRrDg0yYi48HsqIr7af6nSzAkAK5JEL58Yc1nYvALa0vXjVWuyuo8um0sFNvEDRE/eDi5o6iul0I4CPOM0j+6d8ymVuD6oJ8eeGjYSFVk7XgdCBp1Gcl8NHLgiVjnygcT0U07kszDV7q8ab0iAfjMoTJwFTjPGkwFWJnlD5dciliO7ncWORl//A3JOQqRh5kMp/96995Ia9G4pVnEkh6tQI6G84/qMU0blDrOtTWIO6NjDV4UiGAYtaixr8BGKQWji9K+eY=

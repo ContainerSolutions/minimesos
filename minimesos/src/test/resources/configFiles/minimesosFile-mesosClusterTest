@@ -16,17 +16,17 @@ minimesos {
 
             cpu {
                 role = "*"
-                value = 1
+                value = 4
             }
 
             disk {
                 role = "*"
-                value = 200
+                value = 2000
             }
 
             mem {
                 role = "*"
-                value = 256
+                value = 512
             }
 
             ports {
@@ -46,17 +46,17 @@ minimesos {
 
             cpu {
                 role = "*"
-                value = 1
+                value = 4
             }
 
             disk {
                 role = "*"
-                value = 200
+                value = 2000
             }
 
             mem {
                 role = "*"
-                value = 256
+                value = 512
             }
 
             ports {
@@ -76,17 +76,17 @@ minimesos {
 
             cpu {
                 role = "*"
-                value = 1
+                value = 4
             }
 
             disk {
                 role = "*"
-                value = 200
+                value = 2000
             }
 
             mem {
                 role = "*"
-                value = 256
+                value = 512
             }
 
             ports {
@@ -109,7 +109,7 @@ minimesos {
 
     marathon {
         imageName = "mesosphere/marathon"
-        imageTag = "v0.15.3"
+        imageTag = "v1.3.5"
     }
 
     zookeeper {
