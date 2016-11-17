@@ -1,7 +1,6 @@
-package com.containersol.minimesos;
+package com.containersol.minimesos.integrationtest.container;
 
 import com.containersol.minimesos.config.ContainerConfigBlock;
-import com.containersol.minimesos.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;

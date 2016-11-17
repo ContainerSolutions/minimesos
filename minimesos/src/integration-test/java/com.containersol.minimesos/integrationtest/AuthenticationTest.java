@@ -1,4 +1,4 @@
-package com.containersol.minimesos.authentication;
+package com.containersol.minimesos.integrationtest;
 
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.junit.MesosClusterTestRule;

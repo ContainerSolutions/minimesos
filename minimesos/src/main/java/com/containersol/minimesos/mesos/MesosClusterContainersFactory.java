@@ -21,7 +21,7 @@ import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ConfigParser;
 import com.containersol.minimesos.config.MesosMasterConfig;
-import com.containersol.minimesos.container.ContainerName;
+import com.containersol.minimesos.integrationtest.container.ContainerName;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.marathon.MarathonContainer;
 import com.github.dockerjava.api.model.Container;

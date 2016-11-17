@@ -1,15 +1,13 @@
-package com.containersol.minimesos.mesos;
+package com.containersol.minimesos.integrationtest.container;
 
 import com.containersol.minimesos.MinimesosException;
-import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.MesosAgentConfig;
+import com.containersol.minimesos.mesos.MesosAgentContainer;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class MesosAgentTest {
-
-    private static final ZooKeeper zooKeeper = new ZooKeeperContainer();
 
     /**
      * It must be possible to detect wrong image within 30 seconds

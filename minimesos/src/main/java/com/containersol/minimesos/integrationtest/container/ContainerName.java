@@ -1,4 +1,4 @@
-package com.containersol.minimesos.container;
+package com.containersol.minimesos.integrationtest.container;
 
 /**
  * Utility class to assist container naming convention

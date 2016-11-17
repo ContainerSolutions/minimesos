@@ -1,4 +1,4 @@
-package com.containersol.minimesos.container;
+package com.containersol.minimesos.integrationtest.container;
 
 import java.net.URI;
 import java.net.URISyntaxException;

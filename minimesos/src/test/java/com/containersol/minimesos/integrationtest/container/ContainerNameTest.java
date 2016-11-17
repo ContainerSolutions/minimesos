@@ -1,4 +1,4 @@
-package com.containersol.minimesos.container;
+package com.containersol.minimesos.integrationtest.container;
 
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.mesos.MesosAgentContainer;
@@ -17,7 +17,7 @@ public class ContainerNameTest {
 
     @Before
     public void before() {
-        cluster = new MesosClusterContainersFactory().createMesosCluster("src/test/resources/configFiles/minimesosFile-defaultMinimumClusterTest");
+        cluster = new MesosClusterContainersFactory().createMesosCluster("src/test/resources/configFiles/minimesosFile-mesosClusterTest");
 
         clusterId = cluster.getClusterId();
     }

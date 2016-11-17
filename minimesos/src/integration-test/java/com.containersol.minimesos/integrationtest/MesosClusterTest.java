@@ -1,11 +1,20 @@
-package com.containersol.minimesos;
+package com.containersol.minimesos.integrationtest;
 
+import com.containersol.minimesos.MinimesosException;
+import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosMaster;
+import com.containersol.minimesos.cluster.ZooKeeper;
+import com.containersol.minimesos.config.ClusterConfig;
+import com.containersol.minimesos.config.MesosAgentConfig;
+import com.containersol.minimesos.integrationtest.container.HelloWorldContainer;
+import com.containersol.minimesos.integrationtest.container.MesosExecuteContainer;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.junit.MesosClusterTestRule;
+import com.containersol.minimesos.marathon.MarathonContainer;
+import com.containersol.minimesos.mesos.MesosAgentContainer;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.ResourceUtil;
@@ -13,7 +22,10 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Link;
+import com.github.dockerjava.core.command.LogContainerResultCallback;
+import com.jayway.awaitility.Awaitility;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -23,16 +35,16 @@ import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class MesosClusterTest {
 
@@ -134,6 +146,79 @@ public class MesosClusterTest {
     @Test(expected = IllegalStateException.class)
     public void testStartingClusterSecondTime() {
         CLUSTER.start(30);
+    }
+
+    @Test
+    public void testMesosVersionRestored() {
+        String clusterId = CLUSTER.getClusterId();
+        MesosCluster cluster = MesosCluster.loadCluster(clusterId, new MesosClusterContainersFactory());
+
+        Assert.assertEquals("1.0.0", cluster.getMesosVersion());
+    }
+
+    @Test
+    public void testFindMesosMaster() {
+        String initString = "start ${MINIMESOS_MASTER} ${MINIMESOS_MASTER_IP} end";
+
+        String expected = CLUSTER.getMaster().getServiceUrl().toString();
+        String ip = CLUSTER.getMaster().getIpAddress();
+
+        MarathonContainer marathon = (MarathonContainer) CLUSTER.getMarathon();
+        String updated = marathon.replaceTokens(initString);
+        assertEquals("MINIMESOS_MASTER should be replaced", String.format("start %s %s end", expected, ip), updated);
+    }
+
+    private static class LogContainerTestCallback extends LogContainerResultCallback {
+        final StringBuffer log = new StringBuffer();
+
+        @Override
+        public void onNext(Frame frame) {
+            log.append(new String(frame.getPayload()));
+            super.onNext(frame);
+        }
+
+        @Override
+        public String toString() {
+            return log.toString();
+        }
+    }
+
+    @Test
+    public void testMesosExecuteContainerSuccess() throws InterruptedException {
+        ClusterProcess mesosExecute = new MesosExecuteContainer();
+
+        String containerId = CLUSTER.addAndStartProcess(mesosExecute);
+
+        Awaitility.await("Mesos Execute container did not start responding").atMost(60, TimeUnit.SECONDS).until(() -> {
+            LogContainerTestCallback cb1 = new LogContainerTestCallback();
+            DockerClientFactory.build().logContainerCmd(mesosExecute.getContainerId()).withContainerId(containerId).withStdOut(true).exec(cb1);
+            cb1.awaitCompletion();
+            String log = cb1.toString();
+            return log.contains("Received status update TASK_FINISHED for task 'test-cmd'");
+        });
+    }
+
+    @Test
+    public void noMarathonTest() throws FileNotFoundException {
+        String clusterId = CLUSTER.getClusterId();
+
+        Assert.assertNotNull("Cluster ID must be set", clusterId);
+
+        // this should not throw any exceptions
+        CLUSTER.destroy(RULE.getFactory());
+    }
+
+    @Test
+    public void stopWithNewContainerTest() {
+        MesosAgent extraAgent = new MesosAgentContainer(new MesosAgentConfig(ClusterConfig.DEFAULT_MESOS_VERSION));
+        ZooKeeper zooKeeper = CLUSTER.getZooKeeper();
+        extraAgent.setZooKeeper(zooKeeper);
+
+        String containerId = CLUSTER.addAndStartProcess(extraAgent);
+        Assert.assertNotNull("freshly started container is not found", DockerContainersUtil.getContainer(containerId));
+
+        CLUSTER.destroy(RULE.getFactory());
+        Assert.assertNull("new container should be stopped too", DockerContainersUtil.getContainer(containerId));
     }
 
 }
