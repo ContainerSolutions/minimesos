@@ -36,11 +36,6 @@ minimesos {
         }
     }
 
-    consul {
-        imageName = "consul"
-        imageTag = "0.7.1"
-    }
-
     marathon {
         imageName = "mesosphere/marathon"
         imageTag = "v1.3.5"
@@ -54,9 +49,9 @@ minimesos {
         loggingLevel = "# INHERIT FROM CLUSTER"
     }
 
-    registrator {
-        imageName = "gliderlabs/registrator"
-        imageTag = "v6"
+    mesosdns {
+        imageName = "xebia/mesos-dns"
+        imageTag = "0.0.5"
     }
 
     zookeeper {

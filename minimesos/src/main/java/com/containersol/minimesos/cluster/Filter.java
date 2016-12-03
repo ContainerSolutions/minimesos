@@ -11,10 +11,6 @@ public class Filter {
         return process -> process instanceof ZooKeeper;
     }
 
-    public static Predicate<ClusterProcess> consul() {
-        return process -> process instanceof Consul;
-    }
-
     public static Predicate<ClusterProcess> mesosMaster() {
         return process -> process instanceof MesosMaster;
     }
@@ -31,5 +27,4 @@ public class Filter {
         return process -> role.equals(process.getRole());
     }
 
-    public static Predicate<ClusterProcess> registrator() { return process -> process instanceof Registrator; }
 }
