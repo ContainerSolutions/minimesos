@@ -37,8 +37,8 @@ minimesos {
     }
 
     consul {
-        imageName = "containersol/consul-server"
-        imageTag = "0.6"
+        imageName = "consul"
+        imageTag = "0.7.1"
     }
 
     marathon {

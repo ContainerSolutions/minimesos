@@ -8,8 +8,6 @@ import com.containersol.minimesos.docker.DockerClientFactory;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 
-import static com.containersol.minimesos.util.EnvironmentBuilder.newEnvironment;
-
 /**
  * This is the Consul-in-a-container container. Consul adds service discovery through DNS, and a distributed k/v store.
  */
@@ -48,9 +46,7 @@ public class ConsulContainer extends AbstractContainer implements Consul {
 
         return DockerClientFactory.build().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withName(getName())
-                .withEnv(newEnvironment()
-                        .withValue("SERVICE_IGNORE", "1")
-                        .createEnvironment())
+                .withCmd("agent", "-server", "-bootstrap", "-client", "0.0.0.0")
                 .withExposedPorts(consulHTTPPort, consulDNSPort);
     }
 
