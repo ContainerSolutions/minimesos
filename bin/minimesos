@@ -39,6 +39,12 @@ if [ "$#" -gt 0 -a "$1" = up ]; then
     pullImage ${MINIMESOS_CLI_IMAGE} ${MINIMESOS_TAG}
 fi
 
+if [ $(uname) == "Darwin" ]; then
+  MINIMESOS_OS="Mac OS X"
+else
+  MINIMESOS_OS="Linux"
+fi
+
 MINIMESOS_HOST_DIR="$(pwd)"
 MINIMESOS_DIR="$(pwd)/.minimesos"
 if [ ! -d "${MINIMESOS_DIR}" ]; then
@@ -51,6 +57,7 @@ docker run --rm -v "${MINIMESOS_HOST_DIR}":"${MINIMESOS_HOST_DIR}" \
        -v /sys/fs/cgroup:/sys/fs/cgroup \
        -i \
        --env DOCKER_HOST_IP=${DOCKER_HOST_IP} \
+       --env MINIMESOS_OS="${MINIMESOS_OS}" \
        --entrypoint java \
        ${MINIMESOS_CLI_IMAGE}:${MINIMESOS_TAG} \
        -Dminimesos.host.dir="${MINIMESOS_HOST_DIR}" \

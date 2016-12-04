@@ -2,7 +2,6 @@ package com.containersol.minimesos.main;
 
 import java.io.PrintStream;
 
-import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
@@ -11,13 +10,10 @@ import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 /**
  * Parameters for the 'state' command
  */
-@Parameters(separators = "=", commandDescription = "Display state.json file of a master or an agent")
+@Parameters(separators = "=", commandDescription = "Display the master's state.json file")
 public class CommandState implements Command {
 
     public static final String CLINAME = "state";
-
-    @Parameter(names = "--agent", description = "Specify an agent to query, otherwise query a master")
-    private String agent = "";
 
     private PrintStream output = System.out; //NOSONAR
 
@@ -34,7 +30,7 @@ public class CommandState implements Command {
     public void execute() {
         MesosCluster cluster = repository.loadCluster(new MesosClusterContainersFactory());
         if (cluster != null) {
-            cluster.state(output, agent);
+            cluster.state(output);
         } else {
             output.println("Minimesos cluster is not running");
         }

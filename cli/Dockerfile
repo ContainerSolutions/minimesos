@@ -1,3 +1,4 @@
+FROM debian:jessie-backports
 FROM openjdk:8-jre-alpine
 MAINTAINER Container Solutions BV <info@container-solutions.com>
 

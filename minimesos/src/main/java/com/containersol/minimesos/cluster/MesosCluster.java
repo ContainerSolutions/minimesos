@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.state.State;
+import com.containersol.minimesos.util.Environment;
 import com.containersol.minimesos.util.Predicate;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -85,6 +86,11 @@ public class MesosCluster {
         this.clusterId = clusterId;
         this.clusterConfig = new ClusterConfig();
 
+        if (Environment.isRunningInJvmOnMacOsX() || Environment.isRunningInDockerOnMac()) {
+            LOGGER.info("Detected Mac Environment X so running with --mapPortsToHost so master and marathon ports are mapped to localhost.");
+            setMapPortsToHost(true);
+        }
+
         factory.loadRunningCluster(this);
 
         if (memberPocesses.isEmpty()) {
@@ -127,6 +133,11 @@ public class MesosCluster {
             throw new IllegalStateException("Cluster " + clusterId + " is already running");
         }
 
+        if (Environment.isRunningInJvmOnMacOsX() || Environment.isRunningInDockerOnMac()) {
+            LOGGER.info("Detected Mac Environment X, running with '--mapPortsToHost' so master and marathon ports are mapped to localhost");
+            clusterConfig.setMapPortsToHost(true);
+        }
+
         LOGGER.debug("Cluster " + getClusterId() + " - start");
         this.memberPocesses.forEach((container) -> container.start(timeoutSeconds));
         // wait until the given number of agents are registered
@@ -143,18 +154,12 @@ public class MesosCluster {
     /**
      * Prints the state of the Mesos master or agent
      */
-    public void state(PrintStream out, String agentContainerId) {
-        JSONObject stateInfo;
-        if (StringUtils.isEmpty(agentContainerId)) {
-            stateInfo = getClusterStateInfo();
-        } else {
-            stateInfo = getAgentStateInfo(agentContainerId);
-        }
-
+    public void state(PrintStream out) {
+        JSONObject stateInfo = getClusterStateInfo();
         if (stateInfo != null) {
             out.println(stateInfo.toString(2));
         } else {
-            throw new MinimesosException("Did not find the cluster or requested container");
+            throw new MinimesosException("Could not retrieve the state from the cluster at " + getMaster().getServiceUrl() + ". Is it running?");
         }
     }
 
@@ -244,7 +249,7 @@ public class MesosCluster {
     /**
      * Retrieves JSON with Mesos Cluster master state
      *
-     * @return stage JSON
+     * @return stage JSON 
      */
     public JSONObject getClusterStateInfo() {
         try {

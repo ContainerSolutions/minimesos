@@ -1,18 +1,23 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosMaster;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.docker.DockerClientFactory;
+import com.containersol.minimesos.util.Environment;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
@@ -42,6 +47,34 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
     public int getServicePort() {
         return MesosMasterConfig.MESOS_MASTER_PORT;
     }
+
+    @Override
+    public URI getServiceUrl() {
+        URI serviceUri = null;
+
+        String protocol = getServiceProtocol();
+
+        String host;
+        if (Environment.isRunningInJvmOnMacOsX()) {
+            host = "localhost";
+        } else {
+            host = getIpAddress();
+        }
+
+        int port = getServicePort();
+        String path = getServicePath();
+
+        if (StringUtils.isNotEmpty(host)) {
+            try {
+                serviceUri = new URI(protocol, null, host, port, path, null, null);
+            } catch (URISyntaxException e) {
+                throw new MinimesosException("Failed to form service URL for " + getName(), e);
+            }
+        }
+
+        return serviceUri;
+    }
+
 
     protected Map<String, String> getMesosMasterEnvVars() {
         Map<String, String> envs = new TreeMap<>();
@@ -121,7 +154,7 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
         }
 
         public void waitFor() {
-            await("Mesos master not start responding")
+            await("Waiting until Mesos master state endpoint is available")
                     .atMost(mesosCluster.getClusterConfig().getTimeout(), TimeUnit.SECONDS)
                     .pollInterval(1, TimeUnit.SECONDS)
                     .until(this);

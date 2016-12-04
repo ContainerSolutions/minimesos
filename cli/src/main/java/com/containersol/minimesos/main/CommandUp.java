@@ -114,21 +114,14 @@ public class CommandUp implements Command {
      * @param clusterConfig cluster configuration to update
      */
     public void updateWithParameters(ClusterConfig clusterConfig) {
-        if (System.getProperty("os.name").contains("Mac OS X")) {
-            LOGGER.info("Detected Mac OS X so running with --mapPortsToHost so container ports are mapped to localhost");
-            clusterConfig.setMapPortsToHost(true);
-        }
-
         if (isMapPortsToHost() != null) {
             clusterConfig.setMapPortsToHost(isMapPortsToHost());
         }
 
-        // ZooKeeper
         if (clusterConfig.getZookeeper() == null) {
             clusterConfig.setZookeeper(new ZooKeeperConfig());
         }
 
-        // Mesos Master
         if (clusterConfig.getMaster() == null) {
             clusterConfig.setMaster(new MesosMasterConfig(ClusterConfig.DEFAULT_MESOS_VERSION));
         }
