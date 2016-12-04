@@ -85,6 +85,10 @@ public abstract class AbstractContainer implements ClusterProcess {
      */
     @Override
     public void start(int timeout) {
+        if (containerId != null) {
+            return;
+        }
+
         pullImage();
 
         CreateContainerCmd createCommand = dockerCommand();

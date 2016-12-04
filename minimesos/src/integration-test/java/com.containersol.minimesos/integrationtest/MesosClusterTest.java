@@ -191,4 +191,10 @@ public class MesosClusterTest {
         Assert.assertNull("new container should be stopped too", DockerContainersUtil.getContainer(containerId));
     }
 
+    @Test
+    public void testStartTwiceShouldNoOp() {
+        MesosMaster master = CLUSTER.getMaster();
+        master.start(5);
+    }
+
 }
