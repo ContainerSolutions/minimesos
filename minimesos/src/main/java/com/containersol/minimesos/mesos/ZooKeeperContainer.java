@@ -3,7 +3,7 @@ package com.containersol.minimesos.mesos;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.ZooKeeperConfig;
-import com.containersol.minimesos.container.AbstractContainer;
+import com.containersol.minimesos.integrationtest.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;

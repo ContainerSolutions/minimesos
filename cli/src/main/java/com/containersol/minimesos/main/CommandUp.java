@@ -99,7 +99,7 @@ public class CommandUp implements Command {
         if (clusterConfigFile != null) {
             ConfigParser configParser = new ConfigParser();
             try {
-                return configParser.parse(IOUtils.toString(clusterConfigFile));
+                return configParser.parse(IOUtils.toString(clusterConfigFile, "UTF-8"));
             } catch (Exception e) {
                 String msg = String.format("Failed to load cluster configuration from %s: %s", getClusterConfigPath(), e.getMessage());
                 throw new MinimesosException(msg, e);
@@ -114,6 +114,11 @@ public class CommandUp implements Command {
      * @param clusterConfig cluster configuration to update
      */
     public void updateWithParameters(ClusterConfig clusterConfig) {
+        if (System.getProperty("os.name").contains("Mac OS X")) {
+            LOGGER.info("Detected Mac OS X so running with --mapPortsToHost so container ports are mapped to localhost");
+            clusterConfig.setMapPortsToHost(true);
+        }
+
         if (isMapPortsToHost() != null) {
             clusterConfig.setMapPortsToHost(isMapPortsToHost());
         }

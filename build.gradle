@@ -42,7 +42,7 @@ subprojects {
 
     [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
-    tasks.withType(JavaCompile) {
+    compileJava {
         options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
     }
 
@@ -56,8 +56,8 @@ subprojects {
 
     jacocoTestReport {
         reports {
-            xml.enabled true
-            csv.enabled false
+            xml.enabled false
+            csv.enabled true
         }
     }
 

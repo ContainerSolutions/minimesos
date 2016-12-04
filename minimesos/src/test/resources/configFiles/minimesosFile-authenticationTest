@@ -36,17 +36,17 @@ minimesos {
 
             cpu {
                 role = "*"
-                value = 1
+                value = 4
             }
 
             disk {
                 role = "*"
-                value = 200
+                value = 2000
             }
 
             mem {
                 role = "*"
-                value = 256
+                value = 512
             }
 
             ports {

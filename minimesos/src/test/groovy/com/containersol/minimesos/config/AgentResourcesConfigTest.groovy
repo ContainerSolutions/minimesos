@@ -11,7 +11,7 @@ public class AgentResourcesConfigTest {
 
         AgentResourcesConfig resources = new AgentResourcesConfig()
         String asString = resources.asMesosString()
-        String expected = "ports(*):[31000-32000]; cpus(*):1; mem(*):256; disk(*):200"
+        String expected = "ports(*):[31000-32000]; cpus(*):4; mem(*):512; disk(*):2000"
 
         assertEquals(expected, asString)
 

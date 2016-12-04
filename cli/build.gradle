@@ -76,5 +76,34 @@ afterEvaluate { project ->
     }
 }
 
+sourceSets {
+    integrationTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integration-test/java')
+        }
+        resources.srcDir file('src/integration-test/resources')
+    }
+}
+
+configurations {
+    integrationTestCompile.extendsFrom mainCompile
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestRuntime.extendsFrom mainRuntime
+    integrationTestRuntime.extendsFrom testRuntime
+}
+
+task integrationTest(type: Test) {
+    testClassesDir = sourceSets.integrationTest.output.classesDir
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    testLogging {
+        showStandardStreams = true
+    }
+}
+
+integrationTest.dependsOn buildDockerImage
+
 project.build.dependsOn buildDockerImage
+
 assemble.dependsOn jar

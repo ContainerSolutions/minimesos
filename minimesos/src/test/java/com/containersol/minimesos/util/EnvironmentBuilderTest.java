@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.is;
 public class EnvironmentBuilderTest {
 
     @Test
+    @SuppressWarnings("unchecked")
     public void mergingSeveralSourcesProducesCorrectMap() {
         Map<String, String> source1 = new TreeMap<>();
         source1.put("envVar1", "value1");

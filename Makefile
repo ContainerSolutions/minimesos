@@ -8,8 +8,8 @@ deps:
 	docker pull containersol/mesos-agent:1.0.0-0.1.0
 	docker pull containersol/mesos-master:1.0.0-0.1.0
 	docker pull gliderlabs/registrator:v6
-	docker pull containersol/consul-server:0.6-1
-	docker pull mesosphere/marathon:v0.15.3
+	docker pull consul:0.7.1
+	docker pull mesosphere/marathon:v1.3.5
 	docker pull jplock/zookeeper:3.4.6
 	docker pull containersol/alpine3.3-java8-jre:v1
 	docker pull tutum/hello-world:latest

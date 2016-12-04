@@ -88,28 +88,28 @@ public class MainTest {
     @Test
     public void testUnsupportedCommand() throws IOException {
         main.run(new String[]{"unsupported"});
-        String result = outputStream.toString();
+        String result = outputStream.toString("UTF-8");
         assertUsageText(result);
     }
 
     @Test
     public void testMinusMinusHelp() throws IOException {
         main.run(new String[]{"--help"});
-        String result = outputStream.toString();
+        String result = outputStream.toString("UTF-8");
         assertUsageText(result);
     }
 
     @Test
     public void testInstallNoParameters() throws IOException {
         main.run(new String[]{"install"});
-        String output = outputStream.toString();
+        String output = outputStream.toString("UTF-8");
         assertTrue(output.contains("Usage: install [options]"));
     }
 
     @Test
     public void testHelp() throws IOException {
         main.run(new String[]{"help"});
-        String result = outputStream.toString();
+        String result = outputStream.toString("UTF-8");
         assertUsageText(result);
     }
 

@@ -8,7 +8,7 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.AppConfig;
 import com.containersol.minimesos.config.MarathonConfig;
-import com.containersol.minimesos.container.AbstractContainer;
+import com.containersol.minimesos.integrationtest.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -18,18 +18,20 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.mashape.unirest.request.HttpRequestWithBody;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import mesosphere.marathon.client.model.v2.App;
+import mesosphere.marathon.client.MarathonClient;
+import mesosphere.marathon.client.utils.MarathonException;
+import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -107,15 +109,30 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
     }
 
     /**
+     * Returns a Marathon endpoint
+     *
+     * @return String endpoint
+     */
+    private String getMarathonEndpoint() {
+        return getServiceUrl().toString();
+    }
+
+    /**
      * Deploys a Marathon app by JSON string
      *
      * @param marathonJson JSON string
      */
     @Override
     public void deployApp(String marathonJson) {
-        String marathonEndpoint = getServiceUrl().toString();
-        HttpRequestWithBody httpRequest = Unirest.post(marathonEndpoint + END_POINT_EXT);
-        deployOrUpdateApp(marathonJson, httpRequest, HttpStatus.SC_CREATED);
+        mesosphere.marathon.client.Marathon marathon = MarathonClient.getInstance(getMarathonEndpoint());
+
+        try {
+            marathon.createApp(constructApp(marathonJson));
+        } catch (MarathonException e) {
+            throw new MinimesosException("Marathon did not accept the app, error: " + e.toString());
+        }
+
+        LOGGER.debug(String.format("Installing an app on marathon %s", getMarathonEndpoint()));
     }
 
     /**
@@ -125,38 +142,30 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
      */
     @Override
     public void updateApp(String marathonJson) {
-        String marathonEndpoint = getServiceUrl().toString();
-        JSONObject marathonObject = new JSONObject(marathonJson);
-        String id = marathonObject.getString("id");
-        HttpRequestWithBody httpRequest = Unirest.put(marathonEndpoint + END_POINT_EXT + "/" + id);
-        deployOrUpdateApp(marathonJson, httpRequest, HttpStatus.SC_OK);
+        mesosphere.marathon.client.Marathon marathon = MarathonClient.getInstance(getMarathonEndpoint());
+
+        try {
+            App app = constructApp(marathonJson);
+            boolean force = true;
+            marathon.updateApp(app.getId(), app, force);
+        } catch (MarathonException e) {
+            throw new MinimesosException("Marathon could not update the app, error: " + e.toString());
+        }
+
+        LOGGER.debug(String.format("Installing an app on marathon %s", getMarathonEndpoint()));
     }
 
     /**
-     * Deploys or updates a Marathon app by JSON string
+     * Return App given a JSON string
      *
-     * @param marathonJson JSON string
-     * @param httpRequest The HTTP request to perform
-     * @param httpResponseSuccessStatusCode The HTTP status code to expect from the response of a successful operation
+     * @param appJson JSON string
+     * @return App object
      */
-    private void deployOrUpdateApp(String marathonJson, HttpRequestWithBody httpRequest, int httpResponseSuccessStatusCode) {
-        String marathonEndpoint = getServiceUrl().toString();
-        String tokenisedJson = replaceTokens(marathonJson);
-        try {
-            byte[] app = tokenisedJson.getBytes(Charset.forName("UTF-8"));
-            HttpResponse<JsonNode> response = httpRequest.header(HEADER_ACCEPT, APPLICATION_JSON).body(app).asJson();
-            JSONObject deployResponse = response.getBody().getObject();
-            if (response.getStatus() == httpResponseSuccessStatusCode) {
-                LOGGER.debug(deployResponse.toString());
-            } else {
-                throw new MinimesosException("Marathon did not accept the app: " + deployResponse);
-            }
-        } catch (UnirestException e) {
-            String msg = "Could not deploy app on Marathon at " + marathonEndpoint + " => " + e.getMessage();
-            LOGGER.error(msg);
-            throw new MinimesosException(msg, e);
-        }
-        LOGGER.debug(String.format("Installing an app on marathon %s", marathonEndpoint));
+    private App constructApp(String appJson) {
+        Gson gson = new Gson();
+        App appObject = gson.fromJson(replaceTokens(appJson), App.class);
+
+        return appObject;
     }
 
     /**
