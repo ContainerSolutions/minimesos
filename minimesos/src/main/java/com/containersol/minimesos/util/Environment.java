@@ -5,6 +5,10 @@ package com.containersol.minimesos.util;
  */
 public class Environment {
 
+    private Environment() {
+
+    }
+
     /**
      * Checks if minimesos cli runs in JVM on Mac OS X.
      *
