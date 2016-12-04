@@ -90,8 +90,9 @@ public class MesosClusterTest {
 
     @Test
     public void testHelloWorldContainer() throws UnirestException {
-        Assume.assumeFalse("Only test hello world container on Linux", Environment.isRunningOnJvmOnMacOsX());
+        Assume.assumeFalse("Only test hello world container on Linux", Environment.isRunningInJvmOnMacOsX());
         HelloWorldContainer container = new HelloWorldContainer();
+        container.start(60);
         URI url = container.getServiceUrl();
         Assert.assertEquals(200, Unirest.get(url.toString()).asString().getStatus());
     }
@@ -125,7 +126,7 @@ public class MesosClusterTest {
 
     @Test
     public void testFindMesosMaster() {
-        Assume.assumeFalse("Only test token interpolation on Linux", Environment.isRunningOnJvmOnMacOsX());
+        Assume.assumeFalse("Only test token interpolation on Linux", Environment.isRunningInJvmOnMacOsX());
 
         String initString = "start ${MINIMESOS_MASTER} ${MINIMESOS_MASTER_IP} end";
 
