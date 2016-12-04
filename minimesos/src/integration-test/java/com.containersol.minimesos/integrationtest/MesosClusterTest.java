@@ -17,9 +17,8 @@ import com.containersol.minimesos.marathon.MarathonContainer;
 import com.containersol.minimesos.mesos.MesosAgentContainer;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 import com.containersol.minimesos.state.State;
+import com.containersol.minimesos.util.Environment;
 import com.containersol.minimesos.util.ResourceUtil;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Frame;
@@ -28,16 +27,11 @@ import com.github.dockerjava.core.command.LogContainerResultCallback;
 import com.jayway.awaitility.Awaitility;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.json.JSONObject;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.FileNotFoundException;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -64,13 +58,6 @@ public class MesosClusterTest {
     }
 
     @Test
-    public void mesosAgentStateInfoJSONMatchesSchema() throws UnirestException, JsonParseException, JsonMappingException {
-        String agentId = CLUSTER.getAgents().get(0).getContainerId();
-        JSONObject state = CLUSTER.getAgentStateInfo(agentId);
-        Assert.assertNotNull(state);
-    }
-
-    @Test
     public void mesosClusterCanBeStarted() throws Exception {
         MesosMaster master = CLUSTER.getMaster();
         State state = master.getState();
@@ -88,25 +75,6 @@ public class MesosClusterTest {
     }
 
     @Test
-    public void testAgentStateRetrieval() throws UnsupportedEncodingException {
-        List<MesosAgent> agents = CLUSTER.getAgents();
-        Assert.assertNotNull(agents);
-        Assert.assertTrue(agents.size() > 0);
-
-        MesosAgent agent = agents.get(0);
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(outputStream, true);
-
-        String cliContainerId = agent.getContainerId().substring(0, 11);
-
-        CLUSTER.state(ps, cliContainerId);
-
-        String state = outputStream.toString("UTF-8");
-        Assert.assertTrue(state.contains("frameworks"));
-        Assert.assertTrue(state.contains("resources"));
-    }
-
-    @Test
     public void dockerExposeResourcesPorts() throws Exception {
         List<MesosAgent> containers = CLUSTER.getAgents();
 
@@ -121,12 +89,11 @@ public class MesosClusterTest {
     }
 
     @Test
-    public void testPullAndStartContainer() throws UnirestException {
+    public void testHelloWorldContainer() throws UnirestException {
+        Assume.assumeFalse("Only test hello world container on Linux", Environment.isRunningOnJvmOnMacOsX());
         HelloWorldContainer container = new HelloWorldContainer();
-        String containerId = CLUSTER.addAndStartProcess(container);
-        String ipAddress = DockerContainersUtil.getIpAddress(containerId);
-        String url = "http://" + ipAddress + ":" + HelloWorldContainer.SERVICE_PORT;
-        Assert.assertEquals(200, Unirest.get(url).asString().getStatus());
+        URI url = container.getServiceUrl();
+        Assert.assertEquals(200, Unirest.get(url.toString()).asString().getStatus());
     }
 
     @Test
@@ -158,6 +125,8 @@ public class MesosClusterTest {
 
     @Test
     public void testFindMesosMaster() {
+        Assume.assumeFalse("Only test token interpolation on Linux", Environment.isRunningOnJvmOnMacOsX());
+
         String initString = "start ${MINIMESOS_MASTER} ${MINIMESOS_MASTER_IP} end";
 
         String expected = CLUSTER.getMaster().getServiceUrl().toString();

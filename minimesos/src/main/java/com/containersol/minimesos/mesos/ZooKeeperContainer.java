@@ -1,12 +1,18 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.integrationtest.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerClientFactory;
+import com.containersol.minimesos.util.Environment;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
+import org.apache.commons.lang.StringUtils;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * ZooKeeper is a centralized service for maintaining configuration information, naming, providing distributed synchronization, and providing group services.
@@ -66,6 +72,33 @@ public class ZooKeeperContainer extends AbstractContainer implements ZooKeeper {
     @Override
     public String getFormattedZKAddress() {
         return "zk://" + getIpAddress() + ":" + ZooKeeperConfig.DEFAULT_ZOOKEEPER_PORT;
+    }
+
+    @Override
+    public URI getServiceUrl() {
+        URI serviceUri = null;
+
+        String protocol = getServiceProtocol();
+
+        String host;
+        if (Environment.isRunningInJvmOnMacOsX()) {
+            host = "localhost";
+        } else {
+            host = getIpAddress();
+        }
+
+        int port = getServicePort();
+        String path = getServicePath();
+
+        if (StringUtils.isNotEmpty(host)) {
+            try {
+                serviceUri = new URI(protocol, null, host, port, path, null, null);
+            } catch (URISyntaxException e) {
+                throw new MinimesosException("Failed to form service URL for " + getName(), e);
+            }
+        }
+
+        return serviceUri;
     }
 
 }

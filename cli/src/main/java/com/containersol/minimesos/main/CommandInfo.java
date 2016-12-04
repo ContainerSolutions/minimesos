@@ -11,6 +11,7 @@ import com.containersol.minimesos.cluster.ClusterUtil;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+import com.containersol.minimesos.util.Environment;
 
 /**
  * Info command
@@ -75,6 +76,9 @@ public class CommandInfo implements Command {
 
         }
 
+        if (Environment.isRunningInDockerOnMac()) {
+            output.println("You are running Docker on Mac so use localhost instead of container IPs for Master, Marathon, Zookeepr and Consul");
+        }
     }
 
     @Override
