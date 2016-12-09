@@ -8,10 +8,7 @@
     "type": "DOCKER",
     "docker": {
       "image": "mesosphere/chronos:chronos-2.5.0-0.1.20160824153434.ubuntu1404-mesos-1.0.0",
-      "network": "BRIDGE",
-      "portMappings": [
-        { "containerPort": 4400, "hostPort": 0, "protocol": "tcp" }
-      ],
+      "network": "HOST",
       "privileged": true,
       "parameters": []
     },
