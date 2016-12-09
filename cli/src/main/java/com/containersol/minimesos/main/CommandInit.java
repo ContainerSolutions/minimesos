@@ -91,12 +91,8 @@ public class CommandInit implements Command {
         AppConfig weaveConfig = new AppConfig();
         weaveConfig.setMarathonJson("https://raw.githubusercontent.com/ContainerSolutions/minimesos/master/opt/apps/weave-scope.json");
 
-        AppConfig chronosConfig = new AppConfig();
-        chronosConfig.setMarathonJson("https://raw.githubusercontent.com/ContainerSolutions/minimesos/master/opt/apps/chronos.json");
-
         MarathonConfig marathonConfig = new MarathonConfig();
         marathonConfig.getApps().add(weaveConfig);
-        marathonConfig.getApps().add(chronosConfig);
         config.setMarathon(marathonConfig);
 
         ConfigParser parser = new ConfigParser();
