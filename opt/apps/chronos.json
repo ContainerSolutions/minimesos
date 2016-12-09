@@ -19,7 +19,6 @@
   },
   "args": [
     "/usr/bin/chronos", "run_jar",
-    "--http_port","4400",
     "--zk_hosts","${MINIMESOS_ZOOKEEPER_IP}:2181",
     "--master", "${MINIMESOS_ZOOKEEPER}"
   ],
