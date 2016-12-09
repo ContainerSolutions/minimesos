@@ -22,12 +22,5 @@
     "--zk_hosts","${MINIMESOS_ZOOKEEPER_IP}:2181",
     "--master", "${MINIMESOS_ZOOKEEPER}"
   ],
-  "env": {},
-  "portDefinitions": [
-    {
-      "port": 4400,
-      "protocol": "tcp",
-      "name": "http"
-    }
-  ]
+  "env": {}
 }
