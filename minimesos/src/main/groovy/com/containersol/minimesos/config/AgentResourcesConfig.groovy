@@ -8,7 +8,7 @@ import java.util.regex.Matcher
 class AgentResourcesConfig extends GroovyBlock {
 
     static public final ResourceDefScalar DEFAULT_CPU = new ResourceDefScalar("*", 4)
-    static public final ResourceDefScalar DEFAULT_MEM = new ResourceDefScalar("*", 512)
+    static public final ResourceDefScalar DEFAULT_MEM = new ResourceDefScalar("*", 1024)
     static public final ResourceDefScalar DEFAULT_DISK = new ResourceDefScalar("*", 2000)
     static public final ResourceDefRanges DEFAULT_PORTS = new ResourceDefRanges("*", "[31000-32000]")
 
