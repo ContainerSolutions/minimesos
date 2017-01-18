@@ -2,7 +2,7 @@
 
 set -e
 
-MINIMESOS_TAG="0.11.1"
+MINIMESOS_TAG="latest"
 PARAMS="$@"
 MINIMESOS_CLI_IMAGE="containersol/minimesos-cli"
 
