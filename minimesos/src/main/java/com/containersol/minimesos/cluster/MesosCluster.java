@@ -51,7 +51,7 @@ public class MesosCluster {
 
     private final ClusterConfig clusterConfig;
 
-    private List<ClusterProcess> memberPocesses = Collections.synchronizedList(new ArrayList<>());
+    private List<ClusterProcess> memberProcesses = Collections.synchronizedList(new ArrayList<>());
 
     private boolean running = false;
 
@@ -59,7 +59,7 @@ public class MesosCluster {
      * Create a new MesosCluster with a specified cluster architecture.
      */
     public MesosCluster(ClusterConfig clusterConfig, List<ClusterProcess> processes) {
-        this.memberPocesses = processes;
+        this.memberProcesses = processes;
         this.clusterConfig = clusterConfig;
 
         clusterId = Integer.toUnsignedString(new SecureRandom().nextInt());
@@ -93,7 +93,7 @@ public class MesosCluster {
 
         factory.loadRunningCluster(this);
 
-        if (memberPocesses.isEmpty()) {
+        if (memberProcesses.isEmpty()) {
             throw new MinimesosException("No containers found for cluster ID " + clusterId);
         }
 
@@ -139,7 +139,7 @@ public class MesosCluster {
         }
 
         LOGGER.debug("Cluster " + getClusterId() + " - start");
-        this.memberPocesses.forEach((container) -> container.start(timeoutSeconds));
+        this.memberProcesses.forEach((container) -> container.start(timeoutSeconds));
         // wait until the given number of agents are registered
         getMaster().waitFor();
 
@@ -176,9 +176,9 @@ public class MesosCluster {
             marathon.killAllApps();
         }
 
-        if (memberPocesses.size() > 0) {
-            for (int i = memberPocesses.size() - 1; i >= 0; i--) {
-                ClusterProcess container = memberPocesses.get(i);
+        if (memberProcesses.size() > 0) {
+            for (int i = memberProcesses.size() - 1; i >= 0; i--) {
+                ClusterProcess container = memberProcesses.get(i);
                 LOGGER.debug("Removing container [" + container.getContainerId() + "]");
                 try {
                     container.remove();
@@ -188,7 +188,7 @@ public class MesosCluster {
             }
         }
         this.running = false;
-        this.memberPocesses.clear();
+        this.memberProcesses.clear();
 
         if (clusterId != null) {
             factory.destroyRunningCluster(clusterId);
@@ -220,7 +220,7 @@ public class MesosCluster {
      */
     public String addAndStartProcess(ClusterProcess process, int timeout) {
         process.setCluster(this);
-        memberPocesses.add(process);
+        memberProcesses.add(process);
 
         LOGGER.debug(String.format("Starting %s (%s) container", process.getName(), process.getContainerId()));
 
@@ -285,11 +285,11 @@ public class MesosCluster {
     }
 
     public List<ClusterProcess> getMemberProcesses() {
-        return memberPocesses;
+        return memberProcesses;
     }
 
     public List<MesosAgent> getAgents() {
-        return memberPocesses.stream().filter(Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
+        return memberProcesses.stream().filter(Filter.mesosAgent()).map(c -> (MesosAgent) c).collect(Collectors.toList());
     }
 
     public MesosMaster getMaster() {
@@ -466,7 +466,7 @@ public class MesosCluster {
     public String toString() {
         return "MesosCluster{" +
             "clusterId='" + clusterId + '\'' +
-            ", processes=" + memberPocesses +
+            ", processes=" + memberProcesses +
             '}';
     }
 
