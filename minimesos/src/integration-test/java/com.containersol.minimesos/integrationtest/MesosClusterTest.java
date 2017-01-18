@@ -121,7 +121,7 @@ public class MesosClusterTest {
         String clusterId = CLUSTER.getClusterId();
         MesosCluster cluster = MesosCluster.loadCluster(clusterId, new MesosClusterContainersFactory());
 
-        Assert.assertEquals("1.0.0", cluster.getMesosVersion());
+        Assert.assertEquals("1.0.0", cluster.getConfiguredMesosVersion());
     }
 
     @Test

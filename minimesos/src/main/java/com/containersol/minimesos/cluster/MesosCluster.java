@@ -421,14 +421,17 @@ public class MesosCluster {
     }
 
     /**
-     * @return configured or default Mesos version of all Mesos containers in the cluster
+     * @return Mesos version that is configured
      */
-    public String getMesosVersion() {
+    public String getConfiguredMesosVersion() {
         return clusterConfig.getMesosVersion();
     }
 
-    public void setMesosVersion(String version) {
-        clusterConfig.setMesosVersion(version);
+    /**
+     * @return Mesos version of running cluster
+     */
+    public String getMesosVersion() {
+        return getMaster().getState().getVersion();
     }
 
     /**

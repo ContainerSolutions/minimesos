@@ -27,7 +27,7 @@ public class MesosAgentContainer extends MesosContainerImpl implements MesosAgen
     private final static String MESOS_AGENT_SANDBOX_DIR = "/tmp/mesos";
 
     public MesosAgentContainer(MesosCluster cluster, String uuid, String containerId) {
-        this(cluster, uuid, containerId, new MesosAgentConfig(cluster.getMesosVersion()));
+        this(cluster, uuid, containerId, new MesosAgentConfig(cluster.getConfiguredMesosVersion()));
     }
 
     private MesosAgentContainer(MesosCluster cluster, String uuid, String containerId, MesosAgentConfig config) {

@@ -94,7 +94,6 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
                             containers.add(master);
 
                             restoreMapToPorts(cluster, container);
-                            restoreMesosVersion(cluster, master);
                             break;
                         case "marathon":
                             containers.add(createMarathon(cluster, uuid, containerId));
@@ -109,11 +108,6 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
                 }
             }
         }
-    }
-
-    private void restoreMesosVersion(MesosCluster cluster, MesosMaster master) {
-        String mesosVersion = master.getState().getVersion();
-        cluster.setMesosVersion(mesosVersion);
     }
 
     private void restoreMapToPorts(MesosCluster cluster, Container container) {

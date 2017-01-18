@@ -82,7 +82,7 @@ class ClusterConfig extends GroovyBlock {
 
     void setLoggingLevel(String loggingLevel) {
         if (!StringUtils.equalsIgnoreCase(loggingLevel, "WARNING") && !StringUtils.equalsIgnoreCase(loggingLevel, "INFO") && !StringUtils.equalsIgnoreCase(loggingLevel, "ERROR")) {
-            throw new RuntimeException("Property 'loggingLevel' can only have the values INFO, WARNING or ERROR")
+            throw new RuntimeException("Property 'loggingLevel' can only have the values INFO, WARNING or ERROR. Got '" + loggingLevel + "'")
         }
         this.loggingLevel = loggingLevel.toUpperCase()
     }

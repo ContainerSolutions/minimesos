@@ -39,9 +39,7 @@ public class CommandInfo implements Command {
             MesosCluster cluster = repository.loadCluster(new MesosClusterContainersFactory());
             if (cluster != null) {
                 output.println("Minimesos cluster is running: " + cluster.getClusterId());
-                if (cluster.getMesosVersion() != null) {
-                    output.println("Mesos version: " + cluster.getMesosVersion());
-                }
+                output.println("Mesos version: " + cluster.getMaster().getState().getVersion());
                 printServiceUrls(cluster);
             } else {
                 output.println(String.format("Minimesos cluster %s is not running. %s is removed", clusterId, repository.getMinimesosFile().getAbsolutePath()));
