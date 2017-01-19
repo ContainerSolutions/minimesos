@@ -98,6 +98,8 @@ public class MesosAgentContainer extends MesosContainerImpl implements MesosAgen
     private Map<String, String> getMesosAgentEnvVars() {
         Map<String, String> envs = new TreeMap<>();
         envs.put("MESOS_RESOURCES", getResources());
+        envs.put("MESOS_IMAGE_PROVIDERS", "docker,appc");
+        envs.put("MESOS_ISOLATION", "filesystem/linux,docker/runtime,cgroups/cpu,cgroups/mem");
         envs.put("MESOS_PORT", String.valueOf(getServicePort()));
         envs.put("MESOS_MASTER", getFormattedZKAddress());
         envs.put("MESOS_SWITCH_USER", "false");
