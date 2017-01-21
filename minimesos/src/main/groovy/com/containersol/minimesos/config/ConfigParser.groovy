@@ -28,7 +28,8 @@ class ConfigParser {
     private final List<String> ignoredProperties = ["class", "format"]
 
     private final Map<String, String> comments = [
-            "minimesos.marathon.apps": "Add 'app { marathonJson = \"<path or URL to JSON file>\" }' for every task you want to execute"
+            "minimesos.marathon.apps": "Add 'app { marathonJson = \"<path or URL to JSON file>\" }' for every task you want to execute",
+            "minimesos.marathon.cmd": "BEWARE: this option customize the marathon starting command, changing it can break the cluster"
     ]
 
     public ClusterConfig parse(String config) {

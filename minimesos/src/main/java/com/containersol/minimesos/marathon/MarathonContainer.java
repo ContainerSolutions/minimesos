@@ -12,6 +12,7 @@ import com.containersol.minimesos.integrationtest.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.util.Environment;
+import com.containersol.minimesos.util.CollectionsUtils;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports;
@@ -134,7 +135,7 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
         return DockerClientFactory.build().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withName(getName())
                 .withExtraHosts("minimesos-zookeeper:" + this.zooKeeper.getIpAddress())
-                .withCmd("--master", "zk://minimesos-zookeeper:2181/mesos", "--zk", "zk://minimesos-zookeeper:2181/marathon")
+                .withCmd(CollectionsUtils.splitCmd(config.getCmd()))
                 .withExposedPorts(exposedPort)
                 .withPortBindings(portBindings);
     }
