@@ -144,7 +144,9 @@ public class Main {
 
     private static void initializeDebugLogging() {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        ch.qos.logback.classic.Logger rootLogger = loggerContext.getLogger("com.containersol.minimesos.container");
+        ch.qos.logback.classic.Logger rootLogger = (
+            loggerContext.getLogger("com.containersol.minimesos")
+        );
         rootLogger.setLevel(Level.DEBUG);
         LOGGER.debug("Initialized debug logging");
     }
