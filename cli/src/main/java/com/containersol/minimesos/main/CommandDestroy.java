@@ -27,7 +27,6 @@ public class CommandDestroy implements Command {
         MesosCluster cluster = repository.loadCluster(clusterFactory);
         if (cluster != null) {
             cluster.destroy(clusterFactory);
-            repository.deleteClusterFile();
             LOGGER.info("Destroyed minimesos cluster with ID " + cluster.getClusterId());
         } else {
             LOGGER.info("Minimesos cluster is not running");

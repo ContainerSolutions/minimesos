@@ -224,7 +224,7 @@ public class MarathonContainer extends AbstractContainer implements Marathon {
         // replace independent from roles tokens
         String masterContainer = cluster.getMaster().getContainerId();
         updatedJson = replaceToken(updatedJson, MesosCluster.TOKEN_NETWORK_GATEWAY, DockerContainersUtil.getGatewayIpAddress(masterContainer));
-        updatedJson = replaceToken(updatedJson, TOKEN_HOST_DIR, MesosCluster.getHostDir().getAbsolutePath());
+        updatedJson = replaceToken(updatedJson, TOKEN_HOST_DIR, MesosCluster.getClusterHostDir().getAbsolutePath());
 
         return updatedJson;
     }

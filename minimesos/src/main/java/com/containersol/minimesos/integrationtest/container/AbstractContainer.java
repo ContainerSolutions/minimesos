@@ -30,7 +30,7 @@ public abstract class AbstractContainer implements ClusterProcess {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractContainer.class);
 
-    private static final int IMAGE_PULL_TIMEOUT_SECS = 8 * 60;
+    private static final int IMAGE_PULL_TIMEOUT_SECS = 30;
 
     private MesosCluster cluster;
     private final ContainerConfig config;

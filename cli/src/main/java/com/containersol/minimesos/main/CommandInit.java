@@ -51,7 +51,7 @@ public class CommandInit implements Command {
 
     @Override
     public void execute() {
-        File minimesosFile = new File(MesosCluster.getHostDir(), ClusterConfig.DEFAULT_CONFIG_FILE);
+        File minimesosFile = new File(MesosCluster.getClusterHostDir(), ClusterConfig.DEFAULT_CONFIG_FILE);
 
         if (minimesosFile.exists()) {
             throw new MinimesosException("A minimesosFile already exists in this directory");

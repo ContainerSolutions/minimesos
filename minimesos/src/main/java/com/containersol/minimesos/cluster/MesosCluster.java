@@ -53,6 +53,8 @@ public class MesosCluster {
 
     private List<ClusterProcess> memberProcesses = Collections.synchronizedList(new ArrayList<>());
 
+    private ClusterRepository repository = new ClusterRepository();
+
     private boolean running = false;
 
     /**
@@ -193,7 +195,7 @@ public class MesosCluster {
         if (clusterId != null) {
             factory.destroyRunningCluster(clusterId);
 
-            File sandboxLocation = new File(getHostDir(), ".minimesos/sandbox-" + clusterId);
+            File sandboxLocation = new File(MesosCluster.getClusterHostDir(), ".minimesos/sandbox-" + clusterId);
             if (sandboxLocation.exists()) {
                 try {
                     FileUtils.forceDelete(sandboxLocation);
@@ -207,8 +209,9 @@ public class MesosCluster {
             LOGGER.info("Minimesos cluster is not running");
         }
 
-        this.running = false;
+        repository.deleteClusterFile();
 
+        this.running = false;
     }
 
     /**
@@ -352,11 +355,11 @@ public class MesosCluster {
     }
 
     /**
-     * Returns current user directory, which is mapped to host
+     * Returns the directory on the host from which the cluster was created.
      *
-     * @return container directory, which is mapped to current directory on host
+     * @return directory
      */
-    public static File getHostDir() {
+    public static File getClusterHostDir() {
         String sp = System.getProperty(MINIMESOS_HOST_DIR_PROPERTY);
         if (sp == null) {
             sp = System.getProperty("user.dir");
@@ -397,7 +400,7 @@ public class MesosCluster {
                 // location is not an absolute URI, therefore treat it as relative or absolute path
                 File file = new File(location);
                 if (!file.exists()) {
-                    file = new File(getHostDir(), location);
+                    file = new File(getClusterHostDir(), location);
                 }
 
                 if (file.exists()) {

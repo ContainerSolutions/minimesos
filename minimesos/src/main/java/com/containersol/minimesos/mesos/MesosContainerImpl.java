@@ -56,7 +56,6 @@ public abstract class MesosContainerImpl extends AbstractContainer implements Me
         envs.put("MESOS_ISOLATOR", "cgroups/cpu,cgroups/mem");
         envs.put("MESOS_LOG_DIR", "/var/log");
         envs.put("MESOS_LOGGING_LEVEL", getLoggingLevel());
-        envs.put("MESOS_WORK_DIR", "/tmp/mesos");
         return envs;
     }
 

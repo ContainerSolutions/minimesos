@@ -84,7 +84,7 @@ public class ClusterRepository {
      * @return directory, where minimesos stores ID file
      */
     public File getMinimesosDir() {
-        File hostDir = MesosCluster.getHostDir();
+        File hostDir = MesosCluster.getClusterHostDir();
         File minimesosDir = new File(hostDir, ".minimesos");
         if (!minimesosDir.exists()) {
             if (!minimesosDir.mkdirs()) {

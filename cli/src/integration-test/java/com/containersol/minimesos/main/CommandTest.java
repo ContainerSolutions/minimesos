@@ -3,10 +3,10 @@ package com.containersol.minimesos.main;
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.json.JSONObject;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,11 +33,6 @@ public class CommandTest {
         ps = new PrintStream(outputStream, true);
     }
 
-    @After
-    public void destroyCluster() {
-        new CommandDestroy().execute();
-    }
-
     @Test
     public void testUpAndDestroy() {
         CommandUp commandUp = new CommandUp();
@@ -52,8 +47,7 @@ public class CommandTest {
 
         assertEquals(6, cluster.getMemberProcesses().size());
 
-        CommandDestroy commandDestroy = new CommandDestroy();
-        commandDestroy.execute();
+        cluster.destroy(new MesosClusterContainersFactory());
 
         assertFalse("Minimesos file at " + minimesosFile + " should be removed", minimesosFile.exists());
     }
@@ -70,8 +64,7 @@ public class CommandTest {
         String fileContent = FileUtils.readFileToString(repository.getMinimesosFile(), "UTF-8");
         assertEquals("Invalid state file has not been overwritten", cluster.getClusterId(), fileContent);
 
-        CommandDestroy commandDestroy = new CommandDestroy();
-        commandDestroy.execute();
+        cluster.destroy(new MesosClusterContainersFactory());
 
         File minimesosFile = repository.getMinimesosFile();
 
@@ -91,8 +84,8 @@ public class CommandTest {
 
         assertEquals(firstCluster, secondCluster);
 
-        CommandDestroy commandDestroy = new CommandDestroy();
-        commandDestroy.execute();
+        firstCluster.destroy(new MesosClusterContainersFactory());
+        secondCluster.destroy(new MesosClusterContainersFactory());
 
         File minimesosFile = repository.getMinimesosFile();
 
@@ -112,6 +105,8 @@ public class CommandTest {
 
         assertTrue(result.contains("Minimesos cluster is running"));
         assertTrue(result.contains("Mesos version"));
+
+        commandUp.getCluster().destroy(new MesosClusterContainersFactory());
     }
 
     @Test
@@ -136,6 +131,8 @@ public class CommandTest {
         JSONObject state = new JSONObject(outputStream.toString("UTF-8"));
 
         assertEquals("master@" + cluster.getMaster().getIpAddress() + ":5050", state.getString("leader"));
+
+        cluster.destroy(new MesosClusterContainersFactory());
     }
 
     @Test
@@ -154,6 +151,8 @@ public class CommandTest {
         install.setMarathonFile("src/integration-test/resources/app.json");
 
         install.execute();
+
+        commandUp.getCluster().destroy(new MesosClusterContainersFactory());
     }
 
     @Test(expected = MinimesosException.class)
@@ -166,6 +165,8 @@ public class CommandTest {
 
         install.execute();
         install.execute();
+
+        commandUp.getCluster().destroy(new MesosClusterContainersFactory());
     }
 
     @Test
@@ -190,6 +191,7 @@ public class CommandTest {
 
         assertTrue(result.contains("MINIMESOS_MARATHON"));
 
+        commandUp.getCluster().destroy(new MesosClusterContainersFactory());
     }
 
 }

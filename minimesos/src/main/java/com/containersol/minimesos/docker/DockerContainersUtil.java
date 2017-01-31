@@ -195,12 +195,7 @@ public class DockerContainersUtil {
     public static void pullImage(String imageName, String imageVersion, long timeoutSecs) {
         try {
             final CompletableFuture<Void> result = new CompletableFuture<>();
-            DockerClientFactory.build().pullImageCmd(imageName).withTag(imageVersion).exec(new FastFailPullImageResultCallback(result));
-            result.get(timeoutSecs, TimeUnit.SECONDS);
-        } catch (TimeoutException e) {
-            throw new MinimesosException(String.format("# Timeout while pulling image from registry. Try executing the command below manually%ndocker pull %s:%s", imageName, imageVersion), e);
-        } catch (ExecutionException e) {
-            throw new MinimesosException(String.format("# Error pulling image from registry. Try executing the command below manually%ndocker pull %s:%s", imageName, imageVersion), e);
+            DockerClientFactory.build().pullImageCmd(imageName).withTag(imageVersion).exec(new PullImageResultCallback()).awaitCompletion();
         } catch (InterruptedException | RuntimeException e) {
             throw new MinimesosException("Error pulling image or image not found in registry: " + imageName + ":" + imageVersion, e);
         }
@@ -228,33 +223,5 @@ public class DockerContainersUtil {
             }
         }
         return container;
-    }
-
-    private static class FastFailPullImageResultCallback extends PullImageResultCallback {
-
-        private final CompletableFuture<Void> result;
-
-        public FastFailPullImageResultCallback(CompletableFuture<Void> result) {
-            this.result = result;
-        }
-
-        @Override
-        public void onNext(PullResponseItem item) {
-            String status = item.getStatus();
-            if (status == null) {
-                result.completeExceptionally(new MinimesosException("docker failed to pull image"));
-            }
-        }
-
-        @Override
-        public void onComplete() {
-            super.onComplete();
-            result.complete(null);
-        }
-
-        @Override
-        public void onError(Throwable throwable) {
-            throw new MinimesosException("Pulling of image. However the image is not found: " + throwable.getMessage());
-        }
     }
 }
