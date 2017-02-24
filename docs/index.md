@@ -128,6 +128,10 @@ Scalar values are simple key-value strings.
 | agent resources mem   | Block   | Describes memory resources                                                         |
 | agent resources ports | Block   | Describes network ports resources                                                  |
 
+## Consul and registrator
+
+By default, minimesos starts consul and registrator containers giving you ability to configure service discovery.
+
 ## Mesos DNS
 
 Mesos DNS registers Mesos processes and frameworks in its DNS server
@@ -229,6 +233,7 @@ export MINIMESOS_NETWORK_GATEWAY=172.17.0.1
 export MINIMESOS_AGENT=http://172.17.0.5:5051; export MINIMESOS_AGENT_IP=172.17.0.5
 export MINIMESOS_ZOOKEEPER=zk://172.17.0.3:2181/mesos; export MINIMESOS_ZOOKEEPER_IP=172.17.0.3
 export MINIMESOS_MARATHON=http://172.17.0.6:8080; export MINIMESOS_MARATHON_IP=172.17.0.6
+export MINIMESOS_CONSUL=http://172.17.0.7:8500; export MINIMESOS_CONSUL_IP=172.17.0.7
 export MINIMESOS_MASTER=http://172.17.0.4:5050; export MINIMESOS_MASTER_IP=172.17.0.4
 
 $ minimesos state | jq ".version"

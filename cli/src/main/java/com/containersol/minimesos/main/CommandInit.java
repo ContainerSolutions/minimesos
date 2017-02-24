@@ -15,10 +15,12 @@ import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.AppConfig;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ConfigParser;
+import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.config.MarathonConfig;
 import com.containersol.minimesos.config.MesosAgentConfig;
-import com.containersol.minimesos.config.MesosMasterConfig;
 import com.containersol.minimesos.config.MesosDNSConfig;
+import com.containersol.minimesos.config.MesosMasterConfig;
+import com.containersol.minimesos.config.RegistratorConfig;
 import com.containersol.minimesos.config.ZooKeeperConfig;
 
 import org.slf4j.Logger;
@@ -84,6 +86,8 @@ public class CommandInit implements Command {
         config.setMaster(new MesosMasterConfig(ClusterConfig.DEFAULT_MESOS_VERSION));
         config.setZookeeper(new ZooKeeperConfig());
         config.getAgents().add(new MesosAgentConfig(ClusterConfig.DEFAULT_MESOS_VERSION));
+        config.setConsul(new ConsulConfig());
+        config.setRegistrator(new RegistratorConfig());
         config.setMesosdns(new MesosDNSConfig());
 
         AppConfig weaveConfig = new AppConfig();

@@ -35,6 +35,11 @@ minimesos {
         }
     }
 
+    consul {
+        imageName = "consul"
+        imageTag = "0.7.1"
+    }
+
     marathon {
         imageName = "mesosphere/marathon"
         imageTag = "v1.3.5"
@@ -48,6 +53,11 @@ minimesos {
     master {
         imageName = "containersol/mesos-master"
         imageTag = "1.0.0-0.1.0"
+    }
+
+    registrator {
+        imageName = "gliderlabs/registrator"
+        imageTag = "v6"
     }
 
     mesosdns {

@@ -9,13 +9,14 @@ import java.util.function.Predicate;
 
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterProcess;
+import com.containersol.minimesos.cluster.Consul;
 import com.containersol.minimesos.cluster.Filter;
 import com.containersol.minimesos.cluster.Marathon;
 import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosClusterFactory;
 import com.containersol.minimesos.cluster.MesosMaster;
-import com.containersol.minimesos.cluster.MesosDNS;
+import com.containersol.minimesos.cluster.Registrator;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ConfigParser;
@@ -53,8 +54,12 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
         return new MarathonContainer(mesosCluster, uuid, containerId);
     }
 
-    public MesosDNS createMesosDNS(MesosCluster mesosCluster, String uuid, String containerId) {
-        return new MesosDNSContainer(mesosCluster, uuid, containerId);
+    public Consul createConsul(MesosCluster mesosCluster, String uuid, String containerId) {
+        return new ConsulContainer(mesosCluster, uuid, containerId);
+    }
+
+    public Registrator createRegistrator(MesosCluster mesosCluster, String uuid, String containerId) {
+        return new RegistratorContainer(mesosCluster, uuid, containerId);
     }
 
     @Override
@@ -93,8 +98,11 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
                         case "marathon":
                             containers.add(createMarathon(cluster, uuid, containerId));
                             break;
-                        case "mesosDNS":
-                            containers.add(createMesosDNS(cluster, uuid, containerId));
+                        case "consul":
+                            containers.add(createConsul(cluster, uuid, containerId));
+                            break;
+                        case "registrator":
+                            containers.add(createRegistrator(cluster, uuid, containerId));
                             break;
                     }
                 }
@@ -167,8 +175,12 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
             clusterContainers.add(new MarathonContainer(clusterConfig.getMarathon()));
         }
 
-        if (clusterConfig.getMesosdns() != null) {
-            clusterContainers.add(new MesosDNSContainer(clusterConfig.getMesosdns()));
+        if (clusterConfig.getConsul() != null) {
+            clusterContainers.add(new ConsulContainer(clusterConfig.getConsul()));
+        }
+
+        if (clusterConfig.getRegistrator() != null) {
+            clusterContainers.add(new RegistratorContainer(clusterConfig.getRegistrator()));
         }
 
         return clusterContainers;
@@ -188,6 +200,10 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
         if (!isPresent(clusterContainers, Filter.mesosAgent())) {
             throw new MinimesosException("Cluster requires at least 1 Mesos Agent. Please add one in the minimesosFile.");
         }
+
+        if (isPresent(clusterContainers, Filter.registrator()) && !isPresent(clusterContainers, Filter.consul())) {
+            throw new MinimesosException("Registrator requires a single Consul. Please add consul in the minimesosFile.");
+        }
     }
 
     private static void connectProcesses(ClusterContainers clusterContainers) {
@@ -206,6 +222,12 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
             MesosAgent agent = (MesosAgent) a;
             agent.setZooKeeper(zookeeper);
         });
+
+        if (clusterContainers.getOne(Filter.registrator()).isPresent()) {
+            Consul consul = (Consul) clusterContainers.getOne(Filter.consul()).get();
+            Registrator registrator = (Registrator) clusterContainers.getOne(Filter.registrator()).get();
+            registrator.setConsul(consul);
+        }
     }
 
     private static Boolean isPresent(ClusterContainers clusterContainers, Predicate<ClusterProcess> filter) {

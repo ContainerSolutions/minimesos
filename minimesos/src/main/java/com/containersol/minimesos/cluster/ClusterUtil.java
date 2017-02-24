@@ -38,7 +38,7 @@ public class ClusterUtil {
         }
 
         for (Map.Entry<String, Integer> role : roles.entrySet() ) {
-            if (role.getValue() >= 1) {
+            if (role.getValue() == 1) {
                 Optional<ClusterProcess> process = processes.stream().filter(withRole(role.getKey())).findFirst();
                 distinct.add(process.get());
             }

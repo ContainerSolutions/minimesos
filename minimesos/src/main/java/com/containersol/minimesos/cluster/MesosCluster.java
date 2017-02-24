@@ -310,6 +310,11 @@ public class MesosCluster {
         return marathon.isPresent() ? marathon.get() : null;
     }
 
+    public Consul getConsul() {
+        Optional<Consul> container = getOne(Filter.consul());
+        return container.isPresent() ? container.get() : null;
+    }
+
     /**
      * Optionally get one of a certain type of type T. Note, this cast will always work because we are filtering on that type.
      * If it doesn't find that type, the optional is empty so the cast doesn't need to be performed.
