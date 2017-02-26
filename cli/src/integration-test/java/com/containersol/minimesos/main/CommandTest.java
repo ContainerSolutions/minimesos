@@ -45,7 +45,7 @@ public class CommandTest {
 
         assertTrue("Minimesos file at " + minimesosFile + " should exist", minimesosFile.exists());
 
-        assertEquals(7, cluster.getMemberProcesses().size());
+        assertEquals(6, cluster.getMemberProcesses().size());
 
         cluster.destroy(new MesosClusterContainersFactory());
 
@@ -84,8 +84,10 @@ public class CommandTest {
 
         assertEquals(firstCluster, secondCluster);
 
-        firstCluster.destroy(new MesosClusterContainersFactory());
-        secondCluster.destroy(new MesosClusterContainersFactory());
+        MesosClusterContainersFactory factory = new MesosClusterContainersFactory();
+
+        firstCluster.destroy(factory);
+        secondCluster.destroy(factory);
 
         File minimesosFile = repository.getMinimesosFile();
 
