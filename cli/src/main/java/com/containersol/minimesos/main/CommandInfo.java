@@ -9,6 +9,7 @@ import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.ClusterUtil;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.cluster.MesosDns;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 import com.containersol.minimesos.util.Environment;
@@ -41,6 +42,11 @@ public class CommandInfo implements Command {
                 output.println("Minimesos cluster is running: " + cluster.getClusterId());
                 output.println("Mesos version: " + cluster.getMaster().getState().getVersion());
                 printServiceUrls(cluster);
+
+                MesosDns mesosDns = cluster.getMesosDns();
+                if (mesosDns != null) {
+                    output.println("Running dnsmasq? Add 'server=/mm/" + mesosDns.getIpAddress() + "#5353' to /etc/dnsmasq.d/10-minimesos to resolve master.mm, zookeeper.mm and Marathon apps on app.marathon.mm.");
+                }
             } else {
                 output.println(String.format("Minimesos cluster %s is not running. %s is removed", clusterId, repository.getMinimesosFile().getAbsolutePath()));
             }

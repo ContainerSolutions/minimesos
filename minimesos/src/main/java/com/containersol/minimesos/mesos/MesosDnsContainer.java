@@ -1,11 +1,14 @@
 package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.cluster.MesosDNS;
+import com.containersol.minimesos.cluster.MesosDns;
 import com.containersol.minimesos.config.MesosDNSConfig;
 import com.containersol.minimesos.integrationtest.container.AbstractContainer;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.InternetProtocol;
+import com.github.dockerjava.api.model.PortBinding;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +18,7 @@ import static com.containersol.minimesos.util.EnvironmentBuilder.newEnvironment;
 /**
  * Mesos DNS automatically registers and deregisters Mesos services.
  */
-public class MesosDNSContainer extends AbstractContainer implements MesosDNS {
+public class MesosDnsContainer extends AbstractContainer implements MesosDns {
 
     private static final String DNS_PORT = "5353";
 
@@ -23,16 +26,16 @@ public class MesosDNSContainer extends AbstractContainer implements MesosDNS {
 
     private MesosDNSConfig config;
 
-    public MesosDNSContainer(MesosCluster cluster, String uuid, String containerId) {
+    public MesosDnsContainer(MesosCluster cluster, String uuid, String containerId) {
         this(cluster, uuid, containerId, new MesosDNSConfig());
     }
 
-    private MesosDNSContainer(MesosCluster cluster, String uuid, String containerId, MesosDNSConfig config) {
+    private MesosDnsContainer(MesosCluster cluster, String uuid, String containerId, MesosDNSConfig config) {
         super(cluster, uuid, containerId, config);
         this.config = config;
     }
 
-    public MesosDNSContainer(MesosDNSConfig mesosDNS) {
+    public MesosDnsContainer(MesosDNSConfig mesosDNS) {
         super(mesosDNS);
         this.config = mesosDNS;
     }
@@ -50,7 +53,13 @@ public class MesosDNSContainer extends AbstractContainer implements MesosDNS {
                 .withValues(getMesosDNSEnvVars())
                 .createEnvironment())
             .withCmd("-v=2", "-config=/etc/mesos-dns/config.json")
+            .withExposedPorts(new ExposedPort(Integer.valueOf(DNS_PORT), InternetProtocol.UDP))
             .withName(getName());
+    }
+
+    @Override
+    protected int getServicePort() {
+        return Integer.valueOf(DNS_PORT);
     }
 
     private Map<String,String> getMesosDNSEnvVars() {

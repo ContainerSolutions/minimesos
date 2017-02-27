@@ -32,4 +32,8 @@ public class Filter {
     }
 
     public static Predicate<ClusterProcess> registrator() { return process -> process instanceof Registrator; }
+
+    public static Predicate<ClusterProcess> mesosDns() {
+        return process -> process instanceof MesosDns;
+    }
 }

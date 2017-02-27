@@ -15,6 +15,7 @@ import com.containersol.minimesos.cluster.Marathon;
 import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosClusterFactory;
+import com.containersol.minimesos.cluster.MesosDns;
 import com.containersol.minimesos.cluster.MesosMaster;
 import com.containersol.minimesos.cluster.Registrator;
 import com.containersol.minimesos.cluster.ZooKeeper;
@@ -62,6 +63,10 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
         return new RegistratorContainer(mesosCluster, uuid, containerId);
     }
 
+    public MesosDns createMesosDns(MesosCluster cluster, String uuid, String containerId) {
+        return new MesosDnsContainer(cluster, uuid, containerId);
+    }
+
     @Override
     public void loadRunningCluster(MesosCluster cluster) {
         String clusterId = cluster.getClusterId();
@@ -104,6 +109,8 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
                         case "registrator":
                             containers.add(createRegistrator(cluster, uuid, containerId));
                             break;
+                        case "mesosdns":
+                            containers.add(createMesosDns(cluster, uuid, containerId));
                     }
                 }
             }
@@ -169,7 +176,7 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
         MesosMasterContainer mesosMaster = new MesosMasterContainer(clusterConfig.getMaster());
         clusterContainers.add(mesosMaster);
 
-        clusterConfig.getAgents().stream().forEach(config -> clusterContainers.add(new MesosAgentContainer(config)));
+        clusterConfig.getAgents().forEach(config -> clusterContainers.add(new MesosAgentContainer(config)));
 
         if (clusterConfig.getMarathon() != null) {
             clusterContainers.add(new MarathonContainer(clusterConfig.getMarathon()));
@@ -181,6 +188,10 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
 
         if (clusterConfig.getRegistrator() != null) {
             clusterContainers.add(new RegistratorContainer(clusterConfig.getRegistrator()));
+        }
+
+        if (clusterConfig.getMesosdns() != null) {
+            clusterContainers.add(new MesosDnsContainer(clusterConfig.getMesosdns()));
         }
 
         return clusterContainers;

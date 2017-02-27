@@ -315,6 +315,11 @@ public class MesosCluster {
         return container.isPresent() ? container.get() : null;
     }
 
+    public MesosDns getMesosDns() {
+        Optional<MesosDns> container = getOne(Filter.mesosDns());
+        return container.isPresent() ? container.get() : null;
+    }
+
     /**
      * Optionally get one of a certain type of type T. Note, this cast will always work because we are filtering on that type.
      * If it doesn't find that type, the optional is empty so the cast doesn't need to be performed.
@@ -475,5 +480,4 @@ public class MesosCluster {
             ", processes=" + memberProcesses +
             '}';
     }
-
 }
