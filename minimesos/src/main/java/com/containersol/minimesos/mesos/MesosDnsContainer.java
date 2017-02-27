@@ -8,7 +8,6 @@ import com.containersol.minimesos.docker.DockerClientFactory;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.InternetProtocol;
-import com.github.dockerjava.api.model.PortBinding;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +22,8 @@ public class MesosDnsContainer extends AbstractContainer implements MesosDns {
     private static final String DNS_PORT = "5353";
 
     private static final String DOMAIN = "mm";
+
+    private static final String REFRESH_SECONDS = "1";
 
     private MesosDNSConfig config;
 
@@ -67,6 +68,7 @@ public class MesosDnsContainer extends AbstractContainer implements MesosDns {
         mesosDNSEnvVars.put("MESOS_DNS_ZK", getCluster().getZooKeeper().getFormattedZKAddress() + "/mesos");
         mesosDNSEnvVars.put("MESOS_DNS_DOMAIN", DOMAIN);
         mesosDNSEnvVars.put("MESOS_DNS_PORT", DNS_PORT);
+        mesosDNSEnvVars.put("MESOS_DNS_REFRESH_SECONDS", REFRESH_SECONDS);
         return mesosDNSEnvVars;
     }
 }
