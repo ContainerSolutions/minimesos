@@ -25,7 +25,7 @@ VERSION=$(echo $@ | xargs)
 if [ -z "$VERSION" ]; then
     VERSION=$(curl -s https://api.github.com/repos/containersolutions/minimesos/releases/latest | grep "tag_name" | awk '{ print $2 }' | tr -d '",')
     if [ ! "$VERSION" ]; then
-	echo "Cannot determine latest release of minimesos. Please check https://github.com/containersolutinos/minimesos/releases"
+	echo "Cannot determine latest release of minimesos. Please check https://github.com/containersolutions/minimesos/releases"
 	exit 1
     fi
 fi
