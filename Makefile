@@ -9,7 +9,7 @@ deps:
 	docker pull containersol/mesos-master:1.0.0-0.1.0
 	docker pull gliderlabs/registrator:v6
 	docker pull consul:0.7.1
-	docker pull xebia/mesos-dns:v0.0.5
+	docker pull xebia/mesos-dns:0.0.5
 	docker pull mesosphere/marathon:v1.3.5
 	docker pull jplock/zookeeper:3.4.6
 	docker pull containersol/alpine3.3-java8-jre:v1
