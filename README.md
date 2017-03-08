@@ -3,6 +3,7 @@
 The experimentation and testing tool for Apache Mesos
 
 <img align="left" width="175" src="https://github.com/ContainerSolutions/minimesos/raw/master/images/minimesos.png">
+<div>
 <ul>
 <li><strong>Website</strong>: https://www.minimesos.org
 <li><strong>Source</strong>: https://github.com/ContainerSolutions/minimesos
@@ -11,6 +12,7 @@ The experimentation and testing tool for Apache Mesos
 <li><strong>Docs</strong>: <a href="https://readthedocs.org/projects/minimesos">readthedocs.org/projects/minimesos</a>
 <li><strong>Twitter</strong>: <a href="https://twitter.com/minimesos">@minimesos</a>
 </ul>
+</div>
 </p>
 
 ## Videos
