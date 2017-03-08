@@ -2,6 +2,7 @@ package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.cluster.MesosDns;
 import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.util.ResourceUtil;
@@ -58,7 +59,7 @@ public class MesosAgentContainer extends MesosContainerImpl implements MesosAgen
         return config.getPortNumber();
     }
 
-    public CreateContainerCmd getBaseCommand() {
+    private CreateContainerCmd getBaseCommand() {
         String hostDir = MesosCluster.getClusterHostDir().getAbsolutePath();
         List<Bind> binds = new ArrayList<>();
         binds.add(Bind.parse("/var/run/docker.sock:/var/run/docker.sock:rw"));
@@ -67,7 +68,7 @@ public class MesosAgentContainer extends MesosContainerImpl implements MesosAgen
         if (getCluster().getMapAgentSandboxVolume()) {
             binds.add(Bind.parse(String.format("%s:%s:rw", hostDir + "/.minimesos/sandbox-" + getClusterId() + "/" + hostName, MESOS_AGENT_WORK_DIR + hostName + "/slaves")));
         }
-        return DockerClientFactory.build().createContainerCmd(getImageName() + ":" + getImageTag())
+        CreateContainerCmd cmd = DockerClientFactory.build().createContainerCmd(getImageName() + ":" + getImageTag())
             .withName(getName())
             .withHostName(hostName)
             .withPrivileged(true)
@@ -79,6 +80,13 @@ public class MesosAgentContainer extends MesosContainerImpl implements MesosAgen
             .withPidMode("host")
             .withLinks(new Link(getZooKeeper().getContainerId(), "minimesos-zookeeper"))
             .withBinds(binds.stream().toArray(Bind[]::new));
+
+        MesosDns mesosDns = getCluster().getMesosDns();
+        if (mesosDns != null) {
+            cmd.withDns(mesosDns.getIpAddress());
+        }
+
+        return cmd;
     }
 
     @Override

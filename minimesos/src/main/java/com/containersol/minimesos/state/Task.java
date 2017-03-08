@@ -15,6 +15,8 @@ public class Task {
     @JsonProperty("slave_id")
     private String slaveId;
 
+    private Discovery discovery;
+
     public String getState() {
         return state;
     }
@@ -37,5 +39,13 @@ public class Task {
 
     public void setSlaveId(String slaveId) {
         this.slaveId = slaveId;
+    }
+
+    public Discovery getDiscovery() {
+        return discovery;
+    }
+
+    public void setDiscovery(Discovery discovery) {
+        this.discovery = discovery;
     }
 }

@@ -150,7 +150,7 @@ public class CommandTest {
         commandUp.execute();
 
         CommandInstall install = new CommandInstall();
-        install.setMarathonFile("src/integration-test/resources/app.json");
+        install.app = "src/integration-test/resources/app.json";
 
         install.execute();
 
@@ -163,7 +163,7 @@ public class CommandTest {
         commandUp.execute();
 
         CommandInstall install = new CommandInstall();
-        install.setMarathonFile("src/integration-test/resources/app.json");
+        install.app = "src/integration-test/resources/app.json";
 
         install.execute();
         install.execute();

@@ -4,7 +4,10 @@ import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosClusterFactory;
 import com.containersol.minimesos.mesos.MesosMasterContainer;
+import com.containersol.minimesos.state.Discovery;
 import com.containersol.minimesos.state.Framework;
+import com.containersol.minimesos.state.Port;
+import com.containersol.minimesos.state.Ports;
 import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.state.Task;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -15,6 +18,7 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
+import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -22,9 +26,9 @@ import static org.mockito.Mockito.when;
 
 public class CommandPsTest {
 
-    private static final String FORMAT = "%-20s %-20s %s\n";
-    private static final Object[] COLUMNS = { "FRAMEWORK", "TASK", "STATE" };
-    private static final Object[] VALUES = {"marathon", "weave-scope", "TASK_RUNNING" };
+    private static final String FORMAT = "%-20s %-20s %-20s %-20s\n";
+    private static final Object[] COLUMNS = { "FRAMEWORK", "TASK", "STATE", "PORT"};
+    private static final Object[] VALUES = {"marathon", "weave-scope", "TASK_RUNNING", "4040" };
 
     private ByteArrayOutputStream outputStream;
 
@@ -45,6 +49,17 @@ public class CommandPsTest {
         Task task = new Task();
         task.setName("weave-scope");
         task.setState("TASK_RUNNING");
+
+        Port port = new Port();
+        port.setNumber(4040);
+
+        Ports ports = new Ports();
+        ports.setPorts(singletonList(port));
+
+        Discovery discovery = new Discovery();
+        discovery.setPorts(ports);
+
+        task.setDiscovery(discovery);
 
         ArrayList<Task> tasks = new ArrayList<>();
         tasks.add(task);

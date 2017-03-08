@@ -173,14 +173,18 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
         ZooKeeperContainer zooKeeper = new ZooKeeperContainer(clusterConfig.getZookeeper());
         clusterContainers.add(zooKeeper);
 
+        if (clusterConfig.getMesosdns() != null) {
+            clusterContainers.add(new MesosDnsContainer(clusterConfig.getMesosdns()));
+        }
+
         MesosMasterContainer mesosMaster = new MesosMasterContainer(clusterConfig.getMaster());
         clusterContainers.add(mesosMaster);
-
-        clusterConfig.getAgents().forEach(config -> clusterContainers.add(new MesosAgentContainer(config)));
 
         if (clusterConfig.getMarathon() != null) {
             clusterContainers.add(new MarathonContainer(clusterConfig.getMarathon()));
         }
+
+        clusterConfig.getAgents().forEach(config -> clusterContainers.add(new MesosAgentContainer(config)));
 
         if (clusterConfig.getConsul() != null) {
             clusterContainers.add(new ConsulContainer(clusterConfig.getConsul()));
@@ -188,10 +192,6 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
 
         if (clusterConfig.getRegistrator() != null) {
             clusterContainers.add(new RegistratorContainer(clusterConfig.getRegistrator()));
-        }
-
-        if (clusterConfig.getMesosdns() != null) {
-            clusterContainers.add(new MesosDnsContainer(clusterConfig.getMesosdns()));
         }
 
         return clusterContainers;

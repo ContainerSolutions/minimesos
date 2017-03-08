@@ -7,65 +7,37 @@ import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.Marathon;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Scanner;
+
+import static org.apache.commons.lang.StringUtils.*;
 
 /**
- * Installs a framework with Marathon
+ * Installs an Marathon application or application group.
  */
-@Parameters(commandDescription = "Install a framework with Marathon")
+@Parameters(commandDescription = "Install a Marathon application or application group")
 public class CommandInstall implements Command {
 
-    public static final String CLINAME = "install";
+    private static final String CLINAME = "install";
 
-    @Parameter(names = "--marathonFile", description = "Marathon JSON app install file path or URL. Either this or --stdin parameter must be used")
-    private String marathonFile = null;
+    @Deprecated
+    @Parameter(names = "--marathonFile", description = "[Deprecated - Please use --marathonApp] Relative path or URL to a JSON file with a Marathon app definition.")
+    String marathonFile = null;
 
-    @Parameter(names = "--stdin", description = "Use JSON from standard import. Allow piping JSON from other processes. Either this or --marathonFile parameter must be used")
+    @Parameter(names = "--app", description = "Relative path or URL to a JSON file with a Marathon app definition. See https://mesosphere.github.io/marathon/docs/application-basics.html.")
+    String app = null;
+
+    @Parameter(names = "--group", description = "Relative path or URL to a JSON file with a group of Marathon apps. See https://mesosphere.github.io/marathon/docs/application-groups.html.")
+    String group = null;
+
+    @Parameter(names = "--stdin", description = "Read JSON file with Marathon app or group definition from stdin.")
     private boolean stdin = false;
 
     @Parameter(names = "--update", description = "Update a running application instead of attempting to deploy a new application")
     private boolean update = false;
 
-    private ClusterRepository repository = new ClusterRepository();
-
-    /**
-     * Getting content of <code>marathonFile</code>, if provided, or standard input
-     *
-     * @return content of the file or standard input
-     */
-    public String getMarathonJson() throws IOException {
-
-        String fileContents = "";
-        Scanner scanner;
-
-        if (marathonFile != null && !marathonFile.isEmpty()) {
-
-            InputStream json = MesosCluster.getInputStream(marathonFile);
-            if (json == null) {
-                throw new MinimesosException("Failed to find content of " + marathonFile);
-            }
-
-            scanner = new Scanner(json);
-
-        } else if (stdin) {
-            scanner = new Scanner(System.in);
-        } else {
-            throw new MinimesosException("Neither --marathonFile nor --stdin parameters are provided");
-        }
-
-        try {
-            while (scanner.hasNextLine()) {
-                fileContents = fileContents.concat(scanner.nextLine());
-            }
-        } finally {
-            scanner.close();
-        }
-
-        return fileContents;
-    }
+    ClusterRepository repository = new ClusterRepository();
 
     @Override
     public void execute() {
@@ -80,22 +52,46 @@ public class CommandInstall implements Command {
             try {
                 marathonJson = getMarathonJson();
             } catch (IOException e) {
-                throw new MinimesosException("Failed to read JSON", e);
+                throw new MinimesosException("Failed to read JSON file from path, URL or stdin", e);
             }
 
             if (update) {
                 marathon.updateApp(marathonJson);
-            } else {
+            } else if (isNotBlank(app) || isNotBlank(marathonFile)) {
                 marathon.deployApp(marathonJson);
+            } else if (isNotBlank(group)) {
+                marathon.deployGroup(marathonJson);
+            } else {
+                throw new MinimesosException("Neither app, group, --stdinApp or --stdinGroup is provided");
             }
         } else {
             throw new MinimesosException("Running cluster is not found");
         }
     }
 
+    /**
+     * Getting content of the Marathon JSON file if specified or via standard input
+     *
+     * @return content of the file or standard input
+     */
+    private String getMarathonJson() throws IOException {
+        if (stdin) {
+            return IOUtils.toString(System.in, "UTF-8");
+        } else {
+            if (isNotBlank(marathonFile)) {
+                return IOUtils.toString(MesosCluster.getInputStream(marathonFile), "UTF-8");
+            } else if (isNotBlank(app)) {
+                return IOUtils.toString(MesosCluster.getInputStream(app), "UTF-8");
+            } else if (isNotBlank(group)) {
+                return IOUtils.toString(MesosCluster.getInputStream(group), "UTF-8");
+            }
+        }
+        throw new IOException("Please specify a URL or path to Marathon JSON file or use --stdin");
+    }
+
     @Override
     public boolean validateParameters() {
-        return stdin || (marathonFile != null && !marathonFile.isEmpty());
+        return isNotBlank(app) || isNotBlank(group) || isNotBlank(marathonFile);
     }
 
     @Override
@@ -103,7 +99,4 @@ public class CommandInstall implements Command {
         return CLINAME;
     }
 
-    public void setMarathonFile(String marathonFile) {
-        this.marathonFile = marathonFile;
-    }
 }

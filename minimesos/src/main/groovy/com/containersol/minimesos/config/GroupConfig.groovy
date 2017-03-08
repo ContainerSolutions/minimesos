@@ -1,9 +1,9 @@
-package com.containersol.minimesos.config
+package com.containersol.minimesos.config;
 
 /**
- * Configuration for a Marathon app. Path is relative to the minimesosFile.
+ * Configuration for a Marathon group. Path is relative to the minimesosFile.
  */
-class AppConfig {
+class GroupConfig {
 
     private String marathonJson
 

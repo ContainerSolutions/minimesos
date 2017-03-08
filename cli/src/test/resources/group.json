@@ -1,0 +1,19 @@
+{
+  "id": "pingPongGroup",
+  "groups": [
+    {
+      "id": "ping",
+      "cmd": "echo 'ping'",
+      "cpus": 0.1,
+      "mem": 16.0,
+      "instances": 1
+    }
+   ,{
+      "id": "pong",
+      "cmd": "echo 'pong'",
+      "cpus": 0.1,
+      "mem": 16.0,
+      "instances": 1
+   }
+  ]
+}

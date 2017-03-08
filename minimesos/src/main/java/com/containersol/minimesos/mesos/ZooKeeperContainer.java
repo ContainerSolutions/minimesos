@@ -2,6 +2,7 @@ package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.cluster.MesosDns;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.integrationtest.container.AbstractContainer;
@@ -47,8 +48,8 @@ public class ZooKeeperContainer extends AbstractContainer implements ZooKeeper {
     @Override
     protected CreateContainerCmd dockerCommand() {
         return DockerClientFactory.build().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
-                .withName(getName())
-                .withExposedPorts(new ExposedPort(ZooKeeperConfig.DEFAULT_ZOOKEEPER_PORT), new ExposedPort(2888), new ExposedPort(3888));
+            .withName(getName())
+            .withExposedPorts(new ExposedPort(ZooKeeperConfig.DEFAULT_ZOOKEEPER_PORT), new ExposedPort(2888), new ExposedPort(3888));
     }
 
     @Override

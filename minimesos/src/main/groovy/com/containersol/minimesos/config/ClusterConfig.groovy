@@ -14,9 +14,9 @@ class ClusterConfig extends GroovyBlock {
     public static final String DEFAULT_LOGGING_LEVEL = "INFO"
 
     def call(Closure cl) {
-        cl.setDelegate(this);
+        cl.setDelegate(this)
         cl.setResolveStrategy(Closure.DELEGATE_ONLY)
-        cl.call();
+        cl.call()
     }
 
     boolean mapPortsToHost = false
@@ -53,7 +53,7 @@ class ClusterConfig extends GroovyBlock {
         if (zookeeper != null) {
             throw new RuntimeException("Multiple Zookeepers are not supported in this version yet")
         }
-        zookeeper = new ZooKeeperConfig();
+        zookeeper = new ZooKeeperConfig()
         delegateTo(zookeeper, cl)
     }
 
@@ -61,7 +61,7 @@ class ClusterConfig extends GroovyBlock {
         if (marathon != null) {
             throw new RuntimeException("Cannot have more than 1 marathon")
         }
-        marathon = new MarathonConfig();
+        marathon = new MarathonConfig()
         delegateTo(marathon, cl)
     }
 

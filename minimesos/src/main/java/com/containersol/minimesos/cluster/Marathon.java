@@ -1,5 +1,9 @@
 package com.containersol.minimesos.cluster;
 
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import mesosphere.marathon.client.model.v2.Result;
+
 /**
  * Functionality, which is expected from Marathon
  */
@@ -36,5 +40,19 @@ public interface Marathon extends ClusterProcess {
      *
      * @param app to be deleted
      */
-    void deleteApp(String app);
+    Result deleteApp(String app);
+
+    /**
+     * Deploy a Marathon application group.
+     *
+     * @param groupJson JSON string with Marathon application group definition
+     */
+    void deployGroup(String groupJson);
+
+    /**
+     * Deploy a Marathon application group.
+     *
+     * @param group group name
+     */
+    Result deleteGroup(String group);
 }

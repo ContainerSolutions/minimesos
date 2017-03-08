@@ -1,0 +1,13 @@
+{
+  "id": "hello",
+  "container": {
+    "type": "MESOS",
+    "docker": {
+      "image": "weaveworks/",
+      "network": "HOST"
+    }
+  },
+  "cpus": 0.1,
+  "mem": 16.0,
+  "instances": 1
+}

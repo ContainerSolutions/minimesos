@@ -45,7 +45,7 @@ public class CommandInfo implements Command {
 
                 MesosDns mesosDns = cluster.getMesosDns();
                 if (mesosDns != null) {
-                    output.println("Running dnsmasq? Add 'server=/mm/" + mesosDns.getIpAddress() + "#5353' to /etc/dnsmasq.d/10-minimesos to resolve master.mm, zookeeper.mm and Marathon apps on app.marathon.mm.");
+                    output.println("Running dnsmasq? Add 'server=/mm/" + mesosDns.getIpAddress() + "#53' to /etc/dnsmasq.d/10-minimesos to resolve master.mm, zookeeper.mm and Marathon apps on app.marathon.mm.");
                 }
             } else {
                 output.println(String.format("Minimesos cluster %s is not running. %s is removed", clusterId, repository.getMinimesosFile().getAbsolutePath()));

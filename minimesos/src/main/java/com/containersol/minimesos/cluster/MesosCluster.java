@@ -106,12 +106,7 @@ public class MesosCluster {
             for (MesosAgent mesosAgent : getAgents()) {
                 mesosAgent.setZooKeeper(zookeeper);
             }
-
-            master.setZooKeeper(zookeeper);
-
-            if (getMarathon() != null) {
-                getMarathon().setZooKeeper(zookeeper);
-            }
+            getMarathon().setZooKeeper(zookeeper);
         }
 
         running = true;
@@ -169,10 +164,8 @@ public class MesosCluster {
      * Destroys the Mesos cluster and its containers
      */
     public void destroy(MesosClusterFactory factory) {
-
         LOGGER.debug("Cluster " + getClusterId() + " - destroy");
 
-        // stop applications, which are installed through marathon
         Marathon marathon = getMarathon();
         if (marathon != null) {
             marathon.killAllApps();

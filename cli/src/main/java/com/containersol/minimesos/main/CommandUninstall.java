@@ -7,7 +7,10 @@ import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.Marathon;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+
 import java.io.PrintStream;
+
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 /**
  * Uninstalls a Marathon app or framework
@@ -15,18 +18,21 @@ import java.io.PrintStream;
 @Parameters(separators = "=", commandDescription = "Uninstall a Marathon app")
 public class CommandUninstall implements Command {
 
-    @Parameter(names = "--app", description = "Marathon app to uninstall", required = true)
+    @Parameter(names = "--app", description = "Marathon app to uninstall")
     private String app = null;
+
+    @Parameter(names = "--group", description = "Marathon group to uninstall")
+    private String group = null;
 
     private ClusterRepository repository = new ClusterRepository();
 
     private PrintStream output = System.out; // NOSONAR
 
-    public CommandUninstall(PrintStream output) {
+    CommandUninstall(PrintStream output) {
         this.output = output;
     }
 
-    public CommandUninstall() {
+    CommandUninstall() {
         // NOSONAR
     }
 
@@ -54,20 +60,39 @@ public class CommandUninstall implements Command {
             throw new MinimesosException("Marathon container is not found in cluster " + cluster.getClusterId());
         }
 
-        try {
-            marathon.deleteApp(app);
-        } catch (MinimesosException e) { // NOSONAR
-            // Only print message when uninstall succeeds
+        if (isNotBlank(app) && isNotBlank(group)) {
+            output.println("Please specify --app or --group to uninstall an app or group");
             return;
         }
-        output.println("Deleted app '" + app + "'");
+
+        if (isNotBlank(app)) {
+            try {
+                marathon.deleteApp(app);
+                output.println("Deleted app '" + app + "'");
+            } catch (MinimesosException e) { // NOSONAR
+                output.println(e.getMessage());
+            }
+        } else if (isNotBlank(group)) {
+            try {
+                marathon.deleteGroup(group);
+                output.println("Deleted group '" + group + "'");
+            } catch (MinimesosException e) { // NOSONAR
+                output.println(e.getMessage());
+            }
+        } else {
+            output.println("Please specify --app or --group to uninstall an app or group");
+        }
     }
 
     public void setRepository(ClusterRepository repository) {
         this.repository = repository;
     }
 
-    public void setApp(String app) {
+    void setApp(String app) {
         this.app = app;
+    }
+
+    void setGroup(String group) {
+        this.group = group;
     }
 }

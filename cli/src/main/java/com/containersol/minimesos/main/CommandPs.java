@@ -16,8 +16,9 @@ import java.io.PrintStream;
 @Parameters(separators = "=", commandDescription = "List running tasks")
 public class CommandPs implements Command {
 
-    private static final String FORMAT = "%-20s %-20s %s\n";
-    private static final Object[] COLUMNS = { "FRAMEWORK", "TASK", "STATE" };
+    private static final String FORMAT = "%-20s %-20s %-20s %-20s\n";
+
+    private static final Object[] COLUMNS = { "FRAMEWORK", "TASK", "STATE", "PORT" };
 
     private ClusterRepository repository = new ClusterRepository();
 
@@ -54,7 +55,7 @@ public class CommandPs implements Command {
         State state = cluster.getMaster().getState();
         for (Framework framework : state.getFrameworks()) {
             for (Task task : framework.getTasks()) {
-                output.printf(FORMAT, framework.getName(), task.getName(), task.getState());
+                output.printf(FORMAT, framework.getName(), task.getName(), task.getState(), task.getDiscovery().getPorts().getPorts().get(0).getNumber());
             }
         }
     }

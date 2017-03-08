@@ -2,6 +2,7 @@ package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.cluster.MesosDns;
 import com.containersol.minimesos.cluster.MesosMaster;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.MesosMasterConfig;
@@ -106,14 +107,21 @@ public class MesosMasterContainer extends MesosContainerImpl implements MesosMas
             portBindings.bind(exposedPort, Ports.Binding.bindPort(port));
         }
 
-        return DockerClientFactory.build().createContainerCmd(getImageName() + ":" + getImageTag())
-                .withName(getName())
-                .withExposedPorts(new ExposedPort(getServicePort()))
-                .withEnv(newEnvironment()
-                        .withValues(getMesosMasterEnvVars())
-                        .withValues(getSharedEnvVars())
-                        .createEnvironment())
-                .withPortBindings(portBindings);
+        CreateContainerCmd cmd = DockerClientFactory.build().createContainerCmd(getImageName() + ":" + getImageTag())
+            .withName(getName())
+            .withExposedPorts(new ExposedPort(getServicePort()))
+            .withEnv(newEnvironment()
+                .withValues(getMesosMasterEnvVars())
+                .withValues(getSharedEnvVars())
+                .createEnvironment())
+            .withPortBindings(portBindings);
+
+        MesosDns mesosDns = getCluster().getMesosDns();
+        if (mesosDns != null) {
+            cmd.withDns(mesosDns.getIpAddress());
+        }
+
+        return cmd;
     }
 
     @Override

@@ -19,7 +19,7 @@ import static com.containersol.minimesos.util.EnvironmentBuilder.newEnvironment;
  */
 public class MesosDnsContainer extends AbstractContainer implements MesosDns {
 
-    private static final String DNS_PORT = "5353";
+    private static final String DNS_PORT = "53";
 
     private static final String DOMAIN = "mm";
 
@@ -54,7 +54,8 @@ public class MesosDnsContainer extends AbstractContainer implements MesosDns {
                 .withValues(getMesosDNSEnvVars())
                 .createEnvironment())
             .withCmd("-v=2", "-config=/etc/mesos-dns/config.json")
-            .withExposedPorts(new ExposedPort(Integer.valueOf(DNS_PORT), InternetProtocol.UDP))
+            .withExposedPorts(new ExposedPort(Integer.valueOf(DNS_PORT), InternetProtocol.UDP),
+                              new ExposedPort(Integer.valueOf(DNS_PORT), InternetProtocol.TCP))
             .withName(getName());
     }
 

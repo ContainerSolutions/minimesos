@@ -1,6 +1,7 @@
 package com.containersol.minimesos.main;
 
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -113,12 +114,14 @@ public class Main {
 
             return EXIT_CODE_OK;
         } catch (Exception ex) {
+            PrintWriter writer = new PrintWriter(output);
             if (ex.getMessage() != null) {
-                output.println("Failed to run command '" + jc.getParsedCommand() + "'. " + ex.getMessage());
+                output.println("Failed to run command '" + jc.getParsedCommand() + "'. "  + ex.getCause());
             } else {
                 output.println("Failed to run command '" + jc.getParsedCommand() + "'.");
-                ex.printStackTrace();
+                ex.printStackTrace(writer);
             }
+            writer.close();
             LOGGER.debug("Exception while processing", ex);
             return EXIT_CODE_ERR;
         }
