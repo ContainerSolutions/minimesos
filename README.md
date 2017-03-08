@@ -6,7 +6,6 @@ The experimentation and testing tool for Apache Mesos
 <ul>
 <li><strong>Website</strong>: https://www.minimesos.org
 <li><strong>Source</strong>: https://github.com/ContainerSolutions/minimesos
-<li><strong>Issues</strong>: https://github.com/ContainerSolutions/minimesos/issues
 <li><strong>Mailing List</strong>: <a href="https://groups.google.com/d/forum/minimesos">minimesos@googlegroups.com</a>
 <li><strong>Slack</strong>: <a href="https://minimesos.slack.com">minimesos.slack.com</a>
 <li><strong>Docs</strong>: <a href="https://readthedocs.org/projects/minimesos">redthedocs.org/projects/minimesos/</a>
