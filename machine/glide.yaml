@@ -1,0 +1,5 @@
+package: .
+import:
+  - package: github.com/docker/machine
+    version: ^v0.10.0
+    repo: git@github.com:docker/machine.git

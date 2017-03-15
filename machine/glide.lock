@@ -1,0 +1,7 @@
+hash: a6f8a7cd54fded944d1b7d05efb352c59400d24ef04fa335d6e716a531d79b20
+updated: 2017-03-15T14:38:21.851532149+01:00
+imports:
+- name: github.com/docker/machine
+  version: 76ed2a62eabf714bf0a842cda780b034eb0b21c0
+  repo: git@github.com:docker/machine.git
+testImports: []
