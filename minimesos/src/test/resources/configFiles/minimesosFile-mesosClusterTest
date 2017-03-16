@@ -11,6 +11,7 @@ minimesos {
         imageTag = "1.0.0-0.1.0"
         loggingLevel = "# INHERIT FROM CLUSTER"
         portNumber = 5051
+        attributes = "az:0a"
 
         resources {
 
