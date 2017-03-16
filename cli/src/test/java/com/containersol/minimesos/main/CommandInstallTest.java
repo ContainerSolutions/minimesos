@@ -1,8 +1,8 @@
 package com.containersol.minimesos.main;
 
-import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.Marathon;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.cluster.MesosClusterFactory;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,9 +21,9 @@ public class CommandInstallTest {
 
     private MesosCluster mesosCluster;
 
-    private ClusterRepository repository;
-
     private CommandInstall command;
+
+    private MesosClusterFactory factory;
 
     @Before
     public void before() {
@@ -32,11 +32,11 @@ public class CommandInstallTest {
         mesosCluster = mock(MesosCluster.class);
         when(mesosCluster.getMarathon()).thenReturn(marathon);
 
-        repository = mock(ClusterRepository.class);
-        when(repository.loadCluster(any())).thenReturn(mesosCluster);
+        factory = mock(MesosClusterFactory.class);
+        when(factory.retrieveMesosCluster()).thenReturn(mesosCluster);
 
         command = new CommandInstall();
-        command.repository = repository;
+        command.factory = factory;
     }
 
     @Test

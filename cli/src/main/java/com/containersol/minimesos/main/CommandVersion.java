@@ -10,11 +10,11 @@ import java.io.PrintStream;
 @Parameters(separators = "=", commandDescription = "Display the version of minimesos")
 public class CommandVersion implements Command {
 
-    public static final String CLI_NAME = "version";
+    private static final String CLI_NAME = "version";
 
     private PrintStream output = System.out; //NOSONAR
 
-    public CommandVersion() { // NOSONAR
+    CommandVersion() { // NOSONAR
 
     }
 

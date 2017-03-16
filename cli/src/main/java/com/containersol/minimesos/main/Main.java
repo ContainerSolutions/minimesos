@@ -9,9 +9,8 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MinimesosException;
-import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+import com.containersol.minimesos.docker.MesosClusterDockerFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,8 +40,6 @@ public class Main {
     private final JCommander jc = new JCommander(this);
 
     private HashMap<String, Command> commands = new HashMap<>();
-
-    private ClusterRepository repository = new ClusterRepository();
 
     public static void main(String[] args) {
         Main main = new Main();
@@ -76,7 +73,7 @@ public class Main {
         this.output = output;
     }
 
-    public int run(String[] args) {
+    int run(String[] args) {
         initJCommander();
 
         try {
@@ -155,7 +152,8 @@ public class Main {
     }
 
     private int handleNoCommand() {
-        MesosCluster cluster = repository.loadCluster(new MesosClusterContainersFactory());
+        MesosClusterDockerFactory factory = new MesosClusterDockerFactory();
+        MesosCluster cluster = factory.retrieveMesosCluster();
         if (cluster != null) {
             new CommandInfo().execute();
             return EXIT_CODE_OK;
@@ -175,7 +173,7 @@ public class Main {
         output.println(builder.toString());
     }
 
-    public void addCommand(Command command) {
+    void addCommand(Command command) {
         commands.put(command.getName(), command);
     }
 

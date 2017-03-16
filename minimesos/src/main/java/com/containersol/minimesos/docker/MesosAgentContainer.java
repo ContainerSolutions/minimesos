@@ -1,10 +1,9 @@
-package com.containersol.minimesos.mesos;
+package com.containersol.minimesos.docker;
 
 import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosDns;
 import com.containersol.minimesos.config.MesosAgentConfig;
-import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.util.ResourceUtil;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;

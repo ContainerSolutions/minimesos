@@ -36,9 +36,9 @@ public class CommandInit implements Command {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommandInit.class);
 
-    public static final String CLINAME = "init";
+    private static final String CLINAME = "init";
 
-    public static final String DEFAULT_HOST_USERID = "1000";
+    private static final String DEFAULT_HOST_USERID = "1000";
 
     @Override
     public boolean validateParameters() {
@@ -76,10 +76,9 @@ public class CommandInit implements Command {
         } catch (IOException e) {
             throw new MinimesosException("NOTE: minimesosFile remains owned by root instead of user ID " + DEFAULT_HOST_USERID + ": " + e.getMessage(), e);
         }
-
     }
 
-    public String getConfigFileContent() {
+    String getConfigFileContent() {
         ClusterConfig config = new ClusterConfig();
         config.setClusterName("Change Cluster Name in " + ClusterConfig.DEFAULT_CONFIG_FILE + " file");
 

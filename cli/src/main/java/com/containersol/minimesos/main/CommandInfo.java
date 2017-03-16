@@ -6,12 +6,11 @@ import java.util.List;
 
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.cluster.ClusterProcess;
-import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.ClusterUtil;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosDns;
 import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+import com.containersol.minimesos.docker.MesosClusterDockerFactory;
 import com.containersol.minimesos.util.Environment;
 
 /**
@@ -20,24 +19,24 @@ import com.containersol.minimesos.util.Environment;
 @Parameters(separators = "=", commandDescription = "Display cluster information")
 public class CommandInfo implements Command {
 
-    public static final String CLINAME = "info";
+    private static final String CLINAME = "info";
 
     private PrintStream output = System.out; //NOSONAR
 
-    private ClusterRepository repository = new ClusterRepository();
-
-    public CommandInfo() { //NOSONAR
+    CommandInfo() { //NOSONAR
     }
 
-    public CommandInfo(PrintStream ps) {
+    CommandInfo(PrintStream ps) {
         this.output = ps;
     }
 
+    MesosClusterDockerFactory factory = new MesosClusterDockerFactory();
+
     @Override
     public void execute() {
-        String clusterId = repository.readClusterId();
+        String clusterId = factory.retrieveClusterId();
         if (clusterId != null) {
-            MesosCluster cluster = repository.loadCluster(new MesosClusterContainersFactory());
+            MesosCluster cluster = factory.retrieveMesosCluster();
             if (cluster != null) {
                 output.println("Minimesos cluster is running: " + cluster.getClusterId());
                 output.println("Mesos version: " + cluster.getMaster().getState().getVersion());
@@ -48,10 +47,10 @@ public class CommandInfo implements Command {
                     output.println("Running dnsmasq? Add 'server=/mm/" + mesosDns.getIpAddress() + "#53' to /etc/dnsmasq.d/10-minimesos to resolve master.mm, zookeeper.mm and Marathon apps on app.marathon.mm.");
                 }
             } else {
-                output.println(String.format("Minimesos cluster %s is not running. %s is removed", clusterId, repository.getMinimesosFile().getAbsolutePath()));
+                output.println(String.format("Minimesos cluster %s is not running. %s is removed", clusterId, factory.getStateFile().getAbsolutePath()));
             }
         } else {
-            output.println("Cluster ID is not found in " + repository.getMinimesosFile().getAbsolutePath());
+            output.println("Cluster ID is not found in " + factory.getStateFile().getAbsolutePath());
         }
     }
 

@@ -1,9 +1,9 @@
 package com.containersol.minimesos.main;
 
 import com.beust.jcommander.Parameters;
-import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+import com.containersol.minimesos.cluster.MesosClusterFactory;
+import com.containersol.minimesos.docker.MesosClusterDockerFactory;
 import com.containersol.minimesos.state.Framework;
 import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.state.Task;
@@ -20,17 +20,17 @@ public class CommandPs implements Command {
 
     private static final Object[] COLUMNS = { "FRAMEWORK", "TASK", "STATE", "PORT" };
 
-    private ClusterRepository repository = new ClusterRepository();
-
     private PrintStream output = System.out; // NOSONAR
 
-    public CommandPs(PrintStream output) {
+    CommandPs(PrintStream output) {
         this.output = output;
     }
 
-    public CommandPs() {
+    CommandPs() {
         // NOSONAR
     }
+
+    MesosClusterFactory factory = new MesosClusterDockerFactory();
 
     @Override
     public boolean validateParameters() {
@@ -44,7 +44,7 @@ public class CommandPs implements Command {
 
     @Override
     public void execute() {
-        MesosCluster cluster = repository.loadCluster(new MesosClusterContainersFactory());
+        MesosCluster cluster = factory.retrieveMesosCluster();
 
         if (cluster == null) {
             output.println("Minimesos cluster is not running");
@@ -58,9 +58,5 @@ public class CommandPs implements Command {
                 output.printf(FORMAT, framework.getName(), task.getName(), task.getState(), task.getDiscovery().getPorts().getPorts().get(0).getNumber());
             }
         }
-    }
-
-    public void setRepository(ClusterRepository repository) {
-        this.repository = repository;
     }
 }

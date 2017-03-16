@@ -3,10 +3,10 @@ package com.containersol.minimesos.main;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MinimesosException;
-import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.Marathon;
 import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+import com.containersol.minimesos.cluster.MesosClusterFactory;
+import com.containersol.minimesos.docker.MesosClusterDockerFactory;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -37,11 +37,11 @@ public class CommandInstall implements Command {
     @Parameter(names = "--update", description = "Update a running application instead of attempting to deploy a new application")
     private boolean update = false;
 
-    ClusterRepository repository = new ClusterRepository();
+    MesosClusterFactory factory = new MesosClusterDockerFactory();
 
     @Override
     public void execute() {
-        MesosCluster cluster = repository.loadCluster(new MesosClusterContainersFactory());
+        MesosCluster cluster = factory.retrieveMesosCluster();
         if (cluster != null) {
             Marathon marathon = cluster.getMarathon();
             if (marathon == null) {
@@ -99,4 +99,7 @@ public class CommandInstall implements Command {
         return CLINAME;
     }
 
+    public void setFactory(MesosClusterDockerFactory factory) {
+        this.factory = factory;
+    }
 }

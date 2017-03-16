@@ -1,4 +1,4 @@
-package com.containersol.minimesos.mesos;
+package com.containersol.minimesos.docker;
 
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
@@ -6,7 +6,6 @@ import com.containersol.minimesos.cluster.MesosDns;
 import com.containersol.minimesos.cluster.MesosMaster;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.MesosMasterConfig;
-import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.util.Environment;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;

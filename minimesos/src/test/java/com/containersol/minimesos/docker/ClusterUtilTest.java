@@ -1,4 +1,4 @@
-package com.containersol.minimesos.mesos;
+package com.containersol.minimesos.docker;
 
 import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.ClusterUtil;
@@ -6,7 +6,6 @@ import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ConsulConfig;
 import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.config.MesosMasterConfig;
-import com.containersol.minimesos.integrationtest.container.AbstractContainer;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import org.junit.Test;
 

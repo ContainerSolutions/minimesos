@@ -1,11 +1,9 @@
-package com.containersol.minimesos.mesos;
+package com.containersol.minimesos.docker;
 
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.Consul;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ConsulConfig;
-import com.containersol.minimesos.integrationtest.container.AbstractContainer;
-import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.util.Environment;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;

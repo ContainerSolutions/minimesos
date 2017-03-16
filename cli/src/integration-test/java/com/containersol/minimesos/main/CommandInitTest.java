@@ -40,7 +40,7 @@ public class CommandInitTest {
         String oldHostDir = System.getProperty(MesosCluster.MINIMESOS_HOST_DIR_PROPERTY);
         File dir = File.createTempFile("mimimesos-test", "dir");
         assertTrue("Failed to delete temp file", dir.delete());
-        assertTrue("Failed to create temp directory", dir.mkdir());
+        assertTrue("Failed to retrieveMesosCluster temp directory", dir.mkdir());
         System.setProperty(MesosCluster.MINIMESOS_HOST_DIR_PROPERTY, dir.getAbsolutePath());
 
 

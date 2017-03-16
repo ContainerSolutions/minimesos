@@ -8,7 +8,7 @@ import com.beust.jcommander.Parameters;
 @Parameters(separators = "=", commandDescription = "Display help")
 public class CommandHelp implements Command {
 
-    public static final String CLINAME = "help";
+    static final String CLINAME = "help";
 
     @Override
     public void execute() {

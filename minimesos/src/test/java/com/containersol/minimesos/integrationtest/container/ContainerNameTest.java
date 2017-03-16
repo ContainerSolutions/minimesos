@@ -1,8 +1,9 @@
 package com.containersol.minimesos.integrationtest.container;
 
 import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.mesos.MesosAgentContainer;
-import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+import com.containersol.minimesos.docker.ContainerName;
+import com.containersol.minimesos.docker.MesosAgentContainer;
+import com.containersol.minimesos.docker.MesosClusterDockerFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,7 +18,7 @@ public class ContainerNameTest {
 
     @Before
     public void before() {
-        cluster = new MesosClusterContainersFactory().createMesosCluster("src/test/resources/configFiles/minimesosFile-mesosClusterTest");
+        cluster = new MesosClusterDockerFactory().createMesosCluster("src/test/resources/configFiles/minimesosFile-mesosClusterTest");
 
         clusterId = cluster.getClusterId();
     }

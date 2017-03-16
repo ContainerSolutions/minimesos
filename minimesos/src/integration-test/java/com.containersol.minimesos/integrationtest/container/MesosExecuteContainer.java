@@ -1,5 +1,6 @@
 package com.containersol.minimesos.integrationtest.container;
 
+import com.containersol.minimesos.docker.AbstractContainer;
 import com.containersol.minimesos.integrationtest.MesosClusterTest;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ContainerConfigBlock;

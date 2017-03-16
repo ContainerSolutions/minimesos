@@ -3,7 +3,7 @@ package com.containersol.minimesos.integrationtest.container;
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.MesosAgentConfig;
-import com.containersol.minimesos.mesos.MesosAgentContainer;
+import com.containersol.minimesos.docker.MesosAgentContainer;
 import org.junit.Assert;
 import org.junit.Test;
 

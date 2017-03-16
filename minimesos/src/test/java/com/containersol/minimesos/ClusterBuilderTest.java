@@ -3,8 +3,8 @@ package com.containersol.minimesos;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ConfigParser;
-import com.containersol.minimesos.mesos.MesosAgentContainer;
-import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+import com.containersol.minimesos.docker.MesosAgentContainer;
+import com.containersol.minimesos.docker.MesosClusterDockerFactory;
 import com.containersol.minimesos.util.CollectionsUtils;
 import org.junit.Test;
 
@@ -25,7 +25,7 @@ public class ClusterBuilderTest {
         ConfigParser parser = new ConfigParser();
         ClusterConfig dsl = parser.parse(config);
 
-        MesosCluster cluster = new MesosClusterContainersFactory().createMesosCluster(dsl);
+        MesosCluster cluster = new MesosClusterDockerFactory().createMesosCluster(dsl);
 
         List<MesosAgentContainer> agents = CollectionsUtils.typedList(cluster.getAgents(), MesosAgentContainer.class);
         assertEquals(2, agents.size());
@@ -45,7 +45,7 @@ public class ClusterBuilderTest {
         ConfigParser parser = new ConfigParser();
         ClusterConfig dsl = parser.parse(config);
 
-        MesosCluster cluster = new MesosClusterContainersFactory().createMesosCluster(dsl);
+        MesosCluster cluster = new MesosClusterDockerFactory().createMesosCluster(dsl);
 
         List<MesosAgentContainer> agents = CollectionsUtils.typedList(cluster.getAgents(), MesosAgentContainer.class);
         assertEquals(2, agents.size());
@@ -65,7 +65,7 @@ public class ClusterBuilderTest {
         ConfigParser parser = new ConfigParser();
         ClusterConfig dsl = parser.parse(config);
 
-        MesosCluster cluster = new MesosClusterContainersFactory().createMesosCluster(dsl);
+        MesosCluster cluster = new MesosClusterDockerFactory().createMesosCluster(dsl);
 
         List<MesosAgentContainer> agents = CollectionsUtils.typedList(cluster.getAgents(), MesosAgentContainer.class);
         assertEquals(2, agents.size());

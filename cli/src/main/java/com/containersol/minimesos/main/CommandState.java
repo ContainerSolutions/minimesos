@@ -3,9 +3,8 @@ package com.containersol.minimesos.main;
 import java.io.PrintStream;
 
 import com.beust.jcommander.Parameters;
-import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+import com.containersol.minimesos.docker.MesosClusterDockerFactory;
 
 /**
  * Parameters for the 'state' command
@@ -13,22 +12,22 @@ import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
 @Parameters(separators = "=", commandDescription = "Display the master's state.json file")
 public class CommandState implements Command {
 
-    public static final String CLINAME = "state";
+    private static final String CLINAME = "state";
 
     private PrintStream output = System.out; //NOSONAR
 
-    private ClusterRepository repository = new ClusterRepository();
-
-    public CommandState() { //NOSONAR
+    CommandState() { //NOSONAR
     }
 
-    public CommandState(PrintStream ps) {
+    CommandState(PrintStream ps) {
         this.output = ps;
     }
 
+    MesosClusterDockerFactory factory = new MesosClusterDockerFactory();
+
     @Override
     public void execute() {
-        MesosCluster cluster = repository.loadCluster(new MesosClusterContainersFactory());
+        MesosCluster cluster = factory.retrieveMesosCluster();
         if (cluster != null) {
             cluster.state(output);
         } else {

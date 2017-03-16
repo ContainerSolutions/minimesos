@@ -53,8 +53,6 @@ public class MesosCluster {
 
     private List<ClusterProcess> memberProcesses = Collections.synchronizedList(new ArrayList<>());
 
-    private ClusterRepository repository = new ClusterRepository();
-
     private boolean running = false;
 
     /**
@@ -70,45 +68,9 @@ public class MesosCluster {
         }
     }
 
-    /**
-     * Recreate a MesosCluster object based on an existing cluster ID.
-     *
-     * @param clusterId the cluster ID of the cluster that is already running
-     */
-    public static MesosCluster loadCluster(String clusterId, MesosClusterFactory factory) {
-        return new MesosCluster(clusterId, factory);
-    }
-
-    /**
-     * This constructor is used for deserialization of running cluster
-     *
-     * @param clusterId ID of the cluster to deserialize
-     */
-    private MesosCluster(String clusterId, MesosClusterFactory factory) {
+    public MesosCluster(String clusterId) {
         this.clusterId = clusterId;
         this.clusterConfig = new ClusterConfig();
-
-        if (Environment.isRunningInJvmOnMacOsX() || Environment.isRunningInDockerOnMac()) {
-            LOGGER.info("Detected Mac Environment X so running with --mapPortsToHost so master and marathon ports are mapped to localhost.");
-            setMapPortsToHost(true);
-        }
-
-        factory.loadRunningCluster(this);
-
-        if (memberProcesses.isEmpty()) {
-            throw new MinimesosException("No containers found for cluster ID " + clusterId);
-        }
-
-        ZooKeeper zookeeper = getZooKeeper();
-        MesosMaster master = getMaster();
-
-        if (master != null && zookeeper != null) {
-            for (MesosAgent mesosAgent : getAgents()) {
-                mesosAgent.setZooKeeper(zookeeper);
-            }
-            getMarathon().setZooKeeper(zookeeper);
-        }
-
         running = true;
     }
 
@@ -202,7 +164,7 @@ public class MesosCluster {
             LOGGER.info("Minimesos cluster is not running");
         }
 
-        repository.deleteClusterFile();
+        factory.deleteStateFile();
 
         this.running = false;
     }

@@ -2,8 +2,10 @@ package com.containersol.minimesos.main;
 
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.cluster.MesosClusterFactory;
 import com.containersol.minimesos.config.ClusterConfig;
-import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+import com.containersol.minimesos.docker.MesosClusterDockerFactory;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -25,7 +27,7 @@ public class CommandUpTest {
 
     @Before
     public void before() {
-        MesosClusterContainersFactory mesosClusterFactory = mock(MesosClusterContainersFactory.class);
+        MesosClusterFactory mesosClusterFactory = mock(MesosClusterFactory.class);
         mesosCluster = mock(MesosCluster.class);
         when(mesosCluster.getClusterId()).thenReturn("123456");
 
@@ -33,7 +35,7 @@ public class CommandUpTest {
         when(mesosClusterFactory.createMesosCluster(capturedClusterConfig.capture())).thenReturn(mesosCluster);
 
         commandUp = new CommandUp();
-        commandUp.setMesosClusterFactory(mesosClusterFactory);
+        commandUp.factory = mesosClusterFactory;
     }
 
     @Test(expected = MinimesosException.class)

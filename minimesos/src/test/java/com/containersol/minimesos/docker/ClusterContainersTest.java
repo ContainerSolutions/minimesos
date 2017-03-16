@@ -1,4 +1,4 @@
-package com.containersol.minimesos.mesos;
+package com.containersol.minimesos.docker;
 
 import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.Filter;

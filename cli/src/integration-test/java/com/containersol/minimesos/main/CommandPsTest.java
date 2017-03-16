@@ -1,9 +1,8 @@
 package com.containersol.minimesos.main;
 
-import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosClusterFactory;
-import com.containersol.minimesos.mesos.MesosMasterContainer;
+import com.containersol.minimesos.docker.MesosMasterContainer;
 import com.containersol.minimesos.state.Discovery;
 import com.containersol.minimesos.state.Framework;
 import com.containersol.minimesos.state.Port;
@@ -76,11 +75,11 @@ public class CommandPsTest {
         MesosCluster mesosCluster = mock(MesosCluster.class);
         when(mesosCluster.getMaster()).thenReturn(master);
 
-        ClusterRepository repository = mock(ClusterRepository.class);
-        when(repository.loadCluster(any(MesosClusterFactory.class))).thenReturn(mesosCluster);
+        MesosClusterFactory factory = mock(MesosClusterFactory.class);
+        when(factory.retrieveMesosCluster()).thenReturn(mesosCluster);
 
         CommandPs commandPs = new CommandPs(ps);
-        commandPs.setRepository(repository);
+        commandPs.factory = factory;
 
         commandPs.execute();
 

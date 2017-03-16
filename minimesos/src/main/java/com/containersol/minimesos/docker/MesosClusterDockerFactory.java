@@ -1,9 +1,12 @@
-package com.containersol.minimesos.mesos;
+package com.containersol.minimesos.docker;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -22,12 +25,11 @@ import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.ClusterConfig;
 import com.containersol.minimesos.config.ConfigParser;
 import com.containersol.minimesos.config.MesosMasterConfig;
-import com.containersol.minimesos.integrationtest.container.ContainerName;
-import com.containersol.minimesos.docker.DockerContainersUtil;
-import com.containersol.minimesos.marathon.MarathonContainer;
+import com.containersol.minimesos.util.Environment;
 import com.github.dockerjava.api.model.Container;
 
 import com.github.dockerjava.api.model.ContainerPort;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,9 +37,47 @@ import org.slf4j.LoggerFactory;
 /**
  * Docker based factory of minimesos cluster members
  */
-public class MesosClusterContainersFactory extends MesosClusterFactory {
+public class MesosClusterDockerFactory implements MesosClusterFactory {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MesosClusterContainersFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MesosClusterDockerFactory.class);
+
+    private static final String MINIMESOS_FILE_PROPERTY = "minimesos.cluster";
+
+    /**
+     * Finds the Mesos cluster that corresponds to the current directory.
+     *
+     * @return Mesos cluster if one is running
+     */
+    public MesosCluster retrieveMesosCluster() {
+        String clusterId = retrieveClusterId();
+        if (clusterId != null) {
+            try {
+                return retrieveMesosCluster(clusterId);
+            } catch (MinimesosException e) {
+                File minimesosFile = getStateFile();
+                LOGGER.debug("Deleting minimesos.cluster file at " + getStateFile());
+                if (minimesosFile.exists()) {
+                    try {
+                        FileUtils.forceDelete(minimesosFile);
+                    } catch (IOException e1) {
+                        // ignore
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public String retrieveClusterId() {
+        try {
+            File minimesosFile = getStateFile();
+            String clusterId = FileUtils.readFileToString(minimesosFile, "UTF-8");
+            LOGGER.debug("Reading cluster ID from " + minimesosFile + ": " + clusterId);
+            return clusterId;
+        } catch (IOException e) {
+            return null;
+        }
+    }
 
     public ZooKeeper createZooKeeper(MesosCluster mesosCluster, String uuid, String containerId) {
         return new ZooKeeperContainer(mesosCluster, uuid, containerId);
@@ -48,7 +88,11 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
     }
 
     public MesosMaster createMesosMaster(MesosCluster mesosCluster, String uuid, String containerId) {
-        return new MesosMasterContainer(mesosCluster, uuid, containerId);
+        MesosMasterContainer mesosMasterContainer = new MesosMasterContainer(mesosCluster, uuid, containerId);
+
+
+
+        return mesosMasterContainer;
     }
 
     public Marathon createMarathon(MesosCluster mesosCluster, String uuid, String containerId) {
@@ -67,57 +111,7 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
         return new MesosDnsContainer(cluster, uuid, containerId);
     }
 
-    @Override
-    public void loadRunningCluster(MesosCluster cluster) {
-        String clusterId = cluster.getClusterId();
-        List<ClusterProcess> containers = cluster.getMemberProcesses();
-
-        List<Container> dockerContainers = DockerContainersUtil.getContainers(false).getContainers();
-        Collections.sort(dockerContainers, (c1, c2) -> Long.compare(c1.getCreated(), c2.getCreated()));
-
-        for (Container container : dockerContainers) {
-            String name = ContainerName.getFromDockerNames(container.getNames());
-            if (ContainerName.belongsToCluster(name, clusterId)) {
-
-                String containerId = container.getId();
-
-                String[] parts = name.split("-");
-                if (parts.length > 3) {
-
-                    String role = parts[1];
-                    String uuid = parts[3];
-
-                    switch (role) {
-                        case "zookeeper":
-                            containers.add(createZooKeeper(cluster, uuid, containerId));
-                            break;
-                        case "agent":
-                            containers.add(createMesosAgent(cluster, uuid, containerId));
-                            break;
-                        case "master":
-                            MesosMaster master = createMesosMaster(cluster, uuid, containerId);
-                            containers.add(master);
-
-                            restoreMapToPorts(cluster, container);
-                            break;
-                        case "marathon":
-                            containers.add(createMarathon(cluster, uuid, containerId));
-                            break;
-                        case "consul":
-                            containers.add(createConsul(cluster, uuid, containerId));
-                            break;
-                        case "registrator":
-                            containers.add(createRegistrator(cluster, uuid, containerId));
-                            break;
-                        case "mesosdns":
-                            containers.add(createMesosDns(cluster, uuid, containerId));
-                    }
-                }
-            }
-        }
-    }
-
-    private void restoreMapToPorts(MesosCluster cluster, Container container) {
+    public void restoreMapToPorts(MesosCluster cluster, Container container) {
         // Restore "map ports to host" attribute
         ContainerPort[] ports = container.getPorts();
         if (ports != null) {
@@ -152,9 +146,9 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
         }
     }
 
+    @Override
     public MesosCluster createMesosCluster(ClusterConfig clusterConfig) {
         LOGGER.debug("Creating Mesos cluster");
-
 
         ClusterContainers clusterContainers = createProcesses(clusterConfig);
 
@@ -243,6 +237,120 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
 
     private static Boolean isPresent(ClusterContainers clusterContainers, Predicate<ClusterProcess> filter) {
         return clusterContainers.isPresent(filter);
+    }
+
+    public MesosCluster retrieveMesosCluster(String clusterId) {
+        MesosCluster mesosCluster = new MesosCluster(clusterId);
+
+        if (Environment.isRunningInJvmOnMacOsX() || Environment.isRunningInDockerOnMac()) {
+            LOGGER.info("Detected Mac Environment X so running with --mapPortsToHost so master and marathon ports are mapped to localhost.");
+            mesosCluster.setMapPortsToHost(true);
+        }
+
+        List<ClusterProcess> containers = mesosCluster.getMemberProcesses();
+
+        List<Container> dockerContainers = DockerContainersUtil.getContainers(false).getContainers();
+        dockerContainers.sort(Comparator.comparingLong(Container::getCreated));
+
+        for (Container container : dockerContainers) {
+            String name = ContainerName.getFromDockerNames(container.getNames());
+            if (ContainerName.belongsToCluster(name, mesosCluster.getClusterId())) {
+
+                String containerId = container.getId();
+
+                String[] parts = name.split("-");
+                if (parts.length > 3) {
+
+                    String role = parts[1];
+                    String uuid = parts[3];
+
+                    switch (role) {
+                        case "zookeeper":
+                            containers.add(createZooKeeper(mesosCluster, uuid, containerId));
+                            break;
+                        case "agent":
+                            containers.add(createMesosAgent(mesosCluster, uuid, containerId));
+                            break;
+                        case "master":
+                            MesosMaster master = createMesosMaster(mesosCluster, uuid, containerId);
+                            containers.add(master);
+
+                            restoreMapToPorts(mesosCluster, container);
+                            break;
+                        case "marathon":
+                            containers.add(createMarathon(mesosCluster, uuid, containerId));
+                            break;
+                        case "consul":
+                            containers.add(createConsul(mesosCluster, uuid, containerId));
+                            break;
+                        case "registrator":
+                            containers.add(createRegistrator(mesosCluster, uuid, containerId));
+                            break;
+                        case "mesosdns":
+                            containers.add(createMesosDns(mesosCluster, uuid, containerId));
+                    }
+                }
+            }
+        }
+
+        if (mesosCluster.getMemberProcesses().isEmpty()) {
+            throw new MinimesosException("No containers found for cluster ID " + mesosCluster.getClusterId());
+        }
+
+        ZooKeeper zookeeper = mesosCluster.getZooKeeper();
+        MesosMaster master = mesosCluster.getMaster();
+
+        if (master != null && zookeeper != null) {
+            for (MesosAgent mesosAgent : mesosCluster.getAgents()) {
+                mesosAgent.setZooKeeper(zookeeper);
+            }
+            mesosCluster.getMarathon().setZooKeeper(zookeeper);
+        }
+        return mesosCluster;
+    }
+
+    public void saveStateFile(MesosCluster cluster) {
+        String clusterId = cluster.getClusterId();
+        File dotMinimesosDir = getDotMinimesosDir();
+        try {
+            FileUtils.forceMkdir(dotMinimesosDir);
+            String clusterIdPath = dotMinimesosDir.getAbsolutePath() + "/" + MINIMESOS_FILE_PROPERTY;
+            Files.write(Paths.get(clusterIdPath), clusterId.getBytes());
+            LOGGER.debug("Writing cluster ID " + clusterId + " to " + clusterIdPath);
+        } catch (IOException ie) {
+            LOGGER.error("Could not write .minimesos folder", ie);
+            throw new RuntimeException(ie);
+        }
+    }
+
+    public void deleteStateFile() {
+        File stateFile = getStateFile();
+        LOGGER.debug("Deleting minimesos.cluster state file at " + getStateFile());
+        if (stateFile.exists()) {
+            try {
+                FileUtils.forceDelete(stateFile);
+            } catch (IOException e) {
+                // ignore
+            }
+        }
+    }
+
+    public File getStateFile() {
+        return new File(getDotMinimesosDir(), MINIMESOS_FILE_PROPERTY);
+    }
+
+    /**
+     * @return directory, where minimesos stores ID file
+     */
+    private File getDotMinimesosDir() {
+        File hostDir = MesosCluster.getClusterHostDir();
+        File minimesosDir = new File(hostDir, ".minimesos");
+        if (!minimesosDir.exists()) {
+            if (!minimesosDir.mkdirs()) {
+                throw new MinimesosException("Failed to retrieveMesosCluster " + minimesosDir.getAbsolutePath() + " directory");
+            }
+        }
+        return minimesosDir;
     }
 
 }

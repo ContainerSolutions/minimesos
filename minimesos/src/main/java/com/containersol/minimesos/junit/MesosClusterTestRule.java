@@ -8,7 +8,7 @@ import java.io.InputStream;
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosClusterFactory;
-import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+import com.containersol.minimesos.docker.MesosClusterDockerFactory;
 
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -19,13 +19,13 @@ import org.junit.runners.model.Statement;
  */
 public class MesosClusterTestRule implements TestRule {
 
-    private MesosClusterFactory factory = new MesosClusterContainersFactory();
+    private MesosClusterFactory factory = new MesosClusterDockerFactory();
 
     private MesosCluster mesosCluster;
 
     public static MesosClusterTestRule fromClassPath(String path) {
         try (InputStream is = MesosClusterTestRule.class.getResourceAsStream(path)) {
-            MesosCluster cluster = new MesosClusterContainersFactory().createMesosCluster(is);
+            MesosCluster cluster = new MesosClusterDockerFactory().createMesosCluster(is);
             return new MesosClusterTestRule(cluster);
         } catch (IOException e) {
             throw new MinimesosException("Could not read minimesosFile on classpath " + path, e);
@@ -34,7 +34,7 @@ public class MesosClusterTestRule implements TestRule {
 
     public static MesosClusterTestRule fromFile(String minimesosFilePath) {
         try {
-            MesosCluster cluster = new MesosClusterContainersFactory().createMesosCluster(new FileInputStream(minimesosFilePath));
+            MesosCluster cluster = new MesosClusterDockerFactory().createMesosCluster(new FileInputStream(minimesosFilePath));
             return new MesosClusterTestRule(cluster);
         } catch (FileNotFoundException e) {
             throw new MinimesosException("Could not read minimesosFile at " + minimesosFilePath, e);

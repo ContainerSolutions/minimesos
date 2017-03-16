@@ -1,9 +1,9 @@
 package com.containersol.minimesos.integrationtest;
 
-import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.cluster.MesosCluster;
+import com.containersol.minimesos.cluster.MesosClusterFactory;
 import com.containersol.minimesos.cluster.MesosMaster;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.ClusterConfig;
@@ -13,9 +13,9 @@ import com.containersol.minimesos.integrationtest.container.MesosExecuteContaine
 import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.containersol.minimesos.junit.MesosClusterTestRule;
-import com.containersol.minimesos.marathon.MarathonContainer;
-import com.containersol.minimesos.mesos.MesosAgentContainer;
-import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+import com.containersol.minimesos.docker.MarathonContainer;
+import com.containersol.minimesos.docker.MesosAgentContainer;
+import com.containersol.minimesos.docker.MesosClusterDockerFactory;
 import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.util.Environment;
 import com.containersol.minimesos.util.ResourceUtil;
@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 
 public class MesosClusterTest {
@@ -52,25 +53,20 @@ public class MesosClusterTest {
         DockerContainersUtil.getContainers(false).filterByName(HelloWorldContainer.CONTAINER_NAME_PATTERN).kill().remove();
     }
 
-    @Test(expected = MinimesosException.class)
-    public void testLoadCluster_noContainersFound() {
-        MesosCluster.loadCluster("nonexistent", new MesosClusterContainersFactory());
-    }
-
     @Test
     public void mesosClusterCanBeStarted() throws Exception {
         MesosMaster master = CLUSTER.getMaster();
         State state = master.getState();
 
-        Assert.assertEquals(3, state.getActivatedAgents());
+        assertEquals(3, state.getActivatedAgents());
     }
 
     @Test
     public void mesosResourcesCorrect() throws Exception {
         JSONObject stateInfo = CLUSTER.getMaster().getStateInfoJSON();
         for (int i = 0; i < 3; i++) {
-            Assert.assertEquals((long) 4, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getLong("cpus"));
-            Assert.assertEquals(512, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getInt("mem"));
+            assertEquals((long) 4, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getLong("cpus"));
+            assertEquals(512, stateInfo.getJSONArray("slaves").getJSONObject(0).getJSONObject("resources").getInt("mem"));
         }
     }
 
@@ -83,7 +79,7 @@ public class MesosClusterTest {
             InspectContainerResponse response = DockerClientFactory.build().inspectContainerCmd(container.getContainerId()).exec();
             Map bindings = response.getNetworkSettings().getPorts().getBindings();
             for (Integer port : ports) {
-                Assert.assertTrue(bindings.containsKey(new ExposedPort(port)));
+                assertTrue(bindings.containsKey(new ExposedPort(port)));
             }
         }
     }
@@ -94,7 +90,7 @@ public class MesosClusterTest {
         HelloWorldContainer container = new HelloWorldContainer();
         container.start(60);
         URI url = container.getServiceUrl();
-        Assert.assertEquals(200, Unirest.get(url.toString()).asString().getStatus());
+        assertEquals(200, Unirest.get(url.toString()).asString().getStatus());
     }
 
     @Test
@@ -105,9 +101,9 @@ public class MesosClusterTest {
 
             List<Link> links = Arrays.asList(exec.getHostConfig().getLinks());
 
-            Assert.assertNotNull(links);
-            Assert.assertEquals("link to zookeeper is expected", 1, links.size());
-            Assert.assertEquals("minimesos-zookeeper", links.get(0).getAlias());
+            assertNotNull(links);
+            assertEquals("link to zookeeper is expected", 1, links.size());
+            assertEquals("minimesos-zookeeper", links.get(0).getAlias());
         }
     }
 
@@ -119,9 +115,11 @@ public class MesosClusterTest {
     @Test
     public void testMesosVersionRestored() {
         String clusterId = CLUSTER.getClusterId();
-        MesosCluster cluster = MesosCluster.loadCluster(clusterId, new MesosClusterContainersFactory());
 
-        Assert.assertEquals("1.0.0", cluster.getConfiguredMesosVersion());
+        MesosClusterFactory factory = new MesosClusterDockerFactory();
+        MesosCluster cluster = factory.retrieveMesosCluster(clusterId);
+
+        assertEquals("1.0.0", cluster.getConfiguredMesosVersion());
     }
 
     @Test
@@ -172,7 +170,7 @@ public class MesosClusterTest {
     public void noMarathonTest() throws FileNotFoundException {
         String clusterId = CLUSTER.getClusterId();
 
-        Assert.assertNotNull("Cluster ID must be set", clusterId);
+        assertNotNull("Cluster ID must be set", clusterId);
 
         // this should not throw any exceptions
         CLUSTER.destroy(RULE.getFactory());
@@ -185,10 +183,10 @@ public class MesosClusterTest {
         extraAgent.setZooKeeper(zooKeeper);
 
         String containerId = CLUSTER.addAndStartProcess(extraAgent);
-        Assert.assertNotNull("freshly started container is not found", DockerContainersUtil.getContainer(containerId));
+        assertNotNull("freshly started container is not found", DockerContainersUtil.getContainer(containerId));
 
         CLUSTER.destroy(RULE.getFactory());
-        Assert.assertNull("new container should be stopped too", DockerContainersUtil.getContainer(containerId));
+        assertNull("new container should be stopped too", DockerContainersUtil.getContainer(containerId));
     }
 
     @Test

@@ -3,10 +3,10 @@ package com.containersol.minimesos.main;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.containersol.minimesos.MinimesosException;
-import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.Marathon;
 import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.mesos.MesosClusterContainersFactory;
+import com.containersol.minimesos.cluster.MesosClusterFactory;
+import com.containersol.minimesos.docker.MesosClusterDockerFactory;
 
 import java.io.PrintStream;
 
@@ -24,9 +24,9 @@ public class CommandUninstall implements Command {
     @Parameter(names = "--group", description = "Marathon group to uninstall")
     private String group = null;
 
-    private ClusterRepository repository = new ClusterRepository();
-
     private PrintStream output = System.out; // NOSONAR
+
+    MesosClusterFactory factory = new MesosClusterDockerFactory();
 
     CommandUninstall(PrintStream output) {
         this.output = output;
@@ -48,7 +48,7 @@ public class CommandUninstall implements Command {
 
     @Override
     public void execute() {
-        MesosCluster cluster = repository.loadCluster(new MesosClusterContainersFactory());
+        MesosCluster cluster = factory.retrieveMesosCluster();
 
         if (cluster == null) {
             output.println("Minimesos cluster is not running");
@@ -82,10 +82,6 @@ public class CommandUninstall implements Command {
         } else {
             output.println("Please specify --app or --group to uninstall an app or group");
         }
-    }
-
-    public void setRepository(ClusterRepository repository) {
-        this.repository = repository;
     }
 
     void setApp(String app) {

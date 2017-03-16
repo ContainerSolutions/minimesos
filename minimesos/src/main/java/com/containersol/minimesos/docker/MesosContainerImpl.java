@@ -1,4 +1,4 @@
-package com.containersol.minimesos.mesos;
+package com.containersol.minimesos.docker;
 
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
@@ -6,7 +6,6 @@ import com.containersol.minimesos.cluster.MesosContainer;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.MesosContainerConfig;
 import com.containersol.minimesos.config.ZooKeeperConfig;
-import com.containersol.minimesos.integrationtest.container.AbstractContainer;
 import com.containersol.minimesos.state.State;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;

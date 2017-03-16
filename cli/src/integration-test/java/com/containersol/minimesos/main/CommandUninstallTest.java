@@ -1,7 +1,6 @@
 package com.containersol.minimesos.main;
 
 import com.containersol.minimesos.MinimesosException;
-import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.Marathon;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosClusterFactory;
@@ -9,7 +8,6 @@ import mesosphere.marathon.client.model.v2.Result;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import java.io.PrintStream;
@@ -25,8 +23,8 @@ public class CommandUninstallTest {
     private PrintStream ps;
     private Marathon marathon;
     private MesosCluster mesosCluster;
-    private ClusterRepository repository;
     private CommandUninstall commandUninstall;
+    private MesosClusterFactory factory;
 
     @Before
     public void initTest() {
@@ -38,11 +36,11 @@ public class CommandUninstallTest {
         mesosCluster = Mockito.mock(MesosCluster.class);
         when(mesosCluster.getMarathon()).thenReturn(marathon);
 
-        repository = Mockito.mock(ClusterRepository.class);
-        when(repository.loadCluster(Matchers.any(MesosClusterFactory.class))).thenReturn(mesosCluster);
+        factory = Mockito.mock(MesosClusterFactory.class);
+        when(factory.retrieveMesosCluster()).thenReturn(mesosCluster);
 
         commandUninstall = new CommandUninstall(ps);
-        commandUninstall.setRepository(repository);
+        commandUninstall.factory = factory;
     }
 
     @Test

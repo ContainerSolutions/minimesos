@@ -1,4 +1,4 @@
-package com.containersol.minimesos.integrationtest.container;
+package com.containersol.minimesos.docker;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -10,8 +10,6 @@ import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterProcess;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.config.ContainerConfig;
-import com.containersol.minimesos.docker.DockerClientFactory;
-import com.containersol.minimesos.docker.DockerContainersUtil;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Image;
@@ -72,7 +70,7 @@ public abstract class AbstractContainer implements ClusterProcess {
     }
 
     /**
-     * Implement this method to create your container.
+     * Implement this method to retrieveMesosCluster your container.
      *
      * @return Your {@link CreateContainerCmd} for docker.
      */
