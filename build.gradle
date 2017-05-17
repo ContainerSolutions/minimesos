@@ -36,11 +36,20 @@ subprojects {
     apply plugin: 'com.bmuschko.docker-remote-api'
     apply plugin: 'maven'
     apply plugin: 'jacoco'
+    apply plugin: 'maven-publish'
 
     sourceCompatibility = '1.8'
     targetCompatibility = '1.8'
 
     [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+            }
+        }
+    }
 
     compileJava {
         options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
