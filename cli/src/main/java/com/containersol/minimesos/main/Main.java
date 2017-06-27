@@ -140,8 +140,6 @@ public class Main {
             jc.parse(args);
         } catch (Exception e) {
             LOGGER.error("Failed to parse parameters. " + e.getMessage() + "\n");
-            printUsage(null);
-            throw e;
         }
     }
 

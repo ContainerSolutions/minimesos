@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.spy;
@@ -111,6 +112,14 @@ public class MainTest {
         main.run(new String[]{"help"});
         String result = outputStream.toString("UTF-8");
         assertUsageText(result);
+    }
+
+    @Test
+    public void testNonExistingCommand() throws IOException {
+        main.run(new String[]{"foo"});
+        String result = outputStream.toString("UTF-8");
+        assertUsageText(result);
+        assertFalse(result.contains("Failed to run command 'null'. null"));
     }
 
     private static void assertUsageText(String output) {
