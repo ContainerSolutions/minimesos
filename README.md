@@ -2,18 +2,17 @@
 
 The experimentation and testing tool for Apache Mesos
 
-<img align="left" width="175" src="https://github.com/ContainerSolutions/minimesos/raw/master/images/minimesos.png">
 <div>
+<img width="175" src="https://github.com/ContainerSolutions/minimesos/raw/master/images/minimesos.png">
 <ul>
-<li><strong>Website</strong>: https://www.minimesos.org
-<li><strong>Source</strong>: https://github.com/ContainerSolutions/minimesos
-<li><strong>Mailing List</strong>: <a href="https://groups.google.com/d/forum/minimesos">minimesos@googlegroups.com</a>
-<li><strong>Slack</strong>: <a href="https://minimesos.slack.com">minimesos.slack.com</a>
-<li><strong>Docs</strong>: <a href="https://readthedocs.org/projects/minimesos">readthedocs.org/projects/minimesos</a>
-<li><strong>Twitter</strong>: <a href="https://twitter.com/minimesos">@minimesos</a>
+  <li><strong>Website</strong>: https://www.minimesos.org
+  <li><strong>Source</strong>: https://github.com/ContainerSolutions/minimesos
+  <li><strong>Mailing List</strong>: <a href="https://groups.google.com/d/forum/minimesos">minimesos@googlegroups.com</a>
+  <li><strong>Slack</strong>: <a href="https://minimesos.slack.com">minimesos.slack.com</a>
+  <li><strong>Docs</strong>: <a href="https://readthedocs.org/projects/minimesos">readthedocs.org/projects/minimesos</a>
+  <li><strong>Twitter</strong>: <a href="https://twitter.com/minimesos">@minimesos</a>
 </ul>
-</div>
-</p>
+<div style="clear: both;"> 
 
 ## Videos
 
