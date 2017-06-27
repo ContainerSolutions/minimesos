@@ -5,10 +5,8 @@ reject_regex: ^Rejected
 reset_on_push: false
 reviewers:
   members:
-  - alex-glv
   - frankscholten
   - mwl
-  - remmelt
   - sadovnikov
   - philwinder
   - lguminski
