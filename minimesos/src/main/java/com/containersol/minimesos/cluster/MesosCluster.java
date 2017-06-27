@@ -106,7 +106,9 @@ public class MesosCluster {
             for (MesosAgent mesosAgent : getAgents()) {
                 mesosAgent.setZooKeeper(zookeeper);
             }
-            getMarathon().setZooKeeper(zookeeper);
+            if (getMarathon() != null) {
+                getMarathon().setZooKeeper(zookeeper);
+            }
         }
 
         running = true;
