@@ -76,7 +76,7 @@ public class Main {
         this.output = output;
     }
 
-    public int run(String[] args) {
+    int run(String[] args) {
         initJCommander();
 
         try {
@@ -177,7 +177,7 @@ public class Main {
         output.println(builder.toString());
     }
 
-    public void addCommand(Command command) {
+    void addCommand(Command command) {
         commands.put(command.getName(), command);
     }
 
