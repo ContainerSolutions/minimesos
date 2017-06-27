@@ -115,14 +115,19 @@ public class Main {
             return EXIT_CODE_OK;
         } catch (Exception ex) {
             PrintWriter writer = new PrintWriter(output);
+
+            output.print("Failed to run command '" + jc.getParsedCommand() + "'.");
+
             if (ex.getMessage() != null) {
-                output.println("Failed to run command '" + jc.getParsedCommand() + "'. "  + ex.getCause());
+                output.print(" " + ex.getMessage() + ".\n");
             } else {
-                output.println("Failed to run command '" + jc.getParsedCommand() + "'.");
                 ex.printStackTrace(writer);
             }
+
             writer.close();
+
             LOGGER.debug("Exception while processing", ex);
+
             return EXIT_CODE_ERR;
         }
     }
