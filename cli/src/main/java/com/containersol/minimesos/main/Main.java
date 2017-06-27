@@ -132,12 +132,11 @@ public class Main {
         }
     }
 
-    private JCommander initJCommander() {
+    private void initJCommander() {
         jc.setProgramName("minimesos");
         for (Map.Entry<String, Command> entry : commands.entrySet()) {
             jc.addCommand(entry.getKey(), entry.getValue());
         }
-        return jc;
     }
 
     private void parseParams(JCommander jc, String[] args) {
