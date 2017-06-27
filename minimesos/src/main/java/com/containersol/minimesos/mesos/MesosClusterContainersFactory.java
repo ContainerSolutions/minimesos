@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -73,7 +74,7 @@ public class MesosClusterContainersFactory extends MesosClusterFactory {
         List<ClusterProcess> containers = cluster.getMemberProcesses();
 
         List<Container> dockerContainers = DockerContainersUtil.getContainers(false).getContainers();
-        Collections.sort(dockerContainers, (c1, c2) -> Long.compare(c1.getCreated(), c2.getCreated()));
+        dockerContainers.sort(Comparator.comparingLong(Container::getCreated));
 
         for (Container container : dockerContainers) {
             String name = ContainerName.getFromDockerNames(container.getNames());
