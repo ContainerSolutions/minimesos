@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Task {
 
+    private String id;
     private String name;
     private String state;
 
@@ -16,6 +17,14 @@ public class Task {
     private String slaveId;
 
     private Discovery discovery;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getState() {
         return state;
