@@ -293,6 +293,7 @@ public class ParseStateJSONTest {
     @Test
     public void exampleStateJSONIsParsedCorrectly() throws JsonParseException, JsonMappingException {
         State parsedState = State.fromJSON(EXAMPLE_STATE_JSON);
+        assertEquals("20150907-122934-3858764204-5050-23", parsedState.getId());
         assertEquals(1, parsedState.getFrameworks().size());
         Framework framework = parsedState.getFramework("elasticsearch");
         assertNotNull(framework);
