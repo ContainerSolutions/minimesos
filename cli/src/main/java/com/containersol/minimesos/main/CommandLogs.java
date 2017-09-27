@@ -21,7 +21,7 @@ import java.net.URISyntaxException;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.apache.commons.lang.StringUtils.isBlank;
 
-@Parameters(separators = "=", commandDescription = "Fetches the logs of the specified task")
+@Parameters(separators = "=", commandDescription = "Fetches the stdout logs of the specified task")
 public class CommandLogs implements Command {
 
     private PrintStream output = System.out; // NOSONAR
@@ -33,7 +33,7 @@ public class CommandLogs implements Command {
     @Parameter(names = "--task", description = "Substring of a task ID", required = true)
     String taskId = null;
 
-    @Parameter(names = "--stderr", description = "Fetch the stderr logs")
+    @Parameter(names = "--stderr", description = "Fetch the stderr logs instead of stdout")
     Boolean stderr = false;
 
     public CommandLogs(PrintStream output) {
