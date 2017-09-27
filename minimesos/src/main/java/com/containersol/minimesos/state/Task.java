@@ -13,6 +13,12 @@ public class Task {
     private String name;
     private String state;
 
+    @JsonProperty("framework_id")
+    private String frameworkId;
+
+    @JsonProperty("executor_id")
+    private String executorId;
+
     @JsonProperty("slave_id")
     private String slaveId;
 
@@ -40,6 +46,22 @@ public class Task {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getFrameworkId() {
+        return frameworkId;
+    }
+
+    public void setFrameworkId(String frameworkId) {
+        this.frameworkId = frameworkId;
+    }
+
+    public String getExecutorId() {
+        return executorId;
+    }
+
+    public void setExecutorId(String executorId) {
+        this.executorId = executorId;
     }
 
     public String getSlaveId() {
