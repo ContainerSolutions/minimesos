@@ -115,6 +115,23 @@ public class CommandLogsTest {
     }
 
     @Test
+    public void TestUnexistingTask() throws UnsupportedEncodingException, URISyntaxException {
+        // Given
+        CommandLogs commandLogs = new CommandLogs(ps);
+        commandLogs.setRepository(repository);
+        commandLogs.setDownloader(downloader);
+        commandLogs.taskId = "doesn't exist";
+
+        // When
+        commandLogs.execute();
+
+        // Then
+        String result = outputStream.toString("UTF-8");
+        assertEquals("Cannot find task: 'doesn't exist'\n", result);
+
+    }
+
+    @Test
     public void TestStderr() throws UnsupportedEncodingException, URISyntaxException {
         // Given
         CommandLogs commandLogs = new CommandLogs(ps);
