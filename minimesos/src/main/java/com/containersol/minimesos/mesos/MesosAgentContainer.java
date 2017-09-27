@@ -1,17 +1,25 @@
 package com.containersol.minimesos.mesos;
 
+import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.cluster.MesosCluster;
 import com.containersol.minimesos.cluster.MesosDns;
 import com.containersol.minimesos.config.MesosAgentConfig;
 import com.containersol.minimesos.docker.DockerClientFactory;
+import com.containersol.minimesos.state.Executor;
+import com.containersol.minimesos.state.Framework;
+import com.containersol.minimesos.state.State;
+import com.containersol.minimesos.state.Task;
 import com.containersol.minimesos.util.ResourceUtil;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.Volume;
+import org.apache.http.client.utils.URIBuilder;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

@@ -2,6 +2,7 @@ package com.containersol.minimesos.main;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.ClusterRepository;
 import com.containersol.minimesos.cluster.MesosAgent;
 import com.containersol.minimesos.cluster.MesosCluster;
@@ -10,12 +11,15 @@ import com.containersol.minimesos.state.Executor;
 import com.containersol.minimesos.state.Framework;
 import com.containersol.minimesos.state.State;
 import com.containersol.minimesos.state.Task;
+import com.containersol.minimesos.util.Downloader;
 import org.apache.http.client.utils.URIBuilder;
 
 import java.io.PrintStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang.StringUtils.isBlank;
 
 @Parameters(separators = "=", commandDescription = "Fetches the logs of the specified task")
 public class CommandLogs implements Command {
@@ -24,8 +28,13 @@ public class CommandLogs implements Command {
 
     private ClusterRepository repository = new ClusterRepository();
 
+    private Downloader downloader = new Downloader();
+
     @Parameter(names = "--task", description = "Substring of a task ID", required = true)
     String taskId = null;
+
+    @Parameter(names = "--stderr", description = "Fetch the stderr logs")
+    Boolean stderr = false;
 
     public CommandLogs(PrintStream output) {
         this.output = output;
@@ -47,12 +56,7 @@ public class CommandLogs implements Command {
 
     @Override
     public void execute() {
-        if (taskId == null) {
-            return;
-        }
-
         MesosCluster cluster = repository.loadCluster(new MesosClusterContainersFactory());
-
         if (cluster == null) {
             output.println("Minimesos cluster is not running");
             return;
@@ -60,41 +64,31 @@ public class CommandLogs implements Command {
 
         State masterState = cluster.getMaster().getState();
         Task task = findTask(masterState, taskId);
-
         if (task == null) {
             output.println(String.format("Cannot find task: '%s'", taskId));
             return;
         }
 
         MesosAgent agent = findAgent(cluster, task.getSlaveId());
-
         if (agent == null) {
             output.println(String.format("Cannot find agent: '%s'", task.getSlaveId()));
             return;
         }
 
-        State agentState = agent.getState();
-        Executor executor = findExecutor(agentState, task.getId());
 
-        if (executor == null) {
-            output.println(String.format("Cannot find executor: '%s'", task.getId()));
-            return;
-        }
-
-        String path = executor.getDirectory();
-
-        URIBuilder uriBuilder = new URIBuilder(agent.getServiceUrl())
-            .setPath("/files/download")
-            .addParameter("path", path + "/stderr");
-        try {
-            output.println(uriBuilder.build().toString());
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
+        String filename = stderr ? "stderr" : "stdout";
+        output.println(String.format("[minimesos] Fetching '%s' of task '%s'\n", filename, task.getId()));
+        URI fileUrl = getFileUrl(agent, task, filename);
+        String content = downloader.getFileContentAsString(fileUrl.toString());
+        output.println(content);
     }
 
     public void setRepository(ClusterRepository repository) {
         this.repository = repository;
+    }
+
+    void setDownloader(Downloader downloader) {
+        this.downloader = downloader;
     }
 
     private Task findTask(State state, String taskId) {
@@ -118,11 +112,35 @@ public class CommandLogs implements Command {
         return null;
     }
 
-    private Executor findExecutor(State agentState, String taskId) {
-        for (Framework framework : agentState.getFrameworks()) {
-            for (Executor executor : framework.getExecutors()) {
-                if (executor.getId().equals(taskId)) {
-                    return  executor;
+    private URI getFileUrl(MesosAgent agent, Task task, String filename) throws MinimesosException {
+        Executor executor = findExecutor(agent, task);
+        if (executor == null) {
+            throw new MinimesosException(String.format("Cannot find executor: '%s'", taskId));
+        }
+        String path = executor.getDirectory();
+        URIBuilder uriBuilder = new URIBuilder(agent.getServiceUrl())
+            .setPath("/files/download")
+            .addParameter("path", path + "/" + filename);
+        URI sandboxUrl = null;
+        try {
+            sandboxUrl = uriBuilder.build();
+        } catch (URISyntaxException e) {
+            throw new MinimesosException(e.getMessage());
+        }
+        return sandboxUrl;
+    }
+
+    private Executor findExecutor(MesosAgent agent, Task task) {
+        String executorId = task.getExecutorId();
+        if (isBlank(executorId)) { // if executorId is empty, try with the taskId
+            executorId = task.getId();
+        }
+        for (Framework framework : agent.getState().getFrameworks()) {
+            if (framework.getId().equals(task.getFrameworkId())) {
+                for (Executor executor : framework.getExecutors()) {
+                    if (executor.getId().equals(executorId)) {
+                        return executor;
+                    }
                 }
             }
         }
