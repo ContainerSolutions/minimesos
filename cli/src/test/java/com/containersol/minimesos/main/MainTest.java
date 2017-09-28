@@ -23,6 +23,7 @@ public class MainTest {
     private CommandState commandState;
     private CommandInstall commandInstall;
     private CommandUp commandUp;
+    private CommandLogs commandLogs;
 
     @Before
     public void before() {
@@ -45,6 +46,9 @@ public class MainTest {
         commandInstall = spy(new CommandInstall());
         doNothing().when(commandInstall).execute();
 
+        commandLogs = spy(new CommandLogs());
+        doNothing().when(commandLogs).execute();
+
         main = new Main();
         main.setOutput(ps);
         main.addCommand(commandUp);
@@ -52,6 +56,7 @@ public class MainTest {
         main.addCommand(commandInfo);
         main.addCommand(commandState);
         main.addCommand(commandInstall);
+        main.addCommand(commandLogs);
         main.addCommand(new CommandHelp());
 
     }
@@ -84,6 +89,19 @@ public class MainTest {
     public void testInstall() throws IOException {
         main.run(new String[]{"install", "--marathonFile", "bla.json"});
         verify(commandInstall).execute();
+    }
+
+    @Test
+    public void testLogs() throws IOException {
+        main.run(new String[]{"logs", "--task", "something"});
+        verify(commandLogs).execute();
+    }
+
+    @Test
+    public void testLogsNoParameter() throws IOException {
+        main.run(new String[]{"logs", "--task"});
+        String result = outputStream.toString("UTF-8");
+        assertTrue(result.contains("Usage: logs [options]"));
     }
 
     @Test

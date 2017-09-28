@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class State {
 
+    private String id;
     private Map<String, String> flags = new HashMap<>();
 
     @JsonProperty("activated_slaves")
@@ -61,5 +62,13 @@ public class State {
 
     public String getVersion() {
         return version;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

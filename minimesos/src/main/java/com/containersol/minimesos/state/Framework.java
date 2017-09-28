@@ -27,6 +27,7 @@ public class Framework {
     private String role;
 
     private ArrayList<Task> tasks;
+    private ArrayList<Executor> executors = new ArrayList<>();
 
     public boolean isActive() {
         return active;
@@ -90,5 +91,13 @@ public class Framework {
 
     public void setTasks(ArrayList<Task> tasks) {
         this.tasks = tasks;
+    }
+
+    public ArrayList<Executor> getExecutors() {
+        return executors;
+    }
+
+    public void setExecutors(ArrayList<Executor> executors) {
+        this.executors = executors;
     }
 }

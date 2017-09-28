@@ -293,6 +293,7 @@ public class ParseStateJSONTest {
     @Test
     public void exampleStateJSONIsParsedCorrectly() throws JsonParseException, JsonMappingException {
         State parsedState = State.fromJSON(EXAMPLE_STATE_JSON);
+        assertEquals("20150907-122934-3858764204-5050-23", parsedState.getId());
         assertEquals(1, parsedState.getFrameworks().size());
         Framework framework = parsedState.getFramework("elasticsearch");
         assertNotNull(framework);
@@ -305,5 +306,8 @@ public class ParseStateJSONTest {
         assertEquals("elasticsearch", framework.getName());
         assertEquals("*", framework.getRole());
         assertEquals("0.22.1", parsedState.getVersion());
+        assertEquals(0, framework.getExecutors().size());
+        assertEquals("29deeca9-0f28-4df7-af1d-14ae790044f6", framework.getTasks().get(0).getExecutorId());
+        assertEquals("20150907-122934-3858764204-5050-23-0000", framework.getTasks().get(0).getFrameworkId());
     }
 }
