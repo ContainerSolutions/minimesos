@@ -21,7 +21,7 @@ public class DockerClientFactory {
             String dockerCertPath = System.getenv("DOCKER_CERT_PATH");
             if(!StringUtils.isNotBlank(dockerCertPath)) {
                 builder = builder.withDockerTlsVerify(true)
-                                .withDockerCertPath(System.getenv("DOCKER_CERT_PATH"));
+                                .withDockerCertPath(dockerCertPath);
             }
 
             String dockerHostEnv = System.getenv("DOCKER_HOST");
