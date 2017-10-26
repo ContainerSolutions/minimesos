@@ -2,7 +2,6 @@ package com.containersol.minimesos.mesos;
 
 import com.containersol.minimesos.MinimesosException;
 import com.containersol.minimesos.cluster.MesosCluster;
-import com.containersol.minimesos.cluster.MesosDns;
 import com.containersol.minimesos.cluster.ZooKeeper;
 import com.containersol.minimesos.config.ZooKeeperConfig;
 import com.containersol.minimesos.integrationtest.container.AbstractContainer;
@@ -10,6 +9,7 @@ import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.util.Environment;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.Ports;
 import org.apache.commons.lang.StringUtils;
 
 import java.net.URI;
@@ -47,9 +47,18 @@ public class ZooKeeperContainer extends AbstractContainer implements ZooKeeper {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
+        int port = getServicePort();
+        ExposedPort exposedPort = ExposedPort.tcp(port);
+
+        Ports portBindings = new Ports();
+        if (getCluster().isMapPortsToHost()) {
+            portBindings.bind(exposedPort, Ports.Binding.bindPort(port));
+        }
+
         return DockerClientFactory.build().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
             .withName(getName())
-            .withExposedPorts(new ExposedPort(ZooKeeperConfig.DEFAULT_ZOOKEEPER_PORT), new ExposedPort(2888), new ExposedPort(3888));
+            .withExposedPorts(new ExposedPort(ZooKeeperConfig.DEFAULT_ZOOKEEPER_PORT), new ExposedPort(2888), new ExposedPort(3888))
+            .withPortBindings(portBindings);
     }
 
     @Override
