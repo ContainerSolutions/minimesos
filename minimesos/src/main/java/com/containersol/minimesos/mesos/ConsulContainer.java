@@ -9,6 +9,7 @@ import com.containersol.minimesos.docker.DockerClientFactory;
 import com.containersol.minimesos.util.Environment;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
+import com.github.dockerjava.api.model.Ports;
 import org.apache.commons.lang.StringUtils;
 
 import java.net.URI;
@@ -74,13 +75,22 @@ public class ConsulContainer extends AbstractContainer implements Consul {
 
     @Override
     protected CreateContainerCmd dockerCommand() {
+        int port = getServicePort();
+        ExposedPort exposedPort = ExposedPort.tcp(port);
+
+        Ports portBindings = new Ports();
+        if (getCluster().isMapPortsToHost()) {
+            portBindings.bind(exposedPort, Ports.Binding.bindPort(port));
+        }
+
         ExposedPort consulHTTPPort = ExposedPort.tcp(ConsulConfig.CONSUL_HTTP_PORT);
         ExposedPort consulDNSPort = ExposedPort.udp(ConsulConfig.CONSUL_DNS_PORT);
 
         return DockerClientFactory.build().createContainerCmd(config.getImageName() + ":" + config.getImageTag())
                 .withName(getName())
                 .withCmd("agent", "-server", "-bootstrap", "-client", "0.0.0.0")
-                .withExposedPorts(consulHTTPPort, consulDNSPort);
+                .withExposedPorts(consulHTTPPort, consulDNSPort)
+                .withPortBindings(portBindings);
     }
 
 }

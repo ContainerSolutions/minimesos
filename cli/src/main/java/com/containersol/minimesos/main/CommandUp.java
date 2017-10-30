@@ -29,7 +29,7 @@ public class CommandUp implements Command {
 
     private ClusterRepository repository = new ClusterRepository();
 
-    @Parameter(names = "--mapPortsToHost", description = "Map the Mesos and Marathon UI ports to the host level (we recommend to enable this on Mac (e.g. when using docker-machine) and disable on Linux).")
+    @Parameter(names = "--mapPortsToHost", description = "Map the Mesos, Marathon UI, Zookeeper and Consul ports to the host level (we recommend to enable this on Mac (e.g. when using docker-machine) and disable on Linux).")
     private Boolean mapPortsToHost = null;
 
     @Parameter(names = "--clusterConfig", description = "Path to file with cluster configuration. Defaults to minimesosFile")
