@@ -52,7 +52,10 @@ if [ ! -d "${MINIMESOS_DIR}" ]; then
     echo "# Created minimesos directory at ${MINIMESOS_DIR}."
 fi
 
-docker run --rm -v "${MINIMESOS_HOST_DIR}":"${MINIMESOS_HOST_DIR}" \
+
+DOCKER_CONTAINER=$(
+    docker create --rm \
+       -v "${MINIMESOS_HOST_DIR}":"${MINIMESOS_HOST_DIR}" \
        -v /var/run/docker.sock:/var/run/docker.sock \
        -v /sys/fs/cgroup:/sys/fs/cgroup \
        -i \
@@ -60,5 +63,10 @@ docker run --rm -v "${MINIMESOS_HOST_DIR}":"${MINIMESOS_HOST_DIR}" \
        --env MINIMESOS_OS="${MINIMESOS_OS}" \
        --entrypoint java \
        ${MINIMESOS_CLI_IMAGE}:${MINIMESOS_TAG} \
+       -Dminimesos.file="/minimesosFile" \
        -Dminimesos.host.dir="${MINIMESOS_HOST_DIR}" \
-       -jar /usr/local/share/minimesos/minimesos-cli.jar ${PARAMS}
+       -jar /usr/local/share/minimesos/minimesos-cli.jar ${PARAMS} \
+)
+
+docker cp ${MINIMESOS_HOST_DIR}/minimesosFile $DOCKER_CONTAINER:/minimesosFile
+docker start -a $DOCKER_CONTAINER

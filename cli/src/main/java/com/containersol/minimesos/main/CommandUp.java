@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
  */
 @Parameters(separators = "=", commandDescription = "Create a minimesos cluster")
 public class CommandUp implements Command {
+    private static final String MINIMESOS_CLUSTER_CONFIG = "minimesos.file";
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CommandUp.class);
 
@@ -59,6 +60,10 @@ public class CommandUp implements Command {
     }
 
     public String getClusterConfigPath() {
+        String sp = System.getProperty(MINIMESOS_CLUSTER_CONFIG);
+        if (sp != null) {
+            return sp;
+        }
         return clusterConfigPath;
     }
 
