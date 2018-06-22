@@ -2,6 +2,8 @@
 
 The experimentation and testing tool for Apache Mesos
 
+NOTE: NO LONGER MAINTAINED!
+
 <div>
 <img width="175" src="https://github.com/ContainerSolutions/minimesos/raw/master/images/minimesos.png">
 <ul>
