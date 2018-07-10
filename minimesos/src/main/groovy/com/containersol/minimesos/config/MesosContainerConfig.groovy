@@ -16,6 +16,7 @@ abstract class MesosContainerConfig extends ContainerConfigBlock implements Cont
             "0.28.1",
             "0.28",
             "1.0.0",
+            "1.2.1-rc1"
     ]
 
     public String getLoggingLevel() {

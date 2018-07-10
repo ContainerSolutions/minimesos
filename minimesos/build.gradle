@@ -25,13 +25,13 @@ sourceSets {
 
 dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.4.5'
-    compile 'com.github.docker-java:docker-java:3.0.7'
+    compile 'com.github.docker-java:docker-java:3.0.9'
     compile 'junit:junit:4.11'
     compile 'com.jayway.awaitility:awaitility:1.6.3'
     compile 'com.mashape.unirest:unirest-java:1.4.8'
     compile 'org.slf4j:slf4j-api:1.7.12'
     compile 'com.mesosphere:marathon-client:0.3.0'
-    compile 'com.google.code.gson:gson-parent:2.8.0'
+    compile 'com.google.code.gson:gson:2.8.0'
 
     compile 'ch.qos.logback:logback-core:1.1.3'
     compile 'ch.qos.logback:logback-classic:1.1.3'

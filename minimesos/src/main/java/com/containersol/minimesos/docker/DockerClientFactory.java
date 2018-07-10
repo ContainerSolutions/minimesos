@@ -16,11 +16,21 @@ public class DockerClientFactory {
     public static DockerClient build() {
         if (dockerClient == null) {
             DefaultDockerClientConfig.Builder builder = new DefaultDockerClientConfig.Builder();
-            builder = builder.withApiVersion("1.12");
+            // This should be automatized or parametized
+            builder = builder.withApiVersion("1.28");
+            String dockerCertPath = System.getenv("DOCKER_CERT_PATH");
+            if(!StringUtils.isNotBlank(dockerCertPath)) {
+                builder = builder.withDockerTlsVerify(true)
+                                .withDockerCertPath(dockerCertPath);
+            } else {
+                builder = builder.withDockerTlsVerify(false);
+            }
 
             String dockerHostEnv = System.getenv("DOCKER_HOST");
             if (StringUtils.isBlank(dockerHostEnv)) {
-                builder.withDockerHost("unix:///var/run/docker.sock");
+                builder = builder.withDockerHost("unix:///var/run/docker.sock");
+            } else {
+                builder = builder.withDockerHost(dockerHostEnv);
             }
 
             DockerClientConfig config = builder.build();
